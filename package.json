@@ -18,6 +18,7 @@
   "author": "Mark Li",
   "license": "ISC",
   "dependencies": {
+    "@truffle/hdwallet-provider": "^1.0.23",
     "truffle": "^5.0.43"
   }
 }
