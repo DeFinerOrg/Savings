@@ -1,0 +1,23 @@
+{
+  "name": "saving-pool-contract",
+  "version": "1.0.0",
+  "description": "Saving pool contract.",
+  "main": "index.js",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/saving-pool-contract"
+  },
+  "keywords": [
+    "Saving",
+    "Pool",
+    "Contract"
+  ],
+  "author": "Mark Li",
+  "license": "ISC",
+  "dependencies": {
+    "truffle": "^5.0.43"
+  }
+}
