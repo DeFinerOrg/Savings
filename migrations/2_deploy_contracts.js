@@ -1,5 +1,8 @@
 const SavingAccount = artifacts.require("SavingAccount");
+const TokenLib = artifacts.require("TokenLib");
 
 module.exports = function(deployer) {
-  deployer.deploy(SavingAccount);
+    deployer.deploy(TokenLib);
+    deployer.link(TokenLib, SavingAccount);
+    deployer.deploy(SavingAccount);
 };

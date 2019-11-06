@@ -2,20 +2,17 @@ pragma solidity >= 0.5.0 < 0.6.0;
 
 import "./external/provableAPI.sol";
 import "./external/strings.sol";
+import "./lib/TokenLib.sol";
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
-contract SavingAccount is usingProvable { 
-	struct TokenInfo { 
-		uint256 balance; 
-		uint256 rate; 
-		uint256 interest; 
-		uint256 lastModification; 
-	} 
+contract SavingAccount is usingProvable {
+	using TokenLib for TokenLib.TokenInfo;
+
 	struct Account { 
 		// Note, it's best practice to use functions minusAmount, addAmount, totalAmount 
 		// to operate tokenInfos instead of changing it directly. 
-		mapping(address => TokenInfo) tokenInfos; 
+		mapping(address => TokenLib.TokenInfo) tokenInfos;
 	} 
 	mapping(address => Account) accounts; 
 	string[] public coins = ["ETH","DAI","USDC","USDT","TUSD","PAX","GUSD","BNB","MKR","BAT","OMG","GNT","ZRX","REP","CRO","WBTC"]; 
@@ -61,35 +58,6 @@ contract SavingAccount is usingProvable {
 		symbolToAddress['WBTC'] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; 
 	} 
 
-	function totalAmount(TokenInfo storage tokenInfo) private view returns(uint256) { 
-		return tokenInfo.balance + viewInterest(tokenInfo); 
-	} 
-
-	function minusAmount(TokenInfo storage tokenInfo, uint256 amount) private { 
-		resetInterest(tokenInfo); 
-		if (tokenInfo.interest >= amount) { 
-			tokenInfo.interest -= amount; 
-		} else { 
-			tokenInfo.balance -= amount - tokenInfo.interest; 
-			tokenInfo.interest = 0; 
-		} 
-	} 
-
-	function addAmount(TokenInfo storage tokenInfo, uint256 amount, uint256 rate) private { 
-		resetInterest(tokenInfo); 
-		tokenInfo.rate = SafeMath.div(SafeMath.mul(tokenInfo.rate, tokenInfo.balance) + SafeMath.mul(rate, amount), tokenInfo.balance + amount); 
-		tokenInfo.balance += amount; 
-	} 
-
-	function resetInterest(TokenInfo storage tokenInfo) private { 
-		tokenInfo.interest = viewInterest(tokenInfo); 
-		tokenInfo.lastModification = block.timestamp; 
-	} 
-
-	function viewInterest(TokenInfo storage tokenInfo) private view returns(uint256) { 
-		return tokenInfo.interest + SafeMath.div(SafeMath.mul(SafeMath.mul(tokenInfo.balance, tokenInfo.rate), block.timestamp - tokenInfo.lastModification), BASE); 
-	} 
-
 	/** 
 	 * Gets the total amount of balance that give accountAddr stored in saving pool. 
 	 */ 
@@ -103,16 +71,14 @@ contract SavingAccount is usingProvable {
 
 	function borrow(address tokenAddress, uint256 amount, address targetTokenAddress, uint256 targetTokenAmount, uint startTime, uint endTime) public returns (uint256 _transactionId)  { 
 		// TODO(Mark Li): Instead of using a transaction array, use usd balance for borrow logic. 
-
-	} 
+	}
 
 	function repay(uint transactionId, uint256 amount) public returns (uint256 _transactionId)  { 
 		// TODO(Mark Li): Instead of using a transaction array, use usd balance for repay logic. 
-
-	} 
+	}
 
 	function tokenBalanceOf(address tokenAddress) public view returns (uint256 amount) { 
-		return totalAmount(accounts[msg.sender].tokenInfos[tokenAddress]); 
+		return accounts[msg.sender].tokenInfos[tokenAddress].totalAmount();
 	} 
 
 	function getCoinLength() public view returns (uint256 length){ 
@@ -131,7 +97,7 @@ contract SavingAccount is usingProvable {
 		IERC20 token = IERC20(tokenAddress); 
 		token.transferFrom(msg.sender, address(this), amount); 
 		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05 
-		addAmount(accounts[msg.sender].tokenInfos[tokenAddress], amount, 1585); 
+		accounts[msg.sender].tokenInfos[tokenAddress].addAmount(amount, 1585);
 	} 
 
 	/** 
@@ -139,12 +105,11 @@ contract SavingAccount is usingProvable {
 	 * will be deducted first. 
 	 */ 
 	function withdrawToken(address tokenAddress, uint256 amount) public payable { 
-		require(totalAmount(accounts[msg.sender].tokenInfos[tokenAddress]) > amount, "Do not have enough balance."); 
+		require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount() > amount, "Do not have enough balance.");
 		IERC20 token = IERC20(tokenAddress); 
 		token.transfer(msg.sender, amount); 
-		minusAmount(accounts[msg.sender].tokenInfos[tokenAddress], amount); 
+		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount);
 	} 
-
 
 	/** 
 	 * Parse result from oracle, e.g. an example is [8110.44, 0.2189, 445.05, 1]. 
