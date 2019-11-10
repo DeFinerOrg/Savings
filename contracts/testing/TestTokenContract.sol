@@ -7,27 +7,31 @@ contract TestTokenContract {
 
     TokenLib.TokenInfo tokenInfo;
 
-    function setTokenInfo(uint256 balance, uint256 rate, uint256 interest, uint256 lastModification) public {
-        tokenInfo = TokenLib.TokenInfo(balance, rate, interest, lastModification);
+    function setTokenInfo(int256 balance, int256 interest, uint256 rate, uint256 lastModification) public {
+        tokenInfo = TokenLib.TokenInfo(balance, interest, rate, lastModification);
     }
 
-    function minusAmount(uint256 amount) public {
-        tokenInfo.minusAmount(amount);
+    function minusAmount(uint256 amount, uint256 rate, uint256 currentTimestamp) public {
+        tokenInfo.minusAmount(amount, rate, currentTimestamp);
 	}
 
-	function addAmount(uint256 amount, uint256 rate) public {
-		tokenInfo.addAmount(amount, rate);
+	function addAmount(uint256 amount, uint256 rate, uint256 currentTimestamp) public {
+		tokenInfo.addAmount(amount, rate, currentTimestamp);
 	}
 
-	function resetInterest() public {
-        tokenInfo.resetInterest();
+	function resetInterest(uint256 currentTimestamp) public {
+        tokenInfo.resetInterest(currentTimestamp);
 	}
 
-	function totalAmount() public view returns(uint256) {
-        return tokenInfo.totalAmount();
+	function totalAmount(uint256 currentTimestamp) public view returns(int256) {
+        return tokenInfo.totalAmount(currentTimestamp);
 	}
 
-	function viewInterest() public view returns(uint256) {
-		return tokenInfo.viewInterest();
+	function viewInterest(uint256 currentTimestamp) public view returns(int256) {
+		return tokenInfo.viewInterest(currentTimestamp);
+	}
+
+	function getRate()  public view returns(uint256) {
+		return tokenInfo.rate;
 	}
 }
