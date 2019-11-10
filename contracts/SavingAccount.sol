@@ -23,7 +23,7 @@ contract SavingAccount is usingProvable {
 
 	event LogNewProvableQuery(string description); 
 	event LogNewPriceTicker(string price);
-	uint256 BASE = 10**6;
+	int256 BASE = 10**6;
 
 	constructor() public payable {
 		addressToSymbol[0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359] = 'DAI'; 
@@ -101,7 +101,7 @@ contract SavingAccount is usingProvable {
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
         require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) < int256(amount), "To withdraw balance, please use withdrawToken instead.");
-        require((int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbolToPrices[addressToSymbol[tokenAddress]]).div(BASE))) * 100 <= (getAccountTotalUsdValue(msg.sender, true)) * 66);
+        require((int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbolToPrices[addressToSymbol[tokenAddress]])) / BASE) * 100 <= (getAccountTotalUsdValue(msg.sender, true)) * 66);
 		IERC20 token = IERC20(tokenAddress);
 		token.transfer(msg.sender, amount);
 		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount, 0, block.timestamp);
@@ -131,12 +131,12 @@ contract SavingAccount is usingProvable {
 	} 
 
 	/**
-	 * Withdraw tokens from saving pool. If the interest is not empty, the interest 
-	 * will be deducted first. 
+	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
+	 * will be deducted first.
 	 */ 
 	function withdrawToken(address tokenAddress, uint256 amount) public payable { 
 		require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
-        require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbolToPrices[addressToSymbol[tokenAddress]]).div(BASE))) * 66);
+        require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbolToPrices[addressToSymbol[tokenAddress]])) / BASE) * 66);
 		IERC20 token = IERC20(tokenAddress);
 		token.transfer(msg.sender, amount);
 		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount, 0, block.timestamp);
