@@ -81,6 +81,24 @@ contract SavingAccount is usingProvable {
 		return totalUsdValue;
 	}
 
+	/** 
+	 * Get all balances for the sender's account
+	 * Return a tuple of arrays: (symbol addresses, symbol balances)  
+	 */ 
+	function getBalances() public view returns (address[] memory, int256[] memory)
+    {
+        address[] memory addresses = new address[](coins.length);
+        int256[] memory balances = new int256[](coins.length);
+        
+        for (uint i = 0; i < coins.length; i++) {
+            address tokenAddress = symbolToAddress[coins[i]];
+            addresses[i] = tokenAddress;
+            balances[i] = tokenBalanceOf(tokenAddress);
+        }
+        
+        return (addresses, balances);
+    }
+
 	function tokenBalanceOf(address tokenAddress) public view returns (int256 amount) {
 		return accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp);
 	} 
