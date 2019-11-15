@@ -26,15 +26,5 @@ contract("SavingAccount", accounts => {
             assert.isTrue(rate > 0);
         }
     });
-
-    it("should deposit token correctly.", async () => {
-        await waitForEvent(events.LogNewPriceTicker);
-        let instance = await SavingAccount.deployed();
-
-        await instance.depositToken.call("0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359", 100);
-
-        let balance = await instance.tokenBalanceOf.call("0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359");
-        assert.equal(balance, 100);
-    });
 });
 

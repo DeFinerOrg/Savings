@@ -12,7 +12,7 @@ contract("TestTokenContract", async accounts => {
 
     it("totalAmount should add interest.", async () => {
         let instance = await TestTokenContract.deployed();
-        await instance.setTokenInfo(100, 50, 10**12, 0);
+        await instance.setTokenInfo(100, 50, 10**6, 0);
 
         let balance = await instance.totalAmount.call(100000);
 
@@ -30,7 +30,7 @@ contract("TestTokenContract", async accounts => {
 
     it("viewInterest should return -1 interest when balance is negative.", async () => {
         let instance = await TestTokenContract.deployed();
-        await instance.setTokenInfo(-100, 0, 10 ** 12, 0);
+        await instance.setTokenInfo(-100, 0, 10 ** 6, 0);
 
         let interest = await instance.viewInterest.call(10**4);
 
@@ -39,7 +39,7 @@ contract("TestTokenContract", async accounts => {
 
     it("viewInterest should return 0 interest when balance is negative.", async () => {
         let instance = await TestTokenContract.deployed();
-        await instance.setTokenInfo(-100, 0, 10 ** 12, 0);
+        await instance.setTokenInfo(-100, 0, 10 ** 6, 0);
 
         let interest = await instance.viewInterest.call(10**4 - 1);
 
@@ -48,7 +48,7 @@ contract("TestTokenContract", async accounts => {
 
     it("viewInterest should add existing interest.", async () => {
         let instance = await TestTokenContract.deployed();
-        await instance.setTokenInfo(-100, 100, 10 ** 12, 0);
+        await instance.setTokenInfo(-100, 100, 10 ** 6, 0);
 
         let interest = await instance.viewInterest.call(10**4);
 
@@ -57,7 +57,7 @@ contract("TestTokenContract", async accounts => {
 
     it("viewInterest should add existing interest.", async () => {
         let instance = await TestTokenContract.deployed();
-        await instance.setTokenInfo(100, -100, 10 ** 12, 0);
+        await instance.setTokenInfo(100, -100, 10 ** 6, 0);
 
         let interest = await instance.viewInterest.call(10**4);
 
