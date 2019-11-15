@@ -141,7 +141,7 @@ contract SavingAccount is usingProvable {
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		require(
 			accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= 0,
-			"Balance of the token must be zero or positive. To pay negative balane, please use repay button.");
+			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
 		IERC20 token = IERC20(tokenAddress); 
 		token.transferFrom(msg.sender, address(this), amount); 
 		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05 
