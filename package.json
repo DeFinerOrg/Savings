@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.0.23",
+    "ethereum-bridge": "^0.6.2",
     "openzeppelin-solidity": "^2.4.0",
     "truffle": "^5.0.43"
   }
