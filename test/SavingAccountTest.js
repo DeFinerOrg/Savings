@@ -34,8 +34,24 @@ contract("SavingAccount", accounts => {
         }
     });
 
+    it("should return empty market state", async () => {
+        const tuple = await instance.getStateOfTheMarket.call({ from: account_one });
+        assert.equal(tuple.length, 4);
+        assert.equal(tuple[0].length, coinLength);
+        assert.equal(tuple[1].length, coinLength);
+        assert.equal(tuple[2].length, coinLength);
+        assert.equal(tuple[3].length, coinLength);
+        // should have all zeros
+        for (let i = 0; i < coinLength; i++) {
+            assert.equal(tuple[1][i], 0);
+            assert.equal(tuple[2][i], 0);
+            assert.equal(tuple[3][i], 0);
+        }
+    });
+
     it("should return zero balances", async () => {
         const tuple = await instance.getBalances.call({ from: account_one });
+        assert.equal(tuple.length, 2);
         assert.equal(tuple[0].length, coinLength);
         assert.equal(tuple[1].length, coinLength);
         // should have all zeros
@@ -49,7 +65,7 @@ contract("SavingAccount", accounts => {
         let balance = await web3.eth.getBalance(account_one)
         // console.log("amount: " + balance)
 
-        await instance.depositToken(coin_address_0, 100, { from: account_one, gas: 600000 });
+        // await instance.depositToken(coin_address_0, 100, { from: account_one, gas: 600000 });
         // await instance.depositToken.call("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 200, { from: account_one });
 
         // const tuple = await instance.getBalances.call({ from: account_one });

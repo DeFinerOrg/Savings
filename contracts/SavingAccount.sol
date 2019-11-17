@@ -21,6 +21,10 @@ contract SavingAccount is usingProvable {
 	mapping(address => string) addressToSymbol; 
 	mapping(string => address) symbolToAddress; 
 
+	mapping(address => int256) public totalDeposits; 
+	mapping(address => int256) public totalLoans; 
+	mapping(address => int256) public totalCollateral; 
+
 	event LogNewProvableQuery(string description); 
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;
@@ -82,13 +86,36 @@ contract SavingAccount is usingProvable {
 	}
 
 	/** 
-	 * Get all balances for the sender's account
-	 * Return a tuple of arrays: (symbol addresses, symbol balances)  
+	 * Get the overall state of the saving pool
 	 */ 
-	function getBalances() public view returns (address[] memory, int256[] memory)
+	function getStateOfTheMarket() public view returns (address[] memory addresses, 
+												  int256[] memory deposits,
+												  int256[] memory loans,
+												  int256[] memory collateral)
+	{
+		addresses = new address[](coins.length);
+        deposits = new int256[](coins.length);
+		loans = new int256[](coins.length);
+		collateral = new int256[](coins.length);
+
+		for (uint i = 0; i < coins.length; i++) {
+            address tokenAddress = symbolToAddress[coins[i]];
+            addresses[i] = tokenAddress;
+            deposits[i] = totalDeposits[tokenAddress];
+			loans[i] = totalLoans[tokenAddress];
+			collateral[i] = totalCollateral[tokenAddress];
+        }
+
+		return (addresses, deposits, loans, collateral);
+	}
+
+	/** 
+	 * Get all balances for the sender's account
+	 */ 
+	function getBalances() public view returns (address[] memory addresses, int256[] memory balances)
     {
-        address[] memory addresses = new address[](coins.length);
-        int256[] memory balances = new int256[](coins.length);
+        addresses = new address[](coins.length);
+        balances = new int256[](coins.length);
         
         for (uint i = 0; i < coins.length; i++) {
             address tokenAddress = symbolToAddress[coins[i]];
@@ -204,7 +231,7 @@ contract SavingAccount is usingProvable {
 	 * Callback function which is used to parse query the oracle. Once 
 	 * parsed results from oracle, it will recursively call oracle for data. 
 	 **/ 
-	function __callback(bytes32 myid,  string memory result) public { 
+	function __callback(bytes32,  string memory result) public { 
 		if (msg.sender != provable_cbAddress()) revert();
         emit LogNewPriceTicker(result);
 		parseResult(result); 
