@@ -35,18 +35,27 @@ contract("SavingAccount", accounts => {
     });
 
     it("should return empty market state", async () => {
-        const tuple = await instance.getStateOfTheMarket.call({ from: account_one });
-        assert.equal(tuple.length, 4);
-        assert.equal(tuple[0].length, coinLength);
-        assert.equal(tuple[1].length, coinLength);
-        assert.equal(tuple[2].length, coinLength);
-        assert.equal(tuple[3].length, coinLength);
+        const result = await instance.getMarketState.call({ from: account_one });
+        assert.equal(result.length, 4);
+        assert.equal(result[0].length, coinLength);
+        assert.equal(result[1].length, coinLength);
+        assert.equal(result[2].length, coinLength);
+        assert.equal(result[3].length, coinLength);
         // should have all zeros
         for (let i = 0; i < coinLength; i++) {
-            assert.equal(tuple[1][i], 0);
-            assert.equal(tuple[2][i], 0);
-            assert.equal(tuple[3][i], 0);
+            assert.equal(result[1][i], 0);
+            assert.equal(result[2][i], 0);
+            assert.equal(result[3][i], 0);
         }
+    });
+
+    it("should return empty token state", async () => {
+        const tokenAddress = await instance.getCoinAddress.call(0);
+        const result = await instance.getTokenState.call(tokenAddress, { from: account_one });
+        assert.equal(result.length, 4);
+        assert.equal(result[1], 0);
+        assert.equal(result[2], 0);
+        assert.equal(result[3], 0);
     });
 
     it("should return zero balances", async () => {

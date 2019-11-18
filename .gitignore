@@ -13,5 +13,6 @@ build/contracts/solcChecker.json
 build/contracts/strings.json
 build/contracts/TestTokenContract.json
 build/contracts/TokenLib.json
+build/contracts/SymbolsLib.json
 build/contracts/usingProvable.json
 bridge.log
