@@ -12,10 +12,10 @@ library SymbolsLib {
 		mapping(string => address) symbolToAddress; 
 	}
 
-	function init(Symbols storage self) public
-	{
-		self.coins = ["ETH","DAI","USDC","USDT","TUSD","PAX","GUSD","BNB","MKR","BAT","OMG","GNT","ZRX","REP","CRO","WBTC"]; 
-		self.addressToSymbol[0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359] = 'DAI'; 
+	function init(Symbols storage self) public {
+		self.coins = ["ETH","DAI","USDC","USDT","TUSD","PAX","GUSD","BNB","MKR","BAT","OMG","GNT","ZRX","REP","CRO","WBTC"];
+		self.addressToSymbol[0x0000000000000000000000000000000000000000] = 'ETH';
+		self.addressToSymbol[0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359] = 'DAI';
 		self.addressToSymbol[0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48] = 'USDC'; 
 		self.addressToSymbol[0xdAC17F958D2ee523a2206206994597C13D831ec7] = 'USDT'; 
 		self.addressToSymbol[0x0000000000085d4780B73119b644AE5ecd22b376] = 'TUSD'; 
@@ -31,8 +31,9 @@ library SymbolsLib {
 		self.addressToSymbol[0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b] = 'CRO'; 
 		self.addressToSymbol[0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599] = 'WBTC'; 
 
-		self.symbolToAddress['DAI']  = 0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359; 
-		self.symbolToAddress['USDC'] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; 
+		self.symbolToAddress['ETH']  = 0x0000000000000000000000000000000000000000;
+		self.symbolToAddress['DAI']  = 0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359;
+		self.symbolToAddress['USDC'] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 		self.symbolToAddress['USDT'] = 0xdAC17F958D2ee523a2206206994597C13D831ec7; 
 		self.symbolToAddress['TUSD'] = 0x0000000000085d4780B73119b644AE5ecd22b376; 
 		self.symbolToAddress['PAX']  = 0x8E870D67F660D95d5be530380D0eC0bd388289E1; 
@@ -68,6 +69,10 @@ library SymbolsLib {
 
 	function setPrice(Symbols storage self, uint index, uint256 price) public { 
 		require(index < self.coins.length, "coinIndex must be smaller than the coins length.");
-		self.symbolToPrices[self.coins[index]] = price; 
-	} 
+		self.symbolToPrices[self.coins[index]] = price;
+	}
+
+	function isEth(Symbols storage self, address tokenAddress) public view returns(bool) {
+		return self.symbolToAddress["ETH"] == tokenAddress;
+	}
 }

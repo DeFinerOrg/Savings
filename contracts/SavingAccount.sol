@@ -125,8 +125,7 @@ contract SavingAccount is usingProvable {
 	function borrow(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) < int256(amount), "To withdraw balance, please use withdrawToken instead.");
 		require((int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 100 <= (getAccountTotalUsdValue(msg.sender, true)) * 66);
-		IERC20 token = IERC20(tokenAddress);
-		token.transfer(msg.sender, amount);
+        send(msg.sender, amount, tokenAddress);
 		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount, 0, block.timestamp);
 	}
 
@@ -134,8 +133,7 @@ contract SavingAccount is usingProvable {
 		require(
 			accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) < 0,
 			"Balance of the token must be negative. To deposit balance, please use deposit button.");
-		IERC20 token = IERC20(tokenAddress);
-		token.transferFrom(msg.sender, address(this), amount);
+        receive(msg.sender, amount, tokenAddress);
 		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05
 		accounts[msg.sender].tokenInfos[tokenAddress].addAmount(amount, 1585, block.timestamp);
 	}
@@ -147,9 +145,8 @@ contract SavingAccount is usingProvable {
 		require(
 			accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= 0,
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
-		IERC20 token = IERC20(tokenAddress);
-		token.transferFrom(msg.sender, address(this), amount);
-		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05 
+        receive(msg.sender, amount, tokenAddress);
+		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05
 		accounts[msg.sender].tokenInfos[tokenAddress].addAmount(amount, 1585, block.timestamp);
 	}
 
@@ -160,9 +157,26 @@ contract SavingAccount is usingProvable {
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 66);
-		IERC20 token = IERC20(tokenAddress);
-		token.transfer(msg.sender, amount);
+		send(msg.sender, amount, tokenAddress);
 		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount, 0, block.timestamp);
+	}
+
+	function receive(address from, uint256 amount, address tokenAddress) private {
+		if (symbols.isEth(tokenAddress)) {
+            require(msg.value == amount, "The amount is not sent from address.");
+		} else {
+			IERC20 token = IERC20(tokenAddress);
+			token.transferFrom(from, address(this), amount);
+		}
+	}
+
+	function send(address to, uint256 amount, address tokenAddress) private {
+		if (symbols.isEth(tokenAddress)) {
+			msg.sender.transfer(amount);
+		} else {
+			IERC20 token = IERC20(tokenAddress);
+			token.transfer(to, amount);
+		}
 	}
 
 	/** 
