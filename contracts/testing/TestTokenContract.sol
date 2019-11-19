@@ -1,14 +1,14 @@
 pragma solidity >= 0.5.0 < 0.6.0;
 
-import "../lib/TokenLib.sol";
+import "../lib/TokenInfoLib.sol";
 
 contract TestTokenContract {
-    using TokenLib for TokenLib.TokenInfo;
+    using TokenInfoLib for TokenInfoLib.TokenInfo;
 
-    TokenLib.TokenInfo tokenInfo;
+    TokenInfoLib.TokenInfo tokenInfo;
 
     function setTokenInfo(int256 balance, int256 interest, uint256 rate, uint256 lastModification) public {
-        tokenInfo = TokenLib.TokenInfo(balance, interest, rate, lastModification);
+        tokenInfo = TokenInfoLib.TokenInfo(balance, interest, rate, lastModification);
     }
 
     function minusAmount(uint256 amount, uint256 rate, uint256 currentTimestamp) public {
