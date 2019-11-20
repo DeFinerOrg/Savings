@@ -23,14 +23,20 @@ contract SavingAccount is usingProvable {
 	mapping(address => int256) totalCollateral;
 
 	SymbolsLib.Symbols symbols;
+	address owner;
 
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;
 
 	constructor() public payable {
-		symbols.init();
-		updatePrice(0);
+		owner = msg.sender;
+	}
+
+	function initialize(string memory tokenNames, address[] memory tokenAddresses) public payable {
+		require(msg.sender == owner);
+
+		symbols.initialize(tokenNames, tokenAddresses);
 	}
 
 	/** 
