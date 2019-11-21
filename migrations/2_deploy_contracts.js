@@ -37,8 +37,6 @@ module.exports = function (deployer, network, accounts) {
         const instance = await SavingAccount.deployed();
         console.log("Initializing saving pool....");
         await instance.initialize(env.ratesURL, env.tokenNames, env.tokenAddresses, { from: account, gas: 6000000 });
-        const coinCount = await instance.getCoinLength();
-        console.log(`Initialization complete, number of coins: ${coinCount}`);
 
         // if (network.startsWith("rinkeby")) {
         //     let weiValue = ethToWei('2');
