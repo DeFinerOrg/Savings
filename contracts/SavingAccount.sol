@@ -33,10 +33,10 @@ contract SavingAccount is usingProvable {
 		owner = msg.sender;
 	}
 
-	function initialize(string memory tokenNames, address[] memory tokenAddresses) public payable {
+	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public payable {
 		require(msg.sender == owner);
 
-		symbols.initialize(tokenNames, tokenAddresses);
+		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
 	}
 
 	/** 
@@ -186,58 +186,18 @@ contract SavingAccount is usingProvable {
 	}
 
 	/** 
-	 * Parse result from oracle, e.g. an example is [8110.44, 0.2189, 445.05, 1]. 
-	 * The function will remove the '[' and ']' and split the string by ','. 
-	 */
-	function parseResult(string memory result) private {
-		strings.slice memory delim = strings.toSlice(",");
-		strings.slice memory startChar = strings.toSlice("[");
-		strings.slice memory endChar = strings.toSlice("]");
-		strings.slice memory substring = strings.until(strings.beyond(strings.toSlice(result), startChar), endChar);
-		uint count = strings.count(substring, delim) + 1;
-		for(uint i = 0; i < count; i++) {
-			strings.slice memory token;
-			strings.split(substring, delim, token);
-			symbols.setPrice(i, stringToUint(strings.toString(token)));
-		}
-	}
-
-	function stringToUint(string memory numString) private pure returns(uint256 number) {
-		bytes memory numBytes = bytes(numString);
-		bool isFloat = false;
-		uint times = 6;
-		number = 0;
-		for(uint256 i = 0; i < numBytes.length; i ++) {
-			if (numBytes[i] >= '0' && numBytes[i] <= '9' && times > 0) {
-				number *= 10;
-				number = number + uint8(numBytes[i]) - 48;
-				if (isFloat) {
-					times --;
-				}
-			} else if (numBytes[i] == '.') {
-				isFloat = true;
-				continue;
-			}
-		}
-		while (times > 0) {
-			number *= 10;
-			times --;
-		}
-	}
-
-	/** 
 	 * Callback function which is used to parse query the oracle. Once 
 	 * parsed results from oracle, it will recursively call oracle for data. 
 	 **/
 	function __callback(bytes32,  string memory result) public {
 		if (msg.sender != provable_cbAddress()) revert();
 		emit LogNewPriceTicker(result);
-		parseResult(result);
+		symbols.parseRates(result);
 		updatePrice(30 * 60);
 	}
 
 	// Customized gas limit for querying oracle. That's because the function 
-	// parseResult() is heavy and need more gas. 
+	// symbols.parseRates() is heavy and need more gas. 
 	uint constant CUSTOM_GAS_LIMIT = 600000;
 
 	/** 
@@ -248,7 +208,7 @@ contract SavingAccount is usingProvable {
 			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
 		} else {
 			emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-			provable_query(delaySeconds, "URL", "json(https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC&tsyms=USD).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC].USD", CUSTOM_GAS_LIMIT);
+			provable_query(delaySeconds, "URL", symbols.ratesURL, CUSTOM_GAS_LIMIT);
 		}
 	}
 
