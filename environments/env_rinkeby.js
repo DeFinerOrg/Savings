@@ -1,4 +1,4 @@
-// Environment definitions for local tests and unit test deployments 
+// Environment definitions for rinkeby network
 module.exports = {
      ratesURL: "https://api.rinkeby.definer.org/OKh4I2yYpKU8S2af/definer/api/v1.0/saving_pool/rates/current",
      tokenNames: "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC,FIN",

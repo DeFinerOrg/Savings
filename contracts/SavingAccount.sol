@@ -148,12 +148,18 @@ contract SavingAccount is usingProvable {
 	 * Deposit the amount of tokenAddress to the saving pool. 
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
+		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
+
 		require(
-			accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= 0,
+			tokenInfo.totalAmount(block.timestamp) >= 0,
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
-        receive(msg.sender, amount, tokenAddress);
+        
+		int256 currentBalance = tokenInfo.balance;
 		// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05
-		accounts[msg.sender].tokenInfos[tokenAddress].addAmount(amount, 1585, block.timestamp);
+		tokenInfo.addAmount(amount, 1585, block.timestamp);		
+		totalDeposits[tokenAddress] += tokenInfo.balance - currentBalance;
+
+		receive(msg.sender, amount, tokenAddress);
 	}
 
 	/**

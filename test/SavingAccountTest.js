@@ -6,26 +6,29 @@ const waitForEvent = (_event, _from = 0, _to = 'latest') =>
 const Web3 = require('web3')
 const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'))
 
+const ENV = require("./../environments/env_develop")
+
+function toWei(eth) {
+    return Web3.utils.toWei(eth, 'ether');
+}
+
+function fromWei(wei) {
+    return Web3.utils.fromWei(wei, 'ether');
+}
 
 contract("SavingAccount", accounts => {
     let account_one = accounts[0];
     let instance;
     let coinLength;
 
-    beforeEach(async () => (
-        { contract } = await SavingAccount.deployed(),
-        { methods, events } = new web3.eth.Contract(
-            contract._jsonInterface,
-            contract._address
-        )
-    ))
-
     beforeEach(async () => {
-        instance = await SavingAccount.deployed();
+        instance = await SavingAccount.deployed();      
+        const events = new web3.eth.Contract(instance.contract._jsonInterface, instance.contract._address).events;
         await waitForEvent(events.LogNewPriceTicker);
+        
         coinLength = await instance.getCoinLength.call();
-        assert.equal(coinLength, 16);
-    })
+        assert.equal(coinLength, ENV.tokenAddresses.length);
+    });
 
     it("should update conversion rate successfully.", async () => {
         for (let i = 0; i < coinLength; i++) {
@@ -65,20 +68,14 @@ contract("SavingAccount", accounts => {
     });
 
     it("should return correct balances after deposit", async () => {
-        let coin_address_0 = await instance.getCoinAddress.call(0);
-        let coin_address_5 = await instance.getCoinAddress.call(5);
-        let balance = await web3.eth.getBalance(account_one)
-        // console.log("amount: " + balance)
-
-        // await instance.depositToken(coin_address_0, 100, { from: account_one, gas: 600000 });
-        // await instance.depositToken.call("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 200, { from: account_one });
-
-        // const tuple = await instance.getBalances.call({ from: account_one });
-        // assert.equal(tuple[0].length, coinsCount);
-        // assert.equal(tuple[1].length, coinsCount);
-        // // should have all zeros
-        // for (let i = 0; i < coinsCount; i++)
-        //     assert.equal(tuple[1][i], 0);
+        let tokenAddress = await instance.getCoinAddress(0);
+        
+        const eth = '1';
+        const deposit = toWei(eth);
+        await instance.depositToken(tokenAddress, deposit, { value: deposit, from: account_one, gas: 600000 });
+        
+        const balance = fromWei(await instance.tokenBalanceOf(tokenAddress, { from: account_one }));
+        assert.equal(eth, balance);
     });
 });
 

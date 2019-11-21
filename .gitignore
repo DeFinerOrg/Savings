@@ -3,3 +3,4 @@ node_modules
 package-lock.json
 build/contracts/
 bridge.log
+.node-xml*
