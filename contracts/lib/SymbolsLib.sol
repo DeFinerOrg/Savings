@@ -23,14 +23,9 @@ library SymbolsLib {
 		strings.slice memory tokensList = strings.toSlice(tokenNames);
 
 		self.count = strings.count(tokensList, delim) + 1;
-
 		require(self.count == tokenAddresses.length);
 
-		// Format URL is in the form "json(https://api.rates.com).[ETH,FIN].USD"
-		string memory tempUrl = strings.concat(strings.toSlice("json("), strings.toSlice(ratesURL));
-		tempUrl = strings.concat(strings.toSlice(tempUrl), strings.toSlice(").["));
-		tempUrl = strings.concat(strings.toSlice(tempUrl), tokensList);
-		self.ratesURL = strings.concat(strings.toSlice(tempUrl), strings.toSlice("].USD"));
+		self.ratesURL = ratesURL;
 
 		for(uint i = 0; i < self.count; i++) {
 			strings.slice memory token;

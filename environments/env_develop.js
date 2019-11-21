@@ -1,7 +1,11 @@
+
+const tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC,FIN";
+const url = `json(https://api.rinkeby.definer.org/OKh4I2yYpKU8S2af/definer/api/v1.0/saving_pool/rates/current).[${tokenNames}].USD`;
+
 // Environment definitions for local tests and unit test deployments 
 module.exports = {
-     ratesURL: "https://api.rinkeby.definer.org/OKh4I2yYpKU8S2af/definer/api/v1.0/saving_pool/rates/current",
-     tokenNames: "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC,FIN",
+     ratesURL: url,
+     tokenNames: tokenNames,
      tokenAddresses: [
      '0x0000000000000000000000000000000000000000',
      '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
