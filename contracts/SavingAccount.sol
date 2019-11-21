@@ -167,10 +167,15 @@ contract SavingAccount is usingProvable {
 	 * will be deducted first.
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
-		require(accounts[msg.sender].tokenInfos[tokenAddress].totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
+		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
+
+		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 66);
-		send(msg.sender, amount, tokenAddress);
-		accounts[msg.sender].tokenInfos[tokenAddress].minusAmount(amount, 0, block.timestamp);
+		
+		tokenInfo.minusAmount(amount, 0, block.timestamp);
+		totalDeposits[tokenAddress] -= int256(amount);
+
+		send(msg.sender, amount, tokenAddress);		
 	}
 
 	function receive(address from, uint256 amount, address tokenAddress) private {

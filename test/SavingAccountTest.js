@@ -17,10 +17,13 @@ function fromWei(wei) {
 }
 
 contract("SavingAccount", accounts => {
+    const etherIndex = 0;
     let account_one = accounts[0];
     let instance;
     let coinLength;
-
+    
+    let BN = web3.utils.BN;
+        
     beforeEach(async () => {
         instance = await SavingAccount.deployed();      
         const events = new web3.eth.Contract(instance.contract._jsonInterface, instance.contract._address).events;
@@ -67,15 +70,38 @@ contract("SavingAccount", accounts => {
             assert.equal(result[1][i], 0);
     });
 
-    it("should return correct balances after deposit", async () => {
-        let tokenAddress = await instance.getCoinAddress(0);
-        
-        const eth = '1';
-        const deposit = toWei(eth);
+    it("should return correct tokenBalanceOf after Ether deposit", async () => {
+        let tokenAddress = await instance.getCoinAddress(etherIndex);    
+        const initialBalance = await instance.tokenBalanceOf(tokenAddress, { from: account_one });
+
+        const deposit = new BN(12345);
         await instance.depositToken(tokenAddress, deposit, { value: deposit, from: account_one, gas: 600000 });
-        
-        const balance = fromWei(await instance.tokenBalanceOf(tokenAddress, { from: account_one }));
-        assert.equal(eth, balance);
+
+        const balance = await instance.tokenBalanceOf(tokenAddress, { from: account_one });
+        assert.equal(initialBalance.add(deposit).toString(), balance.toString());
+    });
+
+    it("should return correct getBalances after Ether deposit", async () => {
+        let tokenAddress = await instance.getCoinAddress(etherIndex);        
+        const initialBalance = await instance.tokenBalanceOf(tokenAddress, { from: account_one });
+
+        const deposit = new BN(23456);
+        await instance.depositToken(tokenAddress, deposit, { value: deposit, from: account_one, gas: 600000 });
+
+        const result = await instance.getBalances.call({ from: account_one });
+        const newBalance = result[1][etherIndex];
+        assert.equal(initialBalance.add(deposit).toString(), newBalance.toString());
+    });
+
+    it("should return correct token state after Ether deposit", async () => {
+        let tokenAddress = await instance.getCoinAddress(etherIndex);        
+        const initialState = await instance.getTokenState.call(tokenAddress, { from: account_one });        
+
+        const deposit = new BN(306720);
+        await instance.depositToken(tokenAddress, deposit, { value: deposit, from: account_one, gas: 600000 });
+
+        const newState = await instance.getTokenState.call(tokenAddress, { from: account_one });         
+        assert.equal(initialState.deposits.add(deposit).toString(), newState.deposits.toString());
     });
 });
 
