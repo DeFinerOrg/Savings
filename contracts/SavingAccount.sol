@@ -178,6 +178,23 @@ contract SavingAccount is usingProvable {
 		send(msg.sender, amount, tokenAddress);		
 	}
 
+	function liquidate(address targetAddress) public payable {
+		require(int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * 95,
+			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
+
+		uint coinsLen = getCoinLength();
+		for (uint i = 0; i < coinsLen; i++) {
+			address tokenAddress = symbols.addressFromIndex(i);
+			TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
+			int256 totalAmount = tokenInfo.totalAmount(block.timestamp);
+			if (totalAmount > 0) {
+				send(msg.sender, uint256(totalAmount), tokenAddress);
+			} else if (totalAmount < 0) {
+				receive(msg.sender, uint256(-totalAmount), tokenAddress);
+			}
+		}
+	}
+
 	function receive(address from, uint256 amount, address tokenAddress) private {
 		if (symbols.isEth(tokenAddress)) {
             require(msg.value == amount, "The amount is not sent from address.");

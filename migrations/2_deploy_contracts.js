@@ -18,7 +18,7 @@ module.exports = function (deployer, network, accounts) {
     deployer.link(TokenInfoLib, SavingAccount);
     deployer.deploy(SymbolsLib);
     deployer.link(SymbolsLib, SavingAccount);
-    deployer.deploy(SavingAccount, { value: 2*10*16 });
+    deployer.deploy(SavingAccount, { value: 2 * 10**16 });
 
     let env;
     if (network.startsWith("develop")) {
