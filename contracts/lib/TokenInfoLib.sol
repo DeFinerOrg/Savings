@@ -18,6 +18,10 @@ library TokenInfoLib {
 		return self.balance + viewInterest(self, currentTimestamp);
 	}
 
+	function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
+		return self.balance + viewInterest(self, self.lastModification);
+	}
+
 	function minusAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public {
 		resetInterest(self, currentTimestamp);
         int256 _amount = int256(amount);
@@ -43,7 +47,7 @@ library TokenInfoLib {
 		}
 	}
 
-	function addAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public {
+	function addAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public returns(int256) {
 		resetInterest(self, currentTimestamp);
 		int256 _amount = int256(amount);
 		if (self.balance + self.interest < 0) {
@@ -67,6 +71,7 @@ library TokenInfoLib {
 			self.balance += _amount;
 		}
 
+		return totalAmount(self, currentTimestamp);
 	}
 
 	function mixRate(TokenInfo storage self, int256 amount, uint256 rate) private view returns (uint256){

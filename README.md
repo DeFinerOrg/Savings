@@ -25,25 +25,11 @@ __`❍ truffle(develop)> test`__
 
  Contract: ❍ SavingAccount
     ✓ should update conversion rate successfully. (5203ms)
+    etc..
 
   Contract: ❍ TestTokenContract
     ✓ totalAmount should add interest when rate and time are 0. (59ms)
-    ✓ totalAmount should add interest. (55ms)
-    ✓ totalAmount should be negative when balance is negative. (47ms)
-    ✓ viewInterest should return -1 interest when balance is negative. (60ms)
-    ✓ viewInterest should return 0 interest when balance is negative. (45ms)
-    ✓ viewInterest should add existing interest. (53ms)
-    ✓ viewInterest should add existing interest. (59ms)
-    ✓ minusAmount should update interest successfully. (74ms)
-    ✓ minusAmount should update interest and balance successfully. (93ms)
-    ✓ minusAmount should update interest and balance to 0 successfully. (93ms)
-    ✓ minusAmount should update interest and balance to negative successfully. (99ms)
-    ✓ minusAmount should update successfully when initial balance is negative. (107ms)
-    ✓ addAmount should update interest successfully. (93ms)
-    ✓ addAmount should update interest and balance successfully. (121ms)
-    ✓ addAmount should update interest and balance to 0 successfully. (103ms)
-    ✓ addAmount should update interest and balance to positive successfully. (126ms)
-    ✓ addAmount should update successfully when initial balance is positive. (105ms)
+    etc..
 
 ```
 
