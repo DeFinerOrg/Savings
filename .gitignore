@@ -4,3 +4,5 @@ package-lock.json
 build/contracts/
 bridge.log
 .node-xml*
+.DS_Store
+*/.DS_Store
