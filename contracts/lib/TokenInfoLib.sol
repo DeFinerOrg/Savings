@@ -19,7 +19,7 @@ library TokenInfoLib {
 	}
 
 	function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
-		return self.balance + viewInterest(self, self.lastModification);
+		return self.balance + self.interest;
 	}
 
 	function minusAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public {

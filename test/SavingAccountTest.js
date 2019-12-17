@@ -216,13 +216,185 @@ contract("SavingAccount", accounts => {
         }
 
         assert.equal(newState.balanceOf.sub(initialState.balanceOf).toString(), deposit.toString(), "balanceOf contract");
-        assert.equal(newState.getTokenState.sub(initialState.getTokenState).toString(), deposit.toString(), "getTokenState for account_two");
-        assert.equal(newState.tokenBalanceOf.sub(initialState.tokenBalanceOf).toString(), deposit.toString(), "tokenBalanceOf for account_two");
-        assert.equal(newState.getBalances.sub(initialState.getBalances).toString(), deposit.toString(), "getBalances for account_two");
+        assert.equal(newState.getTokenState.sub(initialState.getTokenState).toString(), deposit.toString(), "getTokenState");
+        assert.equal(newState.tokenBalanceOf.sub(initialState.tokenBalanceOf).toString(), deposit.toString(), "tokenBalanceOf");
+        assert.equal(newState.getBalances.sub(initialState.getBalances).toString(), deposit.toString(), "getBalances");
 
         assert.equal(newState.getMarketState.deposits[testTokenIndex].sub(initialState.getMarketState.deposits[testTokenIndex]).toString(), deposit.toString(), "getMarketState deposits");
         assert.equal(newState.getMarketState.collateral[testTokenIndex].sub(initialState.getMarketState.collateral[testTokenIndex]).toString(), deposit.toString(), "getMarketState collateral");
         assert.equal(newState.getMarketState.loans[testTokenIndex].toString(), initialState.getMarketState.loans[testTokenIndex].toString(), "getMarketState loans");
+    });
+
+    it("should withdraw token", async () => {
+        let deposit = new BN(12345);
+        await contract.depositToken(testTokenAddress, deposit, { from: account_one, gas: GAS_LIMIT });
+
+        const initialState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_one })).deposits,
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_one }),
+            getBalances: (await contract.getBalances({ from: account_one }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        // withdraw all
+        let withdrawAmount = initialState.getBalances;
+        await contract.withdrawToken(testTokenAddress, withdrawAmount, { from: account_one, gas: GAS_LIMIT });
+
+        const newState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_one })).deposits,
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_one }),
+            getBalances: (await contract.getBalances({ from: account_one }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        assert.equal(initialState.balanceOf.sub(newState.balanceOf).toString(), withdrawAmount.toString(), "balanceOf contract");
+        assert.equal(initialState.getTokenState.sub(newState.getTokenState).toString(), withdrawAmount.toString(), "getTokenState");
+        assert.equal(initialState.tokenBalanceOf.sub(newState.tokenBalanceOf).toString(), withdrawAmount.toString(), "tokenBalanceOf");
+        assert.equal(initialState.getBalances.sub(newState.getBalances).toString(), withdrawAmount.toString(), "getBalances");
+
+        assert.equal(initialState.getMarketState.deposits[testTokenIndex].sub(newState.getMarketState.deposits[testTokenIndex]).toString(), withdrawAmount.toString(), "getMarketState deposits");
+        assert.equal(initialState.getMarketState.collateral[testTokenIndex].sub(newState.getMarketState.collateral[testTokenIndex]).toString(), withdrawAmount.toString(), "getMarketState collateral");
+        assert.equal(initialState.getMarketState.loans[testTokenIndex].toString(), newState.getMarketState.loans[testTokenIndex].toString(), "getMarketState loans");
+    });
+
+    it("should borrow token", async () => {
+        let depositToken = new BN(123456789);
+        await contract.depositToken(testTokenAddress, depositToken, { from: account_one, gas: GAS_LIMIT });
+
+        const depositEhter = new BN(123456789);
+        await contract.depositToken(etherAddress, depositEhter, { value: depositEhter, from: account_two, gas: GAS_LIMIT });
+
+        // withdraw all for account two to allow borrowing
+        let withdrawAmount = (await contract.getBalances({ from: account_two }))[1][testTokenIndex];
+        if (withdrawAmount > 0) {
+            await contract.withdrawToken(testTokenAddress, withdrawAmount, { from: account_two, gas: GAS_LIMIT });
+        }
+
+        const initialState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        let borrowAmount = new BN(1234);
+        await contract.borrow(testTokenAddress, borrowAmount, { from: account_two, gas: GAS_LIMIT });
+
+        const newState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        assert.equal(initialState.balanceOf.sub(newState.balanceOf).toString(), borrowAmount.toString(), "balanceOf contract");
+        assert.equal(newState.getTokenState.loans.sub(initialState.getTokenState.loans).toString(), borrowAmount.toString(), "getTokenState loans");
+        assert.equal(newState.getTokenState.deposits.toString(), initialState.getTokenState.deposits.toString(), "getTokenState deposits");
+        assert.equal(initialState.tokenBalanceOf.sub(newState.tokenBalanceOf).toString(), borrowAmount.toString(), "tokenBalanceOf");
+        assert.equal(initialState.getBalances.sub(newState.getBalances).toString(), borrowAmount.toString(), "getBalances");
+
+        assert.equal(initialState.getMarketState.deposits[testTokenIndex].toString(), newState.getMarketState.deposits[testTokenIndex].toString(), "getMarketState deposits");
+        assert.equal(initialState.getMarketState.collateral[testTokenIndex].sub(newState.getMarketState.collateral[testTokenIndex]).toString(), borrowAmount.toString(), "getMarketState collateral");
+        assert.equal(newState.getMarketState.loans[testTokenIndex].sub(initialState.getMarketState.loans[testTokenIndex]).toString(), borrowAmount.toString(), "getMarketState loans");
+    });
+
+    it("should repay token partially", async () => {
+        let depositToken = new BN(123456789);
+        await contract.depositToken(testTokenAddress, depositToken, { from: account_one, gas: GAS_LIMIT });
+
+        const depositEhter = new BN(123456789);
+        await contract.depositToken(etherAddress, depositEhter, { value: depositEhter, from: account_two, gas: GAS_LIMIT });
+
+        // withdraw all for account two to allow borrowing
+        let withdrawAmount = (await contract.getBalances({ from: account_two }))[1][testTokenIndex];
+        if (withdrawAmount > 0) {
+            await contract.withdrawToken(testTokenAddress, withdrawAmount, { from: account_two, gas: GAS_LIMIT });
+        }
+
+        let borrowAmount = new BN(123456);
+        await contract.borrow(testTokenAddress, borrowAmount, { from: account_two, gas: GAS_LIMIT });
+
+        const initialState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        let repayAmount = new BN(1234);
+        await contract.repay(testTokenAddress, repayAmount, { from: account_two, gas: GAS_LIMIT });
+
+        const newState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        assert.equal(newState.balanceOf.sub(initialState.balanceOf).toString(), repayAmount.toString(), "balanceOf contract");
+        assert.equal(initialState.getTokenState.loans.sub(repayAmount).toString(), newState.getTokenState.loans.toString(), "getTokenState loans");
+        assert.equal(newState.getTokenState.deposits.toString(), initialState.getTokenState.deposits.toString(), "getTokenState deposits");
+        assert.equal(initialState.tokenBalanceOf.add(repayAmount).toString(), newState.tokenBalanceOf.toString(), "tokenBalanceOf");
+        assert.equal(initialState.getBalances.add(repayAmount).toString(), newState.getBalances.toString(), "getBalances");
+
+        assert.equal(newState.getMarketState.deposits[testTokenIndex].toString(), initialState.getMarketState.deposits[testTokenIndex].toString(), "getMarketState deposits");
+        assert.equal(initialState.getMarketState.collateral[testTokenIndex].add(repayAmount).toString(), newState.getMarketState.collateral[testTokenIndex].toString(), "getMarketState collateral");
+        assert.equal(initialState.getMarketState.loans[testTokenIndex].sub(repayAmount).toString(), newState.getMarketState.loans[testTokenIndex].toString(), "getMarketState loans");
+    });
+
+    it("should repay token in full", async () => {
+        let depositToken = new BN(123456789);
+        await contract.depositToken(testTokenAddress, depositToken, { from: account_one, gas: GAS_LIMIT });
+
+        const depositEhter = new BN(123456789);
+        await contract.depositToken(etherAddress, depositEhter, { value: depositEhter, from: account_two, gas: GAS_LIMIT });
+
+        // withdraw all for account two to allow borrowing
+        let withdrawAmount = (await contract.getBalances({ from: account_two }))[1][testTokenIndex];
+        if (withdrawAmount > 0) {
+            await contract.withdrawToken(testTokenAddress, withdrawAmount, { from: account_two, gas: GAS_LIMIT });
+        }
+
+        let borrowAmount = new BN(1234);
+        await contract.borrow(testTokenAddress, borrowAmount, { from: account_two, gas: GAS_LIMIT });
+
+        const initialState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        let repayAmount = borrowAmount;
+        await contract.repay(testTokenAddress, repayAmount, { from: account_two, gas: GAS_LIMIT });
+
+        const newState = {
+            balanceOf: await testToken.balanceOf(contractAddress),
+            getTokenState: (await contract.getTokenState(testTokenAddress, { from: account_two })),
+            tokenBalanceOf: await contract.tokenBalanceOf(testTokenAddress, { from: account_two }),
+            getBalances: (await contract.getBalances({ from: account_two }))[1][testTokenIndex],
+            getMarketState: await contract.getMarketState()
+        }
+
+        // TODO@VN fix when sart contract is changed: currently it is not possible to repay in full
+        // assert.equal(newState.tokenBalanceOf.toNumber(), 0, "tokenBalanceOf is zero");
+
+        assert.equal(newState.balanceOf.sub(initialState.balanceOf).toString(), repayAmount.toString(), "balanceOf contract");
+        assert.equal(initialState.getTokenState.loans.sub(repayAmount).toNumber(), newState.getTokenState.loans.toNumber(), "getTokenState loans");
+        assert.equal(newState.getTokenState.deposits.toString(), initialState.getTokenState.deposits.toString(), "getTokenState deposits");
+        assert.equal(initialState.tokenBalanceOf.add(repayAmount).toString(), newState.tokenBalanceOf.toString(), "tokenBalanceOf");
+        assert.equal(initialState.getBalances.add(repayAmount).toString(), newState.getBalances.toString(), "getBalances");
+
+        assert.equal(newState.getMarketState.deposits[testTokenIndex].toString(), initialState.getMarketState.deposits[testTokenIndex].toString(), "getMarketState deposits");
+        assert.equal(initialState.getMarketState.collateral[testTokenIndex].add(repayAmount).toString(), newState.getMarketState.collateral[testTokenIndex].toString(), "getMarketState collateral");
+        assert.equal(initialState.getMarketState.loans[testTokenIndex].sub(repayAmount).toString(), newState.getMarketState.loans[testTokenIndex].toString(), "getMarketState loans");
     });
 });
 

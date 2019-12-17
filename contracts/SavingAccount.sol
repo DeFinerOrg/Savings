@@ -158,7 +158,7 @@ contract SavingAccount is usingProvable {
 		int256 amountOwedWithInterest = tokenInfo.totalAmount(block.timestamp);
 		require(amountOwedWithInterest <= 0, "Balance of the token must be negative. To deposit balance, please use deposit button.");
 
-		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount();
+		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount() * -1; // get the actual amount that was borrowed (abs)
 		int256 amountToRepay = int256(amount);
 		tokenInfo.addAmount(amount, APR, block.timestamp);
 
