@@ -14,10 +14,12 @@ library TokenInfoLib {
 	int256 constant POSITIVE = 1;
 	int256 constant NEGATIVE = -1;
 
+	// returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
 	function totalAmount(TokenInfo storage self, uint256 currentTimestamp) public view returns(int256) {
 		return self.balance + viewInterest(self, currentTimestamp);
 	}
 
+	// returns the sum of balance and interest posted to the account
 	function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
 		return self.balance + self.interest;
 	}
