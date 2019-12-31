@@ -6,3 +6,4 @@ bridge.log
 .node-xml*
 .DS_Store
 */.DS_Store
+deploy

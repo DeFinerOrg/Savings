@@ -13,6 +13,5 @@ module.exports = {
      '0x36e5aa7ee4d004067ee3d0177f805269434ddc83',
      '0x388b0d6c519b1a502302f81a56efeda0b137d9c1',
      '0xaB8Ad2d7f39A54960Be8b71e01276a9E897833eE',
-     'Definer test token - set during deployment'
      ]
 }

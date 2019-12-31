@@ -23,6 +23,5 @@ module.exports = {
      '0x1985365e9f78359a9B6AD760e32412f4a445E862',
      '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
      '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
-     '0xaB8Ad2d7f39A54960Be8b71e01276a9E897833eE' // TODO FIN
      ]
 }

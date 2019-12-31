@@ -39,7 +39,7 @@ library SymbolsLib {
 		 	self.symbolToAddress[tokenName]  = tokenAddress;
 		}
 	}
-	
+
 	function getCoinLength(Symbols storage self) public view returns (uint length){ 
 		return self.count; 
 	} 

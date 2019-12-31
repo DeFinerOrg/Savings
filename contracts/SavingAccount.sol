@@ -6,6 +6,7 @@ import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./params/SavingAccountParameters.sol";
 
 contract SavingAccount is usingProvable {
 	using TokenInfoLib for TokenInfoLib.TokenInfo;
@@ -32,30 +33,10 @@ contract SavingAccount is usingProvable {
 
 	constructor() public payable{
 		owner = msg.sender;
-		
-		string memory ratesURL = "json(https://api.rinkeby.definer.org/OKh4I2yYpKU8S2af/definer/api/v1.0/saving_pool/rates/current).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC,FIN].USD";
-		string memory tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC,FIN";
-		
-		address[] memory tokenAddresses = new address[](17);
-		tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
-		tokenAddresses[1] = 0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359;
-		tokenAddresses[2] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-		tokenAddresses[3] = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-		tokenAddresses[4] = 0x0000000000085d4780B73119b644AE5ecd22b376;
-		tokenAddresses[5] = 0x8E870D67F660D95d5be530380D0eC0bd388289E1;
-		tokenAddresses[6] = 0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd;
-		tokenAddresses[7] = 0xB8c77482e45F1F44dE1745F52C74426C631bDD52;
-		tokenAddresses[8] = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
-		tokenAddresses[9] = 0x0D8775F648430679A709E98d2b0Cb6250d2887EF;
-		tokenAddresses[10] = 0xd26114cd6EE289AccF82350c8d8487fedB8A0C07;
-		tokenAddresses[11] = 0xa74476443119A942dE498590Fe1f2454d7D4aC0d;
-		tokenAddresses[12] = 0xE41d2489571d322189246DaFA5ebDe1F4699F498;
-		tokenAddresses[13] = 0x1985365e9f78359a9B6AD760e32412f4a445E862;
-		tokenAddresses[14] = 0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b;
-		tokenAddresses[15] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
-		tokenAddresses[16] = 0xaB8Ad2d7f39A54960Be8b71e01276a9E897833eE;
-		
-		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
+
+		SavingAccountParameters params = new SavingAccountParameters();
+		address[] memory tokenAddresses = params.getTokenAddresses();
+		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 	}
 
 	modifier ownerOnly {
@@ -211,8 +192,7 @@ contract SavingAccount is usingProvable {
 
 		require(currentBalance >= 0,
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
-        
-		
+
 		// deposited amount is new balance after addAmount minus previous balance
 		int256 depositedAmount = tokenInfo.addAmount(amount, APR, block.timestamp) - currentBalance;
 		totalDeposits[tokenAddress] += depositedAmount;
@@ -281,7 +261,7 @@ contract SavingAccount is usingProvable {
 		if (msg.sender != provable_cbAddress()) revert();
 		emit LogNewPriceTicker(result);
 		symbols.parseRates(result);
-		// updatePrice(30 * 60);
+		// updatePrice(30 * 60); // Call from external
         updatePrice();
 	}
 
@@ -292,14 +272,14 @@ contract SavingAccount is usingProvable {
 	/** 
 	 * Update coins price every 30 mins. The contract must have enough gas fee. 
 	 */
-    // 	function updatePrice(uint256 delaySeconds) public payable {
-    // 		if (provable_getPrice("URL", CUSTOM_GAS_LIMIT) > address(this).balance) {
-    // 			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-    // 		} else {
-    // 			emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-    // 			provable_query(delaySeconds, "URL", symbols.ratesURL, CUSTOM_GAS_LIMIT);
-    // 		}
-    // 	}
+	function updatePriceWithDelay(uint256 delaySeconds) public payable {
+		if (provable_getPrice("URL", CUSTOM_GAS_LIMIT) > address(this).balance) {
+			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+		} else {
+			emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+			provable_query(delaySeconds, "URL", symbols.ratesURL, CUSTOM_GAS_LIMIT);
+		}
+	}
 
     // Manually Update Price
 	function updatePrice() public payable {
