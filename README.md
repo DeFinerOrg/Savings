@@ -1,7 +1,9 @@
 
 ## Generate deployable smart contract
+```
 make rinkeby
 make mainnet
+```
 
 ## _Run the tests:_
 
