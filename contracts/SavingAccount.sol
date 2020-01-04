@@ -29,7 +29,8 @@ contract SavingAccount is usingProvable {
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;
-	uint256 APR = 1585;	// APR = 5%. 1585 / 10^12 * 60 * 60 * 24* 365 = 0.05
+	uint256 APR_PER_SECOND = 1585;	// APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
+	int LTV = 66;
 
 	constructor() public payable{
 		owner = msg.sender;
@@ -42,10 +43,6 @@ contract SavingAccount is usingProvable {
 	modifier ownerOnly {
         require(owner == msg.sender);
         _;   // <--- note the '_', which represents the modified function's body
-    }
-
-	function transferOwnership(address newOwner) public ownerOnly {
-        owner = newOwner;
     }
 
 // 	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public ownerOnly payable {
@@ -147,7 +144,7 @@ contract SavingAccount is usingProvable {
 		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "To withdraw balance, please use withdrawToken instead.");
 		require(
 			(int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 100 <= 
-			 (getAccountTotalUsdValue(msg.sender, true)) * 66,
+			 (getAccountTotalUsdValue(msg.sender, true)) * LTV,
 			 "Insufficient collateral.");
 
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
@@ -165,9 +162,9 @@ contract SavingAccount is usingProvable {
 
 		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount() * -1; // get the actual amount that was borrowed (abs)
 		int256 amountToRepay = int256(amount);
-		tokenInfo.addAmount(amount, APR, block.timestamp);
+		tokenInfo.addAmount(amount, APR_PER_SECOND, block.timestamp);
 
-		// check if paying interest		
+		// check if paying interest
 		if (amountToRepay > amountBorrowed) {
 			totalDeposits[tokenAddress] += amountToRepay - amountBorrowed;  // add interest (if any) to total deposit
 			totalLoans[tokenAddress] -= amountBorrowed;  					// loan are reduced by amount payed
@@ -194,7 +191,7 @@ contract SavingAccount is usingProvable {
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
 
 		// deposited amount is new balance after addAmount minus previous balance
-		int256 depositedAmount = tokenInfo.addAmount(amount, APR, block.timestamp) - currentBalance;
+		int256 depositedAmount = tokenInfo.addAmount(amount, APR_PER_SECOND, block.timestamp) - currentBalance;
 		totalDeposits[tokenAddress] += depositedAmount;
 		totalCollateral[tokenAddress] += depositedAmount;
 
@@ -209,7 +206,7 @@ contract SavingAccount is usingProvable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
 		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
-		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 66);
+		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * LTV);
 		
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
 		totalDeposits[tokenAddress] -= int256(amount);

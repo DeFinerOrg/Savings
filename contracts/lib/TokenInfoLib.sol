@@ -10,7 +10,7 @@ library TokenInfoLib {
 		uint256 rate;
 		uint256 lastModification;
 	}
-	uint256 constant BASE = 10**12;
+	uint256 constant BASE = 10**12; // TODO: 12 vs 18?
 	int256 constant POSITIVE = 1;
 	int256 constant NEGATIVE = -1;
 
