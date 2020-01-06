@@ -1,3 +1,5 @@
+// Copyright DeFiner Inc. 2018-2020
+
 pragma solidity >= 0.5.0 < 0.6.0;
 
 import "./external/provableAPI.sol";
