@@ -31,8 +31,9 @@ contract SavingAccount is usingProvable {
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;
-	uint256 APR_PER_SECOND = 1585;	// APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
-	int LTV = 66;
+	uint256 SUPPLY_APR_PER_SECOND = 1585;	// SUPPLY APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
+	uint256 BORROW_APR_PER_SECOND = 2219;	// BORROW APR = 7%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.07
+	int BORROW_LTV = 66;
 
 	constructor() public payable{
 		owner = msg.sender;
@@ -143,13 +144,13 @@ contract SavingAccount is usingProvable {
 	function borrow(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "To withdraw balance, please use withdrawToken instead.");
+		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
 		require(
 			(int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 100 <= 
-			 (getAccountTotalUsdValue(msg.sender, true)) * LTV,
+			 (getAccountTotalUsdValue(msg.sender, true)) * BORROW_LTV,
 			 "Insufficient collateral.");
 
-		tokenInfo.minusAmount(amount, 0, block.timestamp);
+		tokenInfo.minusAmount(amount, BORROW_APR_PER_SECOND, block.timestamp);
 		totalLoans[tokenAddress] += int256(amount);
 		totalCollateral[tokenAddress] -= int256(amount);
 
@@ -164,7 +165,7 @@ contract SavingAccount is usingProvable {
 
 		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount() * -1; // get the actual amount that was borrowed (abs)
 		int256 amountToRepay = int256(amount);
-		tokenInfo.addAmount(amount, APR_PER_SECOND, block.timestamp);
+		tokenInfo.addAmount(amount, 0, block.timestamp);
 
 		// check if paying interest
 		if (amountToRepay > amountBorrowed) {
@@ -193,7 +194,7 @@ contract SavingAccount is usingProvable {
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
 
 		// deposited amount is new balance after addAmount minus previous balance
-		int256 depositedAmount = tokenInfo.addAmount(amount, APR_PER_SECOND, block.timestamp) - currentBalance;
+		int256 depositedAmount = tokenInfo.addAmount(amount, SUPPLY_APR_PER_SECOND, block.timestamp) - currentBalance;
 		totalDeposits[tokenAddress] += depositedAmount;
 		totalCollateral[tokenAddress] += depositedAmount;
 
@@ -207,8 +208,8 @@ contract SavingAccount is usingProvable {
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Do not have enough balance.");
-		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * LTV);
+		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Insufficient balance.");
+// 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
 		
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
 		totalDeposits[tokenAddress] -= int256(amount);
@@ -293,4 +294,4 @@ contract SavingAccount is usingProvable {
 	// Make the contract payable so that the contract will have enough gass fee 
 	// to query oracle. 
 	function() external payable {}
-} 
+}
