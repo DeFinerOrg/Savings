@@ -27,6 +27,7 @@ contract SavingAccount is usingProvable {
 	mapping(address => int256) totalCollateral;
 
 	address[] activeAccounts;
+	uint256 activeAccountsLen = 0;
 
 	SymbolsLib.Symbols symbols;
 	address owner;
@@ -132,6 +133,17 @@ contract SavingAccount is usingProvable {
 		return activeAccounts;
 	}
 
+	function getLiquidatableAccounts() public view returns (address[] memory liquidatableAccounts) {
+		liquidatableAccounts = new address[](activeAccountsLen);
+		for (uint i = 0; i < activeAccountsLen; i++) {
+			address targetAddress = activeAccounts[i];
+			if (int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * 95) {
+				liquidatableAccounts[i] = targetAddress;
+			}
+		}
+		return liquidatableAccounts;
+	}
+
 	function getCoinLength() public view returns (uint256 length){
 		return symbols.getCoinLength();
 	}
@@ -147,6 +159,8 @@ contract SavingAccount is usingProvable {
 	function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
 		return symbols.priceFromIndex(coinIndex);
 	}
+
+	
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
@@ -196,9 +210,12 @@ contract SavingAccount is usingProvable {
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
-		accounts[msg.sender].active = true;
-		activeAccounts.push(msg.sender);
-
+		if (!accounts[msg.sender].active) {
+			accounts[msg.sender].active = true;
+			activeAccounts.push(msg.sender);
+			activeAccountsLen++;
+		}
+		
 		int256 currentBalance = tokenInfo.getCurrentTotalAmount();
 
 		require(currentBalance >= 0,
