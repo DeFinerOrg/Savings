@@ -19,11 +19,14 @@ contract SavingAccount is usingProvable {
 		// Note, it's best practice to use functions minusAmount, addAmount, totalAmount 
 		// to operate tokenInfos instead of changing it directly. 
 		mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
+		bool active;
 	}
 	mapping(address => Account) accounts;
 	mapping(address => int256) totalDeposits;
 	mapping(address => int256) totalLoans;
 	mapping(address => int256) totalCollateral;
+
+	address[] activeAccounts;
 
 	SymbolsLib.Symbols symbols;
 	address owner;
@@ -125,6 +128,10 @@ contract SavingAccount is usingProvable {
 		return (addresses, balances);
 	}
 
+	function getActiveAccounts() public view returns (address[] memory) {
+		return activeAccounts;
+	}
+
 	function getCoinLength() public view returns (uint256 length){
 		return symbols.getCoinLength();
 	}
@@ -142,6 +149,7 @@ contract SavingAccount is usingProvable {
 	}
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
+		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
 		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
@@ -158,6 +166,7 @@ contract SavingAccount is usingProvable {
 	}
 
 	function repay(address tokenAddress, uint256 amount) public payable {
+		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
 		int256 amountOwedWithInterest = tokenInfo.totalAmount(block.timestamp);
@@ -187,6 +196,8 @@ contract SavingAccount is usingProvable {
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
+		accounts[msg.sender].active = true;
+		activeAccounts.push(msg.sender);
 
 		int256 currentBalance = tokenInfo.getCurrentTotalAmount();
 
@@ -206,6 +217,7 @@ contract SavingAccount is usingProvable {
 	 * will be deducted first.
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
+		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
 		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Insufficient balance.");
