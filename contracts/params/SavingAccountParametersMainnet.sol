@@ -8,7 +8,7 @@ contract SavingAccountParameters {
     address[] public tokenAddresses;
 
     constructor() public payable{
-        ratesURL = "json(https://api.rinkeby.definer.org/OKh4I2yYpKU8S2af/definer/api/v1.0/saving_pool/rates/current).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC].USD";
+        ratesURL = "json(https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC&tsyms=USD).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC].USD";
     	tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC";
 
 		tokenAddresses = new address[](16);

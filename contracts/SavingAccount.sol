@@ -27,7 +27,6 @@ contract SavingAccount is usingProvable {
 	mapping(address => int256) totalCollateral;
 
 	address[] activeAccounts;
-	uint256 activeAccountsLen = 0;
 
 	SymbolsLib.Symbols symbols;
 	address owner;
@@ -38,6 +37,7 @@ contract SavingAccount is usingProvable {
 	uint256 SUPPLY_APR_PER_SECOND = 1585;	// SUPPLY APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
 	uint256 BORROW_APR_PER_SECOND = 2219;	// BORROW APR = 7%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.07
 	int BORROW_LTV = 66;
+	int LIQUIDATE_THREADHOLD = 85;
 
 	constructor() public payable{
 		owner = msg.sender;
@@ -102,7 +102,7 @@ contract SavingAccount is usingProvable {
 		return (addresses, deposits, loans, collateral);
 	}
 
-	/** 
+	/*
 	 * Get the state of the given token
 	 */
 	function getTokenState(address tokenAddress) public view returns (int256 deposits, int256 loans, int256 collateral)
@@ -133,12 +133,13 @@ contract SavingAccount is usingProvable {
 		return activeAccounts;
 	}
 
-	function getLiquidatableAccounts() public view returns (address[] memory liquidatableAccounts) {
-		liquidatableAccounts = new address[](activeAccountsLen);
-		for (uint i = 0; i < activeAccountsLen; i++) {
+	function getLiquidatableAccounts() public view returns (address[] memory) {
+		address[] memory liquidatableAccounts;
+		uint returnIdx;
+		for (uint i = 0; i < activeAccounts.length; i++) {
 			address targetAddress = activeAccounts[i];
-			if (int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * 95) {
-				liquidatableAccounts[i] = targetAddress;
+			if (int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * LIQUIDATE_THREADHOLD) {
+				liquidatableAccounts[returnIdx++] = (targetAddress);
 			}
 		}
 		return liquidatableAccounts;
@@ -159,8 +160,6 @@ contract SavingAccount is usingProvable {
 	function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
 		return symbols.priceFromIndex(coinIndex);
 	}
-
-	
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
@@ -213,9 +212,8 @@ contract SavingAccount is usingProvable {
 		if (!accounts[msg.sender].active) {
 			accounts[msg.sender].active = true;
 			activeAccounts.push(msg.sender);
-			activeAccountsLen++;
 		}
-		
+
 		int256 currentBalance = tokenInfo.getCurrentTotalAmount();
 
 		require(currentBalance >= 0,
@@ -239,7 +237,7 @@ contract SavingAccount is usingProvable {
 
 		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Insufficient balance.");
 // 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
-		
+
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
 		totalDeposits[tokenAddress] -= int256(amount);
 		totalCollateral[tokenAddress] -= int256(amount);
@@ -248,7 +246,7 @@ contract SavingAccount is usingProvable {
 	}
 
 	function liquidate(address targetAddress) public payable {
-		require(int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * 95,
+		require(int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * LIQUIDATE_THREADHOLD,
 			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
 
 		uint coinsLen = getCoinLength();
