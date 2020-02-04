@@ -266,8 +266,7 @@ contract SavingAccount is usingProvable {
 		if (symbols.isEth(tokenAddress)) {
             require(msg.value == amount, "The amount is not sent from address.");
 		} else {
-			IERC20 token = IERC20(tokenAddress);
-			token.transferFrom(from, address(this), amount);
+			require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
 		}
 	}
 
@@ -275,8 +274,7 @@ contract SavingAccount is usingProvable {
 		if (symbols.isEth(tokenAddress)) {
 			msg.sender.transfer(amount);
 		} else {
-			IERC20 token = IERC20(tokenAddress);
-			token.transfer(to, amount);
+			require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
 		}
 	}
 
@@ -285,7 +283,7 @@ contract SavingAccount is usingProvable {
 	 * parsed results from oracle, it will recursively call oracle for data. 
 	 **/
 	function __callback(bytes32,  string memory result) public {
-		if (msg.sender != provable_cbAddress()) revert();
+		require(msg.sender == provable_cbAddress(), "Unauthorized address");
 		emit LogNewPriceTicker(result);
 		symbols.parseRates(result);
 		// updatePrice(30 * 60); // Call from external
