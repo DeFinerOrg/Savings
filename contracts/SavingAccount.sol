@@ -266,12 +266,16 @@ contract SavingAccount is usingProvable {
 		if (symbols.isEth(tokenAddress)) {
             require(msg.value == amount, "The amount is not sent from address.");
 		} else {
+			//When only tokens received, msg.value must be 0
+			require(msg.value == 0, "msg.value must be 0 when receiving tokens");
 			require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
 		}
 	}
 
 	function send(address to, uint256 amount, address tokenAddress) private {
 		if (symbols.isEth(tokenAddress)) {
+			//TODO need to check for re-entrancy
+			//TODO Can this ETH be received by a contract?
 			msg.sender.transfer(amount);
 		} else {
 			require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
@@ -291,7 +295,9 @@ contract SavingAccount is usingProvable {
 	}
 
 	// Customized gas limit for querying oracle. That's because the function 
-	// symbols.parseRates() is heavy and need more gas. 
+	// symbols.parseRates() is heavy and need more gas.
+	//TODO This should not be hard-coded as Ethereum keeps changing gas
+	//TODO consumption of opcodes. It should be configurable.
 	uint constant CUSTOM_GAS_LIMIT = 6000000;
 
 	/** 
