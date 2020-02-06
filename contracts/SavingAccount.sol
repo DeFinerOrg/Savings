@@ -6,11 +6,12 @@ import "./external/provableAPI.sol";
 import "./external/strings.sol";
 import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 
-contract SavingAccount is usingProvable {
+
+contract SavingAccount is Ownable, usingProvable {
 	using TokenInfoLib for TokenInfoLib.TokenInfo;
 	using SymbolsLib for SymbolsLib.Symbols;
 	using SafeMath for uint256;
@@ -29,7 +30,6 @@ contract SavingAccount is usingProvable {
 	address[] activeAccounts;
 
 	SymbolsLib.Symbols symbols;
-	address owner;
 
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
@@ -39,20 +39,16 @@ contract SavingAccount is usingProvable {
 	int BORROW_LTV = 66;
 	int LIQUIDATE_THREADHOLD = 85;
 
-	constructor() public payable{
-		owner = msg.sender;
+	constructor() public {
 
-		SavingAccountParameters params = new SavingAccountParameters();
-		address[] memory tokenAddresses = params.getTokenAddresses();
-		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
+		//SavingAccountParameters params = new SavingAccountParameters();
+		//address[] memory tokenAddresses = params.getTokenAddresses();
+		//TODO This needs improvement as it could go out of gas
+		//symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 	}
 
-	modifier ownerOnly {
-        require(owner == msg.sender);
-        _;   // <--- note the '_', which represents the modified function's body
-    }
-
-// 	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public ownerOnly payable {
+	//TODO
+// 	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public onlyOwner {
 // 		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
 // 	}
 

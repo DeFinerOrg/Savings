@@ -9,6 +9,7 @@ const Web3 = require('web3')
 const ENV_DEVELOP = require("./../environments/env_develop")
 const ENV_RINKEBY = require("./../environments/env_rinkeby")
 const ENV_MAINNET = require("./../environments/env_mainnet")
+const BN = require("bn.js");
 
 function ethToWei(wei) {
     return Web3.utils.toWei(wei, 'ether');
@@ -19,7 +20,7 @@ module.exports = function (deployer, network, accounts) {
     deployer.link(TokenInfoLib, SavingAccount);
     deployer.deploy(SymbolsLib);
     deployer.link(SymbolsLib, SavingAccount);
-    deployer.deploy(SavingAccount, { value: 2 * 10**16 });
+    deployer.deploy(SavingAccount);
 
     let env;
     if (network.startsWith("develop")) {
@@ -34,10 +35,13 @@ module.exports = function (deployer, network, accounts) {
         env = ENV_RINKEBY;
     }
 
-    let account = accounts[0] // TODO 
-    console.log(`Using account: ${account}`)
-    deployer.then(async function () {
+    let account = accounts[0]; // TODO 
+    console.log(`Using account: ${account}`);
+    deployer.then(async function () {        
         const instance = await SavingAccount.deployed();
+        //const amountToSend = Web3.utils.toWei(new BN(2 * 10**16), 'wei');
+        //await Web3.eth.sendTransaction({from: accounts[0], to:instance.address, value:amountToSend});
+
         console.log("Initializing saving pool....");
 
         if (network.startsWith("develop")) {
@@ -46,7 +50,7 @@ module.exports = function (deployer, network, accounts) {
             env.tokenAddresses[env.tokenAddresses.length - 1] = testToken.contract._address;
         }
 
-        await instance.initialize(env.ratesURL, env.tokenNames, env.tokenAddresses, { from: account });
+        //await instance.initialize(env.ratesURL, env.tokenNames, env.tokenAddresses, { from: account });
 
         if (network.startsWith("rinkeby")) {
             console.log("Depositing ETH....");
@@ -59,6 +63,6 @@ module.exports = function (deployer, network, accounts) {
         }
 
         console.log("Calling updatePrice....");
-        await instance.updatePrice(0, { from: account  });
-    })
+        await instance.updatePrice({ from: account  });
+    });
 };
