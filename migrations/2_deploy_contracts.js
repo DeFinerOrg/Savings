@@ -23,6 +23,8 @@ module.exports = function (deployer, network, accounts) {
     deployer.deploy(SavingAccount);
 
     let env;
+    //TODO get the URL from config
+    var web3 = new Web3('http://localhost:8545');
     if (network.startsWith("develop")) {
         console.log(`Deploing test contract: TestTokenContract`);
         deployer.link(TokenInfoLib, TestTokenContract);
@@ -39,8 +41,8 @@ module.exports = function (deployer, network, accounts) {
     console.log(`Using account: ${account}`);
     deployer.then(async function () {        
         const instance = await SavingAccount.deployed();
-        //const amountToSend = Web3.utils.toWei(new BN(2 * 10**16), 'wei');
-        //await Web3.eth.sendTransaction({from: accounts[0], to:instance.address, value:amountToSend});
+        const amountToSend = ethToWei("0.02");
+        await web3.eth.sendTransaction({from: accounts[0], to:instance.address, value:amountToSend});
 
         console.log("Initializing saving pool....");
 
