@@ -9,12 +9,14 @@ import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
+import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 
 contract SavingAccount is Ownable, usingProvable {
 	using TokenInfoLib for TokenInfoLib.TokenInfo;
 	using SymbolsLib for SymbolsLib.Symbols;
 	using SafeMath for uint256;
+	using SignedSafeMath for int256;
 
 	struct Account {
 		// Note, it's best practice to use functions minusAmount, addAmount, totalAmount 
@@ -36,15 +38,14 @@ contract SavingAccount is Ownable, usingProvable {
 	int256 BASE = 10**6;
 	uint256 SUPPLY_APR_PER_SECOND = 1585;	// SUPPLY APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
 	uint256 BORROW_APR_PER_SECOND = 2219;	// BORROW APR = 7%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.07
-	int BORROW_LTV = 66;
+	int BORROW_LTV = 66; //TODO check is this 60%?
 	int LIQUIDATE_THREADHOLD = 85;
 
 	constructor() public {
-
-		//SavingAccountParameters params = new SavingAccountParameters();
-		//address[] memory tokenAddresses = params.getTokenAddresses();
+		SavingAccountParameters params = new SavingAccountParameters();
+		address[] memory tokenAddresses = params.getTokenAddresses();
 		//TODO This needs improvement as it could go out of gas
-		//symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
+		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 	}
 
 	//TODO
@@ -132,6 +133,10 @@ contract SavingAccount is Ownable, usingProvable {
 	function getLiquidatableAccounts() public view returns (address[] memory) {
 		address[] memory liquidatableAccounts;
 		uint returnIdx;
+		//TODO `activeAccounts` not getting removed from array.
+		//TODO its always increasing. Call to this function needing
+		//TODO more gas, however, it will not be charged in ETH.
+		//TODO What could be the impact? 
 		for (uint i = 0; i < activeAccounts.length; i++) {
 			address targetAddress = activeAccounts[i];
 			if (int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * LIQUIDATE_THREADHOLD) {
