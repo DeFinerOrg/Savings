@@ -57,17 +57,25 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Gets the total amount of balance that give accountAddr stored in saving pool. 
 	 */
 	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
-		return getAccountTotalUsdValue(accountAddr, true) + getAccountTotalUsdValue(accountAddr, false);
+		return getAccountTotalUsdValue(accountAddr, true).add(getAccountTotalUsdValue(accountAddr, false));
 	}
 
 	function getAccountTotalUsdValue(address accountAddr, bool isPositive) private view returns (int256 usdValue){
 		int256 totalUsdValue = 0;
 		for(uint i = 0; i < getCoinLength(); i++) {
 			if (isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) >= 0) {
-				totalUsdValue += accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) * int256(symbols.priceFromIndex(i)) / BASE;
+				totalUsdValue = totalUsdValue.add(
+					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp)
+					.mul(int256(symbols.priceFromIndex(i)))
+					.div(BASE)
+				);
 			}
 			if (!isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) < 0) {
-				totalUsdValue += accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) * int256(symbols.priceFromIndex(i)) / BASE;
+				totalUsdValue = totalUsdValue.add(
+					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp)
+					.mul(int256(symbols.priceFromIndex(i)))
+					.div(BASE)
+				);
 			}
 		}
 		return totalUsdValue;
@@ -139,7 +147,11 @@ contract SavingAccount is Ownable, usingProvable {
 		//TODO What could be the impact? 
 		for (uint i = 0; i < activeAccounts.length; i++) {
 			address targetAddress = activeAccounts[i];
-			if (int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * LIQUIDATE_THREADHOLD) {
+			if (
+				int256(getAccountTotalUsdValue(targetAddress, false).mul(-1)).mul(100)
+				>
+				getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD)
+			) {
 				liquidatableAccounts[returnIdx++] = (targetAddress);
 			}
 		}
@@ -168,13 +180,18 @@ contract SavingAccount is Ownable, usingProvable {
 
 		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
 		require(
-			(int256(getAccountTotalUsdValue(msg.sender, false) * -1) + int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * 100 <= 
-			 (getAccountTotalUsdValue(msg.sender, true)) * BORROW_LTV,
+			(
+				int256(getAccountTotalUsdValue(msg.sender, false) * -1)
+				.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
+				.div(BASE)
+			).mul(100)
+			<=
+			(getAccountTotalUsdValue(msg.sender, true)).mul(BORROW_LTV),
 			 "Insufficient collateral.");
 
 		tokenInfo.minusAmount(amount, BORROW_APR_PER_SECOND, block.timestamp);
-		totalLoans[tokenAddress] += int256(amount);
-		totalCollateral[tokenAddress] -= int256(amount);
+		totalLoans[tokenAddress] = totalLoans[tokenAddress].add(int256(amount));
+		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
         send(msg.sender, amount, tokenAddress);
 	}
@@ -186,21 +203,24 @@ contract SavingAccount is Ownable, usingProvable {
 		int256 amountOwedWithInterest = tokenInfo.totalAmount(block.timestamp);
 		require(amountOwedWithInterest <= 0, "Balance of the token must be negative. To deposit balance, please use deposit button.");
 
-		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount() * -1; // get the actual amount that was borrowed (abs)
+		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount().mul(-1); // get the actual amount that was borrowed (abs)
 		int256 amountToRepay = int256(amount);
 		tokenInfo.addAmount(amount, 0, block.timestamp);
 
 		// check if paying interest
 		if (amountToRepay > amountBorrowed) {
-			totalDeposits[tokenAddress] += amountToRepay - amountBorrowed;  // add interest (if any) to total deposit
-			totalLoans[tokenAddress] -= amountBorrowed;  					// loan are reduced by amount payed
+			// add interest (if any) to total deposit
+			totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
+			// loan are reduced by amount payed
+			totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountBorrowed);
 		}
 		else {
-			totalLoans[tokenAddress] -= amountToRepay;  					// loan are reduced by amount payed
+			// loan are reduced by amount payed
+			totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountToRepay);
 		}
 
 		// collateral increased by amount payed  
-		totalCollateral[tokenAddress] += amountToRepay;					  
+		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(amountToRepay);
 
         receive(msg.sender, amount, tokenAddress);
 	}
@@ -222,8 +242,8 @@ contract SavingAccount is Ownable, usingProvable {
 
 		// deposited amount is new balance after addAmount minus previous balance
 		int256 depositedAmount = tokenInfo.addAmount(amount, SUPPLY_APR_PER_SECOND, block.timestamp) - currentBalance;
-		totalDeposits[tokenAddress] += depositedAmount;
-		totalCollateral[tokenAddress] += depositedAmount;
+		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(depositedAmount);
+		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(depositedAmount);
 
 		receive(msg.sender, amount, tokenAddress);
 	}
@@ -240,14 +260,18 @@ contract SavingAccount is Ownable, usingProvable {
 // 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
 
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
-		totalDeposits[tokenAddress] -= int256(amount);
-		totalCollateral[tokenAddress] -= int256(amount);
+		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(amount));
+		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
 		send(msg.sender, amount, tokenAddress);		
 	}
 
 	function liquidate(address targetAddress) public payable {
-		require(int256(getAccountTotalUsdValue(targetAddress, false) * -1) * 100 > getAccountTotalUsdValue(targetAddress, true) * LIQUIDATE_THREADHOLD,
+		require(
+			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
+			.mul(100)
+			>
+			getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD),
 			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
 
 		uint coinsLen = getCoinLength();
@@ -258,6 +282,8 @@ contract SavingAccount is Ownable, usingProvable {
 			if (totalAmount > 0) {
 				send(msg.sender, uint256(totalAmount), tokenAddress);
 			} else if (totalAmount < 0) {
+				//TODO uint256(-totalAmount) this will underflow - Critical Security Issue
+				//TODO what is the reason for doing this???
 				receive(msg.sender, uint256(-totalAmount), tokenAddress);
 			}
 		}
@@ -275,7 +301,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function send(address to, uint256 amount, address tokenAddress) private {
 		if (symbols.isEth(tokenAddress)) {
-			//TODO need to check for re-entrancy
+			//TODO need to check for re-entrancy security attack
 			//TODO Can this ETH be received by a contract?
 			msg.sender.transfer(amount);
 		} else {
@@ -305,6 +331,7 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Update coins price every 30 mins. The contract must have enough gas fee. 
 	 */
 	function updatePriceWithDelay(uint256 delaySeconds) public payable {
+		//TODO address(this).balance this should be avoided for security reasons
 		if (provable_getPrice("URL", CUSTOM_GAS_LIMIT) > address(this).balance) {
 			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
 		} else {

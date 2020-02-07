@@ -1,9 +1,11 @@
 pragma solidity >= 0.5.0 < 0.6.0;
 
 import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 library TokenInfoLib {
     using SafeMath for uint256;
+	using SignedSafeMath for int256;
     struct TokenInfo {
 		int256 balance;
 		int256 interest;
@@ -16,12 +18,12 @@ library TokenInfoLib {
 
 	// returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
 	function totalAmount(TokenInfo storage self, uint256 currentTimestamp) public view returns(int256) {
-		return self.balance + viewInterest(self, currentTimestamp);
+		return self.balance.add(viewInterest(self, currentTimestamp));
 	}
 
 	// returns the sum of balance and interest posted to the account
 	function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
-		return self.balance + self.interest;
+		return self.balance.add(self.interest);
 	}
 
 	function minusAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public {
@@ -29,54 +31,56 @@ library TokenInfoLib {
         int256 _amount = int256(amount);
 		if (self.balance + self.interest > 0) {
 			if (self.interest >= _amount) {
-				self.interest -= _amount;
+				self.interest = self.interest.sub(_amount);
 				_amount = 0;
-			} else if (self.balance + self.interest >= _amount){
-				self.balance -= _amount - self.interest;
+			} else if (self.balance.add(self.interest) >= _amount){
+				self.balance = self.balance.sub(_amount.sub(self.interest));
 				self.interest = 0;
 				_amount = 0;
 			} else {
-                _amount -= self.balance + self.interest;
+                _amount = _amount.sub(self.balance.add(self.interest));
 				self.balance = 0;
 				self.interest = 0;
 				self.rate = 0;
 			}
 		}
         if (_amount > 0) {
-			require(self.balance + self.interest <= 0, "To minus amount, the total balance must be smaller than 0.");
+			require(self.balance.add(self.interest) <= 0, "To minus amount, the total balance must be smaller than 0.");
 			self.rate = mixRate(self, _amount, rate);
-			self.balance -= _amount;
+			self.balance = self.balance.sub(_amount);
 		}
 	}
 
 	function addAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 currentTimestamp) public returns(int256) {
 		resetInterest(self, currentTimestamp);
 		int256 _amount = int256(amount);
-		if (self.balance + self.interest < 0) {
-            if (self.interest + _amount <= 0) {
-                self.interest += _amount;
+		if (self.balance.add(self.interest) < 0) {
+            if (self.interest.add(_amount) <= 0) {
+                self.interest = self.interest.add(_amount);
 				_amount = 0;
-			} else if (self.balance + self.interest + _amount <= 0) {
-				self.balance += _amount + self.interest;
+			} else if (self.balance.add(self.interest).add(_amount) <= 0) {
+				self.balance = self.balance.add(_amount.add(self.interest));
 				self.interest = 0;
 				_amount = 0;
 			} else {
-                _amount += self.balance + self.interest;
+                _amount = _amount.add(self.balance.add(self.interest));
 				self.balance = 0;
                 self.interest = 0;
                 self.rate = 0;
 			}
 		}
         if (_amount > 0) {
-			require(self.balance + self.interest >= 0, "To add amount, the total balance must be larger than 0.");
+			require(self.balance.add(self.interest) >= 0, "To add amount, the total balance must be larger than 0.");
 			self.rate = mixRate(self, _amount, rate);
-			self.balance += _amount;
+			self.balance = self.balance.add(_amount);
 		}
 
 		return totalAmount(self, currentTimestamp);
 	}
 
 	function mixRate(TokenInfo storage self, int256 amount, uint256 rate) private view returns (uint256){
+		//TODO uint256(-self.balance) this will integer underflow - Critical Security risk
+		//TODO Why do we need this???
         uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
 		uint256 _amount = amount >= 0 ? uint256(amount) : uint256(-amount);
 		return _balance.mul(self.rate).add(_amount.mul(rate)).div(_balance + _amount);
@@ -89,9 +93,12 @@ library TokenInfoLib {
 
 	function viewInterest(TokenInfo storage self, uint256 currentTimestamp) public view returns(int256) {
         int256 _sign = self.balance < 0 ? NEGATIVE : POSITIVE;
+		//TODO uint256(-amount) ???
 		uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
-		uint256 _difference = currentTimestamp - self.lastModification;
+		uint256 _difference = currentTimestamp.sub(self.lastModification);
 
-		return self.interest + int256(_balance.mul(self.rate).mul(_difference).div(BASE)) * _sign;
+		return self.interest
+			.add(int256(_balance.mul(self.rate).mul(_difference).div(BASE)))
+			.mul(_sign);
 	}
 }
