@@ -11,6 +11,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
+interface CToken {
+	function supplyRatePerBlock() external view returns (uint);
+	function borrowRatePerBlock() external view returns (uint);
+}
 
 contract SavingAccount is Ownable, usingProvable {
 	using TokenInfoLib for TokenInfoLib.TokenInfo;
@@ -20,14 +24,21 @@ contract SavingAccount is Ownable, usingProvable {
 
 	struct Account {
 		// Note, it's best practice to use functions minusAmount, addAmount, totalAmount 
-		// to operate tokenInfos instead of changing it directly. 
+		// to operate tokenInfos instead of changing it directly.
+		//翻译：请注意，这是最好的做法是使用功能减额，增加金额，总金额直接改变它的操作令牌的相关信息来代替。
 		mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
 		bool active;
 	}
+
 	mapping(address => Account) accounts;
 	mapping(address => int256) totalDeposits;
 	mapping(address => int256) totalLoans;
 	mapping(address => int256) totalCollateral;
+	mapping(address => address) cTokenAddress;
+	mapping(address => mapping(uint => uint)) depositRateRecord;
+	mapping(address => mapping(uint => uint)) borrowRateRecord;
+	mapping(address => uint) depositRateLastModifiedBlockNumber;
+	mapping(address => uint) borrowRateLastModifiedBlockNumber;
 
 	address[] activeAccounts;
 
@@ -35,26 +46,88 @@ contract SavingAccount is Ownable, usingProvable {
 
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
-	int256 BASE = 10**6;
+	int256 BASE = 10**6;//精度
 	uint256 SUPPLY_APR_PER_SECOND = 1585;	// SUPPLY APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
 	uint256 BORROW_APR_PER_SECOND = 2219;	// BORROW APR = 7%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.07
-	int BORROW_LTV = 66; //TODO check is this 60%?
+	uint256 CAPITAL_COMPOUND_Ratio = 23;	// Assume
+	uint BLOCKS_PER_YEAR = 2102400;
+	int BORROW_LTV = 60; //TODO check is this 60%?
 	int LIQUIDATE_THREADHOLD = 85;
+	address payable DeFinerCommunityFund;
 
 	constructor() public {
 		SavingAccountParameters params = new SavingAccountParameters();
 		address[] memory tokenAddresses = params.getTokenAddresses();
 		//TODO This needs improvement as it could go out of gas
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
+		cTokenAddress[tokenAddresses[0]] = 0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e;
+		cTokenAddress[tokenAddresses[1]] = 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
+	}
+
+	//获取compound的存款利率
+	function getCompoundSupplyRate(address _cTokenAddress) public view returns(uint) {
+		CToken cToken=CToken(_cTokenAddress);
+		return cToken.supplyRatePerBlock();
+	}
+
+	//获取compound的借款利率
+	function getCompoundBorrowRate(address _cTokenAddress) public view returns(uint) {
+		CToken cToken=CToken(_cTokenAddress);
+		return cToken.borrowRatePerBlock();
+	}
+
+	//获取借款利率
+	function getBorrowAPR(address tokenAddress) public view returns(uint borrowAPR) {
+		return (getCompoundSupplyRate(cTokenAddress[tokenAddress])+getCompoundBorrowRate(cTokenAddress[tokenAddress]))/2;
+	}
+
+	//获取存款利率
+	function getDepositAPR(address tokenAddress) public view returns(uint depositAPR) {
+		uint d1=getBorrowAPR(tokenAddress).mul(getCapitalUtilizationRate(tokenAddress).div(100));
+		uint d2=getCompoundSupplyRate(cTokenAddress[tokenAddress]).mul(CAPITAL_COMPOUND_Ratio).div(100);
+		return d1.add(d2);
+	}
+
+	//获取资本利用率 资本利用率（U）=贷款总额/市场存款总额
+	function getCapitalUtilizationRate(address tokenAddress) public view returns(uint capitalUtilizationRate) {
+		return totalLoans[tokenAddress].div(totalDeposits(tokenAddress)).mul(100);
+	}
+
+	//更新存款利率
+	function updateDepositRate(address tokenAddress, uint blockNumber) public {
+		if(depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
+			depositRateRecord[tokenAddress][blockNumber] = (10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress));
+			depositRateLastModifiedBlockNumber[tokenAddress] = (10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress));
+		} else {
+			depositRateRecord[tokenAddress][blockNumber]=depositRateLastModifiedBlockNumber[tokenAddress].mul((10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress)));
+			depositRateLastModifiedBlockNumber[tokenAddress] = depositRateRecord[tokenAddress][blockNumber];
+		}
+	}
+
+	//更新借款利率
+	function updateBorrowRate(address tokenAddress, uint blockNumber) public {
+		if(borrowRateLastModifiedBlockNumber[tokenAddress] == 0) {
+			borrowRateRecord[tokenAddress][blockNumber] = (10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress));
+			borrowRateLastModifiedBlockNumber[tokenAddress] = (10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress));
+		} else {
+			borrowRateRecord[tokenAddress][blockNumber] = borrowRateLastModifiedBlockNumber[tokenAddress].mul((10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress)));
+			borrowRateLastModifiedBlockNumber[tokenAddress] = borrowRateRecord[tokenAddress][blockNumber];
+		}
+	}
+
+	//获取当前区块高度
+	function getBlockNumber() internal view returns (uint) {
+		return block.number;
 	}
 
 	//TODO
-// 	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public onlyOwner {
-// 		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
-// 	}
+	// 	function initialize(string memory ratesURL, string memory tokenNames, address[] memory tokenAddresses) public onlyOwner {
+	// 		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
+	// 	}
 
 	/** 
-	 * Gets the total amount of balance that give accountAddr stored in saving pool. 
+	 * Gets the total amount of balance that give accountAddr stored in saving pool.
+	 翻译：获取交账地址存储在储蓄池balance的总量。
 	 */
 	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
 		return getAccountTotalUsdValue(accountAddr, true).add(getAccountTotalUsdValue(accountAddr, false));
@@ -83,6 +156,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Get the overall state of the saving pool
+	 翻译：获取储蓄池的整体状态
 	 */
 	function getMarketState() public view returns (address[] memory addresses,
 		int256[] memory deposits,
@@ -109,6 +183,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/*
 	 * Get the state of the given token
+	 翻译：获取给定令牌的状态
 	 */
 	function getTokenState(address tokenAddress) public view returns (int256 deposits, int256 loans, int256 collateral)
 	{
@@ -117,6 +192,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Get all balances for the sender's account
+	 翻译：查看该发送者的账户余额全部
 	 */
 	function getBalances() public view returns (address[] memory addresses, int256[] memory balances)
 	{
@@ -178,22 +254,24 @@ contract SavingAccount is Ownable, usingProvable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		require(tokenInfo.totalAmount(block.timestamp) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
+		require(tokenInfo.totalAmount(getBlockNumber()) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
 		require(
 			(
-				int256(getAccountTotalUsdValue(msg.sender, false) * -1)
-				.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-				.div(BASE)
+			int256(getAccountTotalUsdValue(msg.sender, false) * -1)
+			.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
+			.div(BASE)
 			).mul(100)
 			<=
 			(getAccountTotalUsdValue(msg.sender, true)).mul(BORROW_LTV),
-			 "Insufficient collateral.");
+			"Insufficient collateral.");
 
-		tokenInfo.minusAmount(amount, BORROW_APR_PER_SECOND, block.timestamp);
+		uint borrowRate=getBorrowAPR(tokenAddress);
+
+		tokenInfo.minusAmount(amount, borrowRate, block.timestamp);
 		totalLoans[tokenAddress] = totalLoans[tokenAddress].add(int256(amount));
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
-        send(msg.sender, amount, tokenAddress);
+		send(msg.sender, amount, tokenAddress);
 	}
 
 	function repay(address tokenAddress, uint256 amount) public payable {
@@ -222,11 +300,12 @@ contract SavingAccount is Ownable, usingProvable {
 		// collateral increased by amount payed  
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(amountToRepay);
 
-        receive(msg.sender, amount, tokenAddress);
+		receive(msg.sender, amount, tokenAddress);
 	}
 
 	/** 
-	 * Deposit the amount of tokenAddress to the saving pool. 
+	 * Deposit the amount of tokenAddress to the saving pool.
+	 翻译：存款令牌地址量为节电池。
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
@@ -240,8 +319,11 @@ contract SavingAccount is Ownable, usingProvable {
 		require(currentBalance >= 0,
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
 
-		// deposited amount is new balance after addAmount minus previous balance
-		int256 depositedAmount = tokenInfo.addAmount(amount, SUPPLY_APR_PER_SECOND, block.timestamp) - currentBalance;
+		uint supplyRate = depositRateRecord[tokenAddress][getBlockNumber()].div(depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+
+		// deposited amount is new balance after addAmount minus previous balance  翻译：沉积量是附加金额减去前一资产负债后的新的平衡
+		//		int256 depositedAmount = tokenInfo.addAmount(amount, SUPPLY_APR_PER_BLOCK, block.timestamp) - currentBalance;
+		int256 depositedAmount = tokenInfo.addAmount(amount, supplyRate, getBlockNumber()) - currentBalance;
 		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(depositedAmount);
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(depositedAmount);
 
@@ -251,19 +333,24 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
 	 * will be deducted first.
+	 翻译：从节约池撤柜令牌。 如果利率不为空，利息将首先扣除。
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
 		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Insufficient balance.");
-// 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
-
+		// 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
+		if(tokenInfo.viewInterest(block.timestamp) > 0){
+			int256 _money = tokenInfo.viewInterest(block.timestamp).mul(int256(amount).div(tokenInfo.getCurrentTotalAmount().sub(tokenInfo.viewInterest(block.timestamp)))).div(10);
+			tokenInfo.updateInterest(_money);
+			payCommunityFund(_money);
+		}
 		tokenInfo.minusAmount(amount, 0, block.timestamp);
 		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(amount));
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
-		send(msg.sender, amount, tokenAddress);		
+		send(msg.sender, amount, tokenAddress);
 	}
 
 	function liquidate(address targetAddress) public payable {
@@ -291,7 +378,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function receive(address from, uint256 amount, address tokenAddress) private {
 		if (symbols.isEth(tokenAddress)) {
-            require(msg.value == amount, "The amount is not sent from address.");
+			require(msg.value == amount, "The amount is not sent from address.");
 		} else {
 			//When only tokens received, msg.value must be 0
 			require(msg.value == 0, "msg.value must be 0 when receiving tokens");
@@ -309,16 +396,25 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
+	function payCommunityFund(int256 money) private {
+		DeFinerCommunityFund.transfer(uint256(money));
+	}
+
+	function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
+		DeFinerCommunityFund = _DeFinerCommunityFund;
+	}
+
 	/** 
 	 * Callback function which is used to parse query the oracle. Once 
-	 * parsed results from oracle, it will recursively call oracle for data. 
+	 * parsed results from oracle, it will recursively call oracle for data.
+	 翻译：它是用来解析查询Oracle回调函数。 一旦从Oracle解析的结果，它会递归调用数据神谕。
 	 **/
 	function __callback(bytes32,  string memory result) public {
 		require(msg.sender == provable_cbAddress(), "Unauthorized address");
 		emit LogNewPriceTicker(result);
 		symbols.parseRates(result);
 		// updatePrice(30 * 60); // Call from external
-        updatePrice();
+		updatePrice();
 	}
 
 	// Customized gas limit for querying oracle. That's because the function 
@@ -328,7 +424,8 @@ contract SavingAccount is Ownable, usingProvable {
 	uint constant CUSTOM_GAS_LIMIT = 6000000;
 
 	/** 
-	 * Update coins price every 30 mins. The contract must have enough gas fee. 
+	 * Update coins price every 30 mins. The contract must have enough gas fee.
+	 翻译：更新硬币价格每30分钟一班。 该合同必须有足够的天然气费用。
 	 */
 	function updatePriceWithDelay(uint256 delaySeconds) public payable {
 		//TODO address(this).balance this should be avoided for security reasons
@@ -340,15 +437,15 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-    // Manually Update Price
+	// Manually Update Price
 	function updatePrice() public payable {
-      if (provable_getPrice("URL") > address(this).balance) {
-          emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
-      } else {
-          emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
-          provable_query("URL", symbols.ratesURL);
-      }
-    }
+		if (provable_getPrice("URL") > address(this).balance) {
+			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
+		} else {
+			emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+			provable_query("URL", symbols.ratesURL);
+		}
+	}
 
 	// Make the contract payable so that the contract will have enough gass fee 
 	// to query oracle. 
