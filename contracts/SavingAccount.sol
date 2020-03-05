@@ -47,12 +47,14 @@ contract SavingAccount is Ownable, usingProvable {
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;//精度
+	int256 ACCURACY = 10**18;
 	uint256 SUPPLY_APR_PER_SECOND = 1585;	// SUPPLY APR = 5%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.05
 	uint256 BORROW_APR_PER_SECOND = 2219;	// BORROW APR = 7%. 1585 / 10^12 * 60 * 60 * 24 * 365 = 0.07
 	uint256 CAPITAL_COMPOUND_Ratio = 23;	// Assume
 	uint BLOCKS_PER_YEAR = 2102400;
 	int BORROW_LTV = 60; //TODO check is this 60%?
 	int LIQUIDATE_THREADHOLD = 85;
+	int LIQUIDATION_DISCOUNT_RATIO = 95;
 	address payable DeFinerCommunityFund;
 
 	constructor() public {
@@ -64,27 +66,27 @@ contract SavingAccount is Ownable, usingProvable {
 		cTokenAddress[tokenAddresses[1]] = 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
 	}
 
-	//获取compound的存款利率
-	function getCompoundSupplyRate(address _cTokenAddress) public view returns(uint) {
+	//获取compound的存款利率  缩放比例是10**18
+	function getCompoundSupplyRatePerBlock(address _cTokenAddress) public view returns(uint) {
 		CToken cToken=CToken(_cTokenAddress);
 		return cToken.supplyRatePerBlock();
 	}
 
-	//获取compound的借款利率
-	function getCompoundBorrowRate(address _cTokenAddress) public view returns(uint) {
+	//获取compound的借款利率  缩放比例是10**18
+	function getCompoundBorrowRatePerBlock(address _cTokenAddress) public view returns(uint) {
 		CToken cToken=CToken(_cTokenAddress);
 		return cToken.borrowRatePerBlock();
 	}
 
-	//获取借款利率
-	function getBorrowAPR(address tokenAddress) public view returns(uint borrowAPR) {
-		return (getCompoundSupplyRate(cTokenAddress[tokenAddress])+getCompoundBorrowRate(cTokenAddress[tokenAddress]))/2;
+	//获取借款利率  借贷利率=（compound存款率+compound借贷率）/ 2  缩放比例是10**18
+	function getBorrowRatePerBlock(address tokenAddress) public view returns(uint borrowRatePerBlock) {
+		return (getCompoundSupplyRatePerBlock(cTokenAddress[tokenAddress])+getCompoundBorrowRate(cTokenAddress[tokenAddress]))/2;
 	}
 
-	//获取存款利率
-	function getDepositAPR(address tokenAddress) public view returns(uint depositAPR) {
-		uint d1=getBorrowAPR(tokenAddress).mul(getCapitalUtilizationRate(tokenAddress).div(100));
-		uint d2=getCompoundSupplyRate(cTokenAddress[tokenAddress]).mul(CAPITAL_COMPOUND_Ratio).div(100);
+	//获取存款利率  存款年利率=（借款年利率*利用率（U）+compound供应率*compound资本比率（C））*（1-提款者共同体基金比率（D））
+	function getDepositRatePerBlock(address tokenAddress) public view returns(uint depositAPR) {
+		uint d1=getBorrowRatePerBlock(tokenAddress).mul(getCapitalUtilizationRate(tokenAddress).div(100));
+		uint d2=getCompoundSupplyRatePerBlock(cTokenAddress[tokenAddress]).mul(CAPITAL_COMPOUND_Ratio).div(100);
 		return d1.add(d2);
 	}
 
@@ -96,10 +98,11 @@ contract SavingAccount is Ownable, usingProvable {
 	//更新存款利率
 	function updateDepositRate(address tokenAddress, uint blockNumber) public {
 		if(depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
-			depositRateRecord[tokenAddress][blockNumber] = (10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress));
-			depositRateLastModifiedBlockNumber[tokenAddress] = (10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress));
+			depositRateRecord[tokenAddress][blockNumber] = ACCURACY.add(getDepositRatePerBlock(tokenAddress));
+			depositRateLastModifiedBlockNumber[tokenAddress] = ACCURACY.add(getDepositRatePerBlock(tokenAddress));
 		} else {
-			depositRateRecord[tokenAddress][blockNumber]=depositRateLastModifiedBlockNumber[tokenAddress].mul((10**18/BLOCKS_PER_YEAR).add(getDepositAPR(tokenAddress)));
+			depositRateRecord[tokenAddress][blockNumber]=depositRateLastModifiedBlockNumber[tokenAddress]
+			.mul(ACCURACY.add(getDepositRatePerBlock(tokenAddress))).div(ACCURACY);
 			depositRateLastModifiedBlockNumber[tokenAddress] = depositRateRecord[tokenAddress][blockNumber];
 		}
 	}
@@ -107,17 +110,38 @@ contract SavingAccount is Ownable, usingProvable {
 	//更新借款利率
 	function updateBorrowRate(address tokenAddress, uint blockNumber) public {
 		if(borrowRateLastModifiedBlockNumber[tokenAddress] == 0) {
-			borrowRateRecord[tokenAddress][blockNumber] = (10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress));
-			borrowRateLastModifiedBlockNumber[tokenAddress] = (10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress));
+			borrowRateRecord[tokenAddress][blockNumber] = ACCURACY.add(getBorrowRatePerBlock(tokenAddress));
+			borrowRateLastModifiedBlockNumber[tokenAddress] = ACCURACY.add(getBorrowRatePerBlock(tokenAddress));
 		} else {
-			borrowRateRecord[tokenAddress][blockNumber] = borrowRateLastModifiedBlockNumber[tokenAddress].mul((10**18/BLOCKS_PER_YEAR).add(getBorrowAPR(tokenAddress)));
+			borrowRateRecord[tokenAddress][blockNumber] = borrowRateLastModifiedBlockNumber[tokenAddress]
+			.mul(ACCURACY.add(getBorrowRatePerBlock(tokenAddress))).div(ACCURACY);
 			borrowRateLastModifiedBlockNumber[tokenAddress] = borrowRateRecord[tokenAddress][blockNumber];
 		}
 	}
 
 	//获取当前区块高度
-	function getBlockNumber() internal view returns (uint) {
+	function getBlockNumber() internal view returns (uint256) {
 		return block.number;
+	}
+
+	//获取区块区间的存款利率
+	function getBlockIntervalDepositRate(address tokenAddress, TokenInfoLib.TokenInfo tokenInfo) internal view returns (uint256) {
+		if (depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
+			uint rate = 0;
+		} else {
+			uint rate = depositRateRecord[tokenAddress][getBlockNumber()].div(depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+		}
+		return rate;
+	}
+
+	//获取区块区间的借款利率
+	function getBlockIntervalBorrowRate(address tokenAddress, TokenInfoLib.TokenInfo tokenInfo) internal view returns (uint256) {
+		if (borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
+			uint rate = 0;
+		} else {
+			uint rate = borrowRateRecord[tokenAddress][getBlockNumber()].div(borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+		}
+		return rate;
 	}
 
 	//TODO
@@ -136,16 +160,21 @@ contract SavingAccount is Ownable, usingProvable {
 	function getAccountTotalUsdValue(address accountAddr, bool isPositive) private view returns (int256 usdValue){
 		int256 totalUsdValue = 0;
 		for(uint i = 0; i < getCoinLength(); i++) {
-			if (isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) >= 0) {
+			
+			uint DRate=getBlockIntervalDepositRate(symbols.addressFromIndex(i), accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)]);
+			
+			uint BRate=getBlockIntervalBorrowRate(symbols.addressFromIndex(i), accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)]);
+			
+			if (isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(getBlockNumber(), DRate) >= 0) {
 				totalUsdValue = totalUsdValue.add(
-					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp)
+					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(getBlockNumber(), DRate)
 					.mul(int256(symbols.priceFromIndex(i)))
 					.div(BASE)
 				);
 			}
-			if (!isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp) < 0) {
+			if (!isPositive && accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(getBlockNumber(), BRate) < 0) {
 				totalUsdValue = totalUsdValue.add(
-					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(block.timestamp)
+					accounts[accountAddr].tokenInfos[symbols.addressFromIndex(i)].totalAmount(getBlockNumber(), BRate)
 					.mul(int256(symbols.priceFromIndex(i)))
 					.div(BASE)
 				);
@@ -254,7 +283,9 @@ contract SavingAccount is Ownable, usingProvable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		require(tokenInfo.totalAmount(getBlockNumber()) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
+		uint rate = getBlockIntervalDepositRate(tokenAddress,tokenInfo);
+
+		require(tokenInfo.totalAmount(getBlockNumber(), rate) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
 		require(
 			(
 			int256(getAccountTotalUsdValue(msg.sender, false) * -1)
@@ -265,9 +296,7 @@ contract SavingAccount is Ownable, usingProvable {
 			(getAccountTotalUsdValue(msg.sender, true)).mul(BORROW_LTV),
 			"Insufficient collateral.");
 
-		uint borrowRate=getBorrowAPR(tokenAddress);
-
-		tokenInfo.minusAmount(amount, borrowRate, block.timestamp);
+		tokenInfo.minusAmount(amount, rate, getBlockNumber());
 		totalLoans[tokenAddress] = totalLoans[tokenAddress].add(int256(amount));
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
@@ -278,12 +307,14 @@ contract SavingAccount is Ownable, usingProvable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		int256 amountOwedWithInterest = tokenInfo.totalAmount(block.timestamp);
+		uint rate = getBlockIntervalBorrowRate(tokenAddress,tokenInfo);
+
+		int256 amountOwedWithInterest = tokenInfo.totalAmount(getBlockNumber(), rate);
 		require(amountOwedWithInterest <= 0, "Balance of the token must be negative. To deposit balance, please use deposit button.");
 
 		int256 amountBorrowed = tokenInfo.getCurrentTotalAmount().mul(-1); // get the actual amount that was borrowed (abs)
 		int256 amountToRepay = int256(amount);
-		tokenInfo.addAmount(amount, 0, block.timestamp);
+		tokenInfo.addAmount(amount, rate, getBlockNumber());
 
 		// check if paying interest
 		if (amountToRepay > amountBorrowed) {
@@ -319,11 +350,11 @@ contract SavingAccount is Ownable, usingProvable {
 		require(currentBalance >= 0,
 			"Balance of the token must be zero or positive. To pay negative balance, please use repay button.");
 
-		uint supplyRate = depositRateRecord[tokenAddress][getBlockNumber()].div(depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+		uint rate = getBlockIntervalDepositRate(tokenAddress,tokenInfo);
 
 		// deposited amount is new balance after addAmount minus previous balance  翻译：沉积量是附加金额减去前一资产负债后的新的平衡
 		//		int256 depositedAmount = tokenInfo.addAmount(amount, SUPPLY_APR_PER_BLOCK, block.timestamp) - currentBalance;
-		int256 depositedAmount = tokenInfo.addAmount(amount, supplyRate, getBlockNumber()) - currentBalance;
+		int256 depositedAmount = tokenInfo.addAmount(amount, rate, getBlockNumber()) - currentBalance;
 		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(depositedAmount);
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(depositedAmount);
 
@@ -339,14 +370,16 @@ contract SavingAccount is Ownable, usingProvable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
 
-		require(tokenInfo.totalAmount(block.timestamp) >= int256(amount), "Insufficient balance.");
+		uint rate = getBlockIntervalDepositRate(tokenAddress,tokenInfo);
+
+		require(tokenInfo.totalAmount(getBlockNumber(), rate) >= int256(amount), "Insufficient balance.");
 		// 		require(int256(getAccountTotalUsdValue(msg.sender, false) * -1) * 100 <= (getAccountTotalUsdValue(msg.sender, true) - int256(amount.mul(symbols.priceFromAddress(tokenAddress))) / BASE) * BORROW_LTV);
-		if(tokenInfo.viewInterest(block.timestamp) > 0){
-			int256 _money = tokenInfo.viewInterest(block.timestamp).mul(int256(amount).div(tokenInfo.getCurrentTotalAmount().sub(tokenInfo.viewInterest(block.timestamp)))).div(10);
+		if(tokenInfo.viewInterest(getBlockNumber(), rate) > 0) {
+			int256 _money = tokenInfo.viewInterest(getBlockNumber(), rate).mul(int256(amount).div(tokenInfo.getCurrentTotalAmount().sub(tokenInfo.viewInterest(getBlockNumber(), rate)))).div(10);
 			tokenInfo.updateInterest(_money);
 			payCommunityFund(_money);
 		}
-		tokenInfo.minusAmount(amount, 0, block.timestamp);
+		tokenInfo.minusAmount(amount, rate, getBlockNumber());
 		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(amount));
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(amount));
 
@@ -361,10 +394,19 @@ contract SavingAccount is Ownable, usingProvable {
 			getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD),
 			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
 
+		require(
+			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
+			.div(LIQUIDATION_DISCOUNT_RATIO)
+			<=
+			getAccountTotalUsdValue(targetAddress, true).div(100),
+			"Collateral is not sufficient to be liquidated."
+		);
+
 		uint coinsLen = getCoinLength();
 		for (uint i = 0; i < coinsLen; i++) {
 			address tokenAddress = symbols.addressFromIndex(i);
 			TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
+			uint rate = getBlockIntervalBorrowRate(tokenAddress,tokenInfo);
 			int256 totalAmount = tokenInfo.totalAmount(block.timestamp);
 			if (totalAmount > 0) {
 				send(msg.sender, uint256(totalAmount), tokenAddress);
