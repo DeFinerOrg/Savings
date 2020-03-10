@@ -61,8 +61,8 @@ contract SavingAccount is Ownable, usingProvable {
 		address[] memory tokenAddresses = params.getTokenAddresses();
 		//TODO This needs improvement as it could go out of gas
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
-		cTokenAddress[tokenAddresses[0]] = 0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e;
-		cTokenAddress[tokenAddresses[1]] = 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
+		cTokenAddress[tokenAddresses[0]] = 0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e; //ETH
+		cTokenAddress[tokenAddresses[1]] = 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14; //DAI
 	}
 
 	//Get compound deposit rate. The scale is 10 ** 18
@@ -80,23 +80,29 @@ contract SavingAccount is Ownable, usingProvable {
 	//Get the borrowing interest rate Borrowing interest rate.
 	//(compound deposit rate + compound borrowing rate) / 2. The scaling is 10 ** 18
 	function getBorrowRatePerBlock(address tokenAddress) public view returns(uint borrowRatePerBlock) {
-		return getCompoundSupplyRatePerBlock(cTokenAddress[tokenAddress])
-		.add(getCompoundBorrowRatePerBlock(cTokenAddress[tokenAddress])).div(2);
+		if(cTokenAddress[tokenAddress] == address(0)){
+			return 0;
+		} else {
+			return getCompoundSupplyRatePerBlock(cTokenAddress[tokenAddress])
+			.add(getCompoundBorrowRatePerBlock(cTokenAddress[tokenAddress])).div(2);
+		}
 	}
 
-	//获取存款利率  存款年利率 = （借款年利率*利用率（U）+compound供应率*compound资本比率（C））*（1-提款者共同体基金比率（D））
+	//Get Deposit Rate.  Deposit APR = (Borrow APR * Utilization Rate (U) +  Compound Supply Rate *
+	//Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
 	function getDepositRatePerBlock(address tokenAddress) public view returns(uint depositAPR) {
 		uint d1 = getBorrowRatePerBlock(tokenAddress).mul(getCapitalUtilizationRate(tokenAddress).div(100));
 		uint d2 = getCompoundSupplyRatePerBlock(cTokenAddress[tokenAddress]).mul(CAPITAL_COMPOUND_Ratio).div(100);
 		return d1.add(d2).mul(100-COMMUNITY_FUND_RATIO);
 	}
 
-	//获取资本利用率 资本利用率（U）= 贷款总额/市场存款总额
+	//Get capital utilization. 2.	Capital Utilization Rate (U )= total loan outstanding / Total market deposit
+	//The scaling is 10 ** 18
 	function getCapitalUtilizationRate(address tokenAddress) public view returns(uint capitalUtilizationRate) {
 		return uint(totalLoans[tokenAddress].div(totalDeposits[tokenAddress]).mul(100));
 	}
 
-	//更新存款利率
+	//Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
 	function updateDepositRate(address tokenAddress, uint blockNumber) public {
 		if(depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
 			depositRateRecord[tokenAddress][blockNumber] = ACCURACY.add(getDepositRatePerBlock(tokenAddress));
@@ -111,7 +117,7 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-	//更新借款利率
+	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
 	function updateBorrowRate(address tokenAddress, uint blockNumber) public {
 		if(borrowRateLastModifiedBlockNumber[tokenAddress] == 0) {
 			borrowRateRecord[tokenAddress][blockNumber] = ACCURACY.add(getBorrowRatePerBlock(tokenAddress));
@@ -126,13 +132,16 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-	//获取当前区块高度
+	//Get the current block height.
 	function getBlockNumber() internal view returns (uint256) {
 		return block.number;
 	}
 
-	//获取区块区间的存款利率
-	function getBlockIntervalDepositRate(address tokenAddress, TokenInfoLib.TokenInfo storage tokenInfo) internal view returns (uint256) {
+	//Get the deposit rate of the block interval.
+	function getBlockIntervalDepositRate(
+		address tokenAddress,
+		TokenInfoLib.TokenInfo storage tokenInfo
+	) internal view returns (uint256) {
 		if (depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
 			return 0;
 		} else {
@@ -140,8 +149,11 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-	//获取区块区间的借款利率
-	function getBlockIntervalBorrowRate(address tokenAddress, TokenInfoLib.TokenInfo storage tokenInfo) internal view returns (uint256) {
+	//Get the borrowing rate of the block interval
+	function getBlockIntervalBorrowRate(
+		address tokenAddress,
+		TokenInfoLib.TokenInfo storage tokenInfo
+	) internal view returns (uint256) {
 		if (borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
 			return 0;
 		} else {
@@ -156,7 +168,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
-	 翻译：获取交账地址存储在储蓄池balance的总量。
 	 */
 	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
 		return getAccountTotalUsdValue(accountAddr, true).add(getAccountTotalUsdValue(accountAddr, false));
@@ -190,9 +201,9 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Get the overall state of the saving pool
-	 翻译：获取储蓄池的整体状态
 	 */
-	function getMarketState() public view returns (address[] memory addresses,
+	function getMarketState() public view returns (
+		address[] memory addresses,
 		int256[] memory deposits,
 		int256[] memory loans,
 		int256[] memory collateral)
@@ -217,7 +228,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/*
 	 * Get the state of the given token
-	 翻译：获取给定令牌的状态
 	 */
 	function getTokenState(address tokenAddress) public view returns (int256 deposits, int256 loans, int256 collateral)
 	{
@@ -226,7 +236,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Get all balances for the sender's account
-	 翻译：查看该发送者的账户余额全部
 	 */
 	function getBalances() public view returns (address[] memory addresses, int256[] memory balances)
 	{
@@ -261,6 +270,12 @@ contract SavingAccount is Ownable, usingProvable {
 				int256(getAccountTotalUsdValue(targetAddress, false).mul(-1)).mul(100)
 				>
 				getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD)
+				&&
+				int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
+				.mul(LIQUIDATION_DISCOUNT_RATIO)
+				<=
+				getAccountTotalUsdValue(targetAddress, true).mul(100)
+
 			) {
 				liquidatableAccounts[returnIdx++] = (targetAddress);
 			}
@@ -350,7 +365,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	/** 
 	 * Deposit the amount of tokenAddress to the saving pool.
-	 翻译：存款令牌地址量为节电池。
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		TokenInfoLib.TokenInfo storage tokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
@@ -366,7 +380,7 @@ contract SavingAccount is Ownable, usingProvable {
 
 		uint rate = getBlockIntervalDepositRate(tokenAddress,tokenInfo);
 
-		// deposited amount is new balance after addAmount minus previous balance  翻译：沉积量是附加金额减去前一资产负债后的新的平衡
+		// deposited amount is new balance after addAmount minus previous balance
 		int256 depositedAmount = tokenInfo.addAmount(amount, rate, getBlockNumber()) - currentBalance;
 		totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(depositedAmount);
 		totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(depositedAmount);
@@ -378,7 +392,6 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
 	 * will be deducted first.
-	 翻译：从节约池撤柜令牌。 如果利率不为空，利息将首先扣除。
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public payable {
 		require(accounts[msg.sender].active, "Account not active, please deposit first.");
@@ -401,7 +414,7 @@ contract SavingAccount is Ownable, usingProvable {
 		updateDepositRate(tokenAddress, getBlockNumber());
 	}
 
-	function liquidate(address targetAddress) public payable {
+	function liquidate(address targetAddress, uint256 amount) public payable {
 		require(
 			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
 			.mul(100)
@@ -417,11 +430,19 @@ contract SavingAccount is Ownable, usingProvable {
 			"Collateral is not sufficient to be liquidated."
 		);
 
+		if (symbols.isEth(tokenAddress)) {
+			require(msg.value > 0, "支付金额必须大于0");
+		} else {
+			require(msg.value == 0, "支付金额必须等于0");
+			require(amount > 0, "Token transfer failed");
+		}
+
+		//计算维持到之前的借款比例需要清算多少抵押资产
 		int totalBorrow = int256(getAccountTotalUsdValue(targetAddress, false).mul(-1));
 		int totalMortgage = int256(getAccountTotalUsdValue(targetAddress, true));
-		int minimumAmountDue = LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow).sub(BORROW_LTV
-								.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage)).div(LIQUIDATION_DISCOUNT_RATIO
-								.sub(BORROW_LTV));
+		int minimumAmountDue = LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow)
+								.sub(BORROW_LTV.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage))
+								.div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV));
 		uint a1 = uint(minimumAmountDue);
 		uint a2 = uint(minimumAmountDue);
 
@@ -434,26 +455,46 @@ contract SavingAccount is Ownable, usingProvable {
 				uint256 totalAmount = uint(tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i))));
 				if(a1 >= totalAmount) {
 					uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
+					tokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
+					totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(_totalAmount));
+					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(_totalAmount));
 					send(msg.sender, _totalAmount, tokenAddress);
-					tokenInfo.minusAmount(totalAmount, rate, getBlockNumber());
-					a1 = a1.sub(totalAmount);
+					updateDepositRate(tokenAddress, getBlockNumber());
+					a1 = a1.sub(_totalAmount);
 				} else {
-					send(msg.sender, a1, tokenAddress);
 					tokenInfo.minusAmount(a1, rate, getBlockNumber());
+					totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(a1));
+					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(a1));
+					send(msg.sender, a1, tokenAddress);
+					updateDepositRate(tokenAddress, getBlockNumber());
 					a1 = 0;
 				}
-				send(msg.sender, uint256(totalAmount), tokenAddress);
 			} else if(tokenInfo.getCurrentTotalAmount() < 0 && a2 > 0) {
 				uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
 				int256 totalAmount = tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i)));
-				if(a2 >= uint256(-totalAmount)) {
-					receive(msg.sender, uint256(-totalAmount), tokenAddress);
-					repay(tokenAddress, uint256(-totalAmount));
+
+				uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
+				if(a2 >= _totalAmount) {
+					tokenInfo.addAmount(_totalAmount, rate, getBlockNumber());
+					// check if paying interest
+					if (amountToRepay > amountBorrowed) {
+						// add interest (if any) to total deposit
+						totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
+						// loan are reduced by amount payed
+						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountBorrowed);
+					} else {
+						// loan are reduced by amount payed
+						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountToRepay);
+					}
+					// collateral increased by amount payed
+					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(amountToRepay);
+					receive(msg.sender, amount, tokenAddress);
+					updateDepositRate(tokenAddress, getBlockNumber());
 					a2 = a2.sub(uint256(-totalAmount));
 				} else {
 					//TODO uint256(-totalAmount) this will underflow - Critical Security Issue
 					//TODO what is the reason for doing this???
-					receive(msg.sender, uint256(-totalAmount), tokenAddress);
+					//receive(msg.sender, uint256(-totalAmount), tokenAddress);
 					repay(tokenAddress, a2);
 					a2 = 0;
 				}
@@ -493,7 +534,6 @@ contract SavingAccount is Ownable, usingProvable {
 	/** 
 	 * Callback function which is used to parse query the oracle. Once 
 	 * parsed results from oracle, it will recursively call oracle for data.
-	 翻译：它是用来解析查询Oracle回调函数。 一旦从Oracle解析的结果，它会递归调用数据神谕。
 	 **/
 	function __callback(bytes32,  string memory result) public {
 		require(msg.sender == provable_cbAddress(), "Unauthorized address");

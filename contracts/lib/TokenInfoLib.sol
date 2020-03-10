@@ -17,12 +17,11 @@ library TokenInfoLib {
 	int256 constant NEGATIVE = -1;
 
 	// returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
-	//返回余额的总和，利息计入帐户，以及任何额外的利息累计达到给定的时间戳
 	function totalAmount(TokenInfo storage self, uint256 blockNumber, uint rate) public view returns(int256) {
 		return self.balance.add(viewInterest(self, blockNumber, rate));
 	}
 
-	// returns the sum of balance and interest posted to the account 翻译：返回余额和利息的总和计入账户
+	// returns the sum of balance and interest posted to the account
 	function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
 		return self.balance.add(self.interest);
 	}
