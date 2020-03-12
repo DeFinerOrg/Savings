@@ -25,7 +25,6 @@ contract SavingAccount is Ownable, usingProvable {
 	struct Account {
 		// Note, it's best practice to use functions minusAmount, addAmount, totalAmount 
 		// to operate tokenInfos instead of changing it directly.
-		//翻译：请注意，这是最好的做法是使用功能减额，增加金额，总金额直接改变它的操作令牌的相关信息来代替。
 		mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
 		bool active;
 	}
@@ -414,7 +413,9 @@ contract SavingAccount is Ownable, usingProvable {
 		updateDepositRate(tokenAddress, getBlockNumber());
 	}
 
-	function liquidate(address targetAddress, uint256 amount) public payable {
+	function liquidate(address targetAddress, uint256 amount, address _tokenAddress) public payable {
+
+		//是否满足清算比例
 		require(
 			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
 			.mul(100)
@@ -422,6 +423,7 @@ contract SavingAccount is Ownable, usingProvable {
 			getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD),
 			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
 
+		//是否满足清算下限
 		require(
 			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
 			.mul(LIQUIDATION_DISCOUNT_RATIO)
@@ -430,76 +432,155 @@ contract SavingAccount is Ownable, usingProvable {
 			"Collateral is not sufficient to be liquidated."
 		);
 
-		if (symbols.isEth(tokenAddress)) {
-			require(msg.value > 0, "支付金额必须大于0");
-		} else {
-			require(msg.value == 0, "支付金额必须等于0");
-			require(amount > 0, "Token transfer failed");
-		}
-
 		//计算维持到之前的借款比例需要清算多少抵押资产
 		int totalBorrow = int256(getAccountTotalUsdValue(targetAddress, false).mul(-1));
 		int totalMortgage = int256(getAccountTotalUsdValue(targetAddress, true));
-		int minimumAmountDue = LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow)
-								.sub(BORROW_LTV.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage))
-								.div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV));
-		uint a1 = uint(minimumAmountDue);
-		uint a2 = uint(minimumAmountDue);
 
-		uint coinsLen = getCoinLength();
-		for (uint i = 0; i < coinsLen; i++) {
-			address tokenAddress = symbols.addressFromIndex(i);
-			TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
-			if(tokenInfo.getCurrentTotalAmount() >= 0 && a1 > 0) {
-				uint rate = getBlockIntervalDepositRate(tokenAddress, tokenInfo);
-				uint256 totalAmount = uint(tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i))));
-				if(a1 >= totalAmount) {
-					uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
-					tokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
-					totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(_totalAmount));
-					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(_totalAmount));
-					send(msg.sender, _totalAmount, tokenAddress);
-					updateDepositRate(tokenAddress, getBlockNumber());
-					a1 = a1.sub(_totalAmount);
-				} else {
-					tokenInfo.minusAmount(a1, rate, getBlockNumber());
-					totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int256(a1));
-					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int256(a1));
-					send(msg.sender, a1, tokenAddress);
-					updateDepositRate(tokenAddress, getBlockNumber());
-					a1 = 0;
-				}
-			} else if(tokenInfo.getCurrentTotalAmount() < 0 && a2 > 0) {
-				uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
-				int256 totalAmount = tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i)));
+		//最大清算资产
+		uint liquidationDebtValue = uint(LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow)
+									.sub(BORROW_LTV.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage))
+									.div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV)));
 
-				uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
-				if(a2 >= _totalAmount) {
-					tokenInfo.addAmount(_totalAmount, rate, getBlockNumber());
-					// check if paying interest
-					if (amountToRepay > amountBorrowed) {
-						// add interest (if any) to total deposit
-						totalDeposits[tokenAddress] = totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
-						// loan are reduced by amount payed
-						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountBorrowed);
+		if(msg.value == 0 && amount == 0) {
+			require(
+				int256(getAccountTotalUsdValue(msg.sender, false).mul(-1))
+				.mul(100)
+				<
+				getAccountTotalUsdValue(msg.sender, true).mul(BORROW_LTV),
+				"余额不足以清算,请额外支付清算金额"
+			);
+
+			uint paymentOfLiquidationAmount = uint(getAccountTotalUsdValue(msg.sender, true).mul(100-BORROW_LTV).div(100));
+			uint liquidationOfMortgageAssets;
+			if(paymentOfLiquidationAmount < liquidationDebtValue) {
+				liquidationDebtValue = paymentOfLiquidationAmount;
+			}
+			liquidationOfMortgageAssets = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO)).mul(100);
+			paymentOfLiquidationAmount = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO))
+										 .mul(uint(100-LIQUIDATION_DISCOUNT_RATIO));
+			uint coinsLen = getCoinLength();
+			for (uint i = 0; i < coinsLen; i++) {
+				address tokenAddress = symbols.addressFromIndex(i);
+				TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
+				TokenInfoLib.TokenInfo storage msgTokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
+				if(
+					tokenInfo.getCurrentTotalAmount() >= 0
+					&& liquidationOfMortgageAssets > 0
+				) {
+					uint rate = getBlockIntervalDepositRate(tokenAddress, tokenInfo);
+					uint256 totalAmount = uint(tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i))));
+					if(liquidationOfMortgageAssets >= totalAmount) {
+						uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
+						tokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
+						msgTokenInfo.addAmount(_totalAmount, rate, getBlockNumber());
+						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(int(_totalAmount));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						liquidationOfMortgageAssets = liquidationOfMortgageAssets.sub(totalAmount);
 					} else {
-						// loan are reduced by amount payed
-						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(amountToRepay);
+						uint _liquidationOfMortgageAssets = uint(liquidationOfMortgageAssets.div(symbols.priceFromIndex(i)));
+						tokenInfo.minusAmount(_liquidationOfMortgageAssets, rate, getBlockNumber());
+						msgTokenInfo.addAmount(_liquidationOfMortgageAssets, rate, getBlockNumber());
+						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(int(_liquidationOfMortgageAssets));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						liquidationOfMortgageAssets = 0;
 					}
-					// collateral increased by amount payed
-					totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(amountToRepay);
-					receive(msg.sender, amount, tokenAddress);
-					updateDepositRate(tokenAddress, getBlockNumber());
-					a2 = a2.sub(uint256(-totalAmount));
-				} else {
-					//TODO uint256(-totalAmount) this will underflow - Critical Security Issue
-					//TODO what is the reason for doing this???
-					//receive(msg.sender, uint256(-totalAmount), tokenAddress);
-					repay(tokenAddress, a2);
-					a2 = 0;
+				} else if(tokenInfo.getCurrentTotalAmount() < 0 && liquidationDebtValue > 0) {
+					uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
+					int256 totalAmount = tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i)));
+					uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
+					if(liquidationDebtValue >= _totalAmount) {
+						uint __totalAmount = uint(_totalAmount.div(symbols.priceFromIndex(i)));
+						tokenInfo.addAmount(__totalAmount, rate, getBlockNumber());
+						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(__totalAmount));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						liquidationDebtValue = liquidationDebtValue.sub(_totalAmount);
+					} else {
+						uint _liquidationDebtValue = uint(liquidationDebtValue.div(symbols.priceFromIndex(i)));
+						tokenInfo.addAmount(_liquidationDebtValue, rate, getBlockNumber());
+						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(_liquidationDebtValue));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						liquidationDebtValue = 0;
+					}
+				} else if(msgTokenInfo.getCurrentTotalAmount() > 0 && paymentOfLiquidationAmount > 0) {
+					uint rate = getBlockIntervalBorrowRate(tokenAddress, msgTokenInfo);
+					uint256 totalAmount = uint(msgTokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i))));
+					if(paymentOfLiquidationAmount >= totalAmount) {
+						uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
+						msgTokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
+						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int(_totalAmount));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						paymentOfLiquidationAmount = paymentOfLiquidationAmount.sub(totalAmount);
+					} else {
+						uint _paymentOfLiquidationAmount = uint(paymentOfLiquidationAmount.div(symbols.priceFromIndex(i)));
+						tokenInfo.minusAmount(_paymentOfLiquidationAmount, rate, getBlockNumber());
+						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int(_paymentOfLiquidationAmount));
+						updateDepositRate(tokenAddress, getBlockNumber());
+						paymentOfLiquidationAmount = 0;
+					}
 				}
 			}
-			updateDepositRate(tokenAddress, getBlockNumber());
+		} else {
+			if(msg.value != 0){
+				require(amount == 0);
+				if(msg.value.mul(symbols.priceFromIndex(0)) <= liquidationDebtValue) {
+					liquidationDebtValue = msg.value.mul(symbols.priceFromIndex(0));
+				} else {
+					totalDeposits[symbols.addressFromIndex(0)] = totalDeposits[symbols.addressFromIndex(0)]
+																.add(int(msg.value.mul(symbols.priceFromIndex(0))
+																.sub(liquidationDebtValue)
+																.div(symbols.priceFromIndex(0))));
+					totalCollateral[symbols.addressFromIndex(0)] = totalCollateral[symbols.addressFromIndex(0)]
+																	.add(int(msg.value.mul(symbols.priceFromIndex(0))
+																	.sub(liquidationDebtValue)
+																	.div(symbols.priceFromIndex(0))));
+				}
+				uint coinsLen = getCoinLength();
+				uint liquidationOfMortgageAssets = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO)).mul(100);
+				for (uint i = 0; i < coinsLen; i++) {
+					address tokenAddress = symbols.addressFromIndex(i);
+					TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
+					if(tokenInfo.getCurrentTotalAmount() >= 0 && liquidationOfMortgageAssets > 0) {
+						uint rate = getBlockIntervalDepositRate(tokenAddress, tokenInfo);
+						uint256 totalAmount = uint(tokenInfo.totalAmount(getBlockNumber(), rate)
+							.mul(int256(symbols.priceFromIndex(i))));
+						if(liquidationOfMortgageAssets >= totalAmount) {
+							uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
+							tokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
+							updateDepositRate(tokenAddress, getBlockNumber());
+							liquidationOfMortgageAssets = liquidationOfMortgageAssets.sub(totalAmount);
+							send(msg.sender, _totalAmount, tokenAddress);
+							totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int(_totalAmount));
+						} else {
+							uint _liquidationOfMortgageAssets = uint(liquidationOfMortgageAssets.div(symbols.priceFromIndex(i)));
+							tokenInfo.minusAmount(_liquidationOfMortgageAssets, rate, getBlockNumber());
+							updateDepositRate(tokenAddress, getBlockNumber());
+							send(msg.sender, _liquidationOfMortgageAssets, tokenAddress);
+							totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int(_liquidationOfMortgageAssets));
+							liquidationOfMortgageAssets = 0;
+						}
+					} else if(tokenInfo.getCurrentTotalAmount() < 0 && liquidationDebtValue > 0) {
+						uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
+						int256 totalAmount = tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i)));
+						uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
+						if(liquidationDebtValue >= _totalAmount) {
+							uint __totalAmount = uint(_totalAmount.div(symbols.priceFromIndex(i)));
+							tokenInfo.addAmount(__totalAmount, rate, getBlockNumber());
+							totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(__totalAmount));
+							updateDepositRate(tokenAddress, getBlockNumber());
+							liquidationDebtValue = liquidationDebtValue.sub(_totalAmount);
+						} else {
+							uint _liquidationDebtValue = uint(liquidationDebtValue.div(symbols.priceFromIndex(i)));
+							tokenInfo.addAmount(_liquidationDebtValue, rate, getBlockNumber());
+							totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(_liquidationDebtValue));
+							updateDepositRate(tokenAddress, getBlockNumber());
+							liquidationDebtValue = 0;
+						}
+					}
+				}
+			} else {
+				require(amount != 0);
+
+			}
 		}
 	}
 
