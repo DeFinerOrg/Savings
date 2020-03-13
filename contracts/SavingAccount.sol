@@ -29,6 +29,7 @@ contract SavingAccount is Ownable, usingProvable {
 		bool active;
 	}
 
+	// TODO Can consider storing this info in struct
 	mapping(address => Account) accounts;
 	mapping(address => int256) totalDeposits;
 	mapping(address => int256) totalLoans;
@@ -38,11 +39,13 @@ contract SavingAccount is Ownable, usingProvable {
 	mapping(address => mapping(uint => uint)) borrowRateRecord;
 	mapping(address => uint) depositRateLastModifiedBlockNumber;
 	mapping(address => uint) borrowRateLastModifiedBlockNumber;
+	mapping(address => uint256) public capitalInCompound;
 
 	address[] activeAccounts;
 
 	SymbolsLib.Symbols symbols;
 
+	// TODO all should be in Config contract
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;//精度
@@ -53,6 +56,8 @@ contract SavingAccount is Ownable, usingProvable {
 	int LIQUIDATE_THREADHOLD = 85;
 	int LIQUIDATION_DISCOUNT_RATIO = 95;
 	uint COMMUNITY_FUND_RATIO = 10;
+	uint256 MIN_RESERVE_RATIO = 10;
+	uint256 MAX_RESERVE_RATIO = 20;
 	address payable DeFinerCommunityFund;
 
 	constructor() public {
@@ -99,6 +104,47 @@ contract SavingAccount is Ownable, usingProvable {
 	//The scaling is 10 ** 18
 	function getCapitalUtilizationRate(address tokenAddress) public view returns(uint capitalUtilizationRate) {
 		return uint(totalLoans[tokenAddress].div(totalDeposits[tokenAddress]).mul(100));
+	}
+
+	function getCapitalCompoundRatio(address token) public view returns (uint256 C) {
+		uint256 balance = capitalInCompound[token];
+		if(balance == 0) return 0;
+		C = balance.mul(100).div(totalDeposits[token]);
+	}
+
+	function getDeFinerReserveRatio(address token) public view returns (uint256 R) {
+		// ReserveRatio (R) = 1 - UtilizationRate (U) - CapitalCompoundRatio (C)
+		R = uint256(100)
+				.sub(getCapitalUtilizationRate(token))
+				.sub(getCapitalCompoundRatio(token));
+	}
+
+	function getCompoundReserverRatio(address token) public view returns (uint256 CR) {
+		uint256 deFinerReservRarioAvg = MIN_RESERVE_RATIO.add(MAX_RESERVE_RATIO).div(2);
+		CR = uint256(100)
+				.sub(getCapitalUtilizationRate(token))
+				.sub(deFinerReservRarioAvg);
+		CR = SafeMath.max(CR, 0);
+	}
+
+	function depositToCompound(address token) external {
+		require(getDeFinerReserveRatio(token) >= MAX_RESERVE_RATIO, "Reserve ratio less than MAX");
+
+		// Calculate amount to deposit
+		amountToDeposit = getCompoundReserverRatio(token);
+		//TODO Deposit to compound
+
+		capitalInCompound[token] = capitalInCompound.add(amountToDeposit);
+	}
+
+	function withdrawFromCompound(address token) external {
+		require(getDeFinerReserveRatio(token) < MIN_RESERVE_RATIO, "Reserve ratio less than MAX");
+
+		// Calculate amount to withdraw
+		amountToWithdraw = getCompoundReserverRatio(token);
+		// TODO Withdraw from compound
+
+		capitalInCompound[token] = capitalInCompound.sub(amountToWithdraw);
 	}
 
 	//Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
