@@ -109,7 +109,8 @@ contract SavingAccount is Ownable, usingProvable {
 	function getCapitalCompoundRatio(address token) public view returns (uint256 C) {
 		uint256 balance = capitalInCompound[token];
 		if(balance == 0) return 0;
-		C = balance.mul(100).div(totalDeposits[token]);
+		// C = balance.mul(100).div(totalDeposits[token]);
+		return 0;
 	}
 
 	function getDeFinerReserveRatio(address token) public view returns (uint256 R) {
@@ -124,27 +125,28 @@ contract SavingAccount is Ownable, usingProvable {
 		CR = uint256(100)
 				.sub(getCapitalUtilizationRate(token))
 				.sub(deFinerReservRarioAvg);
-		CR = SafeMath.max(CR, 0);
+		// CR = SafeMath.max(CR, 0);
+		return CR = 0;
 	}
 
 	function depositToCompound(address token) external {
 		require(getDeFinerReserveRatio(token) >= MAX_RESERVE_RATIO, "Reserve ratio less than MAX");
 
 		// Calculate amount to deposit
-		amountToDeposit = getCompoundReserverRatio(token);
+		uint256 amountToDeposit = getCompoundReserverRatio(token);
 		//TODO Deposit to compound
 
-		capitalInCompound[token] = capitalInCompound.add(amountToDeposit);
+		// capitalInCompound[token] = capitalInCompound.add(amountToDeposit);
 	}
 
 	function withdrawFromCompound(address token) external {
 		require(getDeFinerReserveRatio(token) < MIN_RESERVE_RATIO, "Reserve ratio less than MAX");
 
 		// Calculate amount to withdraw
-		amountToWithdraw = getCompoundReserverRatio(token);
+		uint256 amountToWithdraw = getCompoundReserverRatio(token);
 		// TODO Withdraw from compound
 
-		capitalInCompound[token] = capitalInCompound.sub(amountToWithdraw);
+		// capitalInCompound[token] = capitalInCompound.sub(amountToWithdraw);
 	}
 
 	//Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
