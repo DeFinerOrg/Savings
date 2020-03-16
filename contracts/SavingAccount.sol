@@ -14,6 +14,10 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 interface CToken {
 	function supplyRatePerBlock() external view returns (uint);
 	function borrowRatePerBlock() external view returns (uint);
+	function mint() external payable;
+	function redeem(uint redeemTokens) external returns (uint);
+	function mint(uint mintAmount) external returns (uint);
+	function redeemUnderlying(uint redeemAmount) external returns (uint);
 }
 
 contract SavingAccount is Ownable, usingProvable {
@@ -33,6 +37,7 @@ contract SavingAccount is Ownable, usingProvable {
 	mapping(address => int256) totalDeposits;
 	mapping(address => int256) totalLoans;
 	mapping(address => int256) totalCollateral;
+	mapping(address => int256) capitalCompound;
 	mapping(address => address) cTokenAddress;
 	mapping(address => mapping(uint => uint)) depositRateRecord;
 	mapping(address => mapping(uint => uint)) borrowRateRecord;
@@ -53,6 +58,8 @@ contract SavingAccount is Ownable, usingProvable {
 	int LIQUIDATE_THREADHOLD = 85;
 	int LIQUIDATION_DISCOUNT_RATIO = 95;
 	uint COMMUNITY_FUND_RATIO = 10;
+	uint Capital_Reserve_Ratio_Ceiling = 20; //准备金上限
+	uint Capital_Reserve_Ratio_Lower = 10;  //准备金下限
 	address payable DeFinerCommunityFund;
 
 	constructor() public {
@@ -252,6 +259,39 @@ contract SavingAccount is Ownable, usingProvable {
 		return (addresses, balances);
 	}
 
+	//存入comound的资金率
+	function getCapitalCompoundRate(address tokenAddress) public returns(uint capitalCompoundRate) {
+		if(capitalCompound[tokenAddress] == 0 || totalDeposits[tokenAddress] == 0){
+			capitalCompoundRate = 0;
+		} else {
+			capitalCompoundRate = capitalCompound[tokenAddress].div(totalDeposits[tokenAddress]).mul(100);
+		}
+		return capitalCompoundRate;
+	}
+
+	//存入compound的资金率列表
+	function getCapitalCompoundRateList() public returns(address[] memory addresses, int256[] memory balances) {
+		uint coinsLen = getCoinLength();
+		addresses = new address[](coinsLen);
+		balances = new int256[](coinsLen);
+		for (uint i = 0; i < coinsLen; i++) {
+			address tokenAddress = symbols.addressFromIndex(i);
+			addresses[i] = tokenAddress;
+			if(capitalCompound[tokenAddress] == 0 || totalDeposits[tokenAddress] == 0){
+				balances[i] = 0;
+			} else {
+				balances[i] = capitalCompound[tokenAddress].div(totalDeposits[tokenAddress]).mul(100);
+			}
+		}
+		return (addresses, balances);
+	}
+
+	//准备金率
+	function getCapitalReserveRate(address tokenAddress) public returns(uint capitalReserveRatio) {
+		return totalDeposits[tokenAddress].sub(capitalCompound[tokenAddress]).sub(totalLoans[tokenAddress])
+				.div(totalDeposits[tokenAddress]).mul(100);
+	}
+
 	function getActiveAccounts() public view returns (address[] memory) {
 		return activeAccounts;
 	}
@@ -303,6 +343,28 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
 		return symbols.priceFromIndex(coinIndex);
+	}
+
+	function toCompound(address tokenAddress) public {
+		require(getCapitalReserveRate(tokenAddress) > Capital_Reserve_Ratio_Ceiling);
+		uint amount = totalDeposits[tokenAddress].mul(100-Capital_Reserve_Ratio_Ceiling).div(100)
+						.sub(totalLoans[tokenAddress]);
+		CToken cToken = CToken(cTokenAddress[tokenAddress]);
+		if (symbols.isEth(tokenAddress)) {
+			cToken.mint.value(amount).gas(800)();
+		} else {
+			cToken.mint(amount);
+		}
+		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].add(amount);
+	}
+
+	function fromCompound(address tokenAddress) public {
+		require(getCapitalReserveRate(tokenAddress) < Capital_Reserve_Ratio_Lower);
+		uint amount =
+		requre(getCapitalReserveRate(tokenAddress) >= amount);
+		CToken cToken = CToken(cTokenAddress[tokenAddress]);
+		cToken.redeemUnderlying(amount);
+		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].sub(amount);
 	}
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
