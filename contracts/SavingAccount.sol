@@ -14,10 +14,14 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 interface CToken {
 	function supplyRatePerBlock() external view returns (uint);
 	function borrowRatePerBlock() external view returns (uint);
-	function mint() external payable;
 	function redeem(uint redeemTokens) external returns (uint);
 	function mint(uint mintAmount) external returns (uint);
 	function redeemUnderlying(uint redeemAmount) external returns (uint);
+	function exchangeRateStored() external view returns (uint);
+}
+
+interface CETH{
+	function mint() external payable;
 }
 
 contract SavingAccount is Ownable, usingProvable {
@@ -260,17 +264,17 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	//存入comound的资金率
-	function getCapitalCompoundRate(address tokenAddress) public returns(uint capitalCompoundRate) {
+	function getCapitalCompoundRate(address tokenAddress) public view returns(uint capitalCompoundRate) {
 		if(capitalCompound[tokenAddress] == 0 || totalDeposits[tokenAddress] == 0){
 			capitalCompoundRate = 0;
 		} else {
-			capitalCompoundRate = capitalCompound[tokenAddress].div(totalDeposits[tokenAddress]).mul(100);
+			capitalCompoundRate = uint(capitalCompound[tokenAddress].div(totalDeposits[tokenAddress]).mul(100));
 		}
 		return capitalCompoundRate;
 	}
 
 	//存入compound的资金率列表
-	function getCapitalCompoundRateList() public returns(address[] memory addresses, int256[] memory balances) {
+	function getCapitalCompoundRateList() public view returns(address[] memory addresses, int256[] memory balances) {
 		uint coinsLen = getCoinLength();
 		addresses = new address[](coinsLen);
 		balances = new int256[](coinsLen);
@@ -287,9 +291,9 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	//准备金率
-	function getCapitalReserveRate(address tokenAddress) public returns(uint capitalReserveRatio) {
-		return totalDeposits[tokenAddress].sub(capitalCompound[tokenAddress]).sub(totalLoans[tokenAddress])
-				.div(totalDeposits[tokenAddress]).mul(100);
+	function getCapitalReserveRate(address tokenAddress) public view returns(uint capitalReserveRatio) {
+		return uint(totalDeposits[tokenAddress].sub(capitalCompound[tokenAddress]).sub(totalLoans[tokenAddress])
+				.div(totalDeposits[tokenAddress]).mul(100));
 	}
 
 	function getActiveAccounts() public view returns (address[] memory) {
@@ -347,24 +351,28 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function toCompound(address tokenAddress) public {
 		require(getCapitalReserveRate(tokenAddress) > Capital_Reserve_Ratio_Ceiling);
-		uint amount = totalDeposits[tokenAddress].mul(100-Capital_Reserve_Ratio_Ceiling).div(100)
-						.sub(totalLoans[tokenAddress]);
-		CToken cToken = CToken(cTokenAddress[tokenAddress]);
+		uint amount = uint(totalDeposits[tokenAddress].mul(int(100-Capital_Reserve_Ratio_Ceiling)).div(100)
+			.sub(totalLoans[tokenAddress]));
 		if (symbols.isEth(tokenAddress)) {
-			cToken.mint.value(amount).gas(800)();
+			CETH cETH = CETH(cTokenAddress[tokenAddress]);
+			cETH.mint.value(amount).gas(800)();
 		} else {
+			CToken cToken = CToken(cTokenAddress[tokenAddress]);
 			cToken.mint(amount);
 		}
-		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].add(amount);
+		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].add(int(amount));
 	}
 
 	function fromCompound(address tokenAddress) public {
 		require(getCapitalReserveRate(tokenAddress) < Capital_Reserve_Ratio_Lower);
-		uint amount =
-		requre(getCapitalReserveRate(tokenAddress) >= amount);
+		uint amount = uint(totalDeposits[tokenAddress].mul(2).div(10)
+						.sub(totalDeposits[tokenAddress].sub(totalLoans[tokenAddress])
+							.sub(capitalCompound[tokenAddress])));
+		require(getCapitalReserveRate(tokenAddress) >= amount);
 		CToken cToken = CToken(cTokenAddress[tokenAddress]);
-		cToken.redeemUnderlying(amount);
-		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].sub(amount);
+		uint exchangeRate = cToken.exchangeRateStored();
+		cToken.redeemUnderlying(amount.div(exchangeRate).mul(ACCURACY));
+		capitalCompound[tokenAddress] = capitalCompound[tokenAddress].sub(int(amount));
 	}
 
 	function borrow(address tokenAddress, uint256 amount) public payable {
@@ -475,7 +483,7 @@ contract SavingAccount is Ownable, usingProvable {
 		updateDepositRate(tokenAddress, getBlockNumber());
 	}
 
-	function liquidate(address targetAddress, uint256 amount, address _tokenAddress) public payable {
+	function liquidate(address targetAddress) public payable {
 
 		//是否满足清算比例
 		require(
@@ -502,15 +510,6 @@ contract SavingAccount is Ownable, usingProvable {
 		uint liquidationDebtValue = uint(LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow)
 									.sub(BORROW_LTV.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage))
 									.div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV)));
-
-		if(msg.value == 0 && amount == 0) {
-			require(
-				int256(getAccountTotalUsdValue(msg.sender, false).mul(-1))
-				.mul(100)
-				<
-				getAccountTotalUsdValue(msg.sender, true).mul(BORROW_LTV),
-				"余额不足以清算,请额外支付清算金额"
-			);
 
 			uint paymentOfLiquidationAmount = uint(getAccountTotalUsdValue(msg.sender, true).mul(100-BORROW_LTV).div(100));
 			uint liquidationOfMortgageAssets;
@@ -581,69 +580,6 @@ contract SavingAccount is Ownable, usingProvable {
 					}
 				}
 			}
-		} else {
-			if(msg.value != 0){
-				require(amount == 0);
-				if(msg.value.mul(symbols.priceFromIndex(0)) <= liquidationDebtValue) {
-					liquidationDebtValue = msg.value.mul(symbols.priceFromIndex(0));
-				} else {
-					totalDeposits[symbols.addressFromIndex(0)] = totalDeposits[symbols.addressFromIndex(0)]
-																.add(int(msg.value.mul(symbols.priceFromIndex(0))
-																.sub(liquidationDebtValue)
-																.div(symbols.priceFromIndex(0))));
-					totalCollateral[symbols.addressFromIndex(0)] = totalCollateral[symbols.addressFromIndex(0)]
-																	.add(int(msg.value.mul(symbols.priceFromIndex(0))
-																	.sub(liquidationDebtValue)
-																	.div(symbols.priceFromIndex(0))));
-				}
-				uint coinsLen = getCoinLength();
-				uint liquidationOfMortgageAssets = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO)).mul(100);
-				for (uint i = 0; i < coinsLen; i++) {
-					address tokenAddress = symbols.addressFromIndex(i);
-					TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
-					if(tokenInfo.getCurrentTotalAmount() >= 0 && liquidationOfMortgageAssets > 0) {
-						uint rate = getBlockIntervalDepositRate(tokenAddress, tokenInfo);
-						uint256 totalAmount = uint(tokenInfo.totalAmount(getBlockNumber(), rate)
-							.mul(int256(symbols.priceFromIndex(i))));
-						if(liquidationOfMortgageAssets >= totalAmount) {
-							uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
-							tokenInfo.minusAmount(_totalAmount, rate, getBlockNumber());
-							updateDepositRate(tokenAddress, getBlockNumber());
-							liquidationOfMortgageAssets = liquidationOfMortgageAssets.sub(totalAmount);
-							send(msg.sender, _totalAmount, tokenAddress);
-							totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int(_totalAmount));
-						} else {
-							uint _liquidationOfMortgageAssets = uint(liquidationOfMortgageAssets.div(symbols.priceFromIndex(i)));
-							tokenInfo.minusAmount(_liquidationOfMortgageAssets, rate, getBlockNumber());
-							updateDepositRate(tokenAddress, getBlockNumber());
-							send(msg.sender, _liquidationOfMortgageAssets, tokenAddress);
-							totalDeposits[tokenAddress] = totalDeposits[tokenAddress].sub(int(_liquidationOfMortgageAssets));
-							liquidationOfMortgageAssets = 0;
-						}
-					} else if(tokenInfo.getCurrentTotalAmount() < 0 && liquidationDebtValue > 0) {
-						uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
-						int256 totalAmount = tokenInfo.totalAmount(getBlockNumber(), rate).mul(int256(symbols.priceFromIndex(i)));
-						uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
-						if(liquidationDebtValue >= _totalAmount) {
-							uint __totalAmount = uint(_totalAmount.div(symbols.priceFromIndex(i)));
-							tokenInfo.addAmount(__totalAmount, rate, getBlockNumber());
-							totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(__totalAmount));
-							updateDepositRate(tokenAddress, getBlockNumber());
-							liquidationDebtValue = liquidationDebtValue.sub(_totalAmount);
-						} else {
-							uint _liquidationDebtValue = uint(liquidationDebtValue.div(symbols.priceFromIndex(i)));
-							tokenInfo.addAmount(_liquidationDebtValue, rate, getBlockNumber());
-							totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(_liquidationDebtValue));
-							updateDepositRate(tokenAddress, getBlockNumber());
-							liquidationDebtValue = 0;
-						}
-					}
-				}
-			} else {
-				require(amount != 0);
-
-			}
-		}
 	}
 
 	function receive(address from, uint256 amount, address tokenAddress) private {
