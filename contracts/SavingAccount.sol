@@ -17,21 +17,36 @@ contract SavingAccount is Ownable, usingProvable {
 	using SafeMath for uint256;
 	using SignedSafeMath for int256;
 
+	// TODO Can consider storing this info in struct
+	mapping(address => int256) totalDeposits;
+	mapping(address => int256) totalLoans;
+	mapping(address => int256) totalCollateral;
+	mapping(address => address) cTokenAddress;
+	mapping(address => mapping(uint => uint)) depositRateRecord;
+	mapping(address => mapping(uint => uint)) borrowRateRecord;
+	mapping(address => uint) depositRateLastModifiedBlockNumber;
+	mapping(address => uint) borrowRateLastModifiedBlockNumber;
+	mapping(address => uint256) public capitalInCompound;
+
+	address[] activeAccounts;
+
 	SymbolsLib.Symbols symbols;
 	Base.BaseVariable baseVariable;
 
+	// TODO all should be in Config contract
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
 	int256 BASE = 10**6;//精度
 	uint256 ACCURACY = 10**18;
-//	uint256 CAPITAL_COMPOUND_Ratio = 0;	// Assume
-//	uint BLOCKS_PER_YEAR = 2102400;
+	uint BLOCKS_PER_YEAR = 2102400;
 	int BORROW_LTV = 60; //TODO check is this 60%?
 	int LIQUIDATE_THREADHOLD = 85;
 	int LIQUIDATION_DISCOUNT_RATIO = 95;
-//	uint COMMUNITY_FUND_RATIO = 10;
-	uint Capital_Reserve_Ratio_Ceiling = 20; //准备金上限
-	uint Capital_Reserve_Ratio_Lower = 10;  //准备金下限
+
+	uint COMMUNITY_FUND_RATIO = 10;
+	uint256 MIN_RESERVE_RATIO = 10;
+	uint256 MAX_RESERVE_RATIO = 20;
+
 
 	constructor() public {
 		SavingAccountParameters params = new SavingAccountParameters();
@@ -187,14 +202,14 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function toCompound(address tokenAddress) public {
 		if(symbols.isEth(tokenAddress)) {
-			baseVariable.toCompound(tokenAddress, Capital_Reserve_Ratio_Ceiling, true);
+			baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, true);
 		} else {
-			baseVariable.toCompound(tokenAddress, Capital_Reserve_Ratio_Ceiling, false);
+			baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, false);
 		}
 	}
 
 	function fromCompound(address tokenAddress) public {
-		baseVariable.fromCompound(tokenAddress, Capital_Reserve_Ratio_Lower, ACCURACY);
+		baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
 	}
 
 	function borrow(address tokenAddress, uint256 amount) public payable {

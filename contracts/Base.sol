@@ -31,6 +31,7 @@ library Base {
         mapping(address => mapping(uint => uint)) borrowRateRecord;
         mapping(address => uint) depositRateLastModifiedBlockNumber;
         mapping(address => uint) borrowRateLastModifiedBlockNumber;
+        mapping(address => uint256) capitalInCompound;
         mapping(address => Account) accounts;
         address[] activeAccounts;
         address payable deFinerCommunityFund;
@@ -106,16 +107,16 @@ library Base {
 
     //Get Deposit Rate.  Deposit APR = (Borrow APR * Utilization Rate (U) +  Compound Supply Rate *
     //Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
-    function getDepositRatePerBlock(BaseVariable storage self, address tokenAddress, int totalLoans, int totalDeposits) public view returns(uint depositAPR) {
-        uint d1 = getBorrowRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalUtilizationRate(totalLoans, totalDeposits).div(100));
-        uint d2 = getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress]).mul(0).div(100); // 要改
+    function getDepositRatePerBlock(BaseVariable storage self, address tokenAddress) public view returns(uint depositAPR) {
+        uint d1 = getBorrowRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalUtilizationRate(self, tokenAddress).div(100));
+        uint d2 = getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalCompoundRatio(self, tokenAddress)).div(100);
         return d1.add(d2).mul(100-10); // 要改
     }
 
     //Get capital utilization. 2.	Capital Utilization Rate (U )= total loan outstanding / Total market deposit
     //The scaling is 10 ** 18
-    function getCapitalUtilizationRate(int totalLoans, int totalDeposits) public pure returns(uint) {
-        return uint(totalLoans.div(totalDeposits).mul(10**18));
+    function getCapitalUtilizationRate(BaseVariable storage self, address tokenAddress) public view returns(uint) {
+        return uint(self.totalLoans[tokenAddress].div(self.totalDeposits[tokenAddress]).mul(10**18));
     }
 
     //存入comound的资金率
@@ -181,13 +182,13 @@ library Base {
     //Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
     function updateDepositRate(BaseVariable storage self, address tokenAddress, uint blockNumber, uint accuracy) public {
         if(self.depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
-            self.depositRateRecord[tokenAddress][blockNumber] = accuracy.add(getDepositRatePerBlock(self, tokenAddress, self.totalLoans[tokenAddress], self.totalDeposits[tokenAddress]));
+            self.depositRateRecord[tokenAddress][blockNumber] = accuracy.add(getDepositRatePerBlock(self, tokenAddress));
             self.depositRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
         } else {
             self.depositRateRecord[tokenAddress][blockNumber] =
             self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]]
             .mul(accuracy.add(blockNumber
-            .sub(self.depositRateLastModifiedBlockNumber[tokenAddress]).mul(getDepositRatePerBlock(self, tokenAddress, self.totalLoans[tokenAddress], self.totalDeposits[tokenAddress]))))
+            .sub(self.depositRateLastModifiedBlockNumber[tokenAddress]).mul(getDepositRatePerBlock(self, tokenAddress))))
             .div(accuracy);
             self.depositRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
         }
@@ -229,9 +230,9 @@ library Base {
         return (self.totalDeposits[tokenAddress], self.totalLoans[tokenAddress], self.totalCollateral[tokenAddress]);
     }
 
-    function toCompound(BaseVariable storage self, address tokenAddress, uint capitalReserveRatioCeiling, bool isEth) public {
-        require(getCapitalReserveRate(self, tokenAddress) > capitalReserveRatioCeiling);
-        uint amount = getToCompoundAmount(self, tokenAddress, capitalReserveRatioCeiling);
+    function toCompound(BaseVariable storage self, address tokenAddress, uint maxReserveRatio, bool isEth) public {
+        require(getCapitalReserveRate(self, tokenAddress) > maxReserveRatio);
+        uint amount = getToCompoundAmount(self, tokenAddress, maxReserveRatio);
         if (isEth) {
             CETH cETH = CETH(self.cTokenAddress[tokenAddress]);
             cETH.mint.value(amount).gas(200000)();
@@ -242,8 +243,8 @@ library Base {
         self.capitalCompound[tokenAddress] = self.capitalCompound[tokenAddress].add(int(amount));
     }
 
-    function fromCompound(BaseVariable storage self, address tokenAddress, uint capitalReserveRatioLower, uint accuracy) public {
-        require(getCapitalReserveRate(self, tokenAddress) < capitalReserveRatioLower);
+    function fromCompound(BaseVariable storage self, address tokenAddress, uint minReserveRatio, uint accuracy) public {
+        require(getCapitalReserveRate(self, tokenAddress) < minReserveRatio);
         uint amount = getFromCompoundAmount(self, tokenAddress);
         require(getCapitalReserveRate(self, tokenAddress) >= amount);
         CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
@@ -397,4 +398,49 @@ library Base {
     function getActiveAccounts(BaseVariable storage self) public view returns (address[] memory) {
         return self.activeAccounts;
     }
+
+    function getCapitalCompoundRatio(BaseVariable storage self, address token) public view returns (uint256 C) {
+        uint256 balance = self.capitalInCompound[token];
+        if(balance == 0) return 0;
+        // C = balance.mul(100).div(self.totalDeposits[token]);
+        return 0;
+    }
+
+//    function getDeFinerReserveRatio(BaseVariable storage self, address token) public view returns (uint256 R) {
+//        // ReserveRatio (R) = 1 - UtilizationRate (U) - CapitalCompoundRatio (C)
+//        R = uint256(100)
+//        .sub(getCapitalUtilizationRate(self, token))
+//        .sub(getCapitalCompoundRatio(self, token));
+//    }
+
+
+//    function getCompoundReserverRatio(address token) public view returns (uint256 CR) {
+//        uint256 deFinerReservRarioAvg = MIN_RESERVE_RATIO.add(MAX_RESERVE_RATIO).div(2);
+//        CR = uint256(100)
+//        .sub(getCapitalUtilizationRate(token))
+//        .sub(deFinerReservRarioAvg);
+//        // CR = SafeMath.max(CR, 0);
+//        return CR = 0;
+//    }
+//
+//    function depositToCompound(address token) external {
+//        require(getDeFinerReserveRatio(token) >= MAX_RESERVE_RATIO, "Reserve ratio less than MAX");
+//
+//        // Calculate amount to deposit
+//        uint256 amountToDeposit = getCompoundReserverRatio(token);
+//        //TODO Deposit to compound
+//
+//        // capitalInCompound[token] = capitalInCompound.add(amountToDeposit);
+//    }
+//
+//    function withdrawFromCompound(address token) external {
+//        require(getDeFinerReserveRatio(token) < MIN_RESERVE_RATIO, "Reserve ratio less than MAX");
+//
+//        // Calculate amount to withdraw
+//        uint256 amountToWithdraw = getCompoundReserverRatio(token);
+//        // TODO Withdraw from compound
+//
+//        // capitalInCompound[token] = capitalInCompound.sub(amountToWithdraw);
+//    }
+
 }
