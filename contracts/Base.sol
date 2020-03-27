@@ -46,8 +46,8 @@ library Base {
 
     //初始化
     function initialize(BaseVariable storage self, address[] memory tokenAddresses) public {
-        self.cTokenAddress[tokenAddresses[0]] = 0xd6801a1DfFCd0a410336Ef88DeF4320D6DF1883e; //ETH
-        self.cTokenAddress[tokenAddresses[1]] = 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14; //DAI
+        self.cTokenAddress[tokenAddresses[0]] = 0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5; //ETH
+        self.cTokenAddress[tokenAddresses[1]] = 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; //DAI
     }
 
     function addTotalDeposits(BaseVariable storage self, address tokenAddress, int amount) public {
