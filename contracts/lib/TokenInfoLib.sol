@@ -95,9 +95,11 @@ library TokenInfoLib {
 		//TODO uint256(-amount) ???
 		uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
 		uint256 _interest = self.interest >= 0 ? uint256(self.interest) : uint256(-self.interest);
-		uint256 _difference = blockNumber.sub(self.StartBlockNumber);
-
-		if(_difference == 0) {
+		uint256 _difference = 0;
+		if(self.StartBlockNumber != 0) {
+			_difference = blockNumber.sub(self.StartBlockNumber);
+		}
+		if(_difference == 0 || rate == 0) {
 			return self.interest;
 		} else {
 			return int256(_balance.add(_interest).mul(rate).mul(_difference).div(BASE).sub(_balance)).mul(_sign);

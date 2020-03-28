@@ -50,6 +50,11 @@ library Base {
         self.cTokenAddress[tokenAddresses[1]] = 0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643; //DAI
     }
 
+    //Test method
+    function getCToken(BaseVariable storage self, address tokenAddress) public view returns(address) {
+        return self.cTokenAddress[tokenAddress];
+    }
+
     function addTotalDeposits(BaseVariable storage self, address tokenAddress, int amount) public {
         self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(amount);
     }
@@ -96,27 +101,31 @@ library Base {
 
     //Get the borrowing interest rate Borrowing interest rate.
     //(compound deposit rate + compound borrowing rate) / 2. The scaling is 10 ** 18
-    function getBorrowRatePerBlock(address cTokenAddress) public view returns(uint borrowRatePerBlock) {
-        if(cTokenAddress == address(0)){
+    function getBorrowRatePerBlock(BaseVariable storage self, address tokenAddress) public view returns(uint borrowRatePerBlock) {
+        if(self.cTokenAddress[tokenAddress] == address(0)){
             return 0;
         } else {
-            return getCompoundSupplyRatePerBlock(cTokenAddress)
-            .add(getCompoundBorrowRatePerBlock(cTokenAddress)).div(2);
+            return getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress])
+            .add(getCompoundBorrowRatePerBlock(self.cTokenAddress[tokenAddress])).div(2);
         }
     }
 
     //Get Deposit Rate.  Deposit APR = (Borrow APR * Utilization Rate (U) +  Compound Supply Rate *
     //Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
     function getDepositRatePerBlock(BaseVariable storage self, address tokenAddress) public view returns(uint depositAPR) {
-        uint d1 = getBorrowRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalUtilizationRate(self, tokenAddress).div(100));
-        uint d2 = getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalCompoundRatio(self, tokenAddress)).div(100);
-        return d1.add(d2).mul(100-10); // 要改
+        uint d1 = getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress).div(10**18));
+        uint d2 = getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalCompoundRatio(self, tokenAddress)).div(10**18);
+        return d1.add(d2).mul(90).div(100); // 要改
     }
 
-    //Get capital utilization. 2.	Capital Utilization Rate (U )= total loan outstanding / Total market deposit
+    //Get capital utilization. Capital Utilization Rate (U )= total loan outstanding / Total market deposit
     //The scaling is 10 ** 18
     function getCapitalUtilizationRate(BaseVariable storage self, address tokenAddress) public view returns(uint) {
-        return uint(self.totalLoans[tokenAddress].div(self.totalDeposits[tokenAddress]).mul(10**18));
+        if(self.totalDeposits[tokenAddress] == 0) {
+            return 0;
+        } else {
+            return uint(self.totalLoans[tokenAddress].div(self.totalDeposits[tokenAddress]).mul(10**18));
+        }
     }
 
     //存入comound的资金率
@@ -151,16 +160,36 @@ library Base {
     function getBlockIntervalDepositRateRecord(BaseVariable storage self, address tokenAddress, uint depositRateRecordStart) internal view returns (uint256) {
         if (self.depositRateRecord[tokenAddress][depositRateRecordStart] == 0) {
             return 0;
+        } else if(self.depositRateRecord[tokenAddress][depositRateRecordStart] == self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]]) {
+            return self.depositRateRecord[tokenAddress][depositRateRecordStart];
         } else {
-            return self.depositRateRecord[tokenAddress][block.number].div(self.depositRateRecord[tokenAddress][depositRateRecordStart]);
+            return self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]].div(self.depositRateRecord[tokenAddress][depositRateRecordStart]);
         }
+    }
+
+    //Test method
+    function getNowRate(BaseVariable storage self, address tokenAddress) public view returns(uint, uint) {
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
+        return (getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber()), getBlockIntervalBorrowRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber()));
+    }
+
+    //Test method
+    function getDepositRateRecord(BaseVariable storage self, address tokenAddress, uint blockNumber) public view returns(uint) {
+        return self.depositRateRecord[tokenAddress][blockNumber];
+    }
+
+    //Test method
+    function getBorrowRateRecord(BaseVariable storage self, address tokenAddress, uint blockNumber) public view returns(uint) {
+        return self.borrowRateRecord[tokenAddress][blockNumber];
     }
 
     function getBlockIntervalBorrowRateRecord(BaseVariable storage self, address tokenAddress, uint borrowRateRecordStart) internal view returns (uint256) {
         if (self.borrowRateRecord[tokenAddress][borrowRateRecordStart] == 0) {
             return 0;
+        } else if(self.borrowRateRecord[tokenAddress][borrowRateRecordStart] == self.borrowRateRecord[tokenAddress][self.borrowRateLastModifiedBlockNumber[tokenAddress]]) {
+            return self.borrowRateRecord[tokenAddress][borrowRateRecordStart];
         } else {
-            return self.borrowRateRecord[tokenAddress][block.number].div(self.borrowRateRecord[tokenAddress][borrowRateRecordStart]);
+            return self.borrowRateRecord[tokenAddress][self.borrowRateLastModifiedBlockNumber[tokenAddress]].div(self.borrowRateRecord[tokenAddress][borrowRateRecordStart]);
         }
     }
 
@@ -181,29 +210,36 @@ library Base {
 
     //Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
     function updateDepositRate(BaseVariable storage self, address tokenAddress, uint blockNumber, uint accuracy) public {
-        if(self.depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
+        if(getDepositRatePerBlock(self, tokenAddress) == 0) {
+            self.depositRateRecord[tokenAddress][blockNumber] = 0;
+            self.depositRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
+        } else if(self.depositRateLastModifiedBlockNumber[tokenAddress] == 0) {
             self.depositRateRecord[tokenAddress][blockNumber] = accuracy.add(getDepositRatePerBlock(self, tokenAddress));
             self.depositRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
         } else {
             self.depositRateRecord[tokenAddress][blockNumber] =
-            self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]]
-            .mul(accuracy.add(blockNumber
-            .sub(self.depositRateLastModifiedBlockNumber[tokenAddress]).mul(getDepositRatePerBlock(self, tokenAddress))))
-            .div(accuracy);
+                self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]]
+                .mul(accuracy
+                    .add(blockNumber.sub(self.depositRateLastModifiedBlockNumber[tokenAddress])
+                        .mul(getDepositRatePerBlock(self, tokenAddress))
+                    )
+                )
+                .div(accuracy);
             self.depositRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
-        }
+            }
     }
 
     //Update borrow rates. borrowRate = 1 + blockChangeValue * rate
+    //todo:getBorrowRatePerBlock如果是0需要考虑
     function updateBorrowRate(BaseVariable storage self, address tokenAddress, uint blockNumber, uint accuracy) public {
         if(self.borrowRateLastModifiedBlockNumber[tokenAddress] == 0) {
-            self.borrowRateRecord[tokenAddress][blockNumber] = accuracy.add(getBorrowRatePerBlock(tokenAddress));
+            self.borrowRateRecord[tokenAddress][blockNumber] = accuracy.add(getBorrowRatePerBlock(self, tokenAddress));
             self.borrowRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
         } else {
             self.borrowRateRecord[tokenAddress][blockNumber] =
             self.borrowRateRecord[tokenAddress][self.borrowRateLastModifiedBlockNumber[tokenAddress]]
             .mul(accuracy.add(blockNumber
-            .sub(self.borrowRateLastModifiedBlockNumber[tokenAddress]).mul(getBorrowRatePerBlock(tokenAddress))))
+            .sub(self.borrowRateLastModifiedBlockNumber[tokenAddress]).mul(getBorrowRatePerBlock(self, tokenAddress))))
             .div(accuracy);
             self.borrowRateLastModifiedBlockNumber[tokenAddress] = blockNumber;
         }
@@ -290,7 +326,7 @@ library Base {
         require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
 
-        uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
+        uint rate = getBlockIntervalBorrowRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
         require(tokenInfo.totalAmount(block.number, rate) < int256(amount), "Borrow amount less than available balance, please use withdraw instead.");
 
         tokenInfo.minusAmount(amount, rate, block.number);
@@ -347,7 +383,7 @@ library Base {
             payCommunityFund(self, _money);
         }
         tokenInfo.minusAmount(amount, rate, block.number);
-        self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(int(amount));
+        self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].sub(int(amount));
         self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].sub(int(amount));
         updateDepositRate(self, tokenAddress, block.number, accuracy);
     }

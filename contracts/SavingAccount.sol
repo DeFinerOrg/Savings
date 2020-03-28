@@ -56,6 +56,31 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.initialize(tokenAddresses);
 	}
 
+	//Test method
+	function getCompoundRatePerBlock(address _cTokenAddress) public view returns(uint compoundSupplyRatePerBlock, uint compoundBorrowRatePerBlock) {
+		return (Base.getCompoundSupplyRatePerBlock(_cTokenAddress), Base.getCompoundBorrowRatePerBlock(_cTokenAddress));
+	}
+
+	//Test method
+	function getDefinerRateRecord(address tokenAddress, uint blockNumber) public view returns(uint, uint) {
+		return (baseVariable.getDepositRateRecord(tokenAddress, blockNumber), baseVariable.getBorrowRateRecord(tokenAddress, blockNumber));
+	}
+
+	//Test method
+	function getDefinerRatePerBlock(address tokenAddress) public view returns(uint, uint) {
+		return (baseVariable.getDepositRatePerBlock(tokenAddress), baseVariable.getBorrowRatePerBlock(tokenAddress));
+	}
+
+	//Test method
+	function getNowRate(address tokenAddress) public view returns(uint, uint) {
+		return baseVariable.getNowRate(tokenAddress);
+	}
+
+	//Test method
+	function getCToken(address tokenAddress) public view returns(address) {
+		return baseVariable.getCToken(tokenAddress);
+	}
+
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
 	function updateBorrowRate(address tokenAddress, uint blockNumber) public {
 		baseVariable.updateBorrowRate(tokenAddress, blockNumber, ACCURACY);
@@ -73,7 +98,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return getAccountTotalUsdValue(accountAddr, true).add(getAccountTotalUsdValue(accountAddr, false));
 	}
 
-	function getAccountTotalUsdValue(address accountAddr, bool isPositive) private view returns (int256 usdValue){
+	function getAccountTotalUsdValue(address accountAddr, bool isPositive) private view returns (int256 usdValue) {
 		int256 totalUsdValue = 0;
 		for(uint i = 0; i < getCoinLength(); i++) {
 			totalUsdValue = totalUsdValue.add(baseVariable.getAccountTotalUsdValue(
