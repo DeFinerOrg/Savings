@@ -58,6 +58,7 @@ library Base {
     }
 
     function approveAll(BaseVariable storage self, address tokenAddress) public {
+        require(self.cTokenAddress[tokenAddress] != address(0x0));
         ERC20 eRC20 = ERC20(tokenAddress);
         eRC20.approve(self.cTokenAddress[tokenAddress], 115792089237316195423570985008687907853269984665640564039457584007913129639935);
     }

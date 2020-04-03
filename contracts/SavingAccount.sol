@@ -42,14 +42,15 @@ contract SavingAccount is Ownable, usingProvable {
 		//TODO This needs improvement as it could go out of gas
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 		baseVariable.initialize(tokenAddresses, cTokenAddresses);
-	}
-
-	function approveAll(address[] memory tokenAddress) private {
-		for(uint i = 0;i > tokenAddress.length;i++) {
-			if(tokenAddress[i] != address(0x0)) {
-				baseVariable.approveAll(tokenAddress[i]);
+		for(uint i = 0;i < tokenAddresses.length;i++) {
+			if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != 0x000000000000000000000000000000000000000E) {
+				baseVariable.approveAll(tokenAddresses[i]);
 			}
 		}
+	}
+
+	function approveAll(address tokenAddress) public {
+		baseVariable.approveAll(tokenAddress);
 	}
 
 	//Test method
