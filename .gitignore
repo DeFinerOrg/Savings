@@ -8,3 +8,5 @@ bridge.log
 .DS_Store
 */.DS_Store
 deploy
+./contracts/config/Config.sol
+./contracts/config/ConfigRinkebynet.sol

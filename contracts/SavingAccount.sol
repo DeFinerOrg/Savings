@@ -17,26 +17,12 @@ contract SavingAccount is Ownable, usingProvable {
 	using SafeMath for uint256;
 	using SignedSafeMath for int256;
 
-	// TODO Can consider storing this info in struct
-	mapping(address => int256) totalDeposits;
-	mapping(address => int256) totalLoans;
-	mapping(address => int256) totalCollateral;
-	mapping(address => address) cTokenAddress;
-	mapping(address => mapping(uint => uint)) depositRateRecord;
-	mapping(address => mapping(uint => uint)) borrowRateRecord;
-	mapping(address => uint) depositRateLastModifiedBlockNumber;
-	mapping(address => uint) borrowRateLastModifiedBlockNumber;
-	mapping(address => uint256) public capitalInCompound;
-
-	address[] activeAccounts;
-
 	SymbolsLib.Symbols symbols;
 	Base.BaseVariable baseVariable;
 
 	// TODO all should be in Config contract
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
-	int256 BASE = 10**6;//精度
 	uint256 ACCURACY = 10**18;
 	uint BLOCKS_PER_YEAR = 2102400;
 	int BORROW_LTV = 60; //TODO check is this 60%?
@@ -50,20 +36,41 @@ contract SavingAccount is Ownable, usingProvable {
 
 	constructor() public {
 		SavingAccountParameters params = new SavingAccountParameters();
+		Config config = new Config();
 		address[] memory tokenAddresses = params.getTokenAddresses();
+		address[] memory cTokenAddresses = config.getCTokenAddresses();
 		//TODO This needs improvement as it could go out of gas
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
-		baseVariable.initialize(tokenAddresses);
+		baseVariable.initialize(tokenAddresses, cTokenAddresses);
+	}
+
+	function approveAll(address[] memory tokenAddress) private {
+		for(uint i = 0;i > tokenAddress.length;i++) {
+			if(tokenAddress[i] != address(0x0)) {
+				baseVariable.approveAll(tokenAddress[i]);
+			}
+		}
 	}
 
 	//Test method
-	function getCompoundRatePerBlock(address _cTokenAddress) public view returns(uint compoundSupplyRatePerBlock, uint compoundBorrowRatePerBlock) {
+	function getPrincipalAndInterestInCompound(address tokenAddress) public view returns(uint) {
+		return baseVariable.getPrincipalAndInterestInCompound(tokenAddress);
+	}
+
+	//Test method
+	function getCompoundRatePerBlock(address _cTokenAddress) public view returns(
+		uint compoundSupplyRatePerBlock,
+		uint compoundBorrowRatePerBlock
+	) {
 		return (Base.getCompoundSupplyRatePerBlock(_cTokenAddress), Base.getCompoundBorrowRatePerBlock(_cTokenAddress));
 	}
 
 	//Test method
 	function getDefinerRateRecord(address tokenAddress, uint blockNumber) public view returns(uint, uint) {
-		return (baseVariable.getDepositRateRecord(tokenAddress, blockNumber), baseVariable.getBorrowRateRecord(tokenAddress, blockNumber));
+		return (
+		baseVariable.getDepositRateRecord(tokenAddress, blockNumber),
+		baseVariable.getBorrowRateRecord(tokenAddress, blockNumber)
+		);
 	}
 
 	//Test method
@@ -82,8 +89,9 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-	function updateBorrowRate(address tokenAddress, uint blockNumber) public {
-		baseVariable.updateBorrowRate(tokenAddress, blockNumber, ACCURACY);
+	function updateDefinerRate(address tokenAddress) public {
+		baseVariable.updateBorrowRate(tokenAddress, block.number, ACCURACY);
+		baseVariable.updateDepositRate(tokenAddress, block.number, ACCURACY);
 	}
 
 	//TODO
@@ -101,13 +109,14 @@ contract SavingAccount is Ownable, usingProvable {
 	function getAccountTotalUsdValue(address accountAddr, bool isPositive) private view returns (int256 usdValue) {
 		int256 totalUsdValue = 0;
 		for(uint i = 0; i < getCoinLength(); i++) {
-			totalUsdValue = totalUsdValue.add(baseVariable.getAccountTotalUsdValue(
-													accountAddr,
-													isPositive,
-													symbols.addressFromIndex(i),
-													symbols.priceFromIndex(i)
-												)
-											);
+			totalUsdValue = totalUsdValue.add(
+				baseVariable.getAccountTotalUsdValue(
+							accountAddr,
+							isPositive,
+							symbols.addressFromIndex(i),
+							symbols.priceFromIndex(i)
+				)
+			);
 		}
 		return totalUsdValue;
 	}
@@ -119,7 +128,8 @@ contract SavingAccount is Ownable, usingProvable {
 		address[] memory addresses,
 		int256[] memory deposits,
 		int256[] memory loans,
-		int256[] memory collateral
+		int256[] memory collateral,
+		int256[] memory capitalInCompound
 	)
 	{
 		uint coinsLen = getCoinLength();
@@ -128,21 +138,25 @@ contract SavingAccount is Ownable, usingProvable {
 		deposits = new int256[](coinsLen);
 		loans = new int256[](coinsLen);
 		collateral = new int256[](coinsLen);
+		capitalInCompound = new int256[](coinsLen);
 
 		for (uint i = 0; i < coinsLen; i++) {
 			address tokenAddress = symbols.addressFromIndex(i);
 			addresses[i] = tokenAddress;
-			deposits[i] = baseVariable.getMarketState(tokenAddress)[0];
-			loans[i] = baseVariable.getMarketState(tokenAddress)[1];
-			collateral[i] = baseVariable.getMarketState(tokenAddress)[2];
+			(deposits[i], loans[i], collateral[i], capitalInCompound[i]) = baseVariable.getTokenState(tokenAddress);
 		}
-		return (addresses, deposits, loans, collateral);
+		return (addresses, deposits, loans, collateral, capitalInCompound);
 	}
 
 	/*
 	 * Get the state of the given token
 	 */
-	function getTokenState(address tokenAddress) public view returns (int256 deposits, int256 loans, int256 collateral)
+	function getTokenState(address tokenAddress) public view returns (
+		int256 deposits,
+		int256 loans,
+		int256 collateral,
+		int256 capitalInCompound
+	)
 	{
 		return baseVariable.getTokenState(tokenAddress);
 	}
@@ -242,11 +256,12 @@ contract SavingAccount is Ownable, usingProvable {
 			(
 			int256(getAccountTotalUsdValue(msg.sender, false) * -1)
 			.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-			.div(BASE)
+			.div(10**18)
 			).mul(100)
 			<=
 			(getAccountTotalUsdValue(msg.sender, true)).mul(BORROW_LTV),
-			"Insufficient collateral.");
+			"Insufficient collateral."
+		);
 		baseVariable.borrow(tokenAddress, amount, ACCURACY);
 		send(msg.sender, amount, tokenAddress);
 	}
@@ -254,6 +269,10 @@ contract SavingAccount is Ownable, usingProvable {
 	function repay(address tokenAddress, uint256 amount) public payable {
 		baseVariable.repay(tokenAddress, amount, ACCURACY);
 		receive(msg.sender, amount, tokenAddress);
+		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
+			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
+		}
+		updateDefinerRate(tokenAddress);
 	}
 	/** 
 	 * Deposit the amount of tokenAddress to the saving pool.
@@ -261,6 +280,10 @@ contract SavingAccount is Ownable, usingProvable {
 	function depositToken(address tokenAddress, uint256 amount) public payable {
 		baseVariable.depositToken(tokenAddress, amount, ACCURACY);
 		receive(msg.sender, amount, tokenAddress);
+		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {//20暂用，要改
+			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
+		}
+		updateDefinerRate(tokenAddress);
 	}
 
 	/**
