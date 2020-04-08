@@ -75,11 +75,6 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	//Test method
-	function getDefinerRatePerBlock(address tokenAddress) public view returns(uint, uint) {
-		return (baseVariable.getDepositRatePerBlock(tokenAddress), baseVariable.getBorrowRatePerBlock(tokenAddress));
-	}
-
-	//Test method
 	function getNowRate(address tokenAddress) public view returns(uint, uint) {
 		return baseVariable.getNowRate(tokenAddress);
 	}
@@ -91,8 +86,8 @@ contract SavingAccount is Ownable, usingProvable {
 
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
 	function updateDefinerRate(address tokenAddress) public {
-		baseVariable.updateBorrowRate(tokenAddress, block.number, ACCURACY);
-		baseVariable.updateDepositRate(tokenAddress, block.number, ACCURACY);
+		baseVariable.updateBorrowRate(tokenAddress);
+		baseVariable.updateDepositRate(tokenAddress);
 	}
 
 	//TODO
@@ -130,7 +125,8 @@ contract SavingAccount is Ownable, usingProvable {
 		int256[] memory deposits,
 		int256[] memory loans,
 		int256[] memory collateral,
-		int256[] memory capitalInCompound
+		uint256[] memory depositRatePerBlock,
+		uint256[] memory borrowRatePerBlock
 	)
 	{
 		uint coinsLen = getCoinLength();
@@ -139,14 +135,21 @@ contract SavingAccount is Ownable, usingProvable {
 		deposits = new int256[](coinsLen);
 		loans = new int256[](coinsLen);
 		collateral = new int256[](coinsLen);
-		capitalInCompound = new int256[](coinsLen);
+		depositRatePerBlock = new uint256[](coinsLen);
+		borrowRatePerBlock = new uint256[](coinsLen);
 
 		for (uint i = 0; i < coinsLen; i++) {
 			address tokenAddress = symbols.addressFromIndex(i);
 			addresses[i] = tokenAddress;
-			(deposits[i], loans[i], collateral[i], capitalInCompound[i]) = baseVariable.getTokenState(tokenAddress);
+			(
+				deposits[i],
+				loans[i],
+				collateral[i],
+				depositRatePerBlock[i],
+				borrowRatePerBlock[i]
+			) = baseVariable.getTokenState(tokenAddress);
 		}
-		return (addresses, deposits, loans, collateral, capitalInCompound);
+		return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
 	}
 
 	/*
@@ -156,7 +159,8 @@ contract SavingAccount is Ownable, usingProvable {
 		int256 deposits,
 		int256 loans,
 		int256 collateral,
-		int256 capitalInCompound
+		uint256 depositRatePerBlock,
+		uint256 borrowRatePerBlock
 	)
 	{
 		return baseVariable.getTokenState(tokenAddress);
@@ -165,20 +169,25 @@ contract SavingAccount is Ownable, usingProvable {
 	/** 
 	 * Get all balances for the sender's account
 	 */
-	function getBalances() public view returns (address[] memory addresses, int256[] memory balances)
+	function getBalances() public view returns (
+		address[] memory addresses,
+		int256[] memory totalBalance,
+		int256[] memory totalInterest
+	)
 	{
 		uint coinsLen = getCoinLength();
 
 		addresses = new address[](coinsLen);
-		balances = new int256[](coinsLen);
+		totalBalance = new int256[](coinsLen);
+		totalInterest = new int256[](coinsLen);
 
 		for (uint i = 0; i < coinsLen; i++) {
 			address tokenAddress = symbols.addressFromIndex(i);
 			addresses[i] = tokenAddress;
-			balances[i] = tokenBalanceOf(tokenAddress);
+			(totalBalance[i], totalInterest[i]) = tokenBalanceOfAndInterestOf(tokenAddress);
 		}
 
-		return (addresses, balances);
+		return (addresses, totalBalance, totalInterest);
 	}
 
 	//存入compound的资金率列表
@@ -194,11 +203,11 @@ contract SavingAccount is Ownable, usingProvable {
 		return (addresses, balances);
 	}
 
-	function getActiveAccounts() public view returns (address[] memory) {
+	function getActiveAccounts() public view returns(address[] memory) {
 		return baseVariable.getActiveAccounts();
 	}
 
-	function getLiquidatableAccounts() public view returns (address[] memory) {
+	function getLiquidatableAccounts() public view returns(address[] memory) {
 		address[] memory liquidatableAccounts;
 		uint returnIdx;
 		//TODO `activeAccounts` not getting removed from array.
@@ -224,15 +233,18 @@ contract SavingAccount is Ownable, usingProvable {
 		return liquidatableAccounts;
 	}
 
-	function getCoinLength() public view returns (uint256 length){
+	function getCoinLength() public view returns(uint256 length){
 		return symbols.getCoinLength();
 	}
 
-	function tokenBalanceOf(address tokenAddress) public view returns (int256 amount) {
-		return baseVariable.tokenBalanceOf(tokenAddress);
+	function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
+		int256 totalBalance,
+		int256 totalInterest
+	) {
+		return baseVariable.tokenBalanceOfAndInterestOf(tokenAddress, msg.sender);
 	}
 
-	function getCoinAddress(uint256 coinIndex) public view returns (address) {
+	function getCoinAddress(uint256 coinIndex) public view returns(address) {
 		return symbols.addressFromIndex(coinIndex);
 	}
 
@@ -273,7 +285,6 @@ contract SavingAccount is Ownable, usingProvable {
 		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
 			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
 		}
-		updateDefinerRate(tokenAddress);
 	}
 	/** 
 	 * Deposit the amount of tokenAddress to the saving pool.
@@ -284,7 +295,6 @@ contract SavingAccount is Ownable, usingProvable {
 		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {//20暂用，要改
 			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
 		}
-		updateDefinerRate(tokenAddress);
 	}
 
 	/**
@@ -395,6 +405,18 @@ contract SavingAccount is Ownable, usingProvable {
 //			}
 //	}
 
+	function recycleCommunityFund() public {
+		baseVariable.recycleCommunityFund();
+	}
+
+	function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
+		baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
+	}
+
+	function getDeFinerCommunityFund() public view returns(int256) {
+		return baseVariable.getDeFinerCommunityFund();
+	}
+
 	function receive(address from, uint256 amount, address tokenAddress) private {
 		if (symbols.isEth(tokenAddress)) {
 			require(msg.value == amount, "The amount is not sent from address.");
@@ -413,10 +435,6 @@ contract SavingAccount is Ownable, usingProvable {
 		} else {
 			require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
 		}
-	}
-
-	function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-		baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
 	}
 
 	/** 

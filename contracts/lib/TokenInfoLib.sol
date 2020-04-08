@@ -16,9 +16,13 @@ library TokenInfoLib {
 	int256 constant POSITIVE = 1;
 	int256 constant NEGATIVE = -1;
 
+	function totalBalance(TokenInfo storage self) public view returns(int256) {
+		return self.balance;
+	}
+
 	// returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
-	function totalAmount(TokenInfo storage self, uint256 blockNumber, uint rate) public view returns(int256) {
-		return self.balance.add(viewInterest(self, blockNumber, rate));
+	function totalAmount(TokenInfo storage self, uint rate) public view returns(int256) {
+		return self.balance.add(viewInterest(self, rate));
 	}
 
 	// returns the sum of balance and interest posted to the account
@@ -77,32 +81,20 @@ library TokenInfoLib {
 		return self.balance;
 	}
 
-//	function mixRate(TokenInfo storage self, int256 amount, uint256 rate) private view returns (uint256){
-//		//TODO uint256(-self.balance) this will integer underflow - Critical Security risk
-//		//TODO Why do we need this???
-//        uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
-//		uint256 _amount = amount >= 0 ? uint256(amount) : uint256(-amount);
-//		return _balance.mul(self.rate).add(_amount.mul(rate)).div(_balance + _amount);
-//	}
-
 	function resetInterest(TokenInfo storage self, uint256 blockNumber, uint rate) public {
-		self.interest = viewInterest(self, blockNumber, rate);
+		self.interest = viewInterest(self, rate);
 		self.StartBlockNumber = blockNumber;
 	}
 
-	function viewInterest(TokenInfo storage self, uint256 blockNumber, uint rate) public view returns(int256) {
+	function viewInterest(TokenInfo storage self, uint rate) public view returns(int256) {
         int256 _sign = self.balance < 0 ? NEGATIVE : POSITIVE;
 		//TODO uint256(-amount) ???
 		uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
 		//uint256 _interest = self.interest >= 0 ? uint256(self.interest) : uint256(-self.interest);
-		uint256 _difference = 0;
-		if(self.StartBlockNumber != 0) {
-			_difference = blockNumber.sub(self.StartBlockNumber);
-		}
-		if(_difference == 0 || rate == 0 || _balance == 0) {
+		if(rate == 0 || _balance == 0) {
 			return self.interest;
 		} else {
-			return int256(_balance.mul(rate).mul(_difference).div(BASE).sub(_balance)).mul(_sign);
+			return int256(_balance.mul(rate).sub(_balance.mul(BASE)).div(BASE)).mul(_sign);
 		}
 	}
 
