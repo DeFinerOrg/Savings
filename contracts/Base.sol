@@ -41,7 +41,7 @@ library Base {
         mapping(address => Account) accounts;
         address[] activeAccounts;
         address payable deFinerCommunityFund;
-        int deFinerFund;
+        mapping(address => int) deFinerFund;
     }
 
     struct Account {
@@ -492,7 +492,7 @@ library Base {
         if(tokenInfo.viewInterest(rate) > 0) {
             int256 _money = tokenInfo.viewInterest(rate) <= int(amount) ? tokenInfo.viewInterest(rate).div(10) : int(amount.div(10));
             tokenInfo.updateInterest(_money);
-            self.deFinerFund = self.deFinerFund.add(_money);
+            self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
         uint _amount = uint(tokenInfo.totalBalance()) <= amount ? uint(tokenInfo.totalBalance()) : amount;
         tokenInfo.minusAmount(amount, rate, block.number);
@@ -516,9 +516,9 @@ library Base {
         if(tokenInfo.viewInterest(rate) > 0) {
             int256 _money = tokenInfo.viewInterest(rate).div(10);
             tokenInfo.updateInterest(_money);
-            self.deFinerFund = self.deFinerFund.add(_money);
+            self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
-        uint amount = tokenInfo.totalAmount(rate);
+        uint amount = uint(tokenInfo.totalAmount(rate));
         uint _amount = uint(tokenInfo.totalBalance());
         tokenInfo.minusAmount(amount, rate, block.number);
         self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].sub(int(_amount));
@@ -532,9 +532,10 @@ library Base {
         }
     }
 
-    function recycleCommunityFund(BaseVariable storage self, int256 money) public {
+    function recycleCommunityFund(BaseVariable storage self, address tokenAddress) public {
         require(msg.sender == self.deFinerCommunityFund);
-        self.deFinerCommunityFund.transfer(uint256(money));
+        self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[tokenAddress]));
+        self.deFinerFund[tokenAddress] == 0;
     }
 
     function setDeFinerCommunityFund(BaseVariable storage self, address payable _DeFinerCommunityFund) public {
@@ -542,8 +543,8 @@ library Base {
         self.deFinerCommunityFund = _DeFinerCommunityFund;
     }
 
-    function getDeFinerCommunityFund(BaseVariable storage self) public view returns(int256){
-        return self.deFinerCommunityFund;
+    function getDeFinerCommunityFund(BaseVariable storage self, address tokenAddress) public view returns(int256){
+        return self.deFinerFund[tokenAddress];
     }
 
     function getAccountTotalUsdValue(

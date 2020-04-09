@@ -405,16 +405,16 @@ contract SavingAccount is Ownable, usingProvable {
 //			}
 //	}
 
-	function recycleCommunityFund() public {
-		baseVariable.recycleCommunityFund();
+	function recycleCommunityFund(address tokenAddress) public {
+		baseVariable.recycleCommunityFund(tokenAddress);
 	}
 
 	function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
 		baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
 	}
 
-	function getDeFinerCommunityFund() public view returns(int256) {
-		return baseVariable.getDeFinerCommunityFund();
+	function getDeFinerCommunityFund(address tokenAddress) public view returns(int256) {
+		return baseVariable.getDeFinerCommunityFund(tokenAddress);
 	}
 
 	function receive(address from, uint256 amount, address tokenAddress) private {

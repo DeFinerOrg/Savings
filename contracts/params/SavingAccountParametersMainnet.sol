@@ -13,7 +13,7 @@ contract SavingAccountParameters {
 
 		tokenAddresses = new address[](16);
 		tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
-		tokenAddresses[1] = 0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359;
+		tokenAddresses[1] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 		tokenAddresses[2] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 		tokenAddresses[3] = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 		tokenAddresses[4] = 0x0000000000085d4780B73119b644AE5ecd22b376;
