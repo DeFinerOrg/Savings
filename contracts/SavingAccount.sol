@@ -264,7 +264,7 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
 	}
 
-	function borrow(address tokenAddress, uint256 amount) public payable {
+	function borrow(address tokenAddress, uint256 amount) public {
 		require(
 			(
 			int256(getAccountTotalUsdValue(msg.sender, false) * -1)
@@ -301,109 +301,65 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
 	 * will be deducted first.
 	 */
-	function withdrawToken(address tokenAddress, uint256 amount) public payable {
+	function withdrawToken(address tokenAddress, uint256 amount) public {
 		baseVariable.withdrawToken(tokenAddress, amount, ACCURACY);
 		send(msg.sender, amount, tokenAddress);
 	}
 
-//	function liquidate(address targetAddress) public payable {
-//
-//		//是否满足清算比例
-//		require(
-//			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
-//			.mul(100)
-//			>
-//			getAccountTotalUsdValue(targetAddress, true).mul(LIQUIDATE_THREADHOLD),
-//			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated.");
-//
-//		//是否满足清算下限
-//		require(
-//			int256(getAccountTotalUsdValue(targetAddress, false).mul(-1))
-//			.mul(LIQUIDATION_DISCOUNT_RATIO)
-//			<=
-//			getAccountTotalUsdValue(targetAddress, true).mul(100),
-//			"Collateral is not sufficient to be liquidated."
-//		);
-//
-//		//计算维持到之前的借款比例需要清算多少抵押资产
-//		int totalBorrow = int256(getAccountTotalUsdValue(targetAddress, false).mul(-1));
-//		int totalMortgage = int256(getAccountTotalUsdValue(targetAddress, true));
-//
-//		//最大清算资产
-//		uint liquidationDebtValue = uint(LIQUIDATION_DISCOUNT_RATIO.mul(totalBorrow)
-//									.sub(BORROW_LTV.div(LIQUIDATION_DISCOUNT_RATIO).mul(totalMortgage))
-//									.div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV)));
-//
-//			uint paymentOfLiquidationAmount = uint(getAccountTotalUsdValue(msg.sender, true).mul(100-BORROW_LTV).div(100));
-//			uint liquidationOfMortgageAssets;
-//			if(paymentOfLiquidationAmount < liquidationDebtValue) {
-//				liquidationDebtValue = paymentOfLiquidationAmount;
-//			}
-//			liquidationOfMortgageAssets = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO)).mul(100);
-//			paymentOfLiquidationAmount = uint(liquidationDebtValue).div(uint(LIQUIDATION_DISCOUNT_RATIO))
-//										 .mul(uint(100-LIQUIDATION_DISCOUNT_RATIO));
-//			uint coinsLen = getCoinLength();
-//			for (uint i = 0; i < coinsLen; i++) {
-//				address tokenAddress = symbols.addressFromIndex(i);
-//				TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAddress].tokenInfos[tokenAddress];
-//				TokenInfoLib.TokenInfo storage msgTokenInfo = accounts[msg.sender].tokenInfos[tokenAddress];
-//				if(
-//					tokenInfo.getCurrentTotalAmount() >= 0
-//					&& liquidationOfMortgageAssets > 0
-//				) {
-//					uint rate = getBlockIntervalDepositRate(tokenAddress, tokenInfo);
-//					uint256 totalAmount = uint(tokenInfo.totalAmount(block.number, rate).mul(int256(symbols.priceFromIndex(i))));
-//					if(liquidationOfMortgageAssets >= totalAmount) {
-//						uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
-//						tokenInfo.minusAmount(_totalAmount, rate, block.number);
-//						msgTokenInfo.addAmount(_totalAmount, rate, block.number);
-//						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(int(_totalAmount));
-//						updateDepositRate(tokenAddress, block.number);
-//						liquidationOfMortgageAssets = liquidationOfMortgageAssets.sub(totalAmount);
-//					} else {
-//						uint _liquidationOfMortgageAssets = uint(liquidationOfMortgageAssets.div(symbols.priceFromIndex(i)));
-//						tokenInfo.minusAmount(_liquidationOfMortgageAssets, rate, block.number);
-//						msgTokenInfo.addAmount(_liquidationOfMortgageAssets, rate, block.number);
-//						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].add(int(_liquidationOfMortgageAssets));
-//						updateDepositRate(tokenAddress, block.number);
-//						liquidationOfMortgageAssets = 0;
-//					}
-//				} else if(tokenInfo.getCurrentTotalAmount() < 0 && liquidationDebtValue > 0) {
-//					uint rate = getBlockIntervalBorrowRate(tokenAddress, tokenInfo);
-//					int256 totalAmount = tokenInfo.totalAmount(block.number, rate).mul(int256(symbols.priceFromIndex(i)));
-//					uint256 _totalAmount = totalAmount > 0 ? uint256(totalAmount) : uint256(-totalAmount);
-//					if(liquidationDebtValue >= _totalAmount) {
-//						uint __totalAmount = uint(_totalAmount.div(symbols.priceFromIndex(i)));
-//						tokenInfo.addAmount(__totalAmount, rate, block.number);
-//						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(__totalAmount));
-//						updateDepositRate(tokenAddress, block.number);
-//						liquidationDebtValue = liquidationDebtValue.sub(_totalAmount);
-//					} else {
-//						uint _liquidationDebtValue = uint(liquidationDebtValue.div(symbols.priceFromIndex(i)));
-//						tokenInfo.addAmount(_liquidationDebtValue, rate, block.number);
-//						totalLoans[tokenAddress] = totalLoans[tokenAddress].sub(int(_liquidationDebtValue));
-//						updateDepositRate(tokenAddress, block.number);
-//						liquidationDebtValue = 0;
-//					}
-//				} else if(msgTokenInfo.getCurrentTotalAmount() > 0 && paymentOfLiquidationAmount > 0) {
-//					uint rate = getBlockIntervalBorrowRate(tokenAddress, msgTokenInfo);
-//					uint256 totalAmount = uint(msgTokenInfo.totalAmount(block.number, rate).mul(int256(symbols.priceFromIndex(i))));
-//					if(paymentOfLiquidationAmount >= totalAmount) {
-//						uint _totalAmount = uint(totalAmount.div(symbols.priceFromIndex(i)));
-//						msgTokenInfo.minusAmount(_totalAmount, rate, block.number);
-//						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int(_totalAmount));
-//						updateDepositRate(tokenAddress, block.number);
-//						paymentOfLiquidationAmount = paymentOfLiquidationAmount.sub(totalAmount);
-//					} else {
-//						uint _paymentOfLiquidationAmount = uint(paymentOfLiquidationAmount.div(symbols.priceFromIndex(i)));
-//						tokenInfo.minusAmount(_paymentOfLiquidationAmount, rate, block.number);
-//						totalCollateral[tokenAddress] = totalCollateral[tokenAddress].sub(int(_paymentOfLiquidationAmount));
-//						updateDepositRate(tokenAddress, block.number);
-//						paymentOfLiquidationAmount = 0;
-//					}
-//				}
-//			}
-//	}
+	function withdrawAllToken(address tokenAddress) public {
+		uint amount = baseVariable.withdrawAllToken(tokenAddress, ACCURACY);
+		send(msg.sender, amount, tokenAddress);
+	}
+
+	function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
+
+		int totalBorrow = int256(getAccountTotalUsdValue(targetAccountAddr, false).mul(-1));
+		int totalMortgage = int256(getAccountTotalUsdValue(targetAccountAddr, true));
+
+		//是否满足清算下限
+		require(
+			totalBorrow.mul(100) > totalMortgage.mul(LIQUIDATE_THREADHOLD),
+			"The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
+		);
+
+		//是否满足清算上限
+		require(
+			totalBorrow.mul(100) <= totalMortgage.mul(LIQUIDATION_DISCOUNT_RATIO),
+			"Collateral is not sufficient to be liquidated."
+		);
+		(int256 totalBalance, int256 totalInterest) = baseVariable.tokenBalanceOfAndInterestOf(targetTokenAddress, msg.sender);
+
+
+		//被清算者需要清算掉的资产
+		uint liquidationDebtValue = uint(
+			totalBorrow.mul(100).mul(LIQUIDATION_DISCOUNT_RATIO).sub(
+				totalMortgage.mul(BORROW_LTV).mul(LIQUIDATION_DISCOUNT_RATIO)
+			).div(LIQUIDATION_DISCOUNT_RATIO.sub(BORROW_LTV).mul(100)).mul(100).div(LIQUIDATION_DISCOUNT_RATIO)
+		);
+		//清算者需要付的钱
+		uint paymentOfLiquidationAmount = uint(totalBalance.add(totalInterest)).mul(symbols.priceFromAddress(targetTokenAddress));
+
+		if(paymentOfLiquidationAmount >= liquidationDebtValue) {
+			paymentOfLiquidationAmount = liquidationDebtValue.mul(uint(LIQUIDATION_DISCOUNT_RATIO)).div(100);
+		} else {
+			liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(LIQUIDATION_DISCOUNT_RATIO));
+		}
+
+		for(uint i = 0; i < getCoinLength(); i++) {
+			(uint _liquidationDebtValue, uint _paymentOfLiquidationAmount) = baseVariable.liquidate(
+					targetAccountAddr,
+					targetTokenAddress,
+					symbols.addressFromIndex(i),
+					symbols.priceFromAddress(targetTokenAddress),
+					symbols.priceFromIndex(i),
+					liquidationDebtValue,
+					paymentOfLiquidationAmount
+			);
+			if(_liquidationDebtValue == 0) {
+				break;
+			}
+		}
+	}
 
 	function recycleCommunityFund(address tokenAddress) public {
 		baseVariable.recycleCommunityFund(tokenAddress);

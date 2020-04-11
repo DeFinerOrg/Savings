@@ -328,29 +328,33 @@ library Base {
     }
 
     function toCompound(BaseVariable storage self, address tokenAddress, uint maxReserveRatio, bool isEth) public {
-        require(getCapitalReserveRate(self, tokenAddress) > 20 * 10**16);//20要改
-        uint amount = getToCompoundAmount(self, tokenAddress, maxReserveRatio);
-        if (isEth) {
-            CETH cETH = CETH(self.cTokenAddress[tokenAddress]);
-            cETH.mint.value(amount).gas(250000)();
-        } else {
-            CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
-            cToken.mint(amount);
+        if(self.cTokenAddress[tokenAddress] != address(0)) {
+            require(getCapitalReserveRate(self, tokenAddress) > 20 * 10**16);//20要改
+            uint amount = getToCompoundAmount(self, tokenAddress, maxReserveRatio);
+            if (isEth) {
+                CETH cETH = CETH(self.cTokenAddress[tokenAddress]);
+                cETH.mint.value(amount).gas(250000)();
+            } else {
+                CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+                cToken.mint(amount);
+            }
+            self.capitalInCompound[tokenAddress] = self.capitalInCompound[tokenAddress].add(int(amount));
         }
-        self.capitalInCompound[tokenAddress] = self.capitalInCompound[tokenAddress].add(int(amount));
     }
 
     function fromCompound(BaseVariable storage self, address tokenAddress, uint minReserveRatio, uint accuracy) public {
-        require(getCapitalReserveRate(self, tokenAddress) < 10 * 10**16);
-        uint amount = getFromCompoundAmount(self, tokenAddress);
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
-        uint exchangeRate = cToken.exchangeRateStored();
-        if(amount.mul(10**18).div(exchangeRate) >= cToken.balanceOf(address(this))) {
-            cToken.redeem(cToken.balanceOf(address(this)));
-            self.capitalInCompound[tokenAddress] = 0;
-        } else {
-            cToken.redeemUnderlying(amount);
-            self.capitalInCompound[tokenAddress] = self.capitalInCompound[tokenAddress].sub(int(amount));
+        if(self.cTokenAddress[tokenAddress] != address(0)) {
+            require(getCapitalReserveRate(self, tokenAddress) < 10 * 10**16);
+            uint amount = getFromCompoundAmount(self, tokenAddress);
+            CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+            uint exchangeRate = cToken.exchangeRateStored();
+            if(amount.mul(10**18).div(exchangeRate) >= cToken.balanceOf(address(this))) {
+                cToken.redeem(cToken.balanceOf(address(this)));
+                self.capitalInCompound[tokenAddress] = 0;
+            } else {
+                cToken.redeemUnderlying(amount);
+                self.capitalInCompound[tokenAddress] = self.capitalInCompound[tokenAddress].sub(int(amount));
+            }
         }
     }
 
@@ -507,7 +511,7 @@ library Base {
         }
     }
 
-    function withdrawAllToken(BaseVariable storage self, address tokenAddress, uint accuracy) public {
+    function withdrawAllToken(BaseVariable storage self, address tokenAddress, uint accuracy) public returns(uint){
         require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         updateDepositRate(self, tokenAddress);
@@ -530,6 +534,61 @@ library Base {
         ) {
             fromCompound(self, tokenAddress, 10, accuracy);
         }
+        return amount;
+    }
+
+    function liquidate(
+        BaseVariable storage self,
+        address targetAccountAddr,
+        address targetTokenAddress,
+        address tokenAddress,
+        uint tokenPrice,
+        uint targetTokenPrice,
+        uint liquidationDebtValue,
+        uint paymentOfLiquidationAmount
+    ) public returns(uint, uint){
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[tokenAddress];
+        TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[targetAccountAddr].tokenInfos[targetTokenAddress];
+        TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
+        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[targetTokenAddress];
+        if(tokenInfo.getCurrentTotalAmount() <= 0){
+            return (liquidationDebtValue, paymentOfLiquidationAmount);
+        }
+        updateDepositRate(self, tokenAddress);
+        updateDepositRate(self, targetTokenAddress);
+        updateBorrowRate(self, tokenAddress);
+        updateBorrowRate(self, targetTokenAddress);
+        //清算者当前tokenRate
+        uint msgTokenRate =
+        msgTokenInfo.getCurrentTotalAmount() < 0 ?
+        getBlockIntervalBorrowRateRecord(self, tokenAddress,msgTokenInfo.getStartBlockNumber())
+        :
+        getBlockIntervalDepositRateRecord(self, tokenAddress, msgTokenInfo.getStartBlockNumber());
+        //清算者目标tokenRate
+        uint msgTargetTokenRate = getBlockIntervalDepositRateRecord(self, targetTokenAddress, msgTargetTokenInfo.getStartBlockNumber());
+        //被清算者当前tokenRate
+        uint tokenRate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
+        //被清算者目标tokenRate
+        uint targettokenRate = getBlockIntervalBorrowRateRecord(self, targetTokenAddress, targetTokenInfo.getStartBlockNumber());
+        uint coinValue = uint(tokenInfo.totalAmount(tokenRate)).mul(tokenPrice);
+        uint tokenAmount;
+        uint targettokenAmount;
+        if(coinValue > liquidationDebtValue) {
+            tokenAmount = liquidationDebtValue.div(tokenPrice);
+            targettokenAmount = paymentOfLiquidationAmount.div(targetTokenPrice);
+            liquidationDebtValue = 0;
+            paymentOfLiquidationAmount = 0;
+        } else {
+            tokenAmount = coinValue.div(tokenPrice);
+            targettokenAmount = coinValue.mul(95).div(100).div(targetTokenPrice);
+            liquidationDebtValue = liquidationDebtValue.sub(coinValue);
+            paymentOfLiquidationAmount = paymentOfLiquidationAmount.sub(coinValue.mul(95).div(100));
+        }
+        msgTargetTokenInfo.minusAmount(targettokenAmount.mul(95).div(100), msgTargetTokenRate, block.number);
+        tokenInfo.minusAmount(tokenAmount, tokenRate, block.number);
+        msgTokenInfo.addAmount(tokenAmount, msgTokenRate, block.number);
+        targetTokenInfo.addAmount(targettokenAmount, targettokenRate, block.number);
+        return (liquidationDebtValue, paymentOfLiquidationAmount);
     }
 
     function recycleCommunityFund(BaseVariable storage self, address tokenAddress) public {
