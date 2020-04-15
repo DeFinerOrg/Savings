@@ -93,6 +93,8 @@ library TokenInfoLib {
 		//uint256 _interest = self.interest >= 0 ? uint256(self.interest) : uint256(-self.interest);
 		if(rate == 0 || _balance == 0) {
 			return self.interest;
+		} else if(BASE > rate) {
+			return 0;
 		} else {
 			return int256(_balance.mul(rate).sub(_balance.mul(BASE)).div(BASE)).mul(_sign);
 		}
