@@ -202,7 +202,7 @@ contract SavingAccount is Ownable, usingProvable {
 		for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
 			address targetAddress = baseVariable.getActiveAccounts()[i];
 			if (
-				int256(baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1)).mul(100)
+				int256(baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)).mul(100)
 				>
 				baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(LIQUIDATE_THREADHOLD)
 				&&
