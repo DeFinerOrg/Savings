@@ -18,11 +18,19 @@
  *
  */
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-const fs = require('fs');
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+require("ts-node/register");
+
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const fs = require("fs");
+const mnemonic = fs
+  .readFileSync(".secret")
+  .toString()
+  .trim();
 
 module.exports = {
+  // this is required by truffle to find any ts test files
+  test_file_extension_regexp: /.*\.ts$/,
+
   /**
    * Networks define how you connect to your ethereum client and let you set the
    * defaults web3 uses to send transactions. If you don't specify one truffle
@@ -40,20 +48,24 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-     development: {
-      host: "127.0.0.1",     // Localhost (default: none)
-      port: 8546,            // Standard Ethereum port (default: none)
-      network_id: "*",       // Any network (default: none)
-	  websockets: true
-     },
-	
-	rinkeby: {
-		provider: () => new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac'),
-		from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
-		network_id: 4,
-		gas:      6000000,
-		gasPrice: 15000000000
-	} 
+    development: {
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 8546, // Standard Ethereum port (default: none)
+      network_id: "*", // Any network (default: none)
+      websockets: true,
+    },
+
+    rinkeby: {
+      provider: () =>
+        new HDWalletProvider(
+          mnemonic,
+          "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
+        ),
+      from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
+      network_id: 4,
+      gas: 6000000,
+      gasPrice: 15000000000,
+    },
   },
 
   // Set default mocha options here, use special reporters etc.
@@ -64,13 +76,14 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-		version: "0.5.7",    // Fetch exact version from solc-bin (default: truffle's version)
-        settings: {          // See the solidity docs for advice about optimization and evmVersion
+      version: "0.5.7", // Fetch exact version from solc-bin (default: truffle's version)
+      settings: {
+        // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
           enabled: true,
-          runs: 200
+          runs: 200,
         },
-       }
-    }
-  }
-}
+      },
+    },
+  },
+};
