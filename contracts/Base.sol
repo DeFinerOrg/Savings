@@ -509,7 +509,7 @@ library Base {
         // check if paying interest
         if (amountToRepay > amountBorrowed) {
             // add interest (if any) to total deposit
-            self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
+//            self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
             if(self.totalDeposits[tokenAddress] >= self.totalCollateral[tokenAddress].add(amountToRepay)) {
                 self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(amountToRepay);
             } else {
