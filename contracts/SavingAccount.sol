@@ -265,8 +265,9 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	function repay(address tokenAddress, uint256 amount) public payable {
-		baseVariable.repay(tokenAddress, amount, ACCURACY);
-		receive(msg.sender, amount, tokenAddress);
+		uint money = uint(baseVariable.repay(tokenAddress, amount, ACCURACY));
+		receive(msg.sender, amount.sub(money), tokenAddress);
+		send(msg.sender, money, tokenAddress);
 		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
 			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
 		}

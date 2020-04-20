@@ -438,7 +438,7 @@ library Base {
                     .div(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             }
-            balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(symbols.priceFromIndex(i)));
+            balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(int(symbols.priceFromIndex(i))));
         }
         return balance;
     }
@@ -488,7 +488,7 @@ library Base {
         }
     }
 
-    function repay(BaseVariable storage self, address tokenAddress, uint256 amount, uint accuracy) public {
+    function repay(BaseVariable storage self, address tokenAddress, uint256 amount, uint accuracy) public returns(int) {
         require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         updateDepositRate(self, tokenAddress);
@@ -504,32 +504,12 @@ library Base {
         int256 amountBorrowed = tokenInfo.totalAmount(rate).mul(-1); // get the actual amount that was borrowed (abs)
         int256 amountToRepay = int256(amount);
         int _amountToRepay = tokenInfo.totalBalance().mul(-1) < amountToRepay ? tokenInfo.totalBalance().mul(-1) : amountToRepay;
-        tokenInfo.addAmount(amount, rate, block.number);
+        int _amount = amountToRepay > amountBorrowed ? amountBorrowed : amountToRepay;
+        tokenInfo.addAmount(uint(_amount), rate, block.number);
 
-        // check if paying interest
-        if (amountToRepay > amountBorrowed) {
-            // add interest (if any) to total deposit
-//            self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(amountToRepay.sub(amountBorrowed));
-            if(self.totalDeposits[tokenAddress] >= self.totalCollateral[tokenAddress].add(amountToRepay)) {
-                self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(amountToRepay);
-            } else {
-                self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(amountToRepay.sub(amountBorrowed));
-            }
-        } else {
-            if(_amountToRepay < amountToRepay) {
-                self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].add(amountToRepay.sub(_amountToRepay));
-                if(self.totalDeposits[tokenAddress] >= self.totalCollateral[tokenAddress].add(amountToRepay)) {
-                    self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(amountToRepay);
-                } else {
-                    self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(amountToRepay.sub(_amountToRepay));
-                }
-            }
-        }
-
-        if(self.totalLoans[tokenAddress] != 0) {
-            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amountToRepay);
-        }
-
+        self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(_amountToRepay);
+        self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amountToRepay);
+        return amountToRepay > amountBorrowed ? amountToRepay.sub(amountBorrowed) : 0;
     }
 
     /**
@@ -653,14 +633,14 @@ library Base {
     function getAccountTotalUsdValue(
         BaseVariable storage self,
         address accountAddr,
-        SymbolsLib.Symbols memory symbols
+        SymbolsLib.Symbols storage symbols
     ) public view returns (int256 usdValue) {
         int256 totalUsdValue = 0;
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
-            (int balance, int interest) = tokenBalanceOfAndInterestOf(self, symbols.addressFromIndex[i], accountAddr);
+            (int balance, int interest) = tokenBalanceOfAndInterestOf(self, symbols.addressFromIndex(i), accountAddr);
             totalUsdValue = totalUsdValue.add(getTotalUsdValue(
                     balance.add(interest),
-                    symbols.priceFromIndex[i]
+                    symbols.priceFromIndex(i)
                 ));
         }
         return totalUsdValue;
