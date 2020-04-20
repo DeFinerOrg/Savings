@@ -488,7 +488,7 @@ library Base {
         }
     }
 
-    function repay(BaseVariable storage self, address tokenAddress, uint256 amount, uint accuracy) public returns(int) {
+    function repay(BaseVariable storage self, address tokenAddress, uint256 amount) public returns(int) {
         require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         updateDepositRate(self, tokenAddress);
@@ -508,7 +508,10 @@ library Base {
         tokenInfo.addAmount(uint(_amount), rate, block.number);
 
         self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].add(_amountToRepay);
-        self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amountToRepay);
+        self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress]
+        >= self.totalCollateral[tokenAddress] ? self.totalDeposits[tokenAddress] : self.totalCollateral[tokenAddress];
+        self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amountToRepay)
+        > 0 ? self.totalLoans[tokenAddress].sub(_amountToRepay) : 0;
         return amountToRepay > amountBorrowed ? amountToRepay.sub(amountBorrowed) : 0;
     }
 
