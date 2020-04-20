@@ -406,7 +406,7 @@ library Base {
     function totalBalance(
         BaseVariable storage self,
         address accountAddr,
-        SymbolsLib.Symbols memory symbols,
+        SymbolsLib.Symbols storage symbols,
         bool isPositive
     ) public view returns (int256 balance) {
         for(uint i = 0;i < symbols.getCoinLength();i++) {
