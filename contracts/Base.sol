@@ -320,11 +320,11 @@ library Base {
     )
     {
         return (
-        self.totalDeposits[tokenAddress],
-        self.totalLoans[tokenAddress],
-        self.totalCollateral[tokenAddress],
-        getDepositRatePerBlock(self, tokenAddress),
-        getBorrowRatePerBlock(self, tokenAddress)
+            self.totalDeposits[tokenAddress],
+            self.totalLoans[tokenAddress],
+            self.totalCollateral[tokenAddress],
+            getDepositRatePerBlock(self, tokenAddress),
+            getBorrowRatePerBlock(self, tokenAddress)
         );
     }
 
@@ -443,6 +443,55 @@ library Base {
         return balance;
     }
 
+    function transfer(
+        address activeAccount,
+        address tokenAddress,
+        uint amount,
+        SymbolsLib.Symbols storage symbols
+    ) public {
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
+        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[tokenAddress].tokenInfos[tokenAddress];
+        uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
+        int totalBorrow = totalBalance(self, msg.sender, symbols, false) < 0
+        ? totalBalance(self, msg.sender, symbols, false).mul(-1) : totalBalance(self, msg.sender, symbols, false);
+        int totalDeposit = totalBalance(self, msg.sender, symbols, true);
+        int amountValue = amount.mul(symbols.priceFromAddress(tokenAddress));
+        int interest = tokenInfo.viewInterest(rate);
+        require(tokenInfo.totalAmount(rate) >= int256(amount), "Insufficient balance.");
+
+        // 仅供无价格测试使用
+        // require(totalDeposit.sub(amountValue) > 0 && totalBorrow.mul(100).div(totalDeposit.sub(amountValue)) <= 60);
+
+        if(interest > 0) {
+            int256 _money = interest <= int(amount) ? interest.div(10) : int(amount.div(10));
+            amount = amount.sub(uint(_money));
+            tokenInfo.updateInterest(_money);
+            self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
+        }
+
+        tokenInfo.minusAmount(amount, rate, block.number);
+
+        if(amount > 0 && activeTokenInfo.getCurrentTotalAmount() < 0) {
+            uint bRate = getBlockIntervalBorrowRateRecord(self, tokenAddress,activeTokenInfo.getStartBlockNumber());
+            int256 amountBorrowed = amountOwedWithInterest.mul(-1);
+            int256 amountToRepay = int256(amount);
+            int _amountToRepay = tokenInfo.totalBalance().mul(-1) < amountToRepay ? tokenInfo.totalBalance().mul(-1) : amountToRepay;
+            int _amount = amountToRepay > amountBorrowed ? amountBorrowed : amountToRepay;
+            tokenInfo.addAmount(uint(_amount), bRate, block.number);
+
+            self.totalDeposits[tokenAddress] = self.totalDeposits[tokenAddress].sub(_amount);
+            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amount);
+            self.totalCollateral[tokenAddress] = self.totalCollateral[tokenAddress].sub(_amount);
+            amount = amountToRepay > amountBorrowed ? amountToRepay.sub(amountBorrowed) : 0;
+        }
+
+        if(amount > 0 && activeTokenInfo.getCurrentTotalAmount() >= 0) {
+            uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
+            tokenInfo.addAmount(amount, rate, block.number);
+        }
+
+    }
+
     function depositToken(BaseVariable storage self, address tokenAddress, uint256 amount, uint accuracy) public {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         if (!self.accounts[msg.sender].active) {
@@ -488,9 +537,9 @@ library Base {
         }
     }
 
-    function repay(BaseVariable storage self, address tokenAddress, uint256 amount) public returns(int) {
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
+    function repay(BaseVariable storage self, address tokenAddress, address activeAccount, uint256 amount) public returns(int) {
+        require(self.accounts[activeAccount].active, "Account not active, please deposit first.");
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
         updateDepositRate(self, tokenAddress);
         updateBorrowRate(self, tokenAddress);
         uint rate = getBlockIntervalBorrowRateRecord(self, tokenAddress,tokenInfo.getStartBlockNumber());
@@ -501,7 +550,7 @@ library Base {
             "Balance of the token must be negative. To deposit balance, please use deposit button."
         );
 
-        int256 amountBorrowed = tokenInfo.totalAmount(rate).mul(-1); // get the actual amount that was borrowed (abs)
+        int256 amountBorrowed = amountOwedWithInterest.mul(-1); // get the actual amount that was borrowed (abs)
         int256 amountToRepay = int256(amount);
         int _amountToRepay = tokenInfo.totalBalance().mul(-1) < amountToRepay ? tokenInfo.totalBalance().mul(-1) : amountToRepay;
         int _amount = amountToRepay > amountBorrowed ? amountBorrowed : amountToRepay;
@@ -528,6 +577,7 @@ library Base {
         require(tokenInfo.totalAmount(rate) >= int256(amount), "Insufficient balance.");
         if(tokenInfo.viewInterest(rate) > 0) {
             int256 _money = tokenInfo.viewInterest(rate) <= int(amount) ? tokenInfo.viewInterest(rate).div(10) : int(amount.div(10));
+            amount = amount.sub(uint(_money));
             tokenInfo.updateInterest(_money);
             self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
@@ -552,6 +602,7 @@ library Base {
         uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
         if(tokenInfo.viewInterest(rate) > 0) {
             int256 _money = tokenInfo.viewInterest(rate).div(10);
+            amount = amount.sub(uint(_money));
             tokenInfo.updateInterest(_money);
             self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
@@ -601,7 +652,7 @@ library Base {
         //被清算者当前tokenRate
         uint tokenRate = getBlockIntervalDepositRateRecord(self, addr[2], tokenInfo.getStartBlockNumber());
         //被清算者目标tokenRate
-        uint targettokenRate = getBlockIntervalBorrowRateRecord(self, addr[1], targetTokenInfo.getStartBlockNumber());
+        uint targetTokenRate = getBlockIntervalBorrowRateRecord(self, addr[1], targetTokenInfo.getStartBlockNumber());
         uint coinValue = uint(tokenInfo.totalAmount(tokenRate)).mul(u[1]);
         if(coinValue > u[2]) {
             coinValue = u[2];
@@ -610,9 +661,9 @@ library Base {
             u[2] = u[2].sub(coinValue);
         }
         uint tokenAmount =coinValue.div(u[1]);
-        uint targettokenAmount = coinValue.mul(95).div(100).div(u[0]);
-        msgTargetTokenInfo.minusAmount(targettokenAmount.mul(95).div(100), msgTargetTokenRate, block.number);
-        targetTokenInfo.addAmount(targettokenAmount, targettokenRate, block.number);
+        uint targetTokenAmount = coinValue.mul(95).div(100).div(u[0]);
+        msgTargetTokenInfo.minusAmount(targetTokenAmount.mul(95).div(100), msgTargetTokenRate, block.number);
+        targetTokenInfo.addAmount(targetTokenAmount, targetTokenRate, block.number);
         tokenInfo.minusAmount(tokenAmount, tokenRate, block.number);
         msgTokenInfo.addAmount(tokenAmount, msgTokenRate, block.number);
         return u[2];

@@ -249,6 +249,10 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
 	}
 
+    function transfer(address activeAccount, address tokenAddress, uint amount) public {
+		baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
+	}
+
 	function borrow(address tokenAddress, uint256 amount) public {
 		require(
 			(
@@ -265,7 +269,7 @@ contract SavingAccount is Ownable, usingProvable {
 	}
 
 	function repay(address tokenAddress, uint256 amount) public payable {
-		uint money = uint(baseVariable.repay(tokenAddress, amount));
+		uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
 		if(symbols.isEth(tokenAddress)) {
 			receive(msg.sender, amount, tokenAddress);
 			send(msg.sender, money, tokenAddress);
