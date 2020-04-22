@@ -296,8 +296,8 @@ contract SavingAccount is Ownable, usingProvable {
 	 * will be deducted first.
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public {
-		baseVariable.withdrawToken(tokenAddress, amount, ACCURACY);
-		send(msg.sender, amount, tokenAddress);
+		uint _amount = baseVariable.withdrawToken(tokenAddress, amount, ACCURACY);
+		send(msg.sender, _amount, tokenAddress);
 	}
 
 	function withdrawAllToken(address tokenAddress) public {
