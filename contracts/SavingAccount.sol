@@ -44,7 +44,7 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.initialize(tokenAddresses, cTokenAddresses);
 		for(uint i = 0;i < tokenAddresses.length;i++) {
 			if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != 0x000000000000000000000000000000000000000E) {
-				baseVariable.approveAll(tokenAddresses[i]);
+                baseVariable.approveAll(tokenAddresses[i]);
 			}
 		}
 	}

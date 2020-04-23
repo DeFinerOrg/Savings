@@ -4,4 +4,4 @@ all :
 	truffle compile
 	mkdir -p deploy
 	truffle-flattener contracts/SavingAccount.sol > deploy/SavingAccountMainnet.sol
-	rm -f contracts/params/SavingAccountParameters.sol
+
