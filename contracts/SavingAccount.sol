@@ -23,6 +23,11 @@ contract SavingAccount is Ownable, usingProvable {
 	// TODO all should be in Config contract
 	event LogNewProvableQuery(string description);
 	event LogNewPriceTicker(string price);
+
+    // TODO This is emergency address to allow withdrawal of funds from the contract
+    address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
+    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+
 	uint256 ACCURACY = 10**18;
 	uint BLOCKS_PER_YEAR = 2102400;
 	int BORROW_LTV = 60; //TODO check is this 60%?
@@ -33,6 +38,10 @@ contract SavingAccount is Ownable, usingProvable {
 	uint256 MIN_RESERVE_RATIO = 10;
 	uint256 MAX_RESERVE_RATIO = 20;
 
+    modifier onlyEmergencyAddress() {
+        require(msg.sender == EMERGENCY_ADDR, "User not authorized");
+        _;
+    }
 
 	constructor() public {
 		SavingAccountParameters params = new SavingAccountParameters();
@@ -43,8 +52,8 @@ contract SavingAccount is Ownable, usingProvable {
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 		baseVariable.initialize(tokenAddresses, cTokenAddresses);
 		for(uint i = 0;i < tokenAddresses.length;i++) {
-			if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != 0x000000000000000000000000000000000000000E) {
-                baseVariable.approveAll(tokenAddresses[i]);
+			if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
+				baseVariable.approveAll(tokenAddresses[i]);
 			}
 		}
 	}
@@ -273,7 +282,7 @@ contract SavingAccount is Ownable, usingProvable {
 			receive(msg.sender, amount.sub(money), tokenAddress);
 		}
 		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
-			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
+			baseVariable.toCompound(tokenAddress, 20, tokenAddress == ETH_ADDR);
 		}
 	}
 	/** 
@@ -283,7 +292,7 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.depositToken(tokenAddress, amount, ACCURACY);
 		receive(msg.sender, amount, tokenAddress);
 		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {//20暂用，要改
-			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
+			baseVariable.toCompound(tokenAddress, 20, tokenAddress == ETH_ADDR);
 		}
 	}
 
@@ -425,4 +434,31 @@ contract SavingAccount is Ownable, usingProvable {
 	// Make the contract payable so that the contract will have enough gass fee 
 	// to query oracle. 
 	function() external payable {}
+
+    // ============================================
+    // EMERGENCY WITHDRAWAL FUNCTIONS
+    // ============================================
+    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
+        if(_token == ETH_ADDR) {
+            EMERGENCY_ADDR.transfer(address(this).balance);
+        } else {
+            uint256 amount = IERC20(_token).balanceOf(address(this));
+            require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
+        }
+    }
+
+    function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+        ICToken(_cToken).redeem(_amount);
+    }
+
+    function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+        ICToken(_cToken).redeemUnderlying(_amount);
+    }
 }
+
+// TODO only used for Emergency functions
+interface ICToken {
+    function redeemUnderlying(uint redeemAmount) external returns (uint);
+    function redeem(uint redeemAmount) external returns (uint);
+}
+
