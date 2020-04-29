@@ -53,37 +53,6 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.approveAll(tokenAddress);
 	}
 
-	//Test method
-	function getPrincipalAndInterestInCompound(address tokenAddress) public view returns(uint) {
-		return baseVariable.getPrincipalAndInterestInCompound(tokenAddress);
-	}
-
-	//Test method
-	function getCompoundRatePerBlock(address _cTokenAddress) public view returns(
-		uint compoundSupplyRatePerBlock,
-		uint compoundBorrowRatePerBlock
-	) {
-		return (Base.getCompoundSupplyRatePerBlock(_cTokenAddress), Base.getCompoundBorrowRatePerBlock(_cTokenAddress));
-	}
-
-	//Test method
-	function getDefinerRateRecord(address tokenAddress, uint blockNumber) public view returns(uint, uint) {
-		return (
-		baseVariable.getDepositRateRecord(tokenAddress, blockNumber),
-		baseVariable.getBorrowRateRecord(tokenAddress, blockNumber)
-		);
-	}
-
-	//Test method
-	function getNowRate(address tokenAddress) public view returns(uint, uint) {
-		return baseVariable.getNowRate(tokenAddress);
-	}
-
-	//Test method
-	function getCToken(address tokenAddress) public view returns(address) {
-		return baseVariable.getCToken(tokenAddress);
-	}
-
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
 	function updateDefinerRate(address tokenAddress) public {
 		baseVariable.updateBorrowRate(tokenAddress);
@@ -249,17 +218,19 @@ contract SavingAccount is Ownable, usingProvable {
 		baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
 	}
 
+	function isOldVersion(address tokenAddress) public view returns(bool) {
+		return baseVariable.isOldVersion(tokenAddress);
+	}
+
     function transfer(address activeAccount, address tokenAddress, uint amount) public {
 		baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
 	}
 
 	function borrow(address tokenAddress, uint256 amount) public {
 		require(
-			(
 			int256(baseVariable.getAccountTotalUsdValue(msg.sender, symbols) * -1)
 			.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-			.div(10**18)
-			).mul(100)
+			.div(10**18).mul(100)
 			<=
 			(baseVariable.getAccountTotalUsdValue(msg.sender, symbols)).mul(BORROW_LTV),
 			"Insufficient collateral."
@@ -272,7 +243,9 @@ contract SavingAccount is Ownable, usingProvable {
 		uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
 		if(symbols.isEth(tokenAddress)) {
 			receive(msg.sender, amount, tokenAddress);
-			send(msg.sender, money, tokenAddress);
+			if(money != 0) {
+				send(msg.sender, money, tokenAddress);
+			}
 		} else {
 			receive(msg.sender, amount.sub(money), tokenAddress);
 		}
@@ -370,7 +343,11 @@ contract SavingAccount is Ownable, usingProvable {
 		} else {
 			//When only tokens received, msg.value must be 0
 			require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-			require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
+			if(!baseVariable.isOldVersion(tokenAddress)) {
+				require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
+			} else {
+				require(ERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
+			}
 		}
 	}
 
@@ -380,7 +357,11 @@ contract SavingAccount is Ownable, usingProvable {
 			//TODO Can this ETH be received by a contract?
 			msg.sender.transfer(amount);
 		} else {
-			require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+			if(!baseVariable.isOldVersion(tokenAddress)) {
+				require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+			} else {
+				require(ERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+			}
 		}
 	}
 
