@@ -2,10 +2,10 @@ pragma solidity 0.5.11;
 
 // import { CToken } from "../Base.sol";
 
-import "@openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "@openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 
-contract MockCToken is Mintable {
+contract MockCToken is ERC20Mintable, ERC20Burnable {
 
     constructor() public {
 
@@ -25,7 +25,7 @@ contract MockCToken is Mintable {
         //TODO
     }
 
-    function balanceOf(address owner) external view returns (uint256) {
+    function balanceOf(address owner) public view returns (uint256) {
         //TODO
     }
 
