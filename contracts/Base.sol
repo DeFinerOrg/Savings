@@ -13,7 +13,9 @@ interface CToken {
     function redeemUnderlying(uint redeemAmount) external returns (uint);
     function redeem(uint redeemAmount) external returns (uint);
     function balanceOf(address owner) external view returns (uint256);
-    function balanceOfUnderlying(address account) external view returns (uint256);
+    //function balanceOfUnderlying(address account) external view returns (uint256);
+    function exchangeRateStored() external view returns (uint256);
+    function accrualBlockNumber() external view returns (uint256);
 }
 
 interface CETH{
@@ -85,7 +87,17 @@ library Base {
     }
 
     function getTotalCompoundNow(BaseVariable storage self, address tokenAddress) public view returns(int) {
-        return int(CToken(self.cTokenAddress[tokenAddress]).balanceOfUnderlying(address(this)));
+        if(self.cTokenAddress[tokenAddress] != address(0)) {
+            CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+            uint balance = cToken.balanceOf(address(this)).mul(cToken.exchangeRateStored()).div(10**18);
+            return int(
+                balance.add(
+                    cToken.supplyRatePerBlock().mul(balance).div(10**18).mul(block.number.sub(cToken.accrualBlockNumber()))
+                )
+            );
+        } else {
+            return 0;
+        }
     }
 
     function getTotalLoansNow(BaseVariable storage self, address tokenAddress) public view returns(int) {
@@ -489,7 +501,6 @@ library Base {
         self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
         self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(int(amount));
         self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
         if(getCapitalReserveRate(self, tokenAddress) < 10 * 10**16) {
             fromCompound(self, tokenAddress, 10, accuracy);
         }
@@ -540,7 +551,6 @@ library Base {
         }
         self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(int(amount));
         self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
         if(getCapitalReserveRate(self, tokenAddress) <= 10 * 10**16) {
             fromCompound(self, tokenAddress, 10, accuracy);
         }
@@ -563,7 +573,6 @@ library Base {
         }
         self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(int(amount));
         self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
         if(getCapitalReserveRate(self, tokenAddress) <= 10 * 10**16) {
             fromCompound(self, tokenAddress, 10, accuracy);
         }
