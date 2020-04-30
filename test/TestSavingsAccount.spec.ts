@@ -16,6 +16,7 @@ contract("SavingsAccount", async (accounts) => {
       it("when ...<describe the context>", async () => {
         // Write test case here
       });
+      it("");
     });
 
     context("should succeed", async () => {
@@ -29,7 +30,7 @@ contract("SavingsAccount", async (accounts) => {
         // Write the test case here
       });
 
-      it("when unsupported amount is zero", async () => {
+      it("when amount is zero", async () => {
         // Write the test case here
       });
     });
