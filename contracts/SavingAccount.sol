@@ -144,19 +144,6 @@ contract SavingAccount is Ownable, usingProvable {
 		return (addresses, totalBalance, totalInterest);
 	}
 
-	//存入compound的资金率列表
-	function getCapitalCompoundRateList() public view returns(address[] memory addresses, int256[] memory balances) {
-		uint coinsLen = getCoinLength();
-		addresses = new address[](coinsLen);
-		balances = new int256[](coinsLen);
-		for (uint i = 0; i < coinsLen; i++) {
-			address tokenAddress = symbols.addressFromIndex(i);
-			addresses[i] = tokenAddress;
-			balances[i] = baseVariable.getCapitalCompoundBalance(tokenAddress);
-		}
-		return (addresses, balances);
-	}
-
 	function getActiveAccounts() public view returns(address[] memory) {
 		return baseVariable.getActiveAccounts();
 	}
@@ -204,18 +191,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
 		return symbols.priceFromIndex(coinIndex);
-	}
-
-	function toCompound(address tokenAddress) public {
-		if(symbols.isEth(tokenAddress)) {
-			baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, true);
-		} else {
-			baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, false);
-		}
-	}
-
-	function fromCompound(address tokenAddress) public {
-		baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
 	}
 
 	function isOldVersion(address tokenAddress) public view returns(bool) {
@@ -346,7 +321,7 @@ contract SavingAccount is Ownable, usingProvable {
 			if(!baseVariable.isOldVersion(tokenAddress)) {
 				require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
 			} else {
-				require(ERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
+				ERC20(tokenAddress).transferFrom(from, address(this), amount);
 			}
 		}
 	}
@@ -360,7 +335,7 @@ contract SavingAccount is Ownable, usingProvable {
 			if(!baseVariable.isOldVersion(tokenAddress)) {
 				require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
 			} else {
-				require(ERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+				ERC20(tokenAddress).transfer(to, amount);
 			}
 		}
 	}
