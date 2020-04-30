@@ -1,7 +1,3 @@
-import * as chai from "chai";
-import ChaiBN from "chai-bn";
-import BN from "bn.js";
-
 contract("SavingsAccount", async (accounts) => {
   before(async () => {
     // Things to execute before all the tests cases
