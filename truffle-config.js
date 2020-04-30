@@ -20,12 +20,12 @@
 
 require("ts-node/register");
 
-const HDWalletProvider = require("@truffle/hdwallet-provider");
-const fs = require("fs");
-const mnemonic = fs
-  .readFileSync(".secret")
-  .toString()
-  .trim();
+// const HDWalletProvider = require("@truffle/hdwallet-provider");
+// const fs = require("fs");
+// const mnemonic = fs
+//   .readFileSync(".secret")
+//   .toString()
+//   .trim();
 
 module.exports = {
   // this is required by truffle to find any ts test files
@@ -56,17 +56,17 @@ module.exports = {
       websockets: true,
     },
 
-    rinkeby: {
-      provider: () =>
-        new HDWalletProvider(
-          mnemonic,
-          "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
-        ),
-      from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
-      network_id: 4,
-      gas: 6000000,
-      gasPrice: 15000000000,
-    },
+    // rinkeby: {
+    //   provider: () =>
+    //     new HDWalletProvider(
+    //       mnemonic,
+    //       "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
+    //     ),
+    //   from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
+    //   network_id: 4,
+    //   gas: 6000000,
+    //   gasPrice: 15000000000,
+    // },
   },
 
   // Set default mocha options here, use special reporters etc.
