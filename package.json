@@ -24,6 +24,7 @@
     "@truffle/hdwallet-provider": "^1.0.23",
     "ethereum-bridge": "^0.6.2",
     "openzeppelin-solidity": "^2.4.0",
+    "solc": "0.5.11",
     "truffle": "^5.0.43",
     "ts-node": "^8.8.2",
     "typechain-target-truffle": "^1.0.2",

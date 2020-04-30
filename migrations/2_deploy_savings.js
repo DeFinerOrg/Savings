@@ -8,6 +8,7 @@ module.exports = function(deployer) {
   deployer.deploy(SymbolsLib);
   deployer.deploy(TokenInfoLib);
   deployer.link(TokenInfoLib, Base);
+  deployer.link(SymbolsLib, Base);
   deployer.deploy(Base);
 
   deployer.link(SymbolsLib, SavingAccount);

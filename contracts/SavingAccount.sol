@@ -1,8 +1,7 @@
 // Copyright DeFiner Inc. 2018-2020
 
-pragma solidity >= 0.5.0 < 0.6.0;
+pragma solidity 0.5.11;
 
-import "./external/provableAPI.sol";
 import "./external/strings.sol";
 import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
@@ -11,7 +10,7 @@ import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 
-contract SavingAccount is Ownable, usingProvable {
+contract SavingAccount is Ownable {
 	using SymbolsLib for SymbolsLib.Symbols;
 	using Base for Base.BaseVariable;
 	using SafeMath for uint256;
@@ -44,10 +43,12 @@ contract SavingAccount is Ownable, usingProvable {
     }
 
 	constructor() public {
+        
 		SavingAccountParameters params = new SavingAccountParameters();
 		Config config = new Config();
 		address[] memory tokenAddresses = params.getTokenAddresses();
 		address[] memory cTokenAddresses = config.getCTokenAddresses();
+        
 		//TODO This needs improvement as it could go out of gas
 		symbols.initialize(params.ratesURL(), params.tokenNames(), tokenAddresses);
 		baseVariable.initialize(tokenAddresses, cTokenAddresses);
@@ -56,6 +57,7 @@ contract SavingAccount is Ownable, usingProvable {
 				baseVariable.approveAll(tokenAddresses[i]);
 			}
 		}
+        
 	}
 
 	function approveAll(address tokenAddress) public {
@@ -393,13 +395,13 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Callback function which is used to parse query the oracle. Once 
 	 * parsed results from oracle, it will recursively call oracle for data.
 	 **/
-	function __callback(bytes32,  string memory result) public {
-		require(msg.sender == provable_cbAddress(), "Unauthorized address");
-		emit LogNewPriceTicker(result);
-		symbols.parseRates(result);
-		// updatePrice(30 * 60); // Call from external
-		updatePrice();
-	}
+	// function __callback(bytes32,  string memory result) public {
+	// 	require(msg.sender == provable_cbAddress(), "Unauthorized address");
+	// 	emit LogNewPriceTicker(result);
+	// 	symbols.parseRates(result);
+	// 	// updatePrice(30 * 60); // Call from external
+	// 	updatePrice();
+	// }
 
 	// Customized gas limit for querying oracle. That's because the function 
 	// symbols.parseRates() is heavy and need more gas.
@@ -411,25 +413,25 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Update coins price every 30 mins. The contract must have enough gas fee.
 	 翻译：更新硬币价格每30分钟一班。 该合同必须有足够的天然气费用。
 	 */
-	function updatePriceWithDelay(uint256 delaySeconds) public payable {
-		//TODO address(this).balance this should be avoided for security reasons
-		if (provable_getPrice("URL", CUSTOM_GAS_LIMIT) > address(this).balance) {
-			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-		} else {
-			emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-			provable_query(delaySeconds, "URL", symbols.ratesURL, CUSTOM_GAS_LIMIT);
-		}
-	}
+	// function updatePriceWithDelay(uint256 delaySeconds) public payable {
+	// 	//TODO address(this).balance this should be avoided for security reasons
+	// 	if (provable_getPrice("URL", CUSTOM_GAS_LIMIT) > address(this).balance) {
+	// 		emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+	// 	} else {
+	// 		emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+	// 		provable_query(delaySeconds, "URL", symbols.ratesURL, CUSTOM_GAS_LIMIT);
+	// 	}
+	// }
 
 	// Manually Update Price
-	function updatePrice() public payable {
-		if (provable_getPrice("URL") > address(this).balance) {
-			emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
-		} else {
-			emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
-			provable_query("URL", symbols.ratesURL);
-		}
-	}
+	// function updatePrice() public payable {
+	// 	if (provable_getPrice("URL") > address(this).balance) {
+	// 		emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
+	// 	} else {
+	// 		emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+	// 		provable_query("URL", symbols.ratesURL);
+	// 	}
+	// }
 
 	// Make the contract payable so that the contract will have enough gass fee 
 	// to query oracle. 
@@ -438,6 +440,7 @@ contract SavingAccount is Ownable, usingProvable {
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
     // ============================================
+    
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         if(_token == ETH_ADDR) {
             EMERGENCY_ADDR.transfer(address(this).balance);
@@ -446,6 +449,7 @@ contract SavingAccount is Ownable, usingProvable {
             require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
         }
     }
+    
 
     function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeem(_amount);
@@ -454,6 +458,7 @@ contract SavingAccount is Ownable, usingProvable {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
+    
 }
 
 // TODO only used for Emergency functions

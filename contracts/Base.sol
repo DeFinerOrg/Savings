@@ -60,7 +60,7 @@ library Base {
     function approveAll(BaseVariable storage self, address tokenAddress) public {
         require(self.cTokenAddress[tokenAddress] != address(0x0));
         IERC20 eRC20 = IERC20(tokenAddress);
-        eRC20.approve(self.cTokenAddress[tokenAddress], 115792089237316195423570985008687907853269984665640564039457584007913129639935);
+        eRC20.approve(self.cTokenAddress[tokenAddress], uint256(-1));
     }
 
     //Test method
