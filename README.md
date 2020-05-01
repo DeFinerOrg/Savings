@@ -39,8 +39,12 @@ make mainnet
 
 # New Test Setup
 
+`yarn`
+
 `ganache-cli -p 8546 -l 10000000`
 
 `make all`
 
 `truffle migrate --reset`
+
+`yarn test`
