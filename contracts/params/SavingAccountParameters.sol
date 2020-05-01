@@ -16,7 +16,7 @@ contract SavingAccountParameters {
 
 		tokenAddresses = new address[](2);
         tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
-		tokenAddresses[1] = address(new MockERC20());
+		tokenAddresses[1] = address(new MockERC20("MTK", "MockToken", 18, 10000));
 
         /*
 		tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
