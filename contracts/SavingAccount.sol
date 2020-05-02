@@ -64,14 +64,14 @@ contract SavingAccount is Ownable, usingProvable {
 	// 		symbols.initialize(ratesURL, tokenNames, tokenAddresses);
 	// 	}
 
-	/** 
+	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
 	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
 		return baseVariable.getAccountTotalUsdValue(accountAddr, symbols);
 	}
 
-	/** 
+	/**
 	 * Get the overall state of the saving pool
 	 */
 	function getMarketState() public view returns (
@@ -96,11 +96,11 @@ contract SavingAccount is Ownable, usingProvable {
 			address tokenAddress = symbols.addressFromIndex(i);
 			addresses[i] = tokenAddress;
 			(
-				deposits[i],
-				loans[i],
-				collateral[i],
-				depositRatePerBlock[i],
-				borrowRatePerBlock[i]
+			deposits[i],
+			loans[i],
+			collateral[i],
+			depositRatePerBlock[i],
+			borrowRatePerBlock[i]
 			) = baseVariable.getTokenState(tokenAddress);
 		}
 		return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
@@ -120,7 +120,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return baseVariable.getTokenState(tokenAddress);
 	}
 
-	/** 
+	/**
 	 * Get all balances for the sender's account
 	 */
 	function getBalances() public view returns (
@@ -154,7 +154,7 @@ contract SavingAccount is Ownable, usingProvable {
 		//TODO `activeAccounts` not getting removed from array.
 		//TODO its always increasing. Call to this function needing
 		//TODO more gas, however, it will not be charged in ETH.
-		//TODO What could be the impact? 
+		//TODO What could be the impact?
 		for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
 			address targetAddress = baseVariable.getActiveAccounts()[i];
 			if (
@@ -197,7 +197,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return baseVariable.isOldVersion(tokenAddress);
 	}
 
-    function transfer(address activeAccount, address tokenAddress, uint amount) public {
+	function transfer(address activeAccount, address tokenAddress, uint amount) public {
 		baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
 	}
 
@@ -210,33 +210,23 @@ contract SavingAccount is Ownable, usingProvable {
 			(baseVariable.getAccountTotalUsdValue(msg.sender, symbols)).mul(BORROW_LTV),
 			"Insufficient collateral."
 		);
-		baseVariable.borrow(tokenAddress, amount, ACCURACY);
+		baseVariable.borrow(tokenAddress, amount);
 		send(msg.sender, amount, tokenAddress);
 	}
 
 	function repay(address tokenAddress, uint256 amount) public payable {
+		receive(msg.sender, amount, tokenAddress);
 		uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
-		if(symbols.isEth(tokenAddress)) {
-			receive(msg.sender, amount, tokenAddress);
-			if(money != 0) {
-				send(msg.sender, money, tokenAddress);
-			}
-		} else {
-			receive(msg.sender, amount.sub(money), tokenAddress);
-		}
-		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
-			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
+		if(money != 0) {
+			send(msg.sender, money, tokenAddress);
 		}
 	}
-	/** 
+	/**
 	 * Deposit the amount of tokenAddress to the saving pool.
 	 */
 	function depositToken(address tokenAddress, uint256 amount) public payable {
-		baseVariable.depositToken(tokenAddress, amount, ACCURACY);
 		receive(msg.sender, amount, tokenAddress);
-		if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {//20暂用，要改
-			baseVariable.toCompound(tokenAddress, 20, tokenAddress == 0x000000000000000000000000000000000000000E);
-		}
+		baseVariable.depositToken(tokenAddress, amount);
 	}
 
 	/**
@@ -244,12 +234,12 @@ contract SavingAccount is Ownable, usingProvable {
 	 * will be deducted first.
 	 */
 	function withdrawToken(address tokenAddress, uint256 amount) public {
-		uint _amount = baseVariable.withdrawToken(tokenAddress, amount, ACCURACY);
+		uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
 		send(msg.sender, _amount, tokenAddress);
 	}
 
 	function withdrawAllToken(address tokenAddress) public {
-		uint amount = baseVariable.withdrawAllToken(tokenAddress, ACCURACY);
+		uint amount = baseVariable.withdrawAllToken(tokenAddress);
 		send(msg.sender, amount, tokenAddress);
 	}
 
@@ -340,8 +330,8 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-	/** 
-	 * Callback function which is used to parse query the oracle. Once 
+	/**
+	 * Callback function which is used to parse query the oracle. Once
 	 * parsed results from oracle, it will recursively call oracle for data.
 	 **/
 	function __callback(bytes32,  string memory result) public {
@@ -352,13 +342,13 @@ contract SavingAccount is Ownable, usingProvable {
 		updatePrice();
 	}
 
-	// Customized gas limit for querying oracle. That's because the function 
+	// Customized gas limit for querying oracle. That's because the function
 	// symbols.parseRates() is heavy and need more gas.
 	//TODO This should not be hard-coded as Ethereum keeps changing gas
 	//TODO consumption of opcodes. It should be configurable.
 	uint constant CUSTOM_GAS_LIMIT = 6000000;
 
-	/** 
+	/**
 	 * Update coins price every 30 mins. The contract must have enough gas fee.
 	 翻译：更新硬币价格每30分钟一班。 该合同必须有足够的天然气费用。
 	 */
@@ -382,7 +372,7 @@ contract SavingAccount is Ownable, usingProvable {
 		}
 	}
 
-	// Make the contract payable so that the contract will have enough gass fee 
-	// to query oracle. 
+	// Make the contract payable so that the contract will have enough gass fee
+	// to query oracle.
 	function() external payable {}
 }
