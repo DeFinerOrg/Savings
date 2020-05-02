@@ -45,6 +45,10 @@ make mainnet
 
 `make all`
 
+`yarn compile`
+
 `truffle migrate --reset`
+
+`yarn prepare`
 
 `yarn test`

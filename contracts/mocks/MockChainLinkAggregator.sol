@@ -1,15 +1,15 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.14;
 
 import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
 
 /**
- * @title The MockAggregator contract
+ * @title The MockChainLinkAggregator contract
  * @notice Use this contract when you need to test
  * other contract's ability to read data from an
  * aggregator contract, but how the aggregator got
  * its answer is unimportant
  */
-contract MockAggregator is AggregatorInterface {
+contract MockChainLinkAggregator is AggregatorInterface {
   uint8 public decimals;
   int256 public latestAnswer;
   uint256 public latestTimestamp;

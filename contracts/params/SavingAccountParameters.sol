@@ -1,6 +1,6 @@
 // Copyright DeFiner Inc. 2018-2020
 
-pragma solidity 0.5.11;
+pragma solidity 0.5.14;
 
 import "../mocks/MockERC20.sol";
 

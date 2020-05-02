@@ -4,6 +4,7 @@
   "description": "Saving pool contract.",
   "main": "index.js",
   "scripts": {
+    "compile": "truffle compile",
     "test": "truffle test",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate"
