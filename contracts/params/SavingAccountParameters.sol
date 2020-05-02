@@ -1,16 +1,12 @@
-// Copyright DeFiner Inc. 2018-2020
-
 pragma solidity 0.5.14;
 
 import "../mocks/MockERC20.sol";
 
 contract SavingAccountParameters {
-    string public ratesURL;
 	string public tokenNames;
     address[] public tokenAddresses;
 
     constructor() public payable{
-        ratesURL = "json(https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC&tsyms=USD).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC].USD";
     	//tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC";
         tokenNames = "ETH,DAI";
 
