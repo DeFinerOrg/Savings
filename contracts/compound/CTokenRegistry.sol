@@ -29,7 +29,7 @@ contract CTokenRegistry is Ownable {
     }
 
     /**
-     * @dev Add a new new Token to cToken address pair
+     * @dev Add a new new Token to cToken address pair. Only Owner can add a pair.
      * @param _token ERC20 Token address
      * @param _cToken cToken address
      */
@@ -43,7 +43,7 @@ contract CTokenRegistry is Ownable {
     }
 
     /**
-     * @dev Remove a cToken from the registry
+     * @dev Remove a cToken from the registry. Only Owner can remove token pair.
      * @param _token ERC20 token address
      */
     function removeToken(address _token) external onlyOwner {

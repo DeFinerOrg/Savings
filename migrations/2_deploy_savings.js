@@ -11,6 +11,7 @@ const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
+const MockCToken = artifacts.require("MockCToken");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 
 module.exports = async function(deployer, network) {
@@ -32,10 +33,39 @@ module.exports = async function(deployer, network) {
     // Deploy SavingAccount contract
     await deployer.deploy(SavingAccount);
 
+    const erc20Tokens = getERC20Tokens();
+    const chainLinkAggregators = getChainLinkAggregators();
+    const cTokens = await getCTokens();
+
     // Configure ChainLinkOracle
-    const chainLinkOracle = await configureChainLinkOracle(deployer);
+    const chainLinkOracle = await deployer.deploy(
+        ChainLinkOracle,
+        erc20Tokens,
+        chainLinkAggregators
+    );
 
     console.log("ChainLinkOracle:", chainLinkOracle.address);
+};
+
+const getCTokens = async () => {
+    const network = process.env.NETWORK;
+    var cTokens = new Array();
+
+    await Promise.all(
+        tokenData.tokens.map(async (token) => {
+            let addr;
+            if (network == "development") {
+                addr = (await MockCToken.new()).address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.cTokenAddress;
+            } else if (network == "mainnet" || network == "fork") {
+                addr = token.mainnet.cTokenAddress;
+            }
+            cTokens.push(addr);
+        })
+    );
+
+    return cTokens;
 };
 
 const getERC20Tokens = async () => {
@@ -77,11 +107,4 @@ const getChainLinkAggregators = async () => {
         })
     );
     return aggregators;
-};
-
-const configureChainLinkOracle = async (deployer) => {
-    // Supported Tokens by ChainLink
-    // https://docs.google.com/spreadsheets/d/1EE8l8sMTZUqkApAzk8hnFPAFLx8em7IT6kQ1x5RkoOA/edit#gid=0
-
-    return await deployer.deploy(ChainLinkOracle, getERC20Tokens(), getChainLinkAggregators());
 };
