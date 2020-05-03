@@ -7,8 +7,8 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  */
 contract CTokenRegistry is Ownable {
 
-    event TokenAdded(address indexed token, address cToken);
-    event TokenRemoved(address indexed token);
+    event CTokenAdded(address indexed token, address cToken);
+    event CTokenRemoved(address indexed token);
 
     // ERC20 => cToken
     mapping(address => address) public cTokens;
@@ -39,7 +39,7 @@ contract CTokenRegistry is Ownable {
 
         require(cTokens[_token] == address(0), "Token already exist");
         cTokens[_token] = _cToken;
-        emit TokenAdded(_token, _cToken);
+        emit CTokenAdded(_token, _cToken);
     }
 
     /**
@@ -51,7 +51,7 @@ contract CTokenRegistry is Ownable {
         require(cTokens[_token] != address(0), "cToken not exist");
 
         delete cTokens[_token];
-        emit TokenRemoved(_token);
+        emit CTokenRemoved(_token);
     }
 
     /**

@@ -8,6 +8,7 @@ const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
+const TokenRegistry = artifacts.require("TokenRegistry");
 const CTokenRegistry = artifacts.require("CTokenRegistry");
 
 // Mocks
@@ -37,6 +38,9 @@ module.exports = async function(deployer, network) {
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens();
+
+    // Deploy TokenRegistry
+    await deployer.deploy(TokenRegistry, erc20Tokens);
 
     // Deploy CTokenRegistry
     await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
