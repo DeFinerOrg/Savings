@@ -8,6 +8,7 @@ const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
+const CTokenRegistry = artifacts.require("CTokenRegistry");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -33,9 +34,12 @@ module.exports = async function(deployer, network) {
     // Deploy SavingAccount contract
     await deployer.deploy(SavingAccount);
 
-    const erc20Tokens = getERC20Tokens();
-    const chainLinkAggregators = getChainLinkAggregators();
+    const erc20Tokens = await getERC20Tokens();
+    const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens();
+
+    // Deploy CTokenRegistry
+    await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
 
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(
@@ -76,9 +80,11 @@ const getERC20Tokens = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "development" || network == "ropsten") {
+            if (network == "development") {
                 addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
                     .address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.tokenAddress;
             } else if (network == "mainnet" || network == "fork") {
                 addr = token.mainnet.tokenAddress;
             }

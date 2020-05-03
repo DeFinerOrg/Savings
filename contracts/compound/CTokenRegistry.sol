@@ -20,7 +20,7 @@ contract CTokenRegistry is Ownable {
      */
     constructor(address[] memory _tokens, address[] memory _cTokens) public {
         uint256 tokensLen = _tokens.length;
-        require(tokensLen == 0, "Array length is zero");
+        require(tokensLen > 0, "Array length is zero");
         require(tokensLen == _cTokens.length, "Array lenght does not match");
 
         for(uint256 i = 0; i < tokensLen; i++) {
@@ -37,7 +37,7 @@ contract CTokenRegistry is Ownable {
         require(_token != address(0), "Token address is zero");
         require(_cToken != address(0), "cToken address is zero");
 
-        require(cTokens[_token] != address(0), "Token already exist");
+        require(cTokens[_token] == address(0), "Token already exist");
         cTokens[_token] = _cToken;
         emit TokenAdded(_token, _cToken);
     }
