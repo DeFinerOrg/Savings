@@ -12,12 +12,15 @@ library SymbolsLib {
 		mapping(string => uint256) symbolToPrices;
 		mapping(address => string) addressToSymbol;
 		mapping(string => address) symbolToAddress;
+		address chainlinkAggregator;
 	}
 
 	/**
 	 *  initializes the symbols structure
 	 */
-	function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses) public {
+	function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses, address _chainlinkAddress) public {
+		self.chainlinkAggregator = _chainlinkAddress;
+
 		strings.slice memory delim = strings.toSlice(",");
 		strings.slice memory tokensList = strings.toSlice(tokenNames);
 

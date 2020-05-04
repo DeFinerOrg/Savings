@@ -39,15 +39,15 @@ contract SavingAccount {
         _;
     }
 
-	constructor() public {
-        
+	constructor(address _chainlinkAddress) public {
+
 		SavingAccountParameters params = new SavingAccountParameters();
 		Config config = new Config();
 		address[] memory tokenAddresses = params.getTokenAddresses();
 		address[] memory cTokenAddresses = config.getCTokenAddresses();
         
 		//TODO This needs improvement as it could go out of gas
-		symbols.initialize(params.tokenNames(), tokenAddresses);
+		symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
 		baseVariable.initialize(tokenAddresses, cTokenAddresses);
 		for(uint i = 0;i < tokenAddresses.length;i++) {
 			if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
