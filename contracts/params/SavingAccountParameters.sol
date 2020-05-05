@@ -1,17 +1,20 @@
-// Copyright DeFiner Inc. 2018-2020
+pragma solidity 0.5.14;
 
-pragma solidity >= 0.5.0 < 0.6.0;
+import "../mocks/MockERC20.sol";
 
 contract SavingAccountParameters {
-    string public ratesURL;
-	string public tokenNames;
+    string public tokenNames;
     address[] public tokenAddresses;
 
     constructor() public payable{
-        ratesURL = "json(https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC&tsyms=USD).[ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC].USD";
-    	tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC";
+    	//tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC";
+        tokenNames = "DAI,USDC,USDT,TUSD,MKR,BAT,ZRX,REP,WBTC";
 
-		tokenAddresses = new address[](16);
+		// tokenAddresses = new address[](2);
+        // tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
+		// tokenAddresses[1] = address(new MockERC20("MTK", "MockToken", 18, 10000));
+
+        /*
 		tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
 		tokenAddresses[1] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 		tokenAddresses[2] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -28,9 +31,10 @@ contract SavingAccountParameters {
 		tokenAddresses[13] = 0x1985365e9f78359a9B6AD760e32412f4a445E862;
 		tokenAddresses[14] = 0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b;
 		tokenAddresses[15] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
-	}
+        */
+    }
 
-	function getTokenAddresses() public view returns(address[] memory){
+    function getTokenAddresses() public view returns(address[] memory){
         return tokenAddresses;
     }
 }

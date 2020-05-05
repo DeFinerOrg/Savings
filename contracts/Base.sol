@@ -1,9 +1,9 @@
-pragma solidity >= 0.5.0 < 0.6.0;
+pragma solidity 0.5.14;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "./lib/TokenInfoLib.sol";
-import "./config/Config.sol";
 import "./lib/SymbolsLib.sol";
 
 interface CToken {
@@ -18,10 +18,6 @@ interface CToken {
 
 interface CETH{
     function mint() external payable;
-}
-
-interface ERC20{
-    function approve(address _spender, uint256 _value) external returns (bool success);
 }
 
 library Base {
@@ -62,8 +58,8 @@ library Base {
 
     function approveAll(BaseVariable storage self, address tokenAddress) public {
         require(self.cTokenAddress[tokenAddress] != address(0x0));
-        ERC20 eRC20 = ERC20(tokenAddress);
-        eRC20.approve(self.cTokenAddress[tokenAddress], 115792089237316195423570985008687907853269984665640564039457584007913129639935);
+        IERC20 eRC20 = IERC20(tokenAddress);
+        eRC20.approve(self.cTokenAddress[tokenAddress], uint256(-1));
     }
 
     //Test method

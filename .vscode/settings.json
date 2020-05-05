@@ -1,0 +1,4 @@
+{
+  "solidity.packageDefaultDependenciesDirectory": "node_modules",
+  "solidity.packageDefaultDependenciesContractsDirectory": ""
+}
