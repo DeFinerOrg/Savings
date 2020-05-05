@@ -22,7 +22,7 @@ contract("SavingAccount", async (accounts) => {
 
     beforeEach(async () => {
         // Things to execute before each test cases
-        savingAccount = await SavingAccount.new();
+        savingAccount = await SavingAccount.new(); //TODO: oracle address needs to passed here
         // console.log("SavingAccount: ", savingAccount.address);
     });
 

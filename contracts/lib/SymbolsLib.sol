@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./../external/strings.sol";
+import "./../oracle/ChainLinkOracle.sol";
 
 library SymbolsLib {
     using SafeMath for uint256;
@@ -55,8 +56,10 @@ library SymbolsLib {
 	} 
 
 	function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
+		ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
+		self.symbolToPrices[self.addressToSymbol[tokenAddress]] = cLink.getLatestAnswer(tokenAddress);
 		return self.symbolToPrices[self.addressToSymbol[tokenAddress]];
-	} 
+	}
 
 	function isEth(Symbols storage self, address tokenAddress) public view returns(bool) {
 		return self.symbolToAddress["ETH"] == tokenAddress;

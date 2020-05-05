@@ -56,7 +56,6 @@ module.exports = async function(deployer, network) {
     console.log("CTokenRegistry:", cTokenRegistry.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccount.address);
-    console.log("SymbolsLib:", SymbolsLib.address);
 };
 
 const getCTokens = async () => {
