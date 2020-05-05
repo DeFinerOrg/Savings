@@ -13,12 +13,16 @@ contract CTokenRegistry is Ownable {
     // ERC20 => cToken
     mapping(address => address) public cTokens;
 
+    // TODO remove this once dependecy is removed
+    address[] public cTokensList;
+
     /**
      * @dev Constructor
      * @param _tokens Array containing token addresses
      * @param _cTokens Array containing cToken addresses
      */
     constructor(address[] memory _tokens, address[] memory _cTokens) public {
+        cTokensList = _cTokens;
         uint256 tokensLen = _tokens.length;
         require(tokensLen > 0, "Array length is zero");
         require(tokensLen == _cTokens.length, "Array lenght does not match");
@@ -70,5 +74,9 @@ contract CTokenRegistry is Ownable {
      */
     function isTokenExist(address _token) external view returns (bool isExist) {
         isExist = cTokens[_token] != address(0);
+    }
+
+    function getCTokensList() external view returns (address[] memory) {
+        return cTokensList;
     }
 }

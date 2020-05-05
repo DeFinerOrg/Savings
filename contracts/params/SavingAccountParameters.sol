@@ -3,16 +3,16 @@ pragma solidity 0.5.14;
 import "../mocks/MockERC20.sol";
 
 contract SavingAccountParameters {
-	string public tokenNames;
+    string public tokenNames;
     address[] public tokenAddresses;
 
     constructor() public payable{
     	//tokenNames = "ETH,DAI,USDC,USDT,TUSD,PAX,GUSD,BNB,MKR,BAT,OMG,GNT,ZRX,REP,CRO,WBTC";
-        tokenNames = "ETH,DAI";
+        tokenNames = "DAI,USDC,USDT,TUSD,MKR,BAT,ZRX,REP,WBTC";
 
-		tokenAddresses = new address[](2);
-        tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
-		tokenAddresses[1] = address(new MockERC20("MTK", "MockToken", 18, 10000));
+		// tokenAddresses = new address[](2);
+        // tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
+		// tokenAddresses[1] = address(new MockERC20("MTK", "MockToken", 18, 10000));
 
         /*
 		tokenAddresses[0] = 0x000000000000000000000000000000000000000E;
@@ -32,9 +32,9 @@ contract SavingAccountParameters {
 		tokenAddresses[14] = 0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b;
 		tokenAddresses[15] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
         */
-	}
+    }
 
-	function getTokenAddresses() public view returns(address[] memory){
+    function getTokenAddresses() public view returns(address[] memory){
         return tokenAddresses;
     }
 }

@@ -4,7 +4,6 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "./lib/TokenInfoLib.sol";
-import "./config/Config.sol";
 import "./lib/SymbolsLib.sol";
 
 interface CToken {
