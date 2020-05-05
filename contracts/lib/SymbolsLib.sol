@@ -58,7 +58,7 @@ library SymbolsLib {
 	function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
 		ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
 		self.symbolToPrices[self.addressToSymbol[tokenAddress]] = cLink.getLatestAnswer(tokenAddress);
-		return self.symbolToPrices[self.addressToSymbol[tokenAddress]];
+		return self.symbolToPrices[self.addressToSymbol[tokenAddress]]; 
 	}
 
 	function isEth(Symbols storage self, address tokenAddress) public view returns(bool) {

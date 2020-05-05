@@ -34,13 +34,16 @@ module.exports = async function(deployer, network) {
 
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
-    const cTokens = await getCTokens();
+    const cTokens = await getCTokens(erc20Tokens);
 
     // Deploy TokenRegistry
     const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
 
     // Deploy CTokenRegistry
     const cTokenRegistry = await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
+
+    // Deploy SavingAccount contract
+    const savingAccount = await deployer.deploy(SavingAccount, erc20Tokens, cTokens);
 
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(
@@ -58,15 +61,16 @@ module.exports = async function(deployer, network) {
     console.log("SavingAccount:", savingAccount.address);
 };
 
-const getCTokens = async () => {
+const getCTokens = async (erc20Tokens) => {
     const network = process.env.NETWORK;
     var cTokens = new Array();
 
     await Promise.all(
-        tokenData.tokens.map(async (token) => {
+        tokenData.tokens.map(async (token, index) => {
             let addr;
             if (network == "development") {
-                addr = (await MockCToken.new()).address;
+                // Create MockCToken for given ERC20 token address
+                addr = (await MockCToken.new(erc20Tokens[index])).address;
             } else if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
             } else if (network == "mainnet" || network == "fork") {

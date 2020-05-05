@@ -8,31 +8,31 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 
 contract SavingAccount {
-	using SymbolsLib for SymbolsLib.Symbols;
-	using Base for Base.BaseVariable;
-	using SafeMath for uint256;
-	using SignedSafeMath for int256;
+    using SymbolsLib for SymbolsLib.Symbols;
+    using Base for Base.BaseVariable;
+    using SafeMath for uint256;
+    using SignedSafeMath for int256;
 
-	SymbolsLib.Symbols symbols;
-	Base.BaseVariable baseVariable;
+    SymbolsLib.Symbols symbols;
+    Base.BaseVariable baseVariable;
 
-	// TODO all should be in Config contract
-	event LogNewProvableQuery(string description);
-	event LogNewPriceTicker(string price);
+    // TODO all should be in Config contract
+    event LogNewProvableQuery(string description);
+    event LogNewPriceTicker(string price);
 
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
 
-	uint256 ACCURACY = 10**18;
-	uint BLOCKS_PER_YEAR = 2102400;
-	int BORROW_LTV = 60; //TODO check is this 60%?
-	int LIQUIDATE_THREADHOLD = 85;
-	int LIQUIDATION_DISCOUNT_RATIO = 95;
+    uint256 ACCURACY = 10**18;
+    uint BLOCKS_PER_YEAR = 2102400;
+    int BORROW_LTV = 60; //TODO check is this 60%?
+    int LIQUIDATE_THREADHOLD = 85;
+    int LIQUIDATION_DISCOUNT_RATIO = 95;
 
-	uint COMMUNITY_FUND_RATIO = 10;
-	uint256 MIN_RESERVE_RATIO = 10;
-	uint256 MAX_RESERVE_RATIO = 20;
+    uint COMMUNITY_FUND_RATIO = 10;
+    uint256 MIN_RESERVE_RATIO = 10;
+    uint256 MAX_RESERVE_RATIO = 20;
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
@@ -387,6 +387,7 @@ contract SavingAccount {
 			require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
 		}
 	}
+
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS

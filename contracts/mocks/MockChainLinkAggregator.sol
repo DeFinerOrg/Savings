@@ -10,29 +10,29 @@ import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
  * its answer is unimportant
  */
 contract MockChainLinkAggregator is AggregatorInterface {
-  uint8 public decimals;
-  int256 public latestAnswer;
-  uint256 public latestTimestamp;
-  uint256 public latestRound;
+    uint8 public decimals;
+    int256 public latestAnswer;
+    uint256 public latestTimestamp;
+    uint256 public latestRound;
 
-  mapping(uint256 => int256) public getAnswer;
-  mapping(uint256 => uint256) public getTimestamp;
+    mapping(uint256 => int256) public getAnswer;
+    mapping(uint256 => uint256) public getTimestamp;
 
-  constructor(
-    uint8 _decimals,
-    int256 _initialAnswer
-  ) public {
-    decimals = _decimals;
-    updateAnswer(_initialAnswer);
-  }
+    constructor(
+        uint8 _decimals,
+        int256 _initialAnswer
+    ) public {
+        decimals = _decimals;
+        updateAnswer(_initialAnswer);
+    }
 
-  function updateAnswer(
-    int256 _answer
-  ) public {
-    latestAnswer = _answer;
-    latestTimestamp = block.timestamp;
-    latestRound++;
-    getAnswer[latestRound] = _answer;
-    getTimestamp[latestRound] = block.timestamp;
-  }
+    function updateAnswer(
+        int256 _answer
+    ) public {
+        latestAnswer = _answer;
+        latestTimestamp = block.timestamp;
+        latestRound++;
+        getAnswer[latestRound] = _answer;
+        getTimestamp[latestRound] = block.timestamp;
+    }
 }
