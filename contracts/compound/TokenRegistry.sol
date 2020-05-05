@@ -13,10 +13,14 @@ contract TokenRegistry is Ownable {
     // ERC20 token => isExist
     mapping(address => bool) public tokens;
 
+    // TODO remove this once dependency is over
+    address[] public erc20Tokens;
+
     /**
      * @dev Constructor
      */
     constructor(address[] memory _tokens) public {
+        erc20Tokens = _tokens;
         uint256 len = _tokens.length;
         require(len > 0, "Array is empty");
 
@@ -55,5 +59,9 @@ contract TokenRegistry is Ownable {
      */
     function isTokenExist(address _token) external view returns (bool isExist) {
         isExist = tokens[_token];
+    }
+
+    function getERC20Tokens() external view returns (address[] memory) {
+        return erc20Tokens;
     }
 }
