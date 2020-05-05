@@ -52,10 +52,14 @@ module.exports = async function(deployer, network) {
         chainLinkAggregators
     );
 
+    // Deploy SavingAccount contract
+    const savingAccount = await deployer.deploy(SavingAccount,chainLinkOracle.address);
+
     console.log("TokenRegistry:", tokenRegistry.address);
     console.log("CTokenRegistry:", cTokenRegistry.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccount.address);
+    console.log("SymbolsLib:", SymbolsLib.address);
 };
 
 const getCTokens = async (erc20Tokens) => {
