@@ -5,7 +5,7 @@ pragma solidity >= 0.5.0 < 0.6.0;
 import "./external/provableAPI.sol";
 import "./external/strings.sol";
 import "./lib/SymbolsLib.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
@@ -67,14 +67,14 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
+	function getAccountTotalUsdValue(address accountAddr) public returns (int256 usdValue) {
 		return baseVariable.getAccountTotalUsdValue(accountAddr, symbols);
 	}
 
 	/**
 	 * Get the overall state of the saving pool
 	 */
-	function getMarketState() public view returns (
+	function getMarketState() public returns (
 		address[] memory addresses,
 		int256[] memory deposits,
 		int256[] memory loans,
@@ -109,7 +109,7 @@ contract SavingAccount is Ownable, usingProvable {
 	/*
 	 * Get the state of the given token
 	 */
-	function getTokenState(address tokenAddress) public view returns (
+	function getTokenState(address tokenAddress) public returns (
 		int256 deposits,
 		int256 loans,
 		int256 collateral,
@@ -123,7 +123,7 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Get all balances for the sender's account
 	 */
-	function getBalances() public view returns (
+	function getBalances() public returns (
 		address[] memory addresses,
 		int256[] memory totalBalance,
 		int256[] memory totalInterest
@@ -148,7 +148,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return baseVariable.getActiveAccounts();
 	}
 
-	function getLiquidatableAccounts() public view returns(address[] memory) {
+	function getLiquidatableAccounts() public returns(address[] memory) {
 		address[] memory liquidatableAccounts;
 		uint returnIdx;
 		//TODO `activeAccounts` not getting removed from array.
@@ -178,7 +178,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return symbols.getCoinLength();
 	}
 
-	function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
+	function tokenBalanceOfAndInterestOf(address tokenAddress) public returns(
 		int256 totalBalance,
 		int256 totalInterest
 	) {
@@ -191,10 +191,6 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
 		return symbols.priceFromIndex(coinIndex);
-	}
-
-	function isOldVersion(address tokenAddress) public view returns(bool) {
-		return baseVariable.isOldVersion(tokenAddress);
 	}
 
 	function transfer(address activeAccount, address tokenAddress, uint amount) public {
@@ -308,11 +304,10 @@ contract SavingAccount is Ownable, usingProvable {
 		} else {
 			//When only tokens received, msg.value must be 0
 			require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-			if(!baseVariable.isOldVersion(tokenAddress)) {
-				require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
-			} else {
-				ERC20(tokenAddress).transferFrom(from, address(this), amount);
-			}
+			require(
+				SafeERC20(tokenAddress).safeTransferFrom(IERC20(tokenAddress), from, address(this), amount),
+				"Token transfer failed"
+			);
 		}
 	}
 
@@ -322,11 +317,7 @@ contract SavingAccount is Ownable, usingProvable {
 			//TODO Can this ETH be received by a contract?
 			msg.sender.transfer(amount);
 		} else {
-			if(!baseVariable.isOldVersion(tokenAddress)) {
-				require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
-			} else {
-				ERC20(tokenAddress).transfer(to, amount);
-			}
+			require(SafeERC20(tokenAddress).safeTransfer(IERC20(tokenAddress), to, amount), "Token transfer failed");
 		}
 	}
 
