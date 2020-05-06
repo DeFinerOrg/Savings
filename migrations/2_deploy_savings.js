@@ -42,14 +42,19 @@ module.exports = async function(deployer, network) {
     // Deploy CTokenRegistry
     const cTokenRegistry = await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
 
-    // Deploy SavingAccount contract
-    const savingAccount = await deployer.deploy(SavingAccount, erc20Tokens, cTokens);
-
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(
         ChainLinkOracle,
         erc20Tokens,
         chainLinkAggregators
+    );
+
+    // Deploy SavingAccount contract
+    const savingAccount = await deployer.deploy(
+        SavingAccount,
+        erc20Tokens,
+        cTokens,
+        chainLinkOracle.address
     );
 
     console.log("TokenRegistry:", tokenRegistry.address);
