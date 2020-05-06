@@ -8,6 +8,8 @@ import {
     TokenRegistryInstance,
     CTokenRegistryInstance,
     CTokenInstance,
+    ChainLinkOracleContract,
+    ChainLinkOracleInstance,
     MockCTokenInstance,
     MockCTokenContract
 } from "../types/truffle-contracts/index";
@@ -22,6 +24,7 @@ const MockERC20: MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: MockCTokenContract = artifacts.require("MockCToken");
 const TokenRegistry: TokenRegistryContract = artifacts.require("TokenRegistry");
 const CTokenRegistry: CTokenRegistryContract = artifacts.require("CTokenRegistry");
+const ChainLinkOracle: ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -29,6 +32,7 @@ contract("SavingAccount", async (accounts) => {
     let savingAccount: SavingAccountInstance;
     let tokenRegistry: TokenRegistryInstance;
     let cTokenRegistry: CTokenRegistryInstance;
+    let chainLinkOracle: ChainLinkOracleInstance;
 
     const owner = accounts[0];
     const user1 = accounts[0];
@@ -38,12 +42,14 @@ contract("SavingAccount", async (accounts) => {
     });
 
     beforeEach(async () => {
+        chainLinkOracle = await ChainLinkOracle.deployed();
         tokenRegistry = await TokenRegistry.deployed();
         cTokenRegistry = await CTokenRegistry.deployed();
         // Things to execute before each test cases
         savingAccount = await SavingAccount.new(
             await tokenRegistry.getERC20Tokens(),
-            await cTokenRegistry.getCTokensList()
+            await cTokenRegistry.getCTokensList(),
+            chainLinkOracle.address
         );
         // console.log("SavingAccount: ", savingAccount.address);
     });
