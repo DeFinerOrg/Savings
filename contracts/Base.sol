@@ -21,9 +21,6 @@ interface CETH{
 }
 
 interface ERC20{
-    function approve(address _spender, uint256 _value) external returns (bool success);
-    function transferFrom(address _from, address _to, uint _value) external;
-    function transfer(address _to, uint _value) external;
     function decimals() external view returns(uint);
 }
 
@@ -282,10 +279,15 @@ library Base {
 
     function fromCompound(BaseVariable storage self, address tokenAddress, uint amount) public {
         CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
-        if(int(amount) >= getTotalCompoundNow(self, tokenAddress)) {
+        int compoundAmount = getTotalCompoundNow(self, tokenAddress);
+        int _amount = compoundAmount.add(self.totalLoans[tokenAddress].add(self.totalReserve[tokenAddress]))
+        .mul(15).div(100).sub(self.totalReserve[tokenAddress]);
+        if(_amount >= compoundAmount) {
             cToken.redeem(cToken.balanceOf(address(this)));
+            self.totalReserve[tokenAddress] = 0;
         } else {
-            cToken.redeemUnderlying(amount);
+            cToken.redeemUnderlying(_amount);
+            self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].add(_amount);
         }
     }
 
@@ -388,14 +390,14 @@ library Base {
         updateDepositRate(self, tokenAddress);
         updateBorrowRate(self, tokenAddress);
         uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
-        int totalBorrow = totalBalance(self, msg.sender, symbols, false) < 0
-        ? totalBalance(self, msg.sender, symbols, false).mul(-1) : totalBalance(self, msg.sender, symbols, false);
-        int totalDeposit = totalBalance(self, msg.sender, symbols, true);
-        int amountValue = int(amount.mul(symbols.priceFromAddress(tokenAddress)));
         int interest = tokenInfo.viewInterest(rate);
         require(tokenInfo.totalAmount(rate) >= int256(amount), "Insufficient balance.");
 
         // 仅供无价格测试使用
+        // int totalBorrow = totalBalance(self, msg.sender, symbols, false) < 0
+        // ? totalBalance(self, msg.sender, symbols, false).mul(-1) : totalBalance(self, msg.sender, symbols, false);
+        // int totalDeposit = totalBalance(self, msg.sender, symbols, true);
+        // int amountValue = int(amount.mul(symbols.priceFromAddress(tokenAddress)));
         // require(totalDeposit.sub(amountValue) > 0 && totalBorrow.mul(100).div(totalDeposit.sub(amountValue)) <= 60);
         tokenInfo.minusAmount(amount, rate, block.number);
         if(interest > 0) {
@@ -535,7 +537,6 @@ library Base {
         uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
         require(tokenInfo.totalAmount(rate) >= int256(amount), "Insufficient balance.");
         int interest = tokenInfo.viewInterest(rate);
-        uint _amount = uint(tokenInfo.totalBalance()) <= amount ? uint(tokenInfo.totalBalance()) : amount;
         tokenInfo.minusAmount(amount, rate, block.number);
         if(interest > 0) {
             int256 _money = interest <= int(amount) ? interest.div(10) : int(amount.div(10));
@@ -559,7 +560,6 @@ library Base {
         updateBorrowRate(self, tokenAddress);
         uint rate = getBlockIntervalDepositRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
         uint amount = uint(tokenInfo.totalAmount(rate));
-        uint _amount = uint(tokenInfo.totalBalance());
         int interest = tokenInfo.viewInterest(rate);
         tokenInfo.minusAmount(amount, rate, block.number);
         if(interest > 0) {
