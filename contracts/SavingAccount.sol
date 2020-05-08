@@ -406,10 +406,3 @@ contract SavingAccount {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
 }
-
-// TODO only used for Emergency functions
-interface ICToken {
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function redeem(uint redeemAmount) external returns (uint);
-}
-
