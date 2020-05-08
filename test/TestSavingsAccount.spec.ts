@@ -96,7 +96,7 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Validate that the tokens are deposited to SavingAccount
                 // 4.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
-                    .mul(new BN(15))  //Maintiaining ratio
+                    .mul(new BN(15)) //Maintiaining ratio
                     .div(new BN(100));
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
@@ -161,14 +161,13 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20DAI.address, numOfToken);
 
+                //Number of tokens to withdraw
                 const withdrawTokens = new BN(15);
                 //await erc20DAI.approve(savingAccount.address, withdrawToken);
 
                 // 3. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(withdrawTokens).to.be.bignumber.lessThan(
-                    balSavingAccount
-                );
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccount);
 
                 // 4. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
@@ -180,18 +179,17 @@ contract("SavingAccount", async (accounts) => {
 
                 // 5. Validate Withdraw
 
-                const expectedTokensAfterWithdraw = numOfToken
-                    .mul(new BN(15)) 
+                const expectedTokenBalanceAfterWithdraw = numOfToken
+                    .mul(new BN(15))
                     .div(new BN(100))
                     .sub(new BN(15));
                 const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(expectedTokensAfterWithdraw).to.be.bignumber.equal(
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
                 );
 
                 // amount present in savingsAccount & compound & user as well
                 // got through savingsAccount.sol
-                
             });
         });
     });
