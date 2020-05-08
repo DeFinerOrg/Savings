@@ -87,7 +87,7 @@ contract("SavingAccount", async (accounts) => {
                 const cTokenDAI: MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
-                const numOfToken = new BN(1000);  //total value?
+                const numOfToken = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 // 3. Deposit Token to SavingContract
@@ -173,7 +173,21 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
 
-                // 5. Validate Withdraw....rate, 15%?
+                /* let userBalance = await web3.eth.getBalance(msg.sender)
+                expect(userBalance).to.be.bignumber.equal(
+                    withdrawTokens
+                ); */
+
+                // 5. Validate Withdraw
+
+                const expectedTokensAfterWithdraw = numOfToken
+                    .mul(new BN(15)) 
+                    .div(new BN(100))
+                    .sub(new BN(15));
+                const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokensAfterWithdraw).to.be.bignumber.equal(
+                    newbalSavingAccount
+                );
 
                 // amount present in savingsAccount & compound & user as well
                 // got through savingsAccount.sol
