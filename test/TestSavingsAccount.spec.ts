@@ -96,7 +96,7 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Validate that the tokens are deposited to SavingAccount
                 // 4.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
-                    .mul(new BN(15))
+                    .mul(new BN(15))  //Maintiaining ratio
                     .div(new BN(100));
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
@@ -161,19 +161,22 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20DAI.address, numOfToken);
 
-                const withdrawToken = new BN(15);
-                await erc20DAI.approve(savingAccount.address, withdrawToken);
+                const withdrawTokens = new BN(15);
+                //await erc20DAI.approve(savingAccount.address, withdrawToken);
 
                 // 3. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(withdrawToken).to.be.bignumber.lessThan(
+                expect(withdrawTokens).to.be.bignumber.lessThan(
                     balSavingAccount
                 );
 
                 // 4. Withdraw Token from SavingContract
-                await savingAccount.withdrawToken(erc20DAI.address, withdrawToken);
+                await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
 
                 // 5. Validate Withdraw....rate, 15%?
+
+                // amount present in savingsAccount & compound & user as well
+                // got through savingsAccount.sol
                 
             });
         });
