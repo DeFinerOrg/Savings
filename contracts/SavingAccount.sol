@@ -13,6 +13,7 @@ import "./Base.sol";
 
 contract SavingAccount is Ownable, usingProvable {
 	using SymbolsLib for SymbolsLib.Symbols;
+	using SafeERC20 for IERC20;
 	using Base for Base.BaseVariable;
 	using SafeMath for uint256;
 	using SignedSafeMath for int256;
@@ -67,14 +68,14 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-	function getAccountTotalUsdValue(address accountAddr) public returns (int256 usdValue) {
+	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
 		return baseVariable.getAccountTotalUsdValue(accountAddr, symbols);
 	}
 
 	/**
 	 * Get the overall state of the saving pool
 	 */
-	function getMarketState() public returns (
+	function getMarketState() public view returns (
 		address[] memory addresses,
 		int256[] memory deposits,
 		int256[] memory loans,
@@ -109,7 +110,7 @@ contract SavingAccount is Ownable, usingProvable {
 	/*
 	 * Get the state of the given token
 	 */
-	function getTokenState(address tokenAddress) public returns (
+	function getTokenState(address tokenAddress) public view returns (
 		int256 deposits,
 		int256 loans,
 		int256 collateral,
@@ -123,7 +124,7 @@ contract SavingAccount is Ownable, usingProvable {
 	/**
 	 * Get all balances for the sender's account
 	 */
-	function getBalances() public returns (
+	function getBalances() public view returns (
 		address[] memory addresses,
 		int256[] memory totalBalance,
 		int256[] memory totalInterest
@@ -148,7 +149,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return baseVariable.getActiveAccounts();
 	}
 
-	function getLiquidatableAccounts() public returns(address[] memory) {
+	function getLiquidatableAccounts() public view returns(address[] memory) {
 		address[] memory liquidatableAccounts;
 		uint returnIdx;
 		//TODO `activeAccounts` not getting removed from array.
@@ -178,7 +179,7 @@ contract SavingAccount is Ownable, usingProvable {
 		return symbols.getCoinLength();
 	}
 
-	function tokenBalanceOfAndInterestOf(address tokenAddress) public returns(
+	function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
 		int256 totalBalance,
 		int256 totalInterest
 	) {
@@ -304,10 +305,7 @@ contract SavingAccount is Ownable, usingProvable {
 		} else {
 			//When only tokens received, msg.value must be 0
 			require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-			require(
-				SafeERC20(tokenAddress).safeTransferFrom(IERC20(tokenAddress), from, address(this), amount),
-				"Token transfer failed"
-			);
+			IERC20(tokenAddress).safeTransferFrom(from, address(this), amount);
 		}
 	}
 
@@ -317,7 +315,7 @@ contract SavingAccount is Ownable, usingProvable {
 			//TODO Can this ETH be received by a contract?
 			msg.sender.transfer(amount);
 		} else {
-			require(SafeERC20(tokenAddress).safeTransfer(IERC20(tokenAddress), to, amount), "Token transfer failed");
+			IERC20(tokenAddress).safeTransfer(to, amount);
 		}
 	}
 
