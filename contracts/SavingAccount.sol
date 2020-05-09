@@ -69,7 +69,25 @@ contract SavingAccount is Ownable, usingProvable {
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
 	function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
-		return baseVariable.getAccountTotalUsdValue(accountAddr, symbols);
+		int256 totalUsdValue = 0;
+		for(uint i = 0; i < symbols.getCoinLength(); i++) {
+			address tokenAddress = symbols.addressFromIndex(i);
+			int balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
+			if(balance != 0) {
+				totalUsdValue = totalUsdValue.add(
+					getTotalUsdValue(tokenAddress, balance, symbols.priceFromIndex(i))
+				);
+			}
+		}
+		return totalUsdValue;
+	}
+
+	function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
+		if(tokenAddress == 0x000000000000000000000000000000000000000E) {
+			return amount.mul(int(price)).div(10**18);
+		} else {
+			return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
+		}
 	}
 
 	/**
@@ -159,14 +177,14 @@ contract SavingAccount is Ownable, usingProvable {
 		for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
 			address targetAddress = baseVariable.getActiveAccounts()[i];
 			if (
-				int256(baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)).mul(100)
+				baseVariable.totalBalance(targetAddress, symbols, false).mul(-1).mul(100)
 				>
-				baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(LIQUIDATE_THREADHOLD)
+				getAccountTotalUsdValue(targetAddress).mul(LIQUIDATE_THREADHOLD)
 				&&
-				int256(baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(-1))
+				baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)
 				.mul(LIQUIDATION_DISCOUNT_RATIO)
 				<=
-				baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(100)
+				getAccountTotalUsdValue(targetAddress).mul(100)
 
 			) {
 				liquidatableAccounts[returnIdx++] = (targetAddress);
@@ -200,11 +218,11 @@ contract SavingAccount is Ownable, usingProvable {
 
 	function borrow(address tokenAddress, uint256 amount) public {
 		require(
-			int256(baseVariable.getAccountTotalUsdValue(msg.sender, symbols) * -1)
+			baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
 			.add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-			.div(10**18).mul(100)
+			.mul(100).div(10**18)
 			<=
-			(baseVariable.getAccountTotalUsdValue(msg.sender, symbols)).mul(BORROW_LTV),
+			getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
 			"Insufficient collateral."
 		);
 		baseVariable.borrow(tokenAddress, amount);

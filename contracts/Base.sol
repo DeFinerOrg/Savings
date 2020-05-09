@@ -190,9 +190,9 @@ library Base {
         }
     }
 
-    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
-        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
-    }
+//    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
+//        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
+//    }
 
     //Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
     function updateDepositRate(BaseVariable storage self, address tokenAddress) public {
@@ -266,6 +266,7 @@ library Base {
         } else {
             CToken(self.cTokenAddress[tokenAddress]).mint(uint(self.totalReserve[tokenAddress].sub(_amount)));
         }
+        self.totalCompound[self.cTokenAddress[tokenAddress]] = self.totalCompound[self.cTokenAddress[tokenAddress]].add(self.totalReserve[tokenAddress].sub(_amount));
         self.totalReserve[tokenAddress] = _amount;
     }
 
@@ -275,9 +276,11 @@ library Base {
         .mul(15).div(100).sub(self.totalReserve[tokenAddress]);
         if(_amount >= compoundAmount) {
             cToken.redeem(cToken.balanceOf(address(this)));
-            self.totalReserve[tokenAddress] = 0;
+            self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].add(self.totalCompound[self.cTokenAddress[tokenAddress]]);
+            self.totalCompound[self.cTokenAddress[tokenAddress]] = 0;
         } else {
             cToken.redeemUnderlying(uint(_amount));
+            self.totalCompound[self.cTokenAddress[tokenAddress]] = self.totalCompound[self.cTokenAddress[tokenAddress]].sub(_amount);
             self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].add(_amount);
         }
     }
@@ -477,8 +480,8 @@ library Base {
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
             self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
-            >
-            20 * 10**16
+            <
+            10 * 10**16
             &&
             self.cTokenAddress[tokenAddress] != address(0)
         ) {
@@ -552,8 +555,8 @@ library Base {
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
             self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
-            >
-            20 * 10**16
+            <
+            10 * 10**16
             &&
             self.cTokenAddress[tokenAddress] != address(0)
         ) {
@@ -586,8 +589,8 @@ library Base {
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
             self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
-            >
-            20 * 10**16
+            <
+            10 * 10**16
             &&
             self.cTokenAddress[tokenAddress] != address(0)
         ) {
@@ -659,25 +662,25 @@ library Base {
         return self.deFinerFund[tokenAddress];
     }
 
-    function getAccountTotalUsdValue(
-        BaseVariable storage self,
-        address accountAddr,
-        SymbolsLib.Symbols storage symbols
-    ) public view returns (int256 usdValue) {
-        int256 totalUsdValue = 0;
-        for(uint i = 0; i < symbols.getCoinLength(); i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            (int balance, int interest) = tokenBalanceOfAndInterestOf(self, tokenAddress, accountAddr);
-            if(balance != 0 && interest != 0) {
-                totalUsdValue = totalUsdValue.add(getTotalUsdValue(
-                        tokenAddress,
-                        balance.add(interest),
-                        symbols.priceFromIndex(i)
-                    ));
-            }
-        }
-        return totalUsdValue;
-    }
+//    function getAccountTotalUsdValue(
+//        BaseVariable storage self,
+//        address accountAddr,
+//        SymbolsLib.Symbols storage symbols
+//    ) public view returns (int256 usdValue) {
+//        int256 totalUsdValue = 0;
+//        for(uint i = 0; i < symbols.getCoinLength(); i++) {
+//            address tokenAddress = symbols.addressFromIndex(i);
+//            (int balance, int interest) = tokenBalanceOfAndInterestOf(self, tokenAddress, accountAddr);
+//            if(balance != 0 && interest != 0) {
+//                totalUsdValue = totalUsdValue.add(getTotalUsdValue(
+//                        tokenAddress,
+//                        balance.add(interest),
+//                        symbols.priceFromIndex(i)
+//                    ));
+//            }
+//        }
+//        return totalUsdValue;
+//    }
 
     function getActiveAccounts(BaseVariable storage self) public view returns (address[] memory) {
         return self.activeAccounts;
