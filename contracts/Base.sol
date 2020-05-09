@@ -5,20 +5,8 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
-
-interface CToken {
-    function supplyRatePerBlock() external view returns (uint);
-    function borrowRatePerBlock() external view returns (uint);
-    function mint(uint mintAmount) external returns (uint);
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function redeem(uint redeemAmount) external returns (uint);
-    function exchangeRateStored() external view returns (uint);
-    function balanceOf(address owner) external view returns (uint256);
-}
-
-interface CETH{
-    function mint() external payable;
-}
+import { ICToken } from "./compound/ICompound.sol";
+import { ICETH } from "./compound/ICompound.sol";
 
 library Base {
     using SafeMath for uint256;
@@ -64,7 +52,7 @@ library Base {
 
     //Test method
     function getPrincipalAndInterestInCompound(BaseVariable storage self, address tokenAddress) public view returns(uint) {
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+        ICToken cToken = ICToken(self.cTokenAddress[tokenAddress]);
         return cToken.balanceOf(address(this));
     }
 
@@ -75,13 +63,13 @@ library Base {
 
     //Get compound deposit rate. The scale is 10 ** 18
     function getCompoundSupplyRatePerBlock(address cTokenAddress) public view returns(uint) {
-        CToken cToken = CToken(cTokenAddress);
+        ICToken cToken = ICToken(cTokenAddress);
         return cToken.supplyRatePerBlock();
     }
 
     //Get compound borrowing interest rate. The scale is 10 ** 18
     function getCompoundBorrowRatePerBlock(address cTokenAddress) public view returns(uint) {
-        CToken cToken = CToken(cTokenAddress);
+        ICToken cToken = ICToken(cTokenAddress);
         return cToken.borrowRatePerBlock();
     }
 
@@ -329,10 +317,10 @@ library Base {
             require(getCapitalReserveRate(self, tokenAddress) > 20 * 10**16);//20要改
             uint amount = getToCompoundAmount(self, tokenAddress, maxReserveRatio);
             if (isEth) {
-                CETH cETH = CETH(self.cTokenAddress[tokenAddress]);
+                ICETH cETH = ICETH(self.cTokenAddress[tokenAddress]);
                 cETH.mint.value(amount).gas(250000)();
             } else {
-                CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+                ICToken cToken = ICToken(self.cTokenAddress[tokenAddress]);
                 cToken.mint(amount);
             }
             self.capitalInCompound[tokenAddress] = self.capitalInCompound[tokenAddress].add(int(amount));
@@ -343,7 +331,7 @@ library Base {
         if(self.cTokenAddress[tokenAddress] != address(0)) {
             require(getCapitalReserveRate(self, tokenAddress) < 10 * 10**16);
             uint amount = getFromCompoundAmount(self, tokenAddress);
-            CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+            ICToken cToken = ICToken(self.cTokenAddress[tokenAddress]);
             uint exchangeRate = cToken.exchangeRateStored();
             if(amount.mul(10**18).div(exchangeRate) >= cToken.balanceOf(address(this))) {
                 cToken.redeem(cToken.balanceOf(address(this)));
