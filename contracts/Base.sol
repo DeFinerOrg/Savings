@@ -47,11 +47,9 @@ library Base {
     }
 
     function approveAll(BaseVariable storage self, address tokenAddress) public {
-        require(self.cTokenAddress[tokenAddress] != address(0x0));
-        IERC20(tokenAddress).safeApprove(
-            self.cTokenAddress[tokenAddress],
-            115792089237316195423570985008687907853269984665640564039457584007913129639935
-        );
+        require(self.cTokenAddress[tokenAddress] != address(0x0), "Token address is zero");
+        IERC20(tokenAddress).safeApprove(self.cTokenAddress[tokenAddress], 0);
+        IERC20(tokenAddress).safeApprove(self.cTokenAddress[tokenAddress], uint256(-1));
     }
 
     function getTotalDepositsNow(BaseVariable storage self, address tokenAddress) public view returns(int) {
