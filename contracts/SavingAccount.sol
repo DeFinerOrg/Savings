@@ -1,7 +1,7 @@
 pragma solidity 0.5.14;
 
 import "./lib/SymbolsLib.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
@@ -10,6 +10,7 @@ import "./Base.sol";
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
+    using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
 
@@ -33,6 +34,8 @@ contract SavingAccount {
     uint COMMUNITY_FUND_RATIO = 10;
     uint256 MIN_RESERVE_RATIO = 10;
     uint256 MAX_RESERVE_RATIO = 20;
+
+    int256 public constant INT_UNIT = int256(10 ** uint256(18));
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
@@ -62,53 +65,41 @@ contract SavingAccount {
         baseVariable.approveAll(tokenAddress);
     }
 
-    //Test method
-    function getPrincipalAndInterestInCompound(address tokenAddress) public view returns(uint) {
-        return baseVariable.getPrincipalAndInterestInCompound(tokenAddress);
-    }
-
-    //Test method
-    function getCompoundRatePerBlock(address _cTokenAddress) public view returns(
-        uint compoundSupplyRatePerBlock,
-        uint compoundBorrowRatePerBlock
-    ) {
-        return (Base.getCompoundSupplyRatePerBlock(_cTokenAddress), Base.getCompoundBorrowRatePerBlock(_cTokenAddress));
-    }
-
-    //Test method
-    function getDefinerRateRecord(address tokenAddress, uint blockNumber) public view returns(uint, uint) {
-        return (
-        baseVariable.getDepositRateRecord(tokenAddress, blockNumber),
-        baseVariable.getBorrowRateRecord(tokenAddress, blockNumber)
-        );
-    }
-
-    //Test method
-    function getNowRate(address tokenAddress) public view returns(uint, uint) {
-        return baseVariable.getNowRate(tokenAddress);
-    }
-
-    //Test method
-    function getCToken(address tokenAddress) public view returns(address) {
-        return baseVariable.getCToken(tokenAddress);
-    }
-
-    //Update borrow rates. borrowRate = 1 + blockChangeValue * rate
+    // TODO Security issue, as this function is open for all
+	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
     function updateDefinerRate(address tokenAddress) public {
         baseVariable.updateBorrowRate(tokenAddress);
         baseVariable.updateDepositRate(tokenAddress);
     }
 
-    /**
-        * Gets the total amount of balance that give accountAddr stored in saving pool.
-        */
+	/**
+	 * Gets the total amount of balance that give accountAddr stored in saving pool.
+	 */
     function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
-        return baseVariable.getAccountTotalUsdValue(accountAddr, symbols);
+        int256 totalUsdValue = 0;
+        for(uint i = 0; i < symbols.getCoinLength(); i++) {
+            address tokenAddress = symbols.addressFromIndex(i);
+            int balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
+            if(balance != 0) {
+                totalUsdValue = totalUsdValue.add(
+                    getTotalUsdValue(tokenAddress, balance, symbols.priceFromIndex(i))
+                );
+            }
+        }
+        return totalUsdValue;
     }
 
-    /**
-        * Get the overall state of the saving pool
-        */
+    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
+        if(tokenAddress == ETH_ADDR) {
+            return amount.mul(int(price)).div(INT_UNIT);
+        } else {
+            return amount.mul(int(price)).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+        }
+    }
+
+	/**
+	 * Get the overall state of the saving pool
+	 */
     function getMarketState() public view returns (
         address[] memory addresses,
         int256[] memory deposits,
@@ -131,19 +122,19 @@ contract SavingAccount {
             address tokenAddress = symbols.addressFromIndex(i);
             addresses[i] = tokenAddress;
             (
-                deposits[i],
-                loans[i],
-                collateral[i],
-                depositRatePerBlock[i],
-                borrowRatePerBlock[i]
+            deposits[i],
+            loans[i],
+            collateral[i],
+            depositRatePerBlock[i],
+            borrowRatePerBlock[i]
             ) = baseVariable.getTokenState(tokenAddress);
         }
         return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
     }
 
-    /*
-        * Get the state of the given token
-        */
+	/*
+	 * Get the state of the given token
+	 */
     function getTokenState(address tokenAddress) public view returns (
         int256 deposits,
         int256 loans,
@@ -155,9 +146,9 @@ contract SavingAccount {
         return baseVariable.getTokenState(tokenAddress);
     }
 
-    /**
-        * Get all balances for the sender's account
-        */
+	/**
+	 * Get all balances for the sender's account
+	 */
     function getBalances() public view returns (
         address[] memory addresses,
         int256[] memory totalBalance,
@@ -179,19 +170,6 @@ contract SavingAccount {
         return (addresses, totalBalance, totalInterest);
     }
 
-    //存入compound的资金率列表
-    function getCapitalCompoundRateList() public view returns(address[] memory addresses, int256[] memory balances) {
-        uint coinsLen = getCoinLength();
-        addresses = new address[](coinsLen);
-        balances = new int256[](coinsLen);
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            balances[i] = baseVariable.getCapitalCompoundBalance(tokenAddress);
-        }
-        return (addresses, balances);
-    }
-
     function getActiveAccounts() public view returns(address[] memory) {
         return baseVariable.getActiveAccounts();
     }
@@ -206,14 +184,14 @@ contract SavingAccount {
         for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
             address targetAddress = baseVariable.getActiveAccounts()[i];
             if (
-                int256(baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)).mul(100)
+                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1).mul(100)
                 >
-                baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(LIQUIDATE_THREADHOLD)
+                getAccountTotalUsdValue(targetAddress).mul(LIQUIDATE_THREADHOLD)
                 &&
-                int256(baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(-1))
+                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)
                 .mul(LIQUIDATION_DISCOUNT_RATIO)
                 <=
-                baseVariable.getAccountTotalUsdValue(targetAddress, symbols).mul(100)
+                getAccountTotalUsdValue(targetAddress).mul(100)
 
             ) {
                 liquidatableAccounts[returnIdx++] = (targetAddress);
@@ -241,68 +219,49 @@ contract SavingAccount {
         return symbols.priceFromIndex(coinIndex);
     }
 
-    function toCompound(address tokenAddress) public {
-        if(symbols.isEth(tokenAddress)) {
-            baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, true);
-        } else {
-            baseVariable.toCompound(tokenAddress, MAX_RESERVE_RATIO, false);
-        }
-    }
-
-    function fromCompound(address tokenAddress) public {
-        baseVariable.fromCompound(tokenAddress, MIN_RESERVE_RATIO, ACCURACY);
+    function transfer(address activeAccount, address tokenAddress, uint amount) public {
+        baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
     }
 
     function borrow(address tokenAddress, uint256 amount) public {
         require(
-            (
-            int256(baseVariable.getAccountTotalUsdValue(msg.sender, symbols) * -1)
+            baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
             .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-            .div(10**18)
-            ).mul(100)
+            .mul(100).div(INT_UNIT)
             <=
-            (baseVariable.getAccountTotalUsdValue(msg.sender, symbols)).mul(BORROW_LTV),
+            getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
             "Insufficient collateral."
         );
-        baseVariable.borrow(tokenAddress, amount, ACCURACY);
+        baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
     }
 
     function repay(address tokenAddress, uint256 amount) public payable {
-        uint money = uint(baseVariable.repay(tokenAddress, amount));
-        if(symbols.isEth(tokenAddress)) {
-            receive(msg.sender, amount, tokenAddress);
-            send(msg.sender, money, tokenAddress);
-        } else {
-            receive(msg.sender, amount.sub(money), tokenAddress);
-        }
-        if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {
-            baseVariable.toCompound(tokenAddress, 20, tokenAddress == ETH_ADDR);
-        }
-    }
-
-    /**
-        * Deposit the amount of tokenAddress to the saving pool.
-        */
-    function depositToken(address tokenAddress, uint256 amount) public payable {
-        baseVariable.depositToken(tokenAddress, amount, ACCURACY);
         receive(msg.sender, amount, tokenAddress);
-        if(baseVariable.getCapitalReserveRate(tokenAddress) > 20 * 10**16) {//20暂用，要改
-            baseVariable.toCompound(tokenAddress, 20, tokenAddress == ETH_ADDR);
+        uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
+        if(money != 0) {
+            send(msg.sender, money, tokenAddress);
         }
+    }
+    /**
+     * Deposit the amount of tokenAddress to the saving pool.
+     */
+    function depositToken(address tokenAddress, uint256 amount) public payable {
+        receive(msg.sender, amount, tokenAddress);
+        baseVariable.depositToken(tokenAddress, amount);
     }
 
     /**
-        * Withdraw tokens from saving pool. If the interest is not empty, the interest
-        * will be deducted first.
-        */
+     * Withdraw tokens from saving pool. If the interest is not empty, the interest
+     * will be deducted first.
+     */
     function withdrawToken(address tokenAddress, uint256 amount) public {
-        baseVariable.withdrawToken(tokenAddress, amount, ACCURACY);
-        send(msg.sender, amount, tokenAddress);
+        uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
+        send(msg.sender, _amount, tokenAddress);
     }
 
     function withdrawAllToken(address tokenAddress) public {
-        uint amount = baseVariable.withdrawAllToken(tokenAddress, ACCURACY);
+        uint amount = baseVariable.withdrawAllToken(tokenAddress);
         send(msg.sender, amount, tokenAddress);
     }
 
@@ -366,24 +325,29 @@ contract SavingAccount {
     }
 
     function receive(address from, uint256 amount, address tokenAddress) private {
-        if (symbols.isEth(tokenAddress)) {
+        if (_isETH(tokenAddress)) {
             require(msg.value == amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
             require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-            require(IERC20(tokenAddress).transferFrom(from, address(this), amount), "Token transfer failed");
+            IERC20(tokenAddress).safeTransferFrom(from, address(this), amount);
         }
     }
 
     function send(address to, uint256 amount, address tokenAddress) private {
-        if (symbols.isEth(tokenAddress)) {
+        if (_isETH(tokenAddress)) {
             //TODO need to check for re-entrancy security attack
             //TODO Can this ETH be received by a contract?
             msg.sender.transfer(amount);
         } else {
-            require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+            IERC20(tokenAddress).safeTransfer(to, amount);
         }
     }
+
+    function _isETH(address _token) internal pure returns (bool) {
+        return ETH_ADDR == _token;
+    }
+
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
@@ -407,9 +371,6 @@ contract SavingAccount {
     }
 }
 
-// TODO only used for Emergency functions
-interface ICToken {
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function redeem(uint redeemAmount) external returns (uint);
+interface IERC20Extended {
+    function decimals() external view returns (uint8);
 }
-

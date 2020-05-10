@@ -7,7 +7,6 @@ import {
     SavingAccountContract,
     TokenRegistryInstance,
     CTokenRegistryInstance,
-    CTokenInstance,
     ChainLinkOracleContract,
     ChainLinkOracleInstance,
     MockCTokenInstance,

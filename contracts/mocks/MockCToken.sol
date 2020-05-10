@@ -54,4 +54,9 @@ contract MockCToken is ERC20Mintable, ERC20Burnable {
         // TODO need to calculate interest according to blocktime
         return 1;
     }
+
+    function balanceOfUnderlying(address owner) external returns (uint) {
+        // TODO Need to improve
+        return 1;
+    }
 }

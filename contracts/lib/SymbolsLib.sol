@@ -7,61 +7,56 @@ import "./../oracle/ChainLinkOracle.sol";
 library SymbolsLib {
     using SafeMath for uint256;
 
-	struct Symbols {
-		uint count;
-		mapping(uint => string) indexToSymbol;
-		mapping(string => uint256) symbolToPrices;
-		mapping(address => string) addressToSymbol;
-		mapping(string => address) symbolToAddress;
-		address chainlinkAggregator;
-	}
+    struct Symbols {
+        uint count;
+        mapping(uint => string) indexToSymbol;
+        mapping(string => uint256) symbolToPrices;
+        mapping(address => string) addressToSymbol;
+        mapping(string => address) symbolToAddress;
+        address chainlinkAggregator;
+    }
 
 	/**
 	 *  initializes the symbols structure
 	 */
-	function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses, address _chainlinkAddress) public {
-		self.chainlinkAggregator = _chainlinkAddress;
+    function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses, address _chainlinkAddress) public {
+        self.chainlinkAggregator = _chainlinkAddress;
 
-		strings.slice memory delim = strings.toSlice(",");
-		strings.slice memory tokensList = strings.toSlice(tokenNames);
+        strings.slice memory delim = strings.toSlice(",");
+        strings.slice memory tokensList = strings.toSlice(tokenNames);
 
-		self.count = strings.count(tokensList, delim) + 1;
-		require(self.count == tokenAddresses.length);
+        self.count = strings.count(tokensList, delim) + 1;
+        require(self.count == tokenAddresses.length);
 
-		for(uint i = 0; i < self.count; i++) {
-			strings.slice memory token;
-			strings.split(tokensList, delim, token);
+        for(uint i = 0; i < self.count; i++) {
+            strings.slice memory token;
+            strings.split(tokensList, delim, token);
 
-		 	address tokenAddress = tokenAddresses[i];
-		 	string memory tokenName = strings.toString(token);
+            address tokenAddress = tokenAddresses[i];
+            string memory tokenName = strings.toString(token);
 
-		 	self.indexToSymbol[i] = tokenName;
-		 	self.addressToSymbol[tokenAddress] = tokenName;
-		 	self.symbolToAddress[tokenName]  = tokenAddress;
-		}
-	}
+            self.indexToSymbol[i] = tokenName;
+            self.addressToSymbol[tokenAddress] = tokenName;
+            self.symbolToAddress[tokenName]  = tokenAddress;
+        }
+    }
 
-	function getCoinLength(Symbols storage self) public view returns (uint length){ 
-		return self.count; 
-	} 
+    function getCoinLength(Symbols storage self) public view returns (uint length) {
+        return self.count;
+    }
 
-	function addressFromIndex(Symbols storage self, uint index) public view returns(address) {
-		require(index < self.count, "coinIndex must be smaller than the coins length.");
-		return self.symbolToAddress[self.indexToSymbol[index]];
-	} 
+    function addressFromIndex(Symbols storage self, uint index) public view returns(address) {
+        require(index < self.count, "coinIndex must be smaller than the coins length.");
+        return self.symbolToAddress[self.indexToSymbol[index]];
+    }
 
-	function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
-		require(index < self.count, "coinIndex must be smaller than the coins length.");
-		return self.symbolToPrices[self.indexToSymbol[index]];
-	} 
+    function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
+        require(index < self.count, "coinIndex must be smaller than the coins length.");
+        return self.symbolToPrices[self.indexToSymbol[index]];
+    }
 
-	function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
-		ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
-		return uint256(cLink.getLatestAnswer(tokenAddress));
-	}
-
-	function isEth(Symbols storage self, address tokenAddress) public view returns(bool) {
-		return self.symbolToAddress["ETH"] == tokenAddress;
-	}
-
+    function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
+        ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
+        return uint256(cLink.getLatestAnswer(tokenAddress));
+    }
 }
