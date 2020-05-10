@@ -344,7 +344,7 @@ contract SavingAccount {
         }
     }
 
-    function _isETH(address _token) internal returns (bool) {
+    function _isETH(address _token) internal pure returns (bool) {
         return ETH_ADDR == _token;
     }
 
