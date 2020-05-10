@@ -101,6 +101,6 @@ library TokenInfoLib {
 	}
 
     function updateInterest(TokenInfo storage self, int256 money) public {
-        self.interest=self.interest.sub(money);
+        self.interest = self.interest.sub(money);
     }
 }

@@ -8,6 +8,7 @@ interface ICToken {
     function redeem(uint redeemAmount) external returns (uint);
     function exchangeRateStored() external view returns (uint);
     function balanceOf(address owner) external view returns (uint256);
+    function balanceOfUnderlying(address owner) external returns (uint);
 }
 
 interface ICETH{
