@@ -95,7 +95,7 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Validate that the tokens are deposited to SavingAccount
                 // 4.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
-                    .mul(new BN(15))
+                    .mul(new BN(15)) //Maintiaining ratio
                     .div(new BN(100));
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
@@ -144,7 +144,52 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("");
+            it("when supported token address is passed", async () => {
+                // 1. Get DAI contract instance
+                const tokens = await tokenRegistry.getERC20Tokens();
+                const addressDAI = tokens[0];
+                const addressCTokenForDAI = await cTokenRegistry.getCToken(addressDAI);
+
+                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI);
+                const cTokenDAI: MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(1000);
+                await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                // deposit tokens
+                await savingAccount.depositToken(erc20DAI.address, numOfToken);
+
+                //Number of tokens to withdraw
+                const withdrawTokens = new BN(15);
+                //await erc20DAI.approve(savingAccount.address, withdrawToken);
+
+                // 3. validate if amount to be withdrawn is less than saving account balance
+                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccount);
+
+                // 4. Withdraw Token from SavingContract
+                await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
+
+                /* let userBalance = await web3.eth.getBalance(msg.sender)
+                expect(userBalance).to.be.bignumber.equal(
+                    withdrawTokens
+                ); */
+
+                // 5. Validate Withdraw
+
+                const expectedTokenBalanceAfterWithdraw = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100))
+                    .sub(new BN(15));
+                const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
+                    newbalSavingAccount
+                );
+
+                // amount present in savingsAccount & compound & user as well
+                // got through savingsAccount.sol
+            });
         });
     });
 
