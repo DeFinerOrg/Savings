@@ -10,6 +10,7 @@ import "./Base.sol";
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
+    using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
 
@@ -94,7 +95,7 @@ contract SavingAccount {
 		if(tokenAddress == 0x000000000000000000000000000000000000000E) {
 			return amount.mul(int(price)).div(10**18);
 		} else {
-			return amount.mul(int(price)).div(int(10**IERC20(tokenAddress).decimals()));
+			return amount.mul(int(price)).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
 		}
 	}
 
@@ -366,4 +367,8 @@ contract SavingAccount {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
+}
+
+interface IERC20Extended {
+    function decimals() external view returns (uint8);
 }
