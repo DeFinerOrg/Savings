@@ -1,5 +1,6 @@
 const Migrations = artifacts.require("Migrations");
 
 module.exports = function(deployer) {
-  deployer.deploy(Migrations);
+    process.env.NETWORK = deployer.network;
+    deployer.deploy(Migrations);
 };

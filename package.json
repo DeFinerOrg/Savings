@@ -4,7 +4,10 @@
   "description": "Saving pool contract.",
   "main": "index.js",
   "scripts": {
-    "test": "truffle test"
+    "compile": "truffle compile",
+    "test": "truffle test",
+    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "prepare": "yarn generate"
   },
   "repository": {
     "type": "git",
@@ -17,10 +20,19 @@
   ],
   "author": "Mark Li",
   "license": "ISC",
-  "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.23",
-    "ethereum-bridge": "^0.6.2",
+  "devDependencies": {
+    "@chainlink/contracts": "0.0.3",
+    "@openzeppelin/test-helpers": "^0.5.5",
+    "@typechain/truffle-v5": "^0.9.0",
     "openzeppelin-solidity": "^2.4.0",
-    "truffle": "^5.0.43"
+    "truffle": "^5.1.24",
+    "truffle-typings": "^1.0.7",
+    "ts-generator": "^0.0.8",
+    "ts-node": "^7.0.1",
+    "typechain": "^1.0.0",
+    "typechain-target-truffle": "^1.0.0",
+    "typescript": "^3.1.6",
+    "web3": "^1.2.6",
+    "web3-utils": "1.2.6"
   }
 }

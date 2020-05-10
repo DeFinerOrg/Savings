@@ -1,28 +1,13 @@
-pragma solidity >= 0.5.0 < 0.6.0;
+pragma solidity 0.5.14;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
-import "./config/Config.sol";
 import "./lib/SymbolsLib.sol";
-
-interface CToken {
-    function supplyRatePerBlock() external view returns (uint);
-    function borrowRatePerBlock() external view returns (uint);
-    function mint(uint mintAmount) external returns (uint);
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function redeem(uint redeemAmount) external returns (uint);
-    function balanceOf(address owner) external view returns (uint256);
-    function balanceOfUnderlying(address account) external returns (uint256);
-}
-
-interface CETH{
-    function mint() external payable;
-}
-
-interface ERC20{
-    function decimals() external view returns(uint);
-}
+import { ICToken } from "./compound/ICompound.sol";
+import { ICETH } from "./compound/ICompound.sol";
 
 library Base {
     using SafeMath for uint256;
@@ -74,7 +59,7 @@ library Base {
 
     function getTotalCompoundNow(BaseVariable storage self, address tokenAddress) public {
         if(self.cTokenAddress[tokenAddress] != address(0)) {
-            self.totalCompound[self.cTokenAddress[tokenAddress]] = int(CToken(self.cTokenAddress[tokenAddress]).balanceOfUnderlying(address(this)));
+            self.totalCompound[self.cTokenAddress[tokenAddress]] = int(ICToken(self.cTokenAddress[tokenAddress]).balanceOfUnderlying(address(this)));
         }
     }
 
@@ -84,13 +69,13 @@ library Base {
 
     //Get compound deposit rate. The scale is 10 ** 18
     function getCompoundSupplyRatePerBlock(address cTokenAddress) public view returns(uint) {
-        CToken cToken = CToken(cTokenAddress);
+        ICToken cToken = ICToken(cTokenAddress);
         return cToken.supplyRatePerBlock();
     }
 
     //Get compound borrowing interest rate. The scale is 10 ** 18
     function getCompoundBorrowRatePerBlock(address cTokenAddress) public view returns(uint) {
-        CToken cToken = CToken(cTokenAddress);
+        ICToken cToken = ICToken(cTokenAddress);
         return cToken.borrowRatePerBlock();
     }
 
@@ -262,16 +247,16 @@ library Base {
     function toCompound(BaseVariable storage self, address tokenAddress, int totalAmount, bool isEth) public {
         int _amount = totalAmount.mul(15).div(100);
         if (isEth) {
-            CETH(self.cTokenAddress[tokenAddress]).mint.value(uint(self.totalReserve[tokenAddress].sub(_amount))).gas(250000)();
+            ICETH(self.cTokenAddress[tokenAddress]).mint.value(uint(self.totalReserve[tokenAddress].sub(_amount))).gas(250000)();
         } else {
-            CToken(self.cTokenAddress[tokenAddress]).mint(uint(self.totalReserve[tokenAddress].sub(_amount)));
+            ICToken(self.cTokenAddress[tokenAddress]).mint(uint(self.totalReserve[tokenAddress].sub(_amount)));
         }
         self.totalCompound[self.cTokenAddress[tokenAddress]] = self.totalCompound[self.cTokenAddress[tokenAddress]].add(self.totalReserve[tokenAddress].sub(_amount));
         self.totalReserve[tokenAddress] = _amount;
     }
 
     function fromCompound(BaseVariable storage self, address tokenAddress, int compoundAmount) public {
-        CToken cToken = CToken(self.cTokenAddress[tokenAddress]);
+        ICToken cToken = ICToken(self.cTokenAddress[tokenAddress]);
         int _amount = compoundAmount.add(self.totalLoans[tokenAddress].add(self.totalReserve[tokenAddress]))
         .mul(15).div(100).sub(self.totalReserve[tokenAddress]);
         if(_amount >= compoundAmount) {

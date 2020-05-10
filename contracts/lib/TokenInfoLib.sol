@@ -1,6 +1,6 @@
-pragma solidity >= 0.5.0 < 0.6.0;
+pragma solidity 0.5.14;
 
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 library TokenInfoLib {

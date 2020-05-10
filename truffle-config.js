@@ -18,59 +18,73 @@
  *
  */
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
-const fs = require('fs');
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+require("ts-node/register");
+
+// const HDWalletProvider = require("@truffle/hdwallet-provider");
+// const fs = require("fs");
+// const mnemonic = fs
+//   .readFileSync(".secret")
+//   .toString()
+//   .trim();
 
 module.exports = {
-  /**
-   * Networks define how you connect to your ethereum client and let you set the
-   * defaults web3 uses to send transactions. If you don't specify one truffle
-   * will spin up a development blockchain for you on port 9545 when you
-   * run `develop` or `test`. You can ask a truffle command to use a specific
-   * network from the command line, e.g
-   *
-   * $ truffle test --network <network-name>
-   */
+    // this is required by truffle to find any ts test files
+    test_file_extension_regexp: /.*\.ts$/,
 
-  networks: {
-    // Useful for testing. The `development` name is special - truffle uses it by default
-    // if it's defined here and no other network is specified at the command line.
-    // You should run a client (like ganache-cli, geth or parity) in a separate terminal
-    // tab if you use this network and you must also set the `host`, `port` and `network_id`
-    // options below to some value.
-    //
-     development: {
-      host: "127.0.0.1",     // Localhost (default: none)
-      port: 8546,            // Standard Ethereum port (default: none)
-      network_id: "*",       // Any network (default: none)
-	  websockets: true
-     },
-	
-	rinkeby: {
-		provider: () => new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac'),
-		from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
-		network_id: 4,
-		gas:      6000000,
-		gasPrice: 15000000000
-	} 
-  },
+    /**
+     * Networks define how you connect to your ethereum client and let you set the
+     * defaults web3 uses to send transactions. If you don't specify one truffle
+     * will spin up a development blockchain for you on port 9545 when you
+     * run `develop` or `test`. You can ask a truffle command to use a specific
+     * network from the command line, e.g
+     *
+     * $ truffle test --network <network-name>
+     */
 
-  // Set default mocha options here, use special reporters etc.
-  mocha: {
-    // timeout: 100000
-  },
+    networks: {
+        // Useful for testing. The `development` name is special - truffle uses it by default
+        // if it's defined here and no other network is specified at the command line.
+        // You should run a client (like ganache-cli, geth or parity) in a separate terminal
+        // tab if you use this network and you must also set the `host`, `port` and `network_id`
+        // options below to some value.
+        //
+        development: {
+            host: "127.0.0.1", // Localhost (default: none)
+            port: 8546, // Standard Ethereum port (default: none)
+            network_id: "*", // Any network (default: none)
+            gas: 10000000,
+            websockets: true
+        }
 
-  // Configure your compilers
-  compilers: {
-    solc: {
-		version: "0.5.7",    // Fetch exact version from solc-bin (default: truffle's version)
-        settings: {          // See the solidity docs for advice about optimization and evmVersion
-        optimizer: {
-          enabled: true,
-          runs: 200
-        },
-       }
+        // rinkeby: {
+        //   provider: () =>
+        //     new HDWalletProvider(
+        //       mnemonic,
+        //       "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
+        //     ),
+        //   from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
+        //   network_id: 4,
+        //   gas: 6000000,
+        //   gasPrice: 15000000000,
+        // },
+    },
+
+    // Set default mocha options here, use special reporters etc.
+    mocha: {
+        // timeout: 100000
+    },
+
+    // Configure your compilers
+    compilers: {
+        solc: {
+            version: "0.5.14",
+            settings: {
+                // See the solidity docs for advice about optimization and evmVersion
+                optimizer: {
+                    enabled: true,
+                    runs: 200
+                }
+            }
+        }
     }
-  }
-}
+};
