@@ -35,17 +35,22 @@ contract("SavingAccount", async (accounts) => {
     let chainLinkOracle: ChainLinkOracleInstance;
 
     const owner = accounts[0];
-    const user1 = accounts[0];
+    const user1 = accounts[1];
 
     before(async () => {
         // Things to initialize before all test
     });
 
     beforeEach(async () => {
+        //deploy cTokenRegistry
         chainLinkOracle = await ChainLinkOracle.deployed();
         tokenRegistry = await TokenRegistry.deployed();
         cTokenRegistry = await CTokenRegistry.deployed();
         // Things to execute before each test cases
+        cTokenRegistry = await CTokenRegistry.new(
+            await cTokenRegistry.getTokensList(),
+            await cTokenRegistry.getCTokensList()
+        );
         savingAccount = await SavingAccount.new(
             await tokenRegistry.getERC20Tokens(),
             await cTokenRegistry.getCTokensList(),
@@ -96,7 +101,7 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Validate that the tokens are deposited to SavingAccount
                 // 4.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
-                    .mul(new BN(15)) //Maintiaining ratio
+                    .mul(new BN(15))
                     .div(new BN(100));
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
@@ -155,31 +160,37 @@ contract("SavingAccount", async (accounts) => {
                 const cTokenDAI: MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
-                const numOfToken = new BN(1000);
-                await erc20DAI.approve(savingAccount.address, numOfToken);
+                const numOfTokens = new BN(1000);
+                await erc20DAI.approve(savingAccount.address, numOfTokens);
+
+                //let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
 
                 // deposit tokens
-                await savingAccount.depositToken(erc20DAI.address, numOfToken);
+                await savingAccount.depositToken(erc20DAI.address, numOfTokens);
 
                 //Number of tokens to withdraw
                 const withdrawTokens = new BN(15);
                 //await erc20DAI.approve(savingAccount.address, withdrawToken);
 
                 // 3. validate if amount to be withdrawn is less than saving account balance
-                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccount);
+                const balSavingAccountAfterWithdraw = await erc20DAI.balanceOf(
+                    savingAccount.address
+                );
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccountAfterWithdraw);
 
                 // 4. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
 
-                /* let userBalance = await web3.eth.getBalance(msg.sender)
-                expect(userBalance).to.be.bignumber.equal(
-                    withdrawTokens
-                ); */
+                //look at line 170
+                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+                //const userBalanceDiff = userBalanceAfterWithdraw - userBalanceBeforeWithdraw;
+                //expect(withdrawTokens).to.be.equal(userBalanceAfterWithdraw);
 
                 // 5. Validate Withdraw
+                // 9999999999999999999000
+                // 9999999999999999998015
 
-                const expectedTokenBalanceAfterWithdraw = numOfToken
+                const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
                     .sub(new BN(15));
@@ -187,6 +198,10 @@ contract("SavingAccount", async (accounts) => {
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
                 );
+
+                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
+                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
 
                 // amount present in savingsAccount & compound & user as well
                 // got through savingsAccount.sol
