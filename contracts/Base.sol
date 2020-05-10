@@ -54,7 +54,10 @@ library Base {
     }
 
     function getTotalDepositsNow(BaseVariable storage self, address tokenAddress) public view returns(int) {
-        return self.totalCompound[self.cTokenAddress[tokenAddress]].add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
+        address cToken = self.cTokenAddress[tokenAddress];
+        int256 totalLoans = self.totalLoans[tokenAddress];
+        int256 totalReserve = self.totalReserve[tokenAddress];
+        return self.totalCompound[cToken].add(totalLoans).add(totalReserve);
     }
 
     function getTotalCompoundNow(BaseVariable storage self, address tokenAddress) public {
@@ -96,10 +99,12 @@ library Base {
     //Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
     function getDepositRatePerBlock(BaseVariable storage self, address tokenAddress) public view returns(uint depositAPR) {
         address cToken = self.cTokenAddress[tokenAddress];
+        uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, tokenAddress);
+        uint256 capitalUtilRate = getCapitalUtilizationRate(self, tokenAddress);
         if(cToken == address(0)) {
-            return getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress)).div(SafeDecimalMath.getUNIT()).div(2102400);
+            return borrowRatePerBlock.mul(capitalUtilRate).div(SafeDecimalMath.getUNIT()).div(2102400);
         } else {
-            uint d1 = getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress));
+            uint d1 = borrowRatePerBlock.mul(capitalUtilRate);
             uint d2 = getCompoundSupplyRatePerBlock(cToken).mul(getCapitalCompoundRate(self, tokenAddress));
             return d1.add(d2).div(SafeDecimalMath.getUNIT()); // 要改
         }
@@ -145,10 +150,7 @@ library Base {
         if (depositRate == 0) {
             return 0;
         } else if(
-            depositRate
-            ==
-            self.depositRateRecord[tokenAddress][block.number]
-            ||
+            depositRate == self.depositRateRecord[tokenAddress][block.number] ||
             depositRateRecordStart == block.number
         ) {
             return depositRate;
@@ -168,10 +170,7 @@ library Base {
         if (borrowRate == 0) {
             return 0;
         } else if(
-            borrowRate
-            ==
-            self.borrowRateRecord[tokenAddress][block.number]
-            ||
+            borrowRate == self.borrowRateRecord[tokenAddress][block.number] ||
             borrowRateRecordStart == block.number
         ) {
             return borrowRate;
@@ -198,11 +197,7 @@ library Base {
         uint256 depositRateRecord = self.depositRateRecord[tokenAddress][depositRateLMBN];
         if(depositRatePerBlock == 0) {
             return SafeDecimalMath.getUNIT();
-        } else if(
-            depositRateLMBN == 0
-            ||
-            depositRateRecord == 0
-        ) {
+        } else if(depositRateLMBN == 0 || depositRateRecord == 0) {
             return depositRatePerBlock.add(SafeDecimalMath.getUNIT());
         } else if(block.number == depositRateLMBN) {
             return depositRateRecord;
@@ -345,30 +340,31 @@ library Base {
         for(uint i = 0;i < symbols.getCoinLength();i++) {
             address tokenAddress = symbols.addressFromIndex(i);
             TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[accountAddr].tokenInfos[tokenAddress];
+            uint256 startBlockNum = tokenInfo.getStartBlockNumber();
             uint rate;
             if(isPositive && tokenInfo.getCurrentTotalAmount() >= 0) {
                 if(
-                    tokenInfo.getStartBlockNumber() == block.number
+                    startBlockNum == block.number
                 ) {
-                    rate = self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()];
-                } else if(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
+                    rate = self.depositRateRecord[tokenAddress][startBlockNum];
+                } else if(self.depositRateRecord[tokenAddress][startBlockNum] == 0) {
                     rate = getNowDepositRate(self, tokenAddress);
                 } else {
                     rate = getNowDepositRate(self, tokenAddress)
                     .mul(SafeDecimalMath.getUNIT())
-                    .div(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+                    .div(self.depositRateRecord[tokenAddress][startBlockNum]);
                 }
             } else if(!isPositive && tokenInfo.getCurrentTotalAmount() < 0) {
                 if(
-                    tokenInfo.getStartBlockNumber() == block.number
+                    startBlockNum == block.number
                 ) {
-                    rate = self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()];
-                }else if(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
+                    rate = self.borrowRateRecord[tokenAddress][startBlockNum];
+                }else if(self.borrowRateRecord[tokenAddress][startBlockNum] == 0) {
                     rate = getNowBorrowRate(self, tokenAddress);
                 } else {
                     rate = getNowBorrowRate(self, tokenAddress)
                     .mul(SafeDecimalMath.getUNIT())
-                    .div(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
+                    .div(self.borrowRateRecord[tokenAddress][startBlockNum]);
                 }
             }
             balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(int(symbols.priceFromIndex(i))));
@@ -641,7 +637,7 @@ library Base {
         } else {
             u[2] = u[2].sub(coinValue);
         }
-        uint tokenAmount =coinValue.div(u[1]);
+        uint tokenAmount = coinValue.div(u[1]);
         uint targetTokenAmount = coinValue.mul(95).div(100).div(u[0]);
         msgTargetTokenInfo.minusAmount(targetTokenAmount.mul(95).div(100), msgTargetTokenRate, block.number);
         targetTokenInfo.addAmount(targetTokenAmount, targetTokenRate, block.number);
@@ -651,13 +647,13 @@ library Base {
     }
 
     function recycleCommunityFund(BaseVariable storage self, address tokenAddress) public {
-        require(msg.sender == self.deFinerCommunityFund);
+        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
         self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[tokenAddress]));
         self.deFinerFund[tokenAddress] == 0;
     }
 
     function setDeFinerCommunityFund(BaseVariable storage self, address payable _DeFinerCommunityFund) public {
-        require(msg.sender == self.deFinerCommunityFund);
+        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
         self.deFinerCommunityFund = _DeFinerCommunityFund;
     }
 
