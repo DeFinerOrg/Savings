@@ -32,7 +32,7 @@ contract SavingAccountParameters {
 		tokenAddresses[14] = 0xA0b73E1Ff0B80914AB6fe0444E65848C4C34450b;//8
 		tokenAddresses[15] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;//8
         */
-	}
+    }
 
     function getTokenAddresses() public view returns(address[] memory){
         return tokenAddresses;
