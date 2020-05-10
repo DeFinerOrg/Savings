@@ -35,6 +35,8 @@ contract SavingAccount {
     uint256 MIN_RESERVE_RATIO = 10;
     uint256 MAX_RESERVE_RATIO = 20;
 
+    int256 public constant INT_UNIT = int256(10 ** uint256(18));
+
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
         _;
@@ -63,6 +65,7 @@ contract SavingAccount {
         baseVariable.approveAll(tokenAddress);
     }
 
+    // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
     function updateDefinerRate(address tokenAddress) public {
         baseVariable.updateBorrowRate(tokenAddress);
@@ -87,8 +90,8 @@ contract SavingAccount {
     }
 
     function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
-        if(tokenAddress == 0x000000000000000000000000000000000000000E) {
-            return amount.mul(int(price)).div(10**18);
+        if(tokenAddress == ETH_ADDR) {
+            return amount.mul(int(price)).div(INT_UNIT);
         } else {
             return amount.mul(int(price)).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
         }
@@ -224,7 +227,7 @@ contract SavingAccount {
         require(
             baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
             .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-            .mul(100).div(10**18)
+            .mul(100).div(INT_UNIT)
             <=
             getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
             "Insufficient collateral."
@@ -241,17 +244,17 @@ contract SavingAccount {
         }
     }
     /**
-        * Deposit the amount of tokenAddress to the saving pool.
-        */
+     * Deposit the amount of tokenAddress to the saving pool.
+     */
     function depositToken(address tokenAddress, uint256 amount) public payable {
         receive(msg.sender, amount, tokenAddress);
         baseVariable.depositToken(tokenAddress, amount);
     }
 
     /**
-        * Withdraw tokens from saving pool. If the interest is not empty, the interest
-        * will be deducted first.
-        */
+     * Withdraw tokens from saving pool. If the interest is not empty, the interest
+     * will be deducted first.
+     */
     function withdrawToken(address tokenAddress, uint256 amount) public {
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
@@ -322,7 +325,7 @@ contract SavingAccount {
     }
 
     function receive(address from, uint256 amount, address tokenAddress) private {
-        if (symbols.isEth(tokenAddress)) {
+        if (_isETH(tokenAddress)) {
             require(msg.value == amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
@@ -332,13 +335,17 @@ contract SavingAccount {
     }
 
     function send(address to, uint256 amount, address tokenAddress) private {
-        if (symbols.isEth(tokenAddress)) {
+        if (_isETH(tokenAddress)) {
             //TODO need to check for re-entrancy security attack
             //TODO Can this ETH be received by a contract?
             msg.sender.transfer(amount);
         } else {
             IERC20(tokenAddress).safeTransfer(to, amount);
         }
+    }
+
+    function _isETH(address _token) internal returns (bool) {
+        return ETH_ADDR == _token;
     }
 
 

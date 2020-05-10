@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
+import "./lib/SafeDecimalMath.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
@@ -94,11 +95,11 @@ library Base {
     //Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
     function getDepositRatePerBlock(BaseVariable storage self, address tokenAddress) public view returns(uint depositAPR) {
         if(self.cTokenAddress[tokenAddress] == address(0)) {
-            return getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress)).div(10**18).div(2102400);
+            return getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress)).div(SafeDecimalMath.getUNIT()).div(2102400);
         } else {
             uint d1 = getBorrowRatePerBlock(self, tokenAddress).mul(getCapitalUtilizationRate(self, tokenAddress));
             uint d2 = getCompoundSupplyRatePerBlock(self.cTokenAddress[tokenAddress]).mul(getCapitalCompoundRate(self, tokenAddress));
-            return d1.add(d2).div(10**18); // 要改
+            return d1.add(d2).div(SafeDecimalMath.getUNIT()); // 要改
         }
     }
 
@@ -108,7 +109,7 @@ library Base {
         if(getTotalDepositsNow(self, tokenAddress) == 0) {
             return 0;
         } else {
-            return uint(self.totalLoans[tokenAddress].mul(10**18).div(getTotalDepositsNow(self, tokenAddress)));
+            return uint(self.totalLoans[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(getTotalDepositsNow(self, tokenAddress)));
         }
     }
 
@@ -117,7 +118,7 @@ library Base {
         if(self.totalCompound[self.cTokenAddress[tokenAddress]] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[self.cTokenAddress[tokenAddress]].mul(10**18).div(getTotalDepositsNow(self, tokenAddress)));
+            return uint(self.totalCompound[self.cTokenAddress[tokenAddress]].mul(SafeDecimalMath.getINT_UNIT()).div(getTotalDepositsNow(self, tokenAddress)));
         }
     }
 
@@ -148,7 +149,7 @@ library Base {
             return self.depositRateRecord[tokenAddress][depositRateRecordStart];
         } else {
             return self.depositRateRecord[tokenAddress][block.number]
-            .mul(10**18)
+            .mul(SafeDecimalMath.getUNIT())
             .div(self.depositRateRecord[tokenAddress][depositRateRecordStart]);
         }
     }
@@ -170,7 +171,7 @@ library Base {
             return self.borrowRateRecord[tokenAddress][borrowRateRecordStart];
         } else {
             return self.borrowRateRecord[tokenAddress][block.number]
-            .mul(10**18)
+            .mul(SafeDecimalMath.getUNIT())
             .div(self.borrowRateRecord[tokenAddress][borrowRateRecordStart]);
         }
     }
@@ -186,21 +187,21 @@ library Base {
 
     function getNowDepositRate(BaseVariable storage self, address tokenAddress) public view returns(uint) {
         if(getDepositRatePerBlock(self, tokenAddress) == 0) {
-            return 10**18;
+            return SafeDecimalMath.getUNIT();
         } else if(
             self.depositRateLastModifiedBlockNumber[tokenAddress] == 0
             ||
             self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]] == 0
         ) {
-            return getDepositRatePerBlock(self, tokenAddress).add(10**18);
+            return getDepositRatePerBlock(self, tokenAddress).add(SafeDecimalMath.getUNIT());
         } else if(block.number == self.depositRateLastModifiedBlockNumber[tokenAddress]) {
             return self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]];
         } else {
             return self.depositRateRecord[tokenAddress][self.depositRateLastModifiedBlockNumber[tokenAddress]]
             .mul(block.number.sub(self.depositRateLastModifiedBlockNumber[tokenAddress])
-            .mul(getDepositRatePerBlock(self, tokenAddress)).add(10**18)
+            .mul(getDepositRatePerBlock(self, tokenAddress)).add(SafeDecimalMath.getUNIT())
             )
-            .div(10**18);
+            .div(SafeDecimalMath.getUNIT());
         }
     }
 
@@ -212,15 +213,15 @@ library Base {
 
     function getNowBorrowRate(BaseVariable storage self, address tokenAddress) public view returns(uint) {
         if(self.borrowRateLastModifiedBlockNumber[tokenAddress] == 0) {
-            return getBorrowRatePerBlock(self, tokenAddress).add(10**18);
+            return getBorrowRatePerBlock(self, tokenAddress).add(SafeDecimalMath.getUNIT());
         } else if(block.number == self.borrowRateLastModifiedBlockNumber[tokenAddress]) {
             return self.borrowRateRecord[tokenAddress][self.borrowRateLastModifiedBlockNumber[tokenAddress]];
         } else {
             return self.borrowRateRecord[tokenAddress][self.borrowRateLastModifiedBlockNumber[tokenAddress]]
             .mul(block.number.sub(self.borrowRateLastModifiedBlockNumber[tokenAddress])
-            .mul(getBorrowRatePerBlock(self, tokenAddress)).add(10**18)
+            .mul(getBorrowRatePerBlock(self, tokenAddress)).add(SafeDecimalMath.getUNIT())
             )
-            .div(10**18);
+            .div(SafeDecimalMath.getUNIT());
         }
     }
 
@@ -289,7 +290,7 @@ library Base {
                     rate = getNowDepositRate(self, tokenAddress);
                 } else {
                     rate = getNowDepositRate(self, tokenAddress)
-                    .mul(10**18)
+                    .mul(SafeDecimalMath.getUNIT())
                     .div(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             } else {
@@ -301,7 +302,7 @@ library Base {
                     rate = getNowBorrowRate(self, tokenAddress);
                 } else {
                     rate = getNowBorrowRate(self, tokenAddress)
-                    .mul(10**18)
+                    .mul(SafeDecimalMath.getUNIT())
                     .div(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             }
@@ -337,7 +338,7 @@ library Base {
                     rate = getNowDepositRate(self, tokenAddress);
                 } else {
                     rate = getNowDepositRate(self, tokenAddress)
-                    .mul(10**18)
+                    .mul(SafeDecimalMath.getUNIT())
                     .div(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             } else if(!isPositive && tokenInfo.getCurrentTotalAmount() < 0) {
@@ -349,7 +350,7 @@ library Base {
                     rate = getNowBorrowRate(self, tokenAddress);
                 } else {
                     rate = getNowBorrowRate(self, tokenAddress)
-                    .mul(10**18)
+                    .mul(SafeDecimalMath.getUNIT())
                     .div(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             }
@@ -434,7 +435,7 @@ library Base {
         self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].add(int(amount));
         int totalAmount = getTotalDepositsNow(self, tokenAddress);
         if(
-            self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
+            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             >
             20 * 10**16
             &&
@@ -464,7 +465,7 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
-            self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
+            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
             &&
@@ -499,7 +500,7 @@ library Base {
         self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amount);
         int totalAmount = getTotalDepositsNow(self, tokenAddress);
         if(
-            self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
+            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             >
             20 * 10**16
             &&
@@ -539,7 +540,7 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
-            self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
+            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
             &&
@@ -573,7 +574,7 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
-            self.totalReserve[tokenAddress].mul(10**18).div(totalAmount)
+            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
             &&
@@ -677,10 +678,10 @@ library Base {
         uint rate = getBlockIntervalBorrowRateRecord(self, tokenAddress, self.borrowRateLastModifiedBlockNumber[tokenAddress]);
         if(rate == 0 || _balance == 0) {
             return 0;
-        } else if(10**18 > rate) {
+        } else if(SafeDecimalMath.getUNIT() > rate) {
             return balance;
         } else {
-            return int256(_balance.mul(rate).div(10**18));
+            return int256(_balance.mul(rate).div(SafeDecimalMath.getUNIT()));
         }
     }
 }

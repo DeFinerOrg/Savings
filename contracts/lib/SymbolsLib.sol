@@ -59,9 +59,4 @@ library SymbolsLib {
         ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
         return uint256(cLink.getLatestAnswer(tokenAddress));
     }
-
-    function isEth(Symbols storage self, address tokenAddress) public view returns(bool) {
-        return self.symbolToAddress["ETH"] == tokenAddress;
-    }
-
 }
