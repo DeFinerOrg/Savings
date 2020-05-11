@@ -46,14 +46,13 @@ contract("SavingAccount", async (accounts) => {
         tokenRegistry = await TokenRegistry.deployed();
         cTokenRegistry = await CTokenRegistry.deployed();
         // Things to execute before each test cases
-        /*cTokenRegistry = await CTokenRegistry.new();
-             await cTokenRegistry.getTokensList(),
-            await cTokenRegistry.getCTokensList()
-        ); */
+        /* cTokenRegistry = await CTokenRegistry.new(CTokenRegistry, erc20Tokens, cTokens);
+        );  */
         savingAccount = await SavingAccount.new(
             await tokenRegistry.getERC20Tokens(),
             await cTokenRegistry.getCTokensList(),
-            chainLinkOracle.address
+            chainLinkOracle.address,
+            tokenRegistry.address
         );
         // console.log("SavingAccount: ", savingAccount.address);
     });
@@ -121,6 +120,12 @@ contract("SavingAccount", async (accounts) => {
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
         });
+
+        /* context("should fail", async () => {
+            it("when unsupported token address is passed", async () => {
+                
+            });
+        }); */
     });
 
     context("borrow()", async () => {

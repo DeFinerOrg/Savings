@@ -54,7 +54,8 @@ module.exports = async function(deployer, network) {
         SavingAccount,
         erc20Tokens,
         cTokens,
-        chainLinkOracle.address
+        chainLinkOracle.address,
+        tokenRegistry.address
     );
 
     console.log("TokenRegistry:", tokenRegistry.address);
