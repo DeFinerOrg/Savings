@@ -15,8 +15,53 @@ import {
 
 var chai = require("chai");
 var expect = chai.expect;
+var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
+
+/* const getERC20Tokens = async () => {
+    const network = process.env.NETWORK;
+    const tokensToMint = new BN(10000);
+    var erc20TokenAddresses = new Array();
+
+    await Promise.all(
+        tokenData.tokens.map(async (token) => {
+            let addr;
+            if (network == "development") {
+                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
+                    .address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.tokenAddress;
+            } else if (network == "mainnet" || network == "fork") {
+                addr = token.mainnet.tokenAddress;
+            }
+            erc20TokenAddresses.push(addr);
+        })
+    );
+    return erc20TokenAddresses;
+};
+
+const getCTokens = async (_erc20Tokens) => {
+    const network = process.env.NETWORK;
+    var cTokens = new Array();
+
+    await Promise.all(
+        tokenData.tokens.map(async (token, index) => {
+            let addr;
+            if (network == "development") {
+                // Create MockCToken for given ERC20 token address
+                addr = (await MockCToken.new(_erc20Tokens[index])).address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.cTokenAddress;
+            } else if (network == "mainnet" || network == "fork") {
+                addr = token.mainnet.cTokenAddress;
+            }
+            cTokens.push(addr);
+        })
+    );
+
+    return cTokens;
+}; */
 
 const SavingAccount: SavingAccountContract = artifacts.require("SavingAccount");
 const MockERC20: MockERC20Contract = artifacts.require("MockERC20");
@@ -24,6 +69,8 @@ const MockCToken: MockCTokenContract = artifacts.require("MockCToken");
 const TokenRegistry: TokenRegistryContract = artifacts.require("TokenRegistry");
 const CTokenRegistry: CTokenRegistryContract = artifacts.require("CTokenRegistry");
 const ChainLinkOracle: ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
+/* const _erc20Tokens = await getERC20Tokens();
+const _cTokens = await getCTokens(_erc20Tokens); */
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -46,8 +93,7 @@ contract("SavingAccount", async (accounts) => {
         tokenRegistry = await TokenRegistry.deployed();
         cTokenRegistry = await CTokenRegistry.deployed();
         // Things to execute before each test cases
-        /* cTokenRegistry = await CTokenRegistry.new(CTokenRegistry, erc20Tokens, cTokens);
-        );  */
+        // cTokenRegistry = await CTokenRegistry.new(CTokenRegistry, _erc20Tokens, cTokens);
         savingAccount = await SavingAccount.new(
             await tokenRegistry.getERC20Tokens(),
             await cTokenRegistry.getCTokensList(),
@@ -121,11 +167,20 @@ contract("SavingAccount", async (accounts) => {
             });
         });
 
-        /* context("should fail", async () => {
+        context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
-                
+                /* const tokens = await tokenRegistry.getERC20Tokens();
+                const addressDAI = tokens[0];
+                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI); */
+                const unsupportedTokenAddress = "0xF5fff180082d6017036B771bA883025c654BC935";
+
+                const numOfToken = new BN(1000);
+                //await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                //Try depositting unsupported Token to SavingContract
+                await savingAccount.depositToken(unsupportedTokenAddress, numOfToken);
             });
-        }); */
+        });
     });
 
     context("borrow()", async () => {
