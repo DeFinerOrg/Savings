@@ -46,10 +46,10 @@ contract("SavingAccount", async (accounts) => {
         tokenRegistry = await TokenRegistry.deployed();
         cTokenRegistry = await CTokenRegistry.deployed();
         // Things to execute before each test cases
-        cTokenRegistry = await CTokenRegistry.new(
-            await cTokenRegistry.getTokensList(),
+        /*cTokenRegistry = await CTokenRegistry.new();
+             await cTokenRegistry.getTokensList(),
             await cTokenRegistry.getCTokensList()
-        );
+        ); */
         savingAccount = await SavingAccount.new(
             await tokenRegistry.getERC20Tokens(),
             await cTokenRegistry.getCTokensList(),
@@ -162,48 +162,47 @@ contract("SavingAccount", async (accounts) => {
                 const numOfTokens = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfTokens);
 
-                //let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
-
                 // deposit tokens
                 await savingAccount.depositToken(erc20DAI.address, numOfTokens);
 
                 //Number of tokens to withdraw
-                const withdrawTokens = new BN(15);
-                //await erc20DAI.approve(savingAccount.address, withdrawToken);
+                const withdrawTokens = new BN(20);
 
                 // 3. validate if amount to be withdrawn is less than saving account balance
-                const balSavingAccountAfterWithdraw = await erc20DAI.balanceOf(
+                const balSavingAccountBeforeWithdraw = await erc20DAI.balanceOf(
                     savingAccount.address
                 );
-                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccountAfterWithdraw);
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccountBeforeWithdraw);
+
+                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
 
                 // 4. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
 
-                //look at line 170
+                //Validate user balance
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
-                //const userBalanceDiff = userBalanceAfterWithdraw - userBalanceBeforeWithdraw;
-                //expect(withdrawTokens).to.be.equal(userBalanceAfterWithdraw);
+                const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+                    BN(userBalanceBeforeWithdraw)
+                );
+                expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
 
                 // 5. Validate Withdraw
-                // 9999999999999999999000
-                // 9999999999999999998015
 
+                //Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
-                    .sub(new BN(15));
+                    .sub(new BN(20));
                 const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
                 );
 
-                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                /* const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
-                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
+                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken); */
 
-                // amount present in savingsAccount & compound & user as well
-                // got through savingsAccount.sol
+                // amount present in compound
             });
         });
     });
