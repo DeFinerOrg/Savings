@@ -17,7 +17,7 @@ var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../test-helpers/tokenData.json");
 
-const { BN } = require("@openzeppelin/test-helpers");
+const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 /* const getERC20Tokens = async () => {
     const network = process.env.NETWORK;
@@ -59,7 +59,7 @@ const getCTokens = async (_erc20Tokens) => {
             cTokens.push(addr);
         })
     );
-
+ 
     return cTokens;
 }; */
 
@@ -82,6 +82,7 @@ contract("SavingAccount", async (accounts) => {
 
     const owner = accounts[0];
     const user1 = accounts[1];
+    const dummy = accounts[9];
 
     before(async () => {
         // Things to initialize before all test
@@ -169,16 +170,12 @@ contract("SavingAccount", async (accounts) => {
 
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
-                /* const tokens = await tokenRegistry.getERC20Tokens();
-                const addressDAI = tokens[0];
-                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI); */
-                const unsupportedTokenAddress = "0xF5fff180082d6017036B771bA883025c654BC935";
-
                 const numOfToken = new BN(1000);
                 //await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 //Try depositting unsupported Token to SavingContract
-                await savingAccount.depositToken(unsupportedTokenAddress, numOfToken);
+                //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
+                await expectRevert.unspecified(savingAccount.depositToken(dummy, numOfToken));
             });
         });
     });
