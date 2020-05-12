@@ -262,6 +262,8 @@ contract SavingAccount {
      * will be deducted first.
      */
     function withdrawToken(address tokenAddress, uint256 amount) public {
+        TokenRegistry tReg = TokenRegistry(TokenRegAddr);
+        require(tReg.isTokenExist(tokenAddress), "Unsupported");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }

@@ -262,6 +262,17 @@ contract("SavingAccount", async (accounts) => {
                 // amount present in compound
             });
         });
+
+        context("should fail", async () => {
+            it("when unsupported token address is passed", async () => {
+                const withdrawTokens = new BN(20);
+                //await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                //Try depositting unsupported Token to SavingContract
+                //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
+                await expectRevert.unspecified(savingAccount.depositToken(dummy, withdrawTokens));
+            });
+        });
     });
 
     context("liquidate()", async () => {
