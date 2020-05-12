@@ -175,7 +175,10 @@ contract("SavingAccount", async (accounts) => {
 
                 //Try depositting unsupported Token to SavingContract
                 //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
-                await expectRevert.unspecified(savingAccount.depositToken(dummy, numOfToken));
+                await expectRevert(
+                    savingAccount.depositToken(dummy, numOfToken),
+                    "Unsupported token"
+                );
             });
         });
     });
@@ -270,7 +273,10 @@ contract("SavingAccount", async (accounts) => {
 
                 //Try depositting unsupported Token to SavingContract
                 //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
-                await expectRevert.unspecified(savingAccount.depositToken(dummy, withdrawTokens));
+                await expectRevert(
+                    savingAccount.depositToken(dummy, withdrawTokens),
+                    "Unsupported token"
+                );
             });
         });
     });

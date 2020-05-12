@@ -16,6 +16,14 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockCToken = artifacts.require("MockCToken");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 
+// This is to resolve "Invalid JSON RPC response" error when using expectRevert.
+// Code taken from
+// https://forum.openzeppelin.com/t/error-deploying-simple-erc777-contract-with-truffle-and-ganache/1588/13
+require("@openzeppelin/test-helpers/configure")({
+    provider: web3.currentProvider,
+    environment: "truffle"
+});
+
 module.exports = async function(deployer, network) {
     const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 
