@@ -17,6 +17,8 @@ const MockCToken = artifacts.require("MockCToken");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 
 module.exports = async function(deployer, network) {
+    const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -38,6 +40,7 @@ module.exports = async function(deployer, network) {
 
     // Deploy TokenRegistry
     const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
+    await tokenRegistry.addToken(ETH_ADDR);
 
     // Deploy CTokenRegistry
     const cTokenRegistry = await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
