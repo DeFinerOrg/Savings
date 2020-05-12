@@ -192,21 +192,22 @@ library Base {
 
     function getNowDepositRate(BaseVariable storage self, address tokenAddress) public view returns(uint) {
         uint256 depositRatePerBlock = getDepositRatePerBlock(self, tokenAddress);
-        // depositRateLMBN = DepositRateLastModifiedBlockNumber
+        // "depositRateLMBN" => "DepositRateLastModifiedBlockNumber"
         uint256 depositRateLMBN = self.depositRateLastModifiedBlockNumber[tokenAddress];
         uint256 depositRateRecord = self.depositRateRecord[tokenAddress][depositRateLMBN];
+        uint256 UNIT = SafeDecimalMath.getUNIT();
         if(depositRatePerBlock == 0) {
-            return SafeDecimalMath.getUNIT();
+            return UNIT;
         } else if(depositRateLMBN == 0 || depositRateRecord == 0) {
-            return depositRatePerBlock.add(SafeDecimalMath.getUNIT());
+            return depositRatePerBlock.add(UNIT);
         } else if(block.number == depositRateLMBN) {
             return depositRateRecord;
         } else {
             return depositRateRecord
             .mul(block.number.sub(depositRateLMBN)
-            .mul(depositRatePerBlock).add(SafeDecimalMath.getUNIT())
+            .mul(depositRatePerBlock).add(UNIT)
             )
-            .div(SafeDecimalMath.getUNIT());
+            .div(UNIT);
         }
     }
 
@@ -427,18 +428,17 @@ library Base {
     }
 
     function depositToken(BaseVariable storage self, address tokenAddress, uint256 amount) public {
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
-        if (!self.accounts[msg.sender].active) {
-            self.accounts[msg.sender].active = true;
+        Account storage account = self.accounts[msg.sender];
+        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[tokenAddress];
+        if (!account.active) {
+            account.active = true;
             self.activeAccounts.push(msg.sender);
         }
 
         int256 currentBalance = tokenInfo.getCurrentTotalAmount();
 
-        require(
-            currentBalance >= 0,
-            "Balance of the token must be zero or positive. To pay negative balance, please use repay button."
-        );
+        require(currentBalance >= 0, "Token balance must be zero or positive.");
+
         getTotalCompoundNow(self, tokenAddress);
         getTotalLoansNow(self, tokenAddress);
         updateDepositRate(self, tokenAddress);
