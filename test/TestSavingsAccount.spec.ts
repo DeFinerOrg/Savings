@@ -149,10 +149,6 @@ contract("SavingAccount", async (accounts) => {
     });
 
     context("withdrawToken()", async () => {
-        context("should fail", async () => {
-            it("");
-        });
-
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
                 // 1. Get DAI contract instance
@@ -209,6 +205,22 @@ contract("SavingAccount", async (accounts) => {
 
                 // amount present in compound
             });
+
+            it("when partial withdrawn");
+
+            it("when full withdrawn");
+
+            it("when withdrawing ETH", async () => {
+                const withdrawTokens = new BN(20);
+                //await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                //Try depositting unsupported Token to SavingContract
+                await savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens);
+            });
+
+            it("when partial ETH withdrawn");
+
+            it("when full ETH withdrawn");
         });
 
         context("should fail", async () => {
@@ -223,17 +235,17 @@ contract("SavingAccount", async (accounts) => {
                     "Unsupported token"
                 );
             });
+
+            it("when tokenAddress is zero");
+
+            it("when amount is zero");
+
+            it("when a user tries to withdraw who has not deposited before");
+
+            it("when user tries to withdraw more then his balance");
+
+            it("when user tries to withdraw tokens which are used as collateral by the user");
         });
-
-        /* context("should succeed", async () => {
-            it("when ETH address is passed", async () => {
-                const withdrawTokens = new BN(20);
-                //await erc20DAI.approve(savingAccount.address, numOfToken);
-
-                //Try depositting unsupported Token to SavingContract
-                await savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens);
-            });
-        }); */
     });
 
     context("liquidate()", async () => {
