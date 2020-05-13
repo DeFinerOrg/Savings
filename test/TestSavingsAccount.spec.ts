@@ -1,17 +1,4 @@
-import {
-    SavingAccountInstance,
-    MockERC20Instance,
-    TokenRegistryContract,
-    CTokenRegistryContract,
-    MockERC20Contract,
-    SavingAccountContract,
-    TokenRegistryInstance,
-    CTokenRegistryInstance,
-    ChainLinkOracleContract,
-    ChainLinkOracleInstance,
-    MockCTokenInstance,
-    MockCTokenContract
-} from "../types/truffle-contracts/index";
+import * as t from "../types/truffle-contracts/index";
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -63,22 +50,22 @@ const getCTokens = async (_erc20Tokens) => {
     return cTokens;
 }; */
 
-const SavingAccount: SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: MockERC20Contract = artifacts.require("MockERC20");
-const MockCToken: MockCTokenContract = artifacts.require("MockCToken");
-const TokenRegistry: TokenRegistryContract = artifacts.require("TokenRegistry");
-const CTokenRegistry: CTokenRegistryContract = artifacts.require("CTokenRegistry");
-const ChainLinkOracle: ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
+const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
+const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
+const CTokenRegistry: t.CTokenRegistryContract = artifacts.require("CTokenRegistry");
+const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 /* const _erc20Tokens = await getERC20Tokens();
 const _cTokens = await getCTokens(_erc20Tokens); */
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
-    let savingAccount: SavingAccountInstance;
-    let tokenRegistry: TokenRegistryInstance;
-    let cTokenRegistry: CTokenRegistryInstance;
-    let chainLinkOracle: ChainLinkOracleInstance;
+    let savingAccount: t.SavingAccountInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let cTokenRegistry: t.CTokenRegistryInstance;
+    let chainLinkOracle: t.ChainLinkOracleInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -133,8 +120,8 @@ contract("SavingAccount", async (accounts) => {
                 const addressDAI = tokens[0];
                 const addressCTokenForDAI = await cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI);
-                const cTokenDAI: MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -215,8 +202,8 @@ contract("SavingAccount", async (accounts) => {
                 const addressDAI = tokens[0];
                 const addressCTokenForDAI = await cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI);
-                const cTokenDAI: MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
                 const numOfTokens = new BN(1000);
