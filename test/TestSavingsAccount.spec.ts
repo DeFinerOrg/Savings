@@ -15,8 +15,8 @@ import {
 
 var chai = require("chai");
 var expect = chai.expect;
-const Web3 = require('web3')
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8546'))
+const Web3 = require("web3");
+const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8546"));
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -123,7 +123,17 @@ contract("SavingAccount", async (accounts) => {
 
     context("borrow()", async () => {
         context("should fail", async () => {
-            it("");
+            it("when unsupported token address is passed");
+
+            it("when amount is zero");
+
+            it("when user tries to borrow token, but he has not deposited any token before");
+
+            it("when user tries to borrow ETH, but he has not deposited any token before");
+
+            it("when user tries to borrow more than initial LTV (ILTV)");
+
+            it("when there is no liquidity for the asked token");
         });
 
         context("should succeed", async () => {
@@ -136,16 +146,30 @@ contract("SavingAccount", async (accounts) => {
                 const erc20USDC: MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
                 await erc20USDC.transfer(user2, numOfToken);
-                await erc20DAI.approve(savingAccount.address, numOfToken, {from : user1});
-                await erc20USDC.approve(savingAccount.address, numOfToken, {from : user2});
-                await savingAccount.depositToken(addressDAI, numOfToken, {from : user1});
-                await savingAccount.depositToken(addressUSDC, numOfToken, {from : user2});
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
-                await savingAccount.borrow(addressDAI, 10,{from : user2});
+                await savingAccount.borrow(addressDAI, 10, { from: user2 });
                 // 3. Verify the loan amount.
                 const user2Balance = await erc20DAI.balanceOf(user2);
                 expect(user2Balance).to.be.bignumber.equal(new BN(10));
             });
+
+            it("when borrow amount of token less then ILTV of his collateral value");
+
+            it("when borrow amount of token is equal to ILTV of his collateral value");
+
+            it("when borrow amount of ETH less then ILTV of his collateral value");
+
+            it("when borrow amount of ETH is equal to ILTV of his collateral value");
+
+            it("Deposit DAI then borrow DAI");
+
+            it("Deposit DAI & USDC then borrow DAI");
+
+            it("Deposit DAI & USDC then borrow USDC");
         });
     });
 
