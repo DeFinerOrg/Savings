@@ -209,7 +209,7 @@ contract("SavingAccount", async (accounts) => {
             it("when partial withdrawn");
 
             it("when full withdrawn");
-
+            /*
             it("when withdrawing ETH", async () => {
                 const withdrawTokens = new BN(20);
                 //await erc20DAI.approve(savingAccount.address, numOfToken);
@@ -217,6 +217,7 @@ contract("SavingAccount", async (accounts) => {
                 //Try depositting unsupported Token to SavingContract
                 await savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens);
             });
+            */
 
             it("when partial ETH withdrawn");
 
