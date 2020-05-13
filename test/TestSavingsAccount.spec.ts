@@ -168,6 +168,20 @@ contract("SavingAccount", async (accounts) => {
                 );
             });
         });
+
+        /* context("should succeed", async () => {
+            it("when ETH address is passed", async () => {
+                const ethToken = new BN(10);
+                //await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                //Try depositting unsupported Token to SavingContract
+                await savingAccount.depositToken(ETH_ADDRESS, ethToken);
+                await expectRevert(
+                    savingAccount.depositToken(dummy, ethToken),
+                    "Unsupported token"
+                );
+            });
+        }); */
     });
 
     context("borrow()", async () => {
@@ -259,13 +273,23 @@ contract("SavingAccount", async (accounts) => {
                 //await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 //Try depositting unsupported Token to SavingContract
-                //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
+                //await savingAccount.withdrawToken(dummy, numOfToken);
                 await expectRevert(
-                    savingAccount.depositToken(dummy, withdrawTokens),
+                    savingAccount.withdrawToken(dummy, withdrawTokens),
                     "Unsupported token"
                 );
             });
         });
+
+        /* context("should succeed", async () => {
+            it("when ETH address is passed", async () => {
+                const withdrawTokens = new BN(20);
+                //await erc20DAI.approve(savingAccount.address, numOfToken);
+
+                //Try depositting unsupported Token to SavingContract
+                await savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens);
+            });
+        }); */
     });
 
     context("liquidate()", async () => {
