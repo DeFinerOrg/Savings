@@ -15,6 +15,8 @@ import {
 
 var chai = require("chai");
 var expect = chai.expect;
+const Web3 = require('web3')
+const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8546'))
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -35,6 +37,7 @@ contract("SavingAccount", async (accounts) => {
 
     const owner = accounts[0];
     const user1 = accounts[0];
+    const user2 = accounts[1];
 
     before(async () => {
         // Things to initialize before all test
@@ -134,7 +137,27 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("");
+            it("when supported token address is passed", async () => {
+                // 1. Set up collateral.
+                const tokens = await tokenRegistry.getERC20Tokens();
+                const addressDAI = tokens[0];
+                const addressUSDC = tokens[1];
+                const erc20DAI: MockERC20Instance = await MockERC20.at(addressDAI);
+                const erc20USDC: MockERC20Instance = await MockERC20.at(addressUSDC);
+                const numOfToken = new BN(1000);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, {from : user1});
+                await erc20USDC.approve(savingAccount.address, numOfToken, {from : user2});
+                await savingAccount.depositToken(addressDAI, numOfToken, {from : user1});
+                await savingAccount.depositToken(addressUSDC, numOfToken, {from : user2});
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, 10,{from : user2});
+                // 3. Start repayment.
+                await savingAccount.repay(addressDAI, 10, {from : user2});
+                // 4. Verify the repay amount.
+                const user2Balance = await erc20DAI.balanceOf(user2);
+                expect(user2Balance).to.be.bignumber.equal(new BN(0));
+            });
         });
     });
 
