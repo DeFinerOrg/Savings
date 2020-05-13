@@ -1,54 +1,11 @@
 import * as t from "../types/truffle-contracts/index";
+import { TestEngine } from "../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
-
-/* const getERC20Tokens = async () => {
-    const network = process.env.NETWORK;
-    const tokensToMint = new BN(10000);
-    var erc20TokenAddresses = new Array();
-
-    await Promise.all(
-        tokenData.tokens.map(async (token) => {
-            let addr;
-            if (network == "development") {
-                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
-                    .address;
-            } else if (network == "ropsten") {
-                addr = token.ropsten.tokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
-                addr = token.mainnet.tokenAddress;
-            }
-            erc20TokenAddresses.push(addr);
-        })
-    );
-    return erc20TokenAddresses;
-};
-
-const getCTokens = async (_erc20Tokens) => {
-    const network = process.env.NETWORK;
-    var cTokens = new Array();
-
-    await Promise.all(
-        tokenData.tokens.map(async (token, index) => {
-            let addr;
-            if (network == "development") {
-                // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(_erc20Tokens[index])).address;
-            } else if (network == "ropsten") {
-                addr = token.ropsten.cTokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
-                addr = token.mainnet.cTokenAddress;
-            }
-            cTokens.push(addr);
-        })
-    );
- 
-    return cTokens;
-}; */
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
@@ -62,10 +19,8 @@ const _cTokens = await getCTokens(_erc20Tokens); */
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+    let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
-    let tokenRegistry: t.TokenRegistryInstance;
-    let cTokenRegistry: t.CTokenRegistryInstance;
-    let chainLinkOracle: t.ChainLinkOracleInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -73,22 +28,11 @@ contract("SavingAccount", async (accounts) => {
 
     before(async () => {
         // Things to initialize before all test
+        testEngine = new TestEngine();
     });
 
     beforeEach(async () => {
-        //deploy cTokenRegistry
-        chainLinkOracle = await ChainLinkOracle.deployed();
-        tokenRegistry = await TokenRegistry.deployed();
-        cTokenRegistry = await CTokenRegistry.deployed();
-        // Things to execute before each test cases
-        // cTokenRegistry = await CTokenRegistry.new(CTokenRegistry, _erc20Tokens, cTokens);
-        savingAccount = await SavingAccount.new(
-            await tokenRegistry.getERC20Tokens(),
-            await cTokenRegistry.getCTokensList(),
-            chainLinkOracle.address,
-            tokenRegistry.address
-        );
-        // console.log("SavingAccount: ", savingAccount.address);
+        savingAccount = await testEngine.deploySavingAccount();
     });
 
     context("constructor", async () => {
@@ -116,9 +60,9 @@ contract("SavingAccount", async (accounts) => {
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
                 // 1. Get DAI contact instance
-                const tokens = await tokenRegistry.getERC20Tokens();
+                const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
-                const addressCTokenForDAI = await cTokenRegistry.getCToken(addressDAI);
+                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
@@ -212,9 +156,9 @@ contract("SavingAccount", async (accounts) => {
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
                 // 1. Get DAI contract instance
-                const tokens = await tokenRegistry.getERC20Tokens();
+                const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
-                const addressCTokenForDAI = await cTokenRegistry.getCToken(addressDAI);
+                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
