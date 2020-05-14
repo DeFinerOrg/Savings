@@ -17,6 +17,7 @@ const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkO
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+    const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
 
@@ -259,7 +260,15 @@ contract("SavingAccount", async (accounts) => {
                 );
             });
 
-            it("when tokenAddress is zero");
+            it("when tokenAddress is zero", async () => {
+                const withdrawTokens = new BN(20);
+
+                //Try depositting unsupported Token to SavingContract
+                await expectRevert(
+                    savingAccount.withdrawToken(addressZero, withdrawTokens),
+                    "Token address is zero"
+                );
+            });
 
             it("when amount is zero", async () => {
                 const tokens = testEngine.erc20Tokens;
