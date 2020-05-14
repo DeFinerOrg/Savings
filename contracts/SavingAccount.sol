@@ -262,6 +262,7 @@ contract SavingAccount {
      */
     function withdrawToken(address tokenAddress, uint256 amount) public {
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }

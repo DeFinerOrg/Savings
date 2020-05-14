@@ -95,6 +95,14 @@ contract("SavingAccount", async (accounts) => {
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
+
+            it("when ETH address is passed", async () => {
+                const depositAmount = new BN(10);
+
+                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                });
+            });
         });
 
         context("should fail", async () => {
@@ -106,16 +114,6 @@ contract("SavingAccount", async (accounts) => {
                     savingAccount.depositToken(dummy, numOfToken),
                     "Unsupported token"
                 );
-            });
-        });
-
-        context("should succeed", async () => {
-            it("when ETH address is passed", async () => {
-                const depositAmount = new BN(10);
-
-                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                });
             });
         });
     });
@@ -236,7 +234,19 @@ contract("SavingAccount", async (accounts) => {
 
             it("when tokenAddress is zero");
 
-            it("when amount is zero");
+            it("when amount is zero", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const withdrawTokens = new BN(0);
+
+                //Try depositting unsupported Token to SavingContract
+                await expectRevert(
+                    savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
+                    "Amount is zero"
+                );
+            });
 
             it("when a user tries to withdraw who has not deposited before");
 
