@@ -11,7 +11,7 @@ const CTokenRegistry: t.CTokenRegistryContract = artifacts.require("CTokenRegist
 
 var tokenData = require("../test-helpers/tokenData.json");
 
-// const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
+const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
@@ -75,6 +75,7 @@ export class TestEngine {
             aggregators
         );
         const tokenRegistry: t.TokenRegistryInstance = await TokenRegistry.new(this.erc20Tokens);
+        await tokenRegistry.addToken(ETH_ADDR);
 
         return SavingAccount.new(
             this.erc20Tokens,

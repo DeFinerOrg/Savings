@@ -13,8 +13,6 @@ const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
 const CTokenRegistry: t.CTokenRegistryContract = artifacts.require("CTokenRegistry");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
-/* const _erc20Tokens = await getERC20Tokens();
-const _cTokens = await getCTokens(_erc20Tokens); */
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -102,10 +100,8 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
                 const numOfToken = new BN(1000);
-                //await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 //Try depositting unsupported Token to SavingContract
-                //await savingAccount.depositToken(dummy, numOfToken); //enclose in expect - revert of OpenZeppelin, look into example as well
                 await expectRevert(
                     savingAccount.depositToken(dummy, numOfToken),
                     "Unsupported token"
@@ -113,19 +109,15 @@ contract("SavingAccount", async (accounts) => {
             });
         });
 
-        /* context("should succeed", async () => {
+        context("should succeed", async () => {
             it("when ETH address is passed", async () => {
-                const ethToken = new BN(10);
-                //await erc20DAI.approve(savingAccount.address, numOfToken);
+                const depositAmount = new BN(10);
 
-                //Try depositting unsupported Token to SavingContract
-                await savingAccount.depositToken(ETH_ADDRESS, ethToken);
-                await expectRevert(
-                    savingAccount.depositToken(dummy, ethToken),
-                    "Unsupported token"
-                );
+                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                });
             });
-        }); */
+        });
     });
 
     context("borrow()", async () => {
@@ -180,7 +172,7 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
 
-                //Validate user balance
+                // 4.1 Validate user balance
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
                 const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
                     BN(userBalanceBeforeWithdraw)
@@ -189,7 +181,7 @@ contract("SavingAccount", async (accounts) => {
 
                 // 5. Validate Withdraw
 
-                //Validate savingAccount contract balance
+                // 5.1 Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
@@ -199,25 +191,32 @@ contract("SavingAccount", async (accounts) => {
                     newbalSavingAccount
                 );
 
-                /* const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                // 5.2 Amount in Compound
+                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
-                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken); */
+                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
 
-                // amount present in compound
+                // 5.3 cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
             it("when partial withdrawn");
 
             it("when full withdrawn");
-            /*
-            it("when withdrawing ETH", async () => {
-                const withdrawTokens = new BN(20);
-                //await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                //Try depositting unsupported Token to SavingContract
-                await savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens);
+            it("when withdrawing ETH", async () => {
+                const depositAmount = new BN(100);
+                const withdrawAmount = new BN(20);
+
+                //Depositting ETH Token to SavingContract
+                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                });
+                //Withdrawing ETH
+                await savingAccount.withdrawToken(ETH_ADDRESS, withdrawAmount);
             });
-            */
 
             it("when partial ETH withdrawn");
 
@@ -227,10 +226,8 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
                 const withdrawTokens = new BN(20);
-                //await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 //Try depositting unsupported Token to SavingContract
-                //await savingAccount.withdrawToken(dummy, numOfToken);
                 await expectRevert(
                     savingAccount.withdrawToken(dummy, withdrawTokens),
                     "Unsupported token"
