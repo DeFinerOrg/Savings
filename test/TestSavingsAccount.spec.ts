@@ -50,9 +50,29 @@ contract("SavingAccount", async (accounts) => {
 
     context("depositToken()", async () => {
         context("should fail", async () => {
-            it("when unsupported token address passed");
+            it("when unsupported token address is passed", async () => {
+                const numOfToken = new BN(1000);
 
-            it("when amount is zero");
+                //Try depositting unsupported Token to SavingContract
+                await expectRevert(
+                    savingAccount.depositToken(dummy, numOfToken),
+                    "Unsupported token"
+                );
+            });
+
+            it("when amount is zero", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const depositTokens = new BN(0);
+
+                //Try depositting unsupported Token to SavingContract
+                await expectRevert(
+                    savingAccount.depositToken(erc20DAI.address, depositTokens),
+                    "Amount is zero"
+                );
+            });
         });
 
         context("should succeed", async () => {
@@ -98,22 +118,18 @@ contract("SavingAccount", async (accounts) => {
 
             it("when ETH address is passed", async () => {
                 const depositAmount = new BN(10);
+                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
 
                 await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
                     value: depositAmount
                 });
-            });
-        });
 
-        context("should fail", async () => {
-            it("when unsupported token address is passed", async () => {
-                const numOfToken = new BN(1000);
+                const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
 
-                //Try depositting unsupported Token to SavingContract
-                await expectRevert(
-                    savingAccount.depositToken(dummy, numOfToken),
-                    "Unsupported token"
-                );
+                //const userBalanceDiff = BN(ETHbalanceAfterDeposit).sub(BN(ETHbalanceBeforeDeposit));
+
+                // validate savingAccount ETH balance
+                expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(depositAmount);
             });
         });
     });
@@ -212,8 +228,19 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
                     value: depositAmount
                 });
+
+                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+
                 //Withdrawing ETH
                 await savingAccount.withdrawToken(ETH_ADDRESS, withdrawAmount);
+
+                /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                const userBalanceDiff = BN(ETHbalanceBeforeWithdraw).sub(
+                    BN(ETHbalanceAfterWithdraw)
+                );
+
+                // validate savingAccount ETH balance
+                expect(userBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
             });
 
             it("when partial ETH withdrawn");

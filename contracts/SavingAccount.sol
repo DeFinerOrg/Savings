@@ -252,6 +252,7 @@ contract SavingAccount {
      */
     function depositToken(address tokenAddress, uint256 amount) public payable {
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         baseVariable.depositToken(tokenAddress, amount);
     }
