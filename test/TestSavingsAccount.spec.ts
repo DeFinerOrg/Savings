@@ -220,6 +220,21 @@ contract("SavingAccount", async (accounts) => {
             it("when partial withdrawn");
 
             it("when full withdrawn");
+            /* , async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const depositAmount = new BN(100);
+                //const withdrawAmount = new BN(20);
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                await erc20DAI.approve(savingAccount.address, depositAmount);
+
+                // deposit tokens
+                await savingAccount.depositToken(erc20DAI.address, depositAmount);
+
+                //Withdrawing ETH
+                await savingAccount.withdrawAllToken(erc20DAI.address);
+            }); */
 
             it("when withdrawing ETH", async () => {
                 const depositAmount = new BN(100);
@@ -294,24 +309,20 @@ contract("SavingAccount", async (accounts) => {
                 );
             });
 
-            it(
-                "when user tries to withdraw more than his balance"
-            ); /*, async () => {
-                const tokens = testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+            it("when user tries to withdraw more than his balance", async () => {
                 const numOfTokens = new BN(10);
-                const withdrawTokens = new BN(5);
 
-                await erc20DAI.approve(savingAccount.address, numOfTokens);
-                await savingAccount.depositToken(erc20DAI.address, numOfTokens);
+                await savingAccount.depositToken(ETH_ADDRESS, numOfTokens, {
+                    value: numOfTokens
+                });
 
-                    await expectRevert(
-                    savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
-                    "Requested withdraw amount is more than available balance"
-                ); 
-            }); */
+                const withdrawTokens = new BN(20);
+
+                await expectRevert(
+                    savingAccount.withdrawToken(ETH_ADDRESS, withdrawTokens),
+                    "Insufficient balance."
+                );
+            });
 
             it("when user tries to withdraw tokens which are used as collateral by the user");
         });
