@@ -13,20 +13,20 @@ library SymbolsLib {
         mapping(string => uint256) symbolToPrices;
         mapping(address => string) addressToSymbol;
         mapping(string => address) symbolToAddress;
-        address chainlinkAggregator;
+        ChainLinkOracle chainlinkAggregator;
     }
 
 	/**
 	 *  initializes the symbols structure
 	 */
     function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses, address _chainlinkAddress) public {
-        self.chainlinkAggregator = _chainlinkAddress;
+        self.chainlinkAggregator = ChainLinkOracle(_chainlinkAddress);
 
         strings.slice memory delim = strings.toSlice(",");
         strings.slice memory tokensList = strings.toSlice(tokenNames);
 
         self.count = strings.count(tokensList, delim) + 1;
-        require(self.count == tokenAddresses.length);
+        require(self.count == tokenAddresses.length, "");
 
         for(uint i = 0; i < self.count; i++) {
             strings.slice memory token;
@@ -37,7 +37,7 @@ library SymbolsLib {
 
             self.indexToSymbol[i] = tokenName;
             self.addressToSymbol[tokenAddress] = tokenName;
-            self.symbolToAddress[tokenName]  = tokenAddress;
+            self.symbolToAddress[tokenName] = tokenAddress;
         }
     }
 
@@ -52,11 +52,11 @@ library SymbolsLib {
 
     function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
-        return self.symbolToPrices[self.indexToSymbol[index]];
+        address tokenAddress = self.symbolToAddress[self.indexToSymbol[index]];
+        return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
-        ChainLinkOracle cLink = ChainLinkOracle(self.chainlinkAggregator);
-        return uint256(cLink.getLatestAnswer(tokenAddress));
+        return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
     }
 }
