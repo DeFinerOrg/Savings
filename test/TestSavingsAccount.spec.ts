@@ -236,12 +236,10 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.withdrawToken(ETH_ADDRESS, withdrawAmount);
 
                 /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
-                const userBalanceDiff = BN(ETHbalanceBeforeWithdraw).sub(
-                    BN(ETHbalanceAfterWithdraw)
-                );
+                let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
 
                 // validate savingAccount ETH balance
-                expect(userBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
+                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
             });
 
             it("when partial ETH withdrawn");
@@ -277,16 +275,43 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const withdrawTokens = new BN(0);
 
-                //Try depositting unsupported Token to SavingContract
                 await expectRevert(
                     savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
                     "Amount is zero"
                 );
             });
 
-            it("when a user tries to withdraw who has not deposited before");
+            it("when a user tries to withdraw who has not deposited before", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
 
-            it("when user tries to withdraw more then his balance");
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const withdrawTokens = new BN(20);
+
+                await expectRevert(
+                    savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
+                    "Account not active, please deposit first."
+                );
+            });
+
+            it(
+                "when user tries to withdraw more than his balance"
+            ); /*, async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const numOfTokens = new BN(10);
+                const withdrawTokens = new BN(5);
+
+                await erc20DAI.approve(savingAccount.address, numOfTokens);
+                await savingAccount.depositToken(erc20DAI.address, numOfTokens);
+
+                    await expectRevert(
+                    savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
+                    "Requested withdraw amount is more than available balance"
+                ); 
+            }); */
 
             it("when user tries to withdraw tokens which are used as collateral by the user");
         });

@@ -265,6 +265,7 @@ contract SavingAccount {
         require(tokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
         require(amount != 0, "Amount is zero");
+        //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }
