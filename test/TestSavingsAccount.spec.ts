@@ -146,6 +146,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const numOfToken = new BN(1000);
                 // 1.1 Transfer DAI to user2.
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20DAI.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -167,6 +168,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
                 // 1.1 Transfer DAI to user2.
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20DAI.transfer(user2, numOfToken);
                 // 1.2 Transfer USDC to user2.
                 await erc20USDC.transfer(user2, numOfToken);
@@ -196,6 +198,7 @@ contract("SavingAccount", async (accounts) => {
                 // 1.1 Transfer DAI to user2.
                 await erc20DAI.transfer(user2, numOfToken);
                 // 1.2 Transfer USDC to user2.
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -220,6 +223,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -246,6 +250,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -284,10 +289,10 @@ contract("SavingAccount", async (accounts) => {
                     value: numOfToken
                 });
                 // 2. Start borrowing.
-                const user2ETHBalanceBefore = await web3.eth.balanceOf(user2);
+                const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
                 await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
                 // 3. Verify the loan amount.
-                const user2ETHBalanceAfter = await web3.eth.balanceOf(user2);
+                const user2ETHBalanceAfter = await web3.eth.getBalance(user2);
                 expect(user2ETHBalanceAfter).to.be.bignumber.equal(user2ETHBalanceBefore);
             });
 
@@ -299,6 +304,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -327,6 +333,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -349,6 +356,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -370,6 +378,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                 await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
@@ -395,6 +404,7 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfToken = new BN(1000);
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                 await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
