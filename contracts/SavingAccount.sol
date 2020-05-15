@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
+import "./compound/TokenRegistry.sol";
 
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
@@ -24,6 +25,7 @@ contract SavingAccount {
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    TokenRegistry public tokenRegistry;
 
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
@@ -45,11 +47,13 @@ contract SavingAccount {
     constructor(
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
-        address _chainlinkAddress
+        address _chainlinkAddress,
+        TokenRegistry _tokenRegistry
     )
         public
     {
         SavingAccountParameters params = new SavingAccountParameters();
+        tokenRegistry = _tokenRegistry;
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
@@ -247,6 +251,8 @@ contract SavingAccount {
      * Deposit the amount of tokenAddress to the saving pool.
      */
     function depositToken(address tokenAddress, uint256 amount) public payable {
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         baseVariable.depositToken(tokenAddress, amount);
     }
@@ -256,6 +262,9 @@ contract SavingAccount {
      * will be deducted first.
      */
     function withdrawToken(address tokenAddress, uint256 amount) public {
+        require(tokenAddress != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }
