@@ -553,6 +553,8 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
+            totalAmount <= 0
+            ||
             self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
@@ -587,6 +589,8 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
+            totalAmount <= 0
+            ||
             self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
