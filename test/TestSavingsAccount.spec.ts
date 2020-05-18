@@ -157,7 +157,7 @@ contract("SavingAccount", async (accounts) => {
 
     context("withdrawToken()", async () => {
         context("should succeed", async () => {
-            it("when supported token address is passed", async () => {
+            it("when partial tokens are withdrawn", async () => {
                 // 1. Get DAI contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
@@ -219,11 +219,10 @@ contract("SavingAccount", async (accounts) => {
 
             it("when partial withdrawn");
 
-            it("when full withdrawn");
-            /* , async () => {
+            it("when full withdrawn", async () => {
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
-                const depositAmount = new BN(100);
+                const depositAmount = new BN(1000);
                 //const withdrawAmount = new BN(20);
 
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
@@ -234,7 +233,7 @@ contract("SavingAccount", async (accounts) => {
 
                 //Withdrawing ETH
                 await savingAccount.withdrawAllToken(erc20DAI.address);
-            }); */
+            });
 
             it("when withdrawing ETH", async () => {
                 const depositAmount = new BN(100);
@@ -259,7 +258,20 @@ contract("SavingAccount", async (accounts) => {
 
             it("when partial ETH withdrawn");
 
-            it("when full ETH withdrawn");
+            it("when full ETH withdrawn", async () => {
+                const depositAmount = new BN(100);
+                const withdrawAmount = new BN(20);
+
+                //Depositting ETH Token to SavingContract
+                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                });
+
+                //let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+
+                //Withdrawing ETH
+                await savingAccount.withdrawAllToken(ETH_ADDRESS);
+            });
         });
 
         context("should fail", async () => {
