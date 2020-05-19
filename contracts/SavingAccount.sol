@@ -279,23 +279,23 @@ contract SavingAccount {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
 
-        //是否满足清算下限
+        //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
             "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
         );
 
-        //是否满足清算上限
+        //是否满足清算上限 (Whether the liquidation limit is met)
         require(
             totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
             "Collateral is not sufficient to be liquidated."
         );
 
-        //被清算者需要清算掉的资产
+        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
-        //清算者需要付的钱
+        //清算者需要付的钱 (Liquidators need to pay)
         uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
 
         if(paymentOfLiquidationAmount < liquidationDebtValue) {

@@ -488,7 +488,8 @@ contract("SavingAccount", async (accounts) => {
 
             it("when partial ETH withdrawn");
 
-            it("when full ETH withdrawn", async () => {
+            //TODO:
+            /* it("when full ETH withdrawn", async () => {
                 const depositAmount = new BN(100);
 
                 //Depositting ETH Token to SavingContract
@@ -496,11 +497,12 @@ contract("SavingAccount", async (accounts) => {
                     value: depositAmount
                 });
 
-                //let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount);
 
                 //Withdrawing ETH
                 await savingAccount.withdrawAllToken(ETH_ADDRESS);
-            });
+            }); */
         });
 
         context("should fail", async () => {
