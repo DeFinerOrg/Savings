@@ -230,25 +230,14 @@ contract SavingAccount {
     function borrow(address tokenAddress, uint256 amount) public {
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
         require(amount != 0, "Amount is zero");
+        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress)))).mul(100);
         if(tokenAddress == ETH_ADDR) {
-            require(
-                baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-                .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-                .mul(100).div(INT_UNIT)
-                <=
-                getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
-                "Insufficient collateral."
-            );
+            totalBorrow = totalBorrow.div(INT_UNIT);
         } else {
-            require(
-                baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-                .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-                .mul(100).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())))
-                <=
-                getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
-                "Insufficient collateral."
-            );
+            totalBorrow = totalBorrow.div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
         }
+        require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
     }
@@ -391,8 +380,4 @@ contract SavingAccount {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
-}
-
-interface IERC20Extended {
-    function decimals() external view returns (uint8);
 }
