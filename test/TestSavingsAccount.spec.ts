@@ -465,7 +465,7 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.withdrawAllToken(erc20WBTC.address);
             });
 
-            it("when withdrawing ETH", async () => {
+            it("when partial ETH withdrawn", async () => {
                 const depositAmount = new BN(100);
                 const withdrawAmount = new BN(20);
 
@@ -485,8 +485,6 @@ contract("SavingAccount", async (accounts) => {
                 // validate savingAccount ETH balance
                 expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
             });
-
-            it("when partial ETH withdrawn");
 
             //TODO:
             /* it("when full ETH withdrawn", async () => {
