@@ -137,15 +137,24 @@ contract("SavingAccount", async (accounts) => {
     });
 
     context("borrow()", async () => {
+        let tokens: any;
+        let addressDAI: any;
+        let addressUSDC: any;
+        let erc20DAI: t.MockERC20Instance;
+        let erc20USDC: t.MockERC20Instance;
+        let numOfToken: any;
+        beforeEach(async () => {
+            // 1. initialization.
+            tokens = await testEngine.erc20Tokens;
+            addressDAI = tokens[0];
+            addressUSDC = tokens[1];
+            erc20DAI = await MockERC20.at(addressDAI);
+            erc20USDC = await MockERC20.at(addressUSDC);
+            numOfToken = new BN(1000);
+        });
         context("should fail", async () => {
             it("Deposit DAI then borrow DAI", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const numOfToken = new BN(1000);
-                // 1.1 Transfer DAI to user2.
+                // 1.1 Transfer DAI to user1 & user2.
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20DAI.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -160,13 +169,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("Deposit DAI & USDC then borrow DAI", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 // 1.1 Transfer DAI to user1 & user2.
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20DAI.transfer(user2, numOfToken);
@@ -186,13 +188,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("Deposit DAI & USDC then borrow USDC", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 // 1.1 Transfer DAI to user2.
                 await erc20DAI.transfer(user2, numOfToken);
                 // 1.2 Transfer USDC to user1 & user2.
@@ -212,12 +207,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when unsupported token address is passed", async () => {
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -232,13 +221,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when amount is zero", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -253,26 +235,16 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when user tries to borrow token, but he has not deposited any token before", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const numOfToken = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
                 // 2. Start borrowing.
                 await expectRevert(
                     savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                    "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
+                    "SafeERC20: low-level call failed"
                 );
             });
 
             it("when user tries to borrow ETH, but he has not deposited any token before", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const numOfToken = new BN(1000);
                 await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
                     from: user1,
                     value: numOfToken
@@ -285,12 +257,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when user tries to borrow more than initial LTV (ILTV)", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const numOfTokenDAI = new BN(1000000000000000000);
                 const numOfTokenUSDC = new BN(1000000);
                 await erc20DAI.transfer(user1, numOfTokenDAI);
@@ -315,13 +281,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when there is no liquidity for the asked token", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -338,13 +297,6 @@ contract("SavingAccount", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -361,13 +313,6 @@ contract("SavingAccount", async (accounts) => {
             //     it("when borrow amount of token less then ILTV of his collateral value");
 
             it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -383,13 +328,6 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const numOfToken = new BN(1000);
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
@@ -409,19 +347,14 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
-                // 1. Set up collateral.
-                const tokens = await testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-                const addressUSDC = tokens[1];
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const numOfToken = new BN(1000000000000000000);
-                await erc20DAI.transfer(user2, numOfToken);
-                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
+                const numOfTokenETH = new BN(1000000000000000000);
+                await erc20DAI.transfer(user2, numOfTokenETH);
+                await erc20DAI.approve(savingAccount.address, numOfTokenETH, { from: user2 });
+                await savingAccount.depositToken(ETH_ADDRESS, numOfTokenETH, {
                     from: user1,
-                    value: numOfToken
+                    value: numOfTokenETH
                 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressUSDC, numOfTokenETH, { from: user2 });
                 // 2. Start borrowing.
                 const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
                 console.log(await savingAccount.getCoinToUsdRate(0));
