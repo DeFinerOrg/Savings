@@ -294,7 +294,22 @@ contract("SavingAccount", async (accounts) => {
 
     context("liquidate()", async () => {
         context("should fail", async () => {
-            it("");
+            it("when unsupported token address is passed", async () => {
+                //const withdrawTokens = new BN(20);
+
+                //Try depositting unsupported Token to SavingContract
+                await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
+            });
+
+            it("when tokenAddress is zero", async () => {
+                const withdrawTokens = new BN(20);
+
+                //Try depositting zero address
+                await expectRevert(
+                    savingAccount.liquidate(owner, addressZero),
+                    "Token address is zero"
+                );
+            });
         });
 
         context("should succeed", async () => {
