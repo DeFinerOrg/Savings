@@ -68,7 +68,6 @@ contract("SavingAccount", async (accounts) => {
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const depositTokens = new BN(0);
 
-                //Try depositting unsupported Token to SavingContract
                 await expectRevert(
                     savingAccount.depositToken(erc20DAI.address, depositTokens),
                     "Amount is zero"
@@ -78,7 +77,7 @@ contract("SavingAccount", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
-                // 1. Get DAI contact instance
+                // 1. Get DAI contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
@@ -219,7 +218,7 @@ contract("SavingAccount", async (accounts) => {
 
             //Partial withdrawal of tokens with 6 decimals
             it("when partial USDC withdrawn", async () => {
-                // 1. Get DAI contract instance
+                // 1. Get USDC contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressUSDC = tokens[1];
                 const addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
@@ -279,7 +278,7 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when partial USDT withdrawn", async () => {
-                // 1. Get DAI contract instance
+                // 1. Get USDT contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressUSDT = tokens[2];
                 const addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
@@ -340,7 +339,7 @@ contract("SavingAccount", async (accounts) => {
 
             //Partial withdrawal of tokens with 8 decimals
             it("when partial WBTC withdrawn", async () => {
-                // 1. Get DAI contract instance
+                // 1. Get WBTC contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressWBTC = tokens[8];
                 const addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
@@ -411,7 +410,7 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20DAI.address, depositAmount);
 
-                //Withdrawing ETH
+                //Withdrawing DAI
                 await savingAccount.withdrawAllToken(erc20DAI.address);
             });
 
@@ -428,7 +427,7 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20USDC.address, depositAmount);
 
-                //Withdrawing ETH
+                //Withdrawing USDC
                 await savingAccount.withdrawAllToken(erc20USDC.address);
             });
 
@@ -444,7 +443,7 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20USDT.address, depositAmount);
 
-                //Withdrawing ETH
+                //Withdrawing USDT
                 await savingAccount.withdrawAllToken(erc20USDT.address);
             });
 
@@ -461,7 +460,7 @@ contract("SavingAccount", async (accounts) => {
                 // deposit tokens
                 await savingAccount.depositToken(erc20WBTC.address, depositAmount);
 
-                //Withdrawing ETH
+                //Withdrawing WBTC
                 await savingAccount.withdrawAllToken(erc20WBTC.address);
             });
 
