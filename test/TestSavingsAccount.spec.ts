@@ -295,25 +295,29 @@ contract("SavingAccount", async (accounts) => {
     context("liquidate()", async () => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
-                //const withdrawTokens = new BN(20);
-
                 //Try depositting unsupported Token to SavingContract
                 await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
             });
 
             it("when tokenAddress is zero", async () => {
-                const withdrawTokens = new BN(20);
-
                 //Try depositting zero address
                 await expectRevert(
                     savingAccount.liquidate(owner, addressZero),
                     "Token address is zero"
                 );
             });
+
+            it("when the ratio of borrowed money and collateral is less than 95%");
+
+            it("when collateral is not sufficient to be liquidated");
         });
 
         context("should succeed", async () => {
-            it("");
+            it("When supported token address is passed");
+
+            it("When user tries to liquidate partially");
+
+            it("When user tries to liquidate fully");
         });
     });
 
