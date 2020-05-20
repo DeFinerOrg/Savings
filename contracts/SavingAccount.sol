@@ -228,14 +228,16 @@ contract SavingAccount {
     }
 
     function borrow(address tokenAddress, uint256 amount) public {
-        require(
-            baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-            .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-            .mul(100).div(INT_UNIT)
-            <=
-            getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
-            "Insufficient collateral."
-        );
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
+        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress)))).mul(100);
+        if(tokenAddress == ETH_ADDR) {
+            totalBorrow = totalBorrow.div(INT_UNIT);
+        } else {
+            totalBorrow = totalBorrow.div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+        }
+        require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
     }
@@ -265,6 +267,7 @@ contract SavingAccount {
         require(tokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
         require(amount != 0, "Amount is zero");
+        //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }
@@ -278,26 +281,23 @@ contract SavingAccount {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
 
-        require(targetTokenAddress != address(0), "Token address is zero");
-        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
-
-        //是否满足清算下限
+        //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
             "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
         );
 
-        //是否满足清算上限
+        //是否满足清算上限 (Whether the liquidation limit is met)
         require(
             totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
             "Collateral is not sufficient to be liquidated."
         );
 
-        //被清算者需要清算掉的资产
+        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
-        //清算者需要付的钱
+        //清算者需要付的钱 (Liquidators need to pay)
         uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
 
         if(paymentOfLiquidationAmount < liquidationDebtValue) {
@@ -381,8 +381,4 @@ contract SavingAccount {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
-}
-
-interface IERC20Extended {
-    function decimals() external view returns (uint8);
 }
