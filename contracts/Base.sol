@@ -32,6 +32,9 @@ library Base {
         mapping(address => int) deFinerFund;
     }
 
+    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    int256 public constant INT_UNIT = int256(10 ** uint256(18));
+
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
@@ -368,7 +371,11 @@ library Base {
                     .div(self.borrowRateRecord[tokenAddress][startBlockNum]);
                 }
             }
-            balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(int(symbols.priceFromIndex(i))));
+            int divisor = INT_UNIT;
+            if(tokenAddress != ETH_ADDR) {
+                divisor = int(10**uint256(IERC20Extended(tokenAddress).decimals()));
+            }
+            balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(int(symbols.priceFromIndex(i))).div(divisor));
         }
         return balance;
     }
@@ -454,7 +461,7 @@ library Base {
             &&
             self.cTokenAddress[tokenAddress] != address(0)
         ) {
-            toCompound(self, tokenAddress, totalAmount, tokenAddress == 0x000000000000000000000000000000000000000E);
+            toCompound(self, tokenAddress, totalAmount, tokenAddress == ETH_ADDR);
         }
         self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
         self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
@@ -519,7 +526,7 @@ library Base {
             &&
             self.cTokenAddress[tokenAddress] != address(0)
         ) {
-            toCompound(self, tokenAddress, totalAmount, tokenAddress == 0x000000000000000000000000000000000000000E);
+            toCompound(self, tokenAddress, totalAmount, tokenAddress == ETH_ADDR);
         }
         self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
         self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
@@ -553,6 +560,8 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
+            totalAmount <= 0
+            ||
             self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
@@ -587,6 +596,8 @@ library Base {
         int compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         int totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
+            totalAmount <= 0
+            ||
             self.totalReserve[tokenAddress].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             <
             10 * 10**16
@@ -697,4 +708,8 @@ library Base {
             return int256(_balance.mul(rate).div(SafeDecimalMath.getUNIT()));
         }
     }
+}
+
+interface IERC20Extended {
+    function decimals() external view returns (uint8);
 }
