@@ -265,14 +265,11 @@ contract("SavingAccount", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, numOfTokenUSDC, { from: user2 });
                 await savingAccount.depositToken(addressDAI, numOfTokenDAI, { from: user1 });
                 await savingAccount.depositToken(addressUSDC, numOfTokenUSDC, { from: user2 });
-                console.log(await savingAccount.getCoinToUsdRate(1));
-                console.log(await savingAccount.getCoinToUsdRate(2));
                 const balance = new BN(1)
                     .mul(await savingAccount.getCoinToUsdRate(2))
                     .mul(new BN(85))
                     .div(new BN(100))
                     .div(await savingAccount.getCoinToUsdRate(1));
-                console.log(balance);
                 // 2. Start borrowing.
                 await expectRevert(
                     savingAccount.borrow(addressDAI, balance, { from: user2 }),
@@ -357,8 +354,6 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.depositToken(addressUSDC, numOfTokenETH, { from: user2 });
                 // 2. Start borrowing.
                 const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
-                console.log(await savingAccount.getCoinToUsdRate(0));
-                console.log(await savingAccount.getCoinToUsdRate(1));
                 const limitAmount = new BN(1)
                     .mul(await savingAccount.getCoinToUsdRate(1))
                     .mul(new BN(60))
