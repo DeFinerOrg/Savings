@@ -23,6 +23,7 @@ contract("SavingAccount", async (accounts) => {
 
     const owner = accounts[0];
     const user1 = accounts[1];
+    const user2 = accounts[2];
     const dummy = accounts[9];
 
     before(async () => {
@@ -583,7 +584,34 @@ contract("SavingAccount", async (accounts) => {
                 );
             });
 
-            it("when the ratio of borrowed money and collateral is less than 95%");
+            it("when the ratio of borrowed money and collateral is less than 95%", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const addressUSDC = tokens[1];
+                //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(1000);
+
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
+                // 3. Verify the loan amount.
+                const user2Balance = await erc20DAI.balanceOf(user2);
+
+                await expectRevert(
+                    savingAccount.liquidate(user2, addressDAI),
+                    "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
+                );
+            });
 
             it("when collateral is not sufficient to be liquidated");
         });
