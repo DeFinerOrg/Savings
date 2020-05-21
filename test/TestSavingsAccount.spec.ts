@@ -235,12 +235,13 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when user tries to borrow token, but he has not deposited any token before", async () => {
+                await erc20DAI.transfer(user1, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
                 // 2. Start borrowing.
                 await expectRevert(
                     savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                    "SafeERC20: low-level call failed"
+                    "Insufficient collateral."
                 );
             });
 
@@ -257,15 +258,13 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when user tries to borrow more than initial LTV (ILTV)", async () => {
-                const numOfTokenDAI = new BN(1000000000000000000);
-                const numOfTokenUSDC = new BN(1000000);
-                await erc20DAI.transfer(user1, numOfTokenDAI);
-                await erc20USDC.transfer(user2, numOfTokenUSDC);
-                await erc20DAI.approve(savingAccount.address, numOfTokenDAI, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfTokenUSDC, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfTokenDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfTokenUSDC, { from: user2 });
-                const balance = new BN(1)
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                const balance = numOfToken
                     .mul(await savingAccount.getCoinToUsdRate(2))
                     .mul(new BN(85))
                     .div(new BN(100))
@@ -273,7 +272,7 @@ contract("SavingAccount", async (accounts) => {
                 // 2. Start borrowing.
                 await expectRevert(
                     savingAccount.borrow(addressDAI, balance, { from: user2 }),
-                    "When the loan exceeds BORROW_LTV"
+                    "Insufficient collateral."
                 );
             });
 
@@ -325,14 +324,13 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
-                await erc20DAI.transfer(user1, numOfToken);
-                await erc20USDC.transfer(user2, numOfToken);
-                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await erc20DAI.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
                 await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
                     from: user1,
                     value: numOfToken
                 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
                 await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user2 });
@@ -344,21 +342,20 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
-                const numOfTokenETH = new BN(1000000000000000000);
-                await erc20DAI.transfer(user2, numOfTokenETH);
-                await erc20DAI.approve(savingAccount.address, numOfTokenETH, { from: user2 });
-                await savingAccount.depositToken(ETH_ADDRESS, numOfTokenETH, {
+                await erc20DAI.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
                     from: user1,
-                    value: numOfTokenETH
+                    value: numOfToken
                 });
-                await savingAccount.depositToken(addressUSDC, numOfTokenETH, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
-                const limitAmount = new BN(1)
+                const limitAmount = numOfToken
                     .mul(await savingAccount.getCoinToUsdRate(1))
                     .mul(new BN(60))
-                    .div(100)
-                    .div(await savingAccount.getCoinToUsdRate(1));
+                    .div(new BN(100))
+                    .div(await savingAccount.getCoinToUsdRate(0));
                 await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user2 });
                 // 3. Verify the loan amount.
                 const user2ETHBalanceAfter = await web3.eth.getBalance(user2);
