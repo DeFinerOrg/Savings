@@ -617,11 +617,59 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("When supported token address is passed");
+            /* it("When user tries to liquidate partially", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const addressUSDC = tokens[1];
+                //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-            it("When user tries to liquidate partially");
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
 
-            it("When user tries to liquidate fully");
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(100000000);
+
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, new BN(90000000), { from: user2 });
+                // 3. Verify the loan amount
+                const user2Balance = await erc20DAI.balanceOf(user2);
+
+                await savingAccount.liquidate(user2, addressDAI);
+            });
+
+            //it("When user tries to liquidate partially");
+
+            it("When user tries to liquidate fully", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const addressUSDC = tokens[1];
+                //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(100000000);
+
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, new BN(100000000), { from: user2 });
+                // 3. Verify the loan amount
+                const user2Balance = await erc20DAI.balanceOf(user2);
+
+                await savingAccount.liquidate(user2, addressDAI);
+            }); */
         });
     });
 
