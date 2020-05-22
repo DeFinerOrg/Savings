@@ -133,7 +133,13 @@ contract("SavingAccount", async (accounts) => {
 
     context("repay()", async () => {
         context("should fail", async () => {
-            it("");
+            it("when unsupported token address passed", async () => {
+
+            });
+
+            it("when amount is zero", async () => {
+
+            });
         });
 
         context("should succeed", async () => {
@@ -157,6 +163,18 @@ contract("SavingAccount", async (accounts) => {
                 // 4. Verify the repay amount.
                 const user2Balance = await erc20DAI.balanceOf(user2);
                 expect(user2Balance).to.be.bignumber.equal(new BN(0));
+            });
+
+            it("When the repayment amount is less than the loan amount.", async () => {
+
+            });
+
+            it("When the repayment amount is equal to the loan amount.", async () => {
+
+            });
+
+            it("When the repayment amount is greater than the loan amount.", async () => {
+
             });
         });
     });
