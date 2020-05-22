@@ -223,7 +223,7 @@ contract("SavingAccount", async (accounts) => {
                 expect(user2BalanceAfter).to.be.bignumber.equal(new BN(0));
             });
 
-            it("When the repayment amount is less than the loan amount.", async () => {
+            it("When the repayment tokenAmount is less than the loan amount.", async () => {
                 // 1.1 Set up collateral.
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
@@ -243,7 +243,7 @@ contract("SavingAccount", async (accounts) => {
                 expect(user2BalanceAfter).to.be.bignumber.equal(new BN(5));
             });
 
-            it("When the repayment amount is greater than the loan amount.", async () => {
+            it("When the repayment tokenAmount is greater than the loan amount.", async () => {
                 // 1.1 Set up collateral.
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
@@ -262,6 +262,49 @@ contract("SavingAccount", async (accounts) => {
                 const user2BalanceAfter = await erc20DAI.balanceOf(user2);
                 expect(user2BalanceBefore).to.be.bignumber.equal(numOfToken.add(new BN(10)));
                 expect(user2BalanceAfter).to.be.bignumber.equal(numOfToken);
+            });
+
+            it("When the repayment ETHAmount is less than the loan amount.", async () => {
+                // 1.1 Set up collateral.
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20USDC.approve(savingAccount.address, numOfToken, {from : user2});
+                await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
+                    from : user1,
+                    value : numOfToken
+                });
+                await savingAccount.depositToken(addressUSDC, numOfToken, {from : user2});
+                // 2. Start borrowing.
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), {from : user2});
+                const user2BalanceBefore = new BN(await web3.eth.getBalance(user2));
+                // 3. Start repayment.
+                await savingAccount.repay(ETH_ADDRESS, new BN(5), {from : user2});
+                // 4. Verify the repay amount.
+                const user2BalanceAfter = new BN(await web3.eth.getBalance(user2));
+                expect(user2BalanceBefore).to.be.bignumber.equal(
+                    user2BalanceAfter.add(new BN(5))
+                );
+            });
+
+            it("When the repayment ETHAmount is greater than the loan amount.", async () => {
+                // 1.1 Set up collateral.
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20USDC.approve(savingAccount.address, numOfToken, {from : user2});
+                await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
+                    from : user1,
+                    value : numOfToken
+                });
+                await savingAccount.depositToken(addressUSDC, numOfToken, {from : user2});
+                // 2. Start borrowing.
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), {from : user2});
+                const user2BalanceBefore = new BN(await web3.eth.getBalance(user2));
+                // 3. Start repayment.
+                await savingAccount.repay(ETH_ADDRESS, new BN(20), {
+                    from : user2,
+                    value : new BN(20)
+                });
+                // 4. Verify the repay amount.
+                const user2BalanceAfter = new BN(await web3.eth.getBalance(user2));
+                expect(user2BalanceBefore).to.be.bignumber.equal(user2BalanceAfter.add(new BN(10)));
             });
         });
     });
