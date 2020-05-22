@@ -10,3 +10,4 @@ bridge.log
 deploy
 ./contracts/config/Config.sol
 ./contracts/config/ConfigRinkebynet.sol
+types
