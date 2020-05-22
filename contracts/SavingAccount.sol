@@ -243,6 +243,8 @@ contract SavingAccount {
     }
 
     function repay(address tokenAddress, uint256 amount) public payable {
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
         if(money != 0) {
