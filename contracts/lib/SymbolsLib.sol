@@ -39,6 +39,12 @@ library SymbolsLib {
             self.addressToSymbol[tokenAddress] = tokenName;
             self.symbolToAddress[tokenName] = tokenAddress;
         }
+        // Temp fix
+        // Adding ETH
+        address ETH_ADDR = 0x000000000000000000000000000000000000000E;
+        self.indexToSymbol[self.count] = "ETH";
+        self.addressToSymbol[ETH_ADDR] = "ETH";
+        self.symbolToAddress["ETH"] = ETH_ADDR;
     }
 
     function getCoinLength(Symbols storage self) public view returns (uint length) {
@@ -53,10 +59,24 @@ library SymbolsLib {
     function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
         address tokenAddress = self.symbolToAddress[self.indexToSymbol[index]];
+        // Temp fix
+        if(_isETH(tokenAddress)) {
+            return 1e18;
+        }
         return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
+        // Temp fix
+        if(_isETH(tokenAddress)) {
+            return 1e18;
+        }
         return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
     }
+
+    // Temp fix
+    function _isETH(address _token) internal pure returns (bool) {
+        return address(0x000000000000000000000000000000000000000E) == _token;
+    }
+
 }
