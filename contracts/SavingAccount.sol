@@ -283,6 +283,9 @@ contract SavingAccount {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
 
+        require(targetTokenAddress != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
+
         //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
