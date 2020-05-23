@@ -243,6 +243,8 @@ contract SavingAccount {
     }
 
     function repay(address tokenAddress, uint256 amount) public payable {
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
         if(money != 0) {
@@ -280,6 +282,9 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
+
+        require(targetTokenAddress != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
 
         //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
