@@ -225,13 +225,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
                 await savingAccount.depositToken(addressDAI, numOfToken, { from: user2 });
                 // 2. Start borrowing.
-                const user2ETHBalanceBefore = await web3.eth.getBalance(user2);
                 await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user2 });
                 // 3. Verify the loan amount.
-                const user2ETHBalanceAfter = await web3.eth.getBalance(user2);
-                expect(user2ETHBalanceAfter).to.be.bignumber.equal(
-                    user2ETHBalanceBefore.add(new BN(1))
-                );
+                const user2ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user2})
+                expect(new BN(user2ETHBorrowValue[0]).add(new BN(user2ETHBorrowValue[1]))).to.be.bignumber.equal(new BN(-1));
             });
 
             it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
