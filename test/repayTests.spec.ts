@@ -159,12 +159,14 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
-                const user2BalanceBefore = new BN(await web3.eth.getBalance(user2));
                 // 3. Start repayment.
-                await savingAccount.repay(ETH_ADDRESS, new BN(5), { from: user2 });
+                await savingAccount.repay(ETH_ADDRESS, new BN(5), {
+                    from: user2,
+                    value: new BN(5)
+                });
                 // 4. Verify the repay amount.
-                const user2BalanceAfter = new BN(await web3.eth.getBalance(user2));
-                expect(user2BalanceBefore).to.be.bignumber.equal(user2BalanceAfter.add(new BN(5)));
+                const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user2 });
+                expect(new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))).to.be.bignumber.equal(new BN(-5));
             });
 
             it("When the repayment ETHAmount is greater than the loan amount.", async () => {
@@ -178,15 +180,14 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
-                const user2BalanceBefore = new BN(await web3.eth.getBalance(user2));
                 // 3. Start repayment.
                 await savingAccount.repay(ETH_ADDRESS, new BN(20), {
                     from: user2,
                     value: new BN(20)
                 });
                 // 4. Verify the repay amount.
-                const user2BalanceAfter = new BN(await web3.eth.getBalance(user2));
-                expect(user2BalanceBefore).to.be.bignumber.equal(user2BalanceAfter.add(new BN(10)));
+                const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user2 });
+                expect(new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))).to.be.bignumber.equal(new BN(0));
             });
         });
     });
