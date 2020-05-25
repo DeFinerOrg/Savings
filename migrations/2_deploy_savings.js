@@ -46,6 +46,8 @@ module.exports = async function(deployer, network) {
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
 
+    console.log("ERC20", erc20Tokens);
+
     // Deploy TokenRegistry
     const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
     await tokenRegistry.addToken(ETH_ADDR);
@@ -87,7 +89,7 @@ const getCTokens = async (erc20Tokens) => {
                 addr = (await MockCToken.new(erc20Tokens[index])).address;
             } else if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             }
             cTokens.push(addr);
@@ -110,7 +112,7 @@ const getERC20Tokens = async () => {
                     .address;
             } else if (network == "ropsten") {
                 addr = token.ropsten.tokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             }
             erc20TokenAddresses.push(addr);
@@ -131,7 +133,7 @@ const getChainLinkAggregators = async () => {
                 ).address;
             } else if (network == "ropsten") {
                 addr = token.ropsten.aggregatorAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             }
             aggregators.push(addr);
