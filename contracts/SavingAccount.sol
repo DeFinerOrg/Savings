@@ -282,6 +282,8 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
+        int msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1);
+        int msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
 
         require(targetTokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
@@ -289,7 +291,7 @@ contract SavingAccount {
         //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
-            "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
+            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
         );
 
         //是否满足清算上限 (Whether the liquidation limit is met)
@@ -298,12 +300,28 @@ contract SavingAccount {
             "Collateral is not sufficient to be liquidated."
         );
 
+        require(
+            msgTotalBorrow.mul(100)
+            <
+            msgTotalCollateral.mul(BORROW_LTV),
+            "No extra funds are used for liquidation."
+        );
+
+        require(
+            baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender) > 0,
+            "The account amount must be greater than zero."
+        );
+
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
         //清算者需要付的钱 (Liquidators need to pay)
-        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
+        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress));
+
+        if(paymentOfLiquidationAmount > uint(msgTotalCollateral.sub(msgTotalBorrow))) {
+            paymentOfLiquidationAmount = uint(msgTotalCollateral.sub(msgTotalBorrow));
+        }
 
         if(paymentOfLiquidationAmount < liquidationDebtValue) {
             liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(LIQUIDATION_DISCOUNT_RATIO));
