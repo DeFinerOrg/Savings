@@ -230,13 +230,12 @@ contract SavingAccount {
     function borrow(address tokenAddress, uint256 amount) public {
         require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
         require(amount != 0, "Amount is zero");
-        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress)))).mul(100);
-        if(tokenAddress == ETH_ADDR) {
-            totalBorrow = totalBorrow.div(INT_UNIT);
-        } else {
-            totalBorrow = totalBorrow.div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+        int divisor = INT_UNIT;
+        if(tokenAddress != ETH_ADDR) {
+            divisor = int(10**uint256(IERC20Extended(tokenAddress).decimals()));
         }
+        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
         require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
