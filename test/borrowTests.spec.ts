@@ -134,7 +134,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 // 2. Start borrowing.
                 await expectRevert(
                     savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                    "Account not active, please deposit first."
+                    "Insufficient collateral."
                 );
             });
 
