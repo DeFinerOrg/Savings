@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
+import "./compound/TokenRegistry.sol";
 
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
@@ -24,6 +25,7 @@ contract SavingAccount {
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    TokenRegistry public tokenRegistry;
 
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
@@ -45,11 +47,13 @@ contract SavingAccount {
     constructor(
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
-        address _chainlinkAddress
+        address _chainlinkAddress,
+        TokenRegistry _tokenRegistry
     )
         public
     {
         SavingAccountParameters params = new SavingAccountParameters();
+        tokenRegistry = _tokenRegistry;
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
@@ -224,19 +228,23 @@ contract SavingAccount {
     }
 
     function borrow(address tokenAddress, uint256 amount) public {
-        require(
-            baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-            .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))))
-            .mul(100).div(INT_UNIT)
-            <=
-            getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV),
-            "Insufficient collateral."
-        );
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
+        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress)))).mul(100);
+        if(tokenAddress == ETH_ADDR) {
+            totalBorrow = totalBorrow.div(INT_UNIT);
+        } else {
+            totalBorrow = totalBorrow.div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+        }
+        require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(BORROW_LTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
     }
 
     function repay(address tokenAddress, uint256 amount) public payable {
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
         if(money != 0) {
@@ -247,6 +255,8 @@ contract SavingAccount {
      * Deposit the amount of tokenAddress to the saving pool.
      */
     function depositToken(address tokenAddress, uint256 amount) public payable {
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         baseVariable.depositToken(tokenAddress, amount);
     }
@@ -256,6 +266,10 @@ contract SavingAccount {
      * will be deducted first.
      */
     function withdrawToken(address tokenAddress, uint256 amount) public {
+        require(tokenAddress != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+        require(amount != 0, "Amount is zero");
+        //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }
@@ -269,23 +283,26 @@ contract SavingAccount {
         int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
 
-        //是否满足清算下限
+        require(targetTokenAddress != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
+
+        //是否满足清算下限 (Whether the lower limit of liquidation is met)
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
             "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
         );
 
-        //是否满足清算上限
+        //是否满足清算上限 (Whether the liquidation limit is met)
         require(
             totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
             "Collateral is not sufficient to be liquidated."
         );
 
-        //被清算者需要清算掉的资产
+        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
-        //清算者需要付的钱
+        //清算者需要付的钱 (Liquidators need to pay)
         uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
 
         if(paymentOfLiquidationAmount < liquidationDebtValue) {
@@ -369,8 +386,4 @@ contract SavingAccount {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         ICToken(_cToken).redeemUnderlying(_amount);
     }
-}
-
-interface IERC20Extended {
-    function decimals() external view returns (uint8);
 }
