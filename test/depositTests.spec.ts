@@ -96,6 +96,56 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
+            it("when TUSD address is passed", async () => {
+                // 1. Get MKR contract instance
+                const tokens = testEngine.erc20Tokens;
+                const addressTUSD = tokens[3];
+
+                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(1000);
+                await erc20TUSD.approve(savingAccount.address, numOfToken);
+
+                // 3. Deposit Token to SavingContract
+                await savingAccount.depositToken(erc20TUSD.address, numOfToken);
+
+                // 4. Validate that the tokens are deposited to SavingAccount
+                // 4.1 SavingAccount contract must received tokens
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            });
+
+            it("when MKR address is passed", async () => {
+                // 1. Get MKR contract instance
+                const tokens = testEngine.erc20Tokens;
+                const addressMKR = tokens[4];
+
+                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(1000);
+                await erc20MKR.approve(savingAccount.address, numOfToken);
+
+                // 3. Deposit Token to SavingContract
+                await savingAccount.depositToken(erc20MKR.address, numOfToken);
+
+                // 4. Validate that the tokens are deposited to SavingAccount
+                // 4.1 SavingAccount contract must received tokens
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            });
+
             it("when ETH address is passed", async () => {
                 const depositAmount = new BN(10);
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);

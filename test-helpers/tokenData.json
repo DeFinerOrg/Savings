@@ -5,6 +5,7 @@
             "symbol": "DAI",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "5424285000000000",
 
             "mainnet": {
@@ -25,6 +26,7 @@
             "symbol": "USDC",
             "decimals": 6,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "5309685000000000",
 
             "mainnet": {
@@ -45,6 +47,7 @@
             "symbol": "USDT",
             "decimals": 6,
             "isFeeEnabled": true,
+            "supportedByCompound": true,
             "latestAnswer": "5164220000000000",
 
             "mainnet": {
@@ -65,6 +68,7 @@
             "symbol": "TUSD",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": false,
             "latestAnswer": "5172765000000000",
 
             "mainnet": {
@@ -85,6 +89,7 @@
             "symbol": "MKR",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": false,
             "latestAnswer": "1716434500000000000",
 
             "mainnet": {
@@ -105,6 +110,7 @@
             "symbol": "BAT",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "918555000000000",
 
             "mainnet": {
@@ -125,6 +131,7 @@
             "symbol": "ZRX",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "953760000000000",
 
             "mainnet": {
@@ -145,6 +152,7 @@
             "symbol": "REP",
             "decimals": 18,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "52943555000000000",
 
             "mainnet": {
@@ -165,6 +173,7 @@
             "symbol": "WBTC",
             "decimals": 8,
             "isFeeEnabled": false,
+            "supportedByCompound": true,
             "latestAnswer": "41623010370000000000",
 
             "mainnet": {
