@@ -70,13 +70,14 @@ const getCTokens = async (erc20Tokens) => {
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
-            if (network == "development") {
-                // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(erc20Tokens[index])).address;
-            } else if (network == "ropsten") {
+            if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
             } else if (network == "mainnet" || network == "fork") {
                 addr = token.mainnet.cTokenAddress;
+            } else {
+                // network = development || coverage
+                // Create MockCToken for given ERC20 token address
+                addr = (await MockCToken.new(erc20Tokens[index])).address;
             }
             cTokens.push(addr);
         })
@@ -93,13 +94,14 @@ const getERC20Tokens = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "development") {
-                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
-                    .address;
-            } else if (network == "ropsten") {
+            if (network == "ropsten") {
                 addr = token.ropsten.tokenAddress;
             } else if (network == "mainnet" || network == "fork") {
                 addr = token.mainnet.tokenAddress;
+            } else {
+                // network = development || coverage
+                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
+                    .address;
             }
             erc20TokenAddresses.push(addr);
         })
@@ -113,14 +115,15 @@ const getChainLinkAggregators = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "development") {
-                addr = (
-                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
-                ).address;
-            } else if (network == "ropsten") {
+            if (network == "ropsten") {
                 addr = token.ropsten.aggregatorAddress;
             } else if (network == "mainnet" || network == "fork") {
                 addr = token.mainnet.aggregatorAddress;
+            } else {
+                // network = development || coverage
+                addr = (
+                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
+                ).address;
             }
             aggregators.push(addr);
         })
