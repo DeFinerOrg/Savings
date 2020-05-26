@@ -47,6 +47,8 @@ module.exports = async function(deployer, network) {
     const cTokens = await getCTokens(erc20Tokens);
 
     console.log("ERC20", erc20Tokens);
+    console.log("chainLinkAggregators", chainLinkAggregators);
+    console.log("cTokens", cTokens);
 
     // Deploy TokenRegistry
     const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
@@ -61,6 +63,9 @@ module.exports = async function(deployer, network) {
         erc20Tokens,
         chainLinkAggregators
     );
+
+    console.log("chainLinkOracle address:", chainLinkOracle.address);
+    console.log("tokenRegistrycaddress:", tokenRegistry.address);
 
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(
