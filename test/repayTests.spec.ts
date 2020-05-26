@@ -57,12 +57,12 @@ contract("SavingAccount", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
                 await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
                 await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
             });
 
             context("should fail", async () => {
                 it("when unsupported token address passed", async () => {
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     // 3. Start repayment.
                     await expectRevert(
                         savingAccount.repay(dummy, new BN(10), { from: user2 }),
@@ -71,8 +71,6 @@ contract("SavingAccount", async (accounts) => {
                 });
 
                 it("when amount is zero", async () => {
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     // 3. Start repayment.
                     await expectRevert(
                         savingAccount.repay(addressDAI, new BN(0), { from: user2 }),
@@ -83,8 +81,6 @@ contract("SavingAccount", async (accounts) => {
 
             context("should succeed", async () => {
                 it("when supported token address is passed", async () => {
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
@@ -95,8 +91,6 @@ contract("SavingAccount", async (accounts) => {
                 });
 
                 it("When the repayment tokenAmount is less than the loan amount.", async () => {
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(5), { from: user2 });
@@ -107,11 +101,8 @@ contract("SavingAccount", async (accounts) => {
                 });
 
                 it("When the repayment tokenAmount is greater than the loan amount.", async () => {
-                    // 1.1 Set up collateral.
+                    // 2.1 Prepare more DAI.
                     await erc20DAI.transfer(user2, numOfToken);
-
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(20), { from: user2 });
@@ -137,34 +128,60 @@ contract("SavingAccount", async (accounts) => {
                 await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
             });
 
-            it("when the repayment ETHAmount is less than the loan amount.", async () => {
-                // 3. Start repayment.
-                await savingAccount.repay(ETH_ADDRESS, new BN(5), {
-                    from: user2,
-                    value: new BN(5)
+            context("should fail", async () => {
+                it("when unsupported token address passed", async () => {
+                    // 3. Start repayment.
+                    await expectRevert(
+                        savingAccount.repay(dummy, new BN(10), {
+                            from: user2,
+                            value: new BN(10)
+                        }),
+                        "Unsupported token"
+                    );
                 });
-                // 4. Verify the repay amount.
-                const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                    from: user2
+
+                it("when amount is zero", async () => {
+                    // 3. Start repayment.
+                    await expectRevert(
+                        savingAccount.repay(ETH_ADDRESS, new BN(0), {
+                            from: user2,
+                            value: new BN(0)
+                        }),
+                        "Amount is zero"
+                    );
                 });
-                expect(
-                    new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
-                ).to.be.bignumber.equal(new BN(-5));
             });
 
-            it("when the repayment ETHAmount is greater than the loan amount.", async () => {
-                // 3. Start repayment.
-                await savingAccount.repay(ETH_ADDRESS, new BN(20), {
-                    from: user2,
-                    value: new BN(20)
+            context("should succeed", async () => {
+                it("when the repayment ETHAmount is less than the loan amount.", async () => {
+                    // 3. Start repayment.
+                    await savingAccount.repay(ETH_ADDRESS, new BN(5), {
+                        from: user2,
+                        value: new BN(5)
+                    });
+                    // 4. Verify the repay amount.
+                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
+                        from: user2
+                    });
+                    expect(
+                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                    ).to.be.bignumber.equal(new BN(-5));
                 });
-                // 4. Verify the repay amount.
-                const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                    from: user2
+
+                it("when the repayment ETHAmount is greater than the loan amount.", async () => {
+                    // 3. Start repayment.
+                    await savingAccount.repay(ETH_ADDRESS, new BN(20), {
+                        from: user2,
+                        value: new BN(20)
+                    });
+                    // 4. Verify the repay amount.
+                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
+                        from: user2
+                    });
+                    expect(
+                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                    ).to.be.bignumber.equal(new BN(0));
                 });
-                expect(
-                    new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
-                ).to.be.bignumber.equal(new BN(0));
             });
         });
     });
