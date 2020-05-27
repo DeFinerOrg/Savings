@@ -45,6 +45,11 @@ contract TokenInfoRegistry is Ownable {
 
     address[] public tokens;
 
+    modifier notZero(address _addr) {
+        require(_addr != address(0), "Address is zero");
+        _;
+    }
+
     /**
      */
     modifier whenTokenExists(address _token) {
@@ -54,12 +59,12 @@ contract TokenInfoRegistry is Ownable {
 
     /**
      * @dev Add a new token to registry
-     * @param _token token address
-     * @param _decimals
-     * @param _isTransferFeeEnabled
-     * @param _isSupportedOnCompound
-     * @param _cToken
-     * @param _chainLinkAggregator
+     * @param _token ERC20 Token address
+     * @param _decimals Token's decimals
+     * @param _isTransferFeeEnabled Is token changes transfer fee
+     * @param _isSupportedOnCompound Is token supported on Compound
+     * @param _cToken cToken contract address
+     * @param _chainLinkAggregator Chain Link Aggregator address to get TOKEN/ETH rate
      */
     function addToken(
         address _token,
@@ -125,6 +130,7 @@ contract TokenInfoRegistry is Ownable {
         external
         onlyOwner
         whenTokenExists(_token)
+        notZero(_token)
     {
         tokenInfo[_token].cToken = _cToken;
         emit TokenUpdated(_token);
@@ -139,6 +145,7 @@ contract TokenInfoRegistry is Ownable {
         external
         onlyOwner
         whenTokenExists(_token)
+        notZero(_token)
     {
         tokenInfo[_token].chainLinkAggregator = _chainLinkAggregator;
         emit TokenUpdated(_token);
@@ -180,10 +187,6 @@ contract TokenInfoRegistry is Ownable {
         return tokens;
     }
 
-    // ===================================
-    //      Compound Token Info
-    // ===================================
-
     /**
      */
     function getCToken(address _token) external view returns (address cToken) {
@@ -200,7 +203,7 @@ contract TokenInfoRegistry is Ownable {
         }
     }
 
-    // ===================================
-    //      Chain Link Aggregator
-    // ===================================
+    function getChainLinkAggregator(address _token) external view returns (address) {
+        return tokenInfo[_token].chainLinkAggregator;
+    }
 }
