@@ -137,13 +137,13 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole USDC tokens are deposited", async () => {
-                // 1. Get DAI contract instance
+                // 1. Get USDC contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressUSDC = tokens[1];
-                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressUSDC);
+                const addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
 
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
-                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForUSDC);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN("1000000000");
@@ -167,7 +167,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
                 // 4.2 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForDAI);
+                const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
                 expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
 
                 // 4.3 cToken must be minted for SavingAccount
