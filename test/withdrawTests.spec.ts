@@ -92,6 +92,126 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
+            it("when 100 whole suported tokens are withdrawn", async () => {
+                // 1. Get DAI contract instance
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+
+                // 2. Approve 1000 tokens
+                const numOfTokens = new BN("1000000000000000000000");
+                await erc20DAI.approve(savingAccount.address, numOfTokens);
+
+                // deposit tokens
+                await savingAccount.depositToken(erc20DAI.address, numOfTokens);
+
+                //Number of tokens to withdraw
+                const withdrawTokens = new BN("100000000000000000000");
+
+                // 3. validate if amount to be withdrawn is less than saving account balance
+                const balSavingAccountBeforeWithdraw = await erc20DAI.balanceOf(
+                    savingAccount.address
+                );
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccountBeforeWithdraw);
+
+                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+
+                // 4. Withdraw Token from SavingContract
+                await savingAccount.withdrawToken(erc20DAI.address, withdrawTokens);
+
+                // 4.1 Validate user balance
+                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+                const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+                    BN(userBalanceBeforeWithdraw)
+                );
+                expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
+
+                // 5. Validate Withdraw
+
+                // 5.1 Validate savingAccount contract balance
+                const expectedTokenBalanceAfterWithdraw = numOfTokens
+                    .mul(new BN(15))
+                    .div(new BN(100))
+                    .sub(new BN("100000000000000000000"));
+                const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
+                    newbalSavingAccount
+                );
+
+                // 5.2 Amount in Compound
+                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
+                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
+
+                // 5.3 cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+            });
+
+            it("when 100 whole USDC tokens are withdrawn", async () => {
+                // 1. Get USDC contract instance
+                const tokens = testEngine.erc20Tokens;
+                const addressUSDC = tokens[1];
+                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressUSDC);
+
+                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
+
+                // 2. Approve 1000 tokens
+                const numOfTokens = new BN("1000000000");
+                await erc20USDC.approve(savingAccount.address, numOfTokens);
+
+                // deposit tokens
+                await savingAccount.depositToken(erc20USDC.address, numOfTokens);
+
+                //Number of tokens to withdraw
+                const withdrawTokens = new BN("100000000");
+
+                // 3. validate if amount to be withdrawn is less than saving account balance
+                const balSavingAccountBeforeWithdraw = await erc20USDC.balanceOf(
+                    savingAccount.address
+                );
+                expect(withdrawTokens).to.be.bignumber.lessThan(balSavingAccountBeforeWithdraw);
+
+                let userBalanceBeforeWithdraw = await erc20USDC.balanceOf(owner);
+
+                // 4. Withdraw Token from SavingContract
+                await savingAccount.withdrawToken(erc20USDC.address, withdrawTokens);
+
+                // 4.1 Validate user balance
+                let userBalanceAfterWithdraw = await erc20USDC.balanceOf(owner);
+                const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+                    BN(userBalanceBeforeWithdraw)
+                );
+                expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
+
+                // 5. Validate Withdraw
+
+                // 5.1 Validate savingAccount contract balance
+                const expectedTokenBalanceAfterWithdraw = numOfTokens
+                    .mul(new BN(15))
+                    .div(new BN(100))
+                    .sub(new BN("100000000"));
+                const newbalSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
+                    newbalSavingAccount
+                );
+
+                // 5.2 Amount in Compound
+                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCToken = await erc20USDC.balanceOf(addressCTokenForDAI);
+                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
+
+                // 5.3 cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+            });
+
             //Partial withdrawal of tokens with 6 decimals
             it("when partial USDC withdrawn", async () => {
                 // 1. Get USDC contract instance
@@ -353,6 +473,24 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 //Withdrawing ETH
                 await savingAccount.withdrawToken(ETH_ADDRESS, withdrawAmount);
+
+                /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
+
+                // validate savingAccount ETH balance
+                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
+            });
+
+            it("when 10 whole ETH withdrawn", async () => {
+                //Depositting ETH Token to SavingContract
+                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("20", "ether"), {
+                    value: web3.utils.toWei("20", "ether")
+                });
+
+                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+
+                //Withdrawing ETH
+                await savingAccount.withdrawToken(ETH_ADDRESS, web3.utils.toWei("10", "ether"));
 
                 /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
                 let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
