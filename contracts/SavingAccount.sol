@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
-import "./compound/TokenRegistry.sol";
+import "./registry/TokenInfoRegistry.sol";
 
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
@@ -25,7 +25,7 @@ contract SavingAccount {
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
-    TokenRegistry public tokenRegistry;
+    TokenInfoRegistry public tokenRegistry;
 
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
@@ -48,7 +48,7 @@ contract SavingAccount {
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
         address _chainlinkAddress,
-        TokenRegistry _tokenRegistry
+        TokenInfoRegistry _tokenRegistry
     )
         public
     {
