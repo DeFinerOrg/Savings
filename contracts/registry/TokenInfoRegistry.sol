@@ -35,16 +35,28 @@ contract TokenInfoRegistry is Ownable {
         // ================
         // Chain Link Oracle's Aggregator address for TOKEN/ETH pair name. Example "DAI/ETH"
         address chainLinkAggregator;
+
+        //TODO
+        // Initial LTV to maintain when borrow this token
+        uint256 initLTV;
+        // Maximum LTV for Liquidation threshold for this token
+        uint256 maxLTV;
     }
 
     event TokenAdded(address indexed token);
     event TokenRemoved(address indexed token);
     event TokenUpdated(address indexed token);
 
-    mapping (address => TokenInfo) public tokenInfo;
+    // SCALE to represent 100%
+    uint256 public SCALE = 1e8;
 
+    // TokenAddress to TokenInfo mapping
+    mapping (address => TokenInfo) public tokenInfo;
+    // TokenAddress array
     address[] public tokens;
 
+    /**
+     */
     modifier notZero(address _addr) {
         require(_addr != address(0), "Address is zero");
         _;
@@ -88,9 +100,35 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.isSupportedOnCompound = _isSupportedOnCompound;
         storageTokenInfo.cToken = _cToken;
         storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
+        // Default Init LVT and Max LTV
+        storageTokenInfo.initLTV = 6e7; // 60%
+        storageTokenInfo.maxLTV = 85e6; // 85%
 
         tokens.push(_token);
         emit TokenAdded(_token);
+    }
+
+    /**
+     * @dev Initialize LTV (Loan To Value) ratio
+     */
+    function updateLTV(
+        address _token,
+        uint256 _initLTV,
+        uint256 _maxLTV
+    )
+        external
+        onlyOwner
+        whenTokenExists(_token)
+    {
+        require(_initLTV != 0, "Init LTV is zero");
+        require(_initLTV < SCALE, "Init LTV must be less than Scale");
+        require(_maxLTV != 0, "Max LTV is zero");
+        require(_maxLTV < SCALE, "Max LTV must be less than Scale");
+        require(_maxLTV > _initLTV, "Max LTV must be greater then Init LTV");
+
+        tokenInfo[_token].initLTV = _initLTV;
+        tokenInfo[_token].maxLTV = _maxLTV;
+        emit TokenUpdated(_token);
     }
 
     /**

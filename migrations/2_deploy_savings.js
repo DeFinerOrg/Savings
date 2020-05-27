@@ -8,8 +8,7 @@ const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
-const TokenRegistry = artifacts.require("TokenRegistry");
-const CTokenRegistry = artifacts.require("CTokenRegistry");
+const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -24,9 +23,10 @@ require("@openzeppelin/test-helpers/configure")({
     environment: "truffle"
 });
 
-module.exports = async function(deployer, network) {
-    const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 
+module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -47,18 +47,16 @@ module.exports = async function(deployer, network) {
     const cTokens = await getCTokens(erc20Tokens);
 
     // Deploy TokenRegistry
-    const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
-    await tokenRegistry.addToken(ETH_ADDR);
-
-    // Deploy CTokenRegistry
-    const cTokenRegistry = await deployer.deploy(CTokenRegistry, erc20Tokens, cTokens);
-
-    // Configure ChainLinkOracle
-    const chainLinkOracle = await deployer.deploy(
-        ChainLinkOracle,
+    const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
+    await initializeTokenInfoRegistry(
+        tokenInfoRegistry,
         erc20Tokens,
+        cTokens,
         chainLinkAggregators
     );
+
+    // Configure ChainLinkOracle
+    const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
 
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(
@@ -66,13 +64,43 @@ module.exports = async function(deployer, network) {
         erc20Tokens,
         cTokens,
         chainLinkOracle.address,
-        tokenRegistry.address
+        tokenInfoRegistry.address
     );
 
-    console.log("TokenRegistry:", tokenRegistry.address);
-    console.log("CTokenRegistry:", cTokenRegistry.address);
+    console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccount.address);
+};
+
+const initializeTokenInfoRegistry = async (
+    tokenInfoRegistry,
+    erc20Tokens,
+    cTokens,
+    chainLinkAggregators
+) => {
+    await Promise.all(
+        tokenData.tokens.map(async (token, i) => {
+            const tokenAddr = erc20Tokens[i];
+            const decimals = token.decimals;
+            const isTransferFeeEnabled = token.isFeeEnabled;
+            // TODO When PR merged fix this, by default set to `true`
+            const isSupportedOnCompound = true;
+            const cToken = cTokens[i];
+            const chainLinkAggregator = chainLinkAggregators[i];
+            await tokenInfoRegistry.addToken(
+                tokenAddr,
+                decimals,
+                isTransferFeeEnabled,
+                isSupportedOnCompound,
+                cToken,
+                chainLinkAggregator
+            );
+        })
+    );
+
+    // Add ETH
+    const cToken = "";
+    await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, cToken, DEAD_ADDR);
 };
 
 const getCTokens = async (erc20Tokens) => {

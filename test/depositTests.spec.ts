@@ -60,7 +60,9 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 // 1. Get DAI contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
-                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+                const addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(
+                    addressDAI
+                );
 
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);

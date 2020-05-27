@@ -36,7 +36,9 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 // 1. Get DAI contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
-                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+                const addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(
+                    addressDAI
+                );
 
                 const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
@@ -97,7 +99,9 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 // 1. Get USDC contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressUSDC = tokens[1];
-                const addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
+                const addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(
+                    addressUSDC
+                );
 
                 const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const cTokenUSDC: t.MockCTokenInstance = await MockCToken.at(addressCTokenForUSDC);
@@ -157,7 +161,9 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 // 1. Get USDT contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressUSDT = tokens[2];
-                const addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
+                const addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(
+                    addressUSDT
+                );
 
                 const erc20USDT: t.MockERC20Instance = await MockERC20.at(addressUSDT);
                 const cTokenUSDT: t.MockCTokenInstance = await MockCToken.at(addressCTokenForUSDT);
@@ -218,7 +224,9 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 // 1. Get WBTC contract instance
                 const tokens = testEngine.erc20Tokens;
                 const addressWBTC = tokens[8];
-                const addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
+                const addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(
+                    addressWBTC
+                );
 
                 const erc20WBTC: t.MockERC20Instance = await MockERC20.at(addressWBTC);
                 const cTokenWBTC: t.MockCTokenInstance = await MockCToken.at(addressCTokenForWBTC);
