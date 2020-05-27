@@ -24,9 +24,10 @@ require("@openzeppelin/test-helpers/configure")({
     environment: "truffle"
 });
 
-module.exports = async function(deployer, network) {
-    const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -79,6 +80,8 @@ const getCTokens = async (erc20Tokens) => {
     const network = process.env.NETWORK;
     var cTokens = new Array();
 
+    let isSupportedByCompoundArray = tokenData.tokens.map((token) => token.isSupportedByCompound);
+
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
@@ -88,8 +91,12 @@ const getCTokens = async (erc20Tokens) => {
                 addr = token.mainnet.cTokenAddress;
             } else {
                 // network = development || coverage
+                let erc20Address = erc20Tokens[index];
+                if (!isSupportedByCompoundArray[index]) {
+                    erc20Address = ZERO_ADDRESS;
+                }
                 // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(erc20Tokens[index])).address;
+                addr = (await MockCToken.new(erc20Address)).address;
             }
             cTokens.push(addr);
         })

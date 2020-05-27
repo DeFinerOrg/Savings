@@ -5,7 +5,7 @@
             "symbol": "DAI",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
 
             "mainnet": {
@@ -26,7 +26,7 @@
             "symbol": "USDC",
             "decimals": 6,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "5309685000000000",
 
             "mainnet": {
@@ -47,7 +47,7 @@
             "symbol": "USDT",
             "decimals": 6,
             "isFeeEnabled": true,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "5164220000000000",
 
             "mainnet": {
@@ -68,19 +68,19 @@
             "symbol": "TUSD",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": false,
+            "isSupportedByCompound": false,
             "latestAnswer": "5172765000000000",
 
             "mainnet": {
                 "tokenAddress": "0x0000000000085d4780B73119b644AE5ecd22b376",
                 "aggregatorAddress": "0x73ead35fd6A572EF763B13Be65a9db96f7643577",
-                "cTokenAddress": ""
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x523AC85618DF56E940534443125eF16DAf785620",
-                "cTokenAddress": ""
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
 
@@ -89,19 +89,19 @@
             "symbol": "MKR",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": false,
+            "isSupportedByCompound": false,
             "latestAnswer": "1716434500000000000",
 
             "mainnet": {
                 "tokenAddress": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
                 "aggregatorAddress": "0xDa3d675d50fF6C555973C4f0424964e1F6A4e7D3",
-                "cTokenAddress": ""
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x811B1f727F8F4aE899774B568d2e72916D91F392",
-                "cTokenAddress": ""
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
 
@@ -110,7 +110,7 @@
             "symbol": "BAT",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "918555000000000",
 
             "mainnet": {
@@ -131,7 +131,7 @@
             "symbol": "ZRX",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "953760000000000",
 
             "mainnet": {
@@ -152,7 +152,7 @@
             "symbol": "REP",
             "decimals": 18,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "52943555000000000",
 
             "mainnet": {
@@ -173,7 +173,7 @@
             "symbol": "WBTC",
             "decimals": 8,
             "isFeeEnabled": false,
-            "supportedByCompound": true,
+            "isSupportedByCompound": true,
             "latestAnswer": "41623010370000000000",
 
             "mainnet": {
