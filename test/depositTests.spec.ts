@@ -20,6 +20,12 @@ contract("SavingAccount.depositToken", async (accounts) => {
     const user2 = accounts[2];
     const dummy = accounts[9];
 
+    let tokens: any;
+    let addressDAI: any;
+    let addressUSDC: any;
+    let erc20DAI: t.MockERC20Instance;
+    let erc20USDC: t.MockERC20Instance;
+
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
@@ -27,14 +33,18 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        // 1. initialization.
+        tokens = await testEngine.erc20Tokens;
+        addressDAI = tokens[0];
+        addressUSDC = tokens[1];
+        erc20DAI = await MockERC20.at(addressDAI);
+        erc20USDC = await MockERC20.at(addressUSDC);
     });
 
     context("depositToken()", async () => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
                 const numOfToken = new BN(1000);
-
-                //Try depositting unsupported Token to SavingContract
                 await expectRevert(
                     savingAccount.depositToken(dummy, numOfToken),
                     "Unsupported token"
@@ -42,10 +52,6 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when amount is zero", async () => {
-                const tokens = testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
-
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const depositTokens = new BN(0);
 
                 await expectRevert(
@@ -58,11 +64,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
                 // 1. Get DAI contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
                 const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
@@ -98,11 +100,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
             it("when 1000 whole supported tokens are deposited", async () => {
                 // 1. Get DAI contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressDAI = tokens[0];
                 const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
 
                 // 2. Approve 1000 tokens
@@ -138,11 +136,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
             it("when 1000 whole USDC tokens are deposited", async () => {
                 // 1. Get USDC contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressUSDC = tokens[1];
                 const addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
-
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
                 const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForUSDC);
 
                 // 2. Approve 1000 tokens
