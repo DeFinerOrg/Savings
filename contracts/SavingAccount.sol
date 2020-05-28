@@ -312,12 +312,17 @@ contract SavingAccount {
             "The account amount must be greater than zero."
         );
 
+        int divisor = INT_UNIT;
+        if(targetTokenAddress != ETH_ADDR) {
+            divisor = int(10**uint256(IERC20Extended(targetTokenAddress).decimals()));
+        }
+
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
         //清算者需要付的钱 (Liquidators need to pay)
-        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress));
+        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress)).div(divisor);
 
         if(paymentOfLiquidationAmount > uint(msgTotalCollateral.sub(msgTotalBorrow))) {
             paymentOfLiquidationAmount = uint(msgTotalCollateral.sub(msgTotalBorrow));
