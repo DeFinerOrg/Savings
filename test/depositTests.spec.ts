@@ -23,12 +23,16 @@ contract("SavingAccount.depositToken", async (accounts) => {
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
+    let addressTUSD: any;
+    let addressMKR: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
+    let erc20TUSD: t.MockERC20Instance;
+    let erc20MKR: t.MockERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -41,8 +45,12 @@ contract("SavingAccount.depositToken", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
+        addressTUSD = tokens[3];
+        addressMKR = tokens[4];
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
+        erc20TUSD = await MockERC20.at(addressTUSD);
+        erc20MKR = await MockERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
@@ -136,12 +144,6 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when TUSD address is passed", async () => {
-                // 1. Get TUSD contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressTUSD = tokens[3];
-
-                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
-
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
@@ -161,12 +163,6 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole TUSD tokens are deposited", async () => {
-                // 1. Get TUSD contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressTUSD = tokens[3];
-
-                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
-
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN("1000000000000000000000");
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
@@ -186,12 +182,6 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when MKR address is passed", async () => {
-                // 1. Get MKR contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressMKR = tokens[4];
-
-                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
-
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20MKR.approve(savingAccount.address, numOfToken);
@@ -211,12 +201,6 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole MKR tokens are deposited", async () => {
-                // 1. Get MKR contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressMKR = tokens[4];
-
-                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
-
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN("1000000000000000000000");
                 await erc20MKR.approve(savingAccount.address, numOfToken);
