@@ -285,29 +285,33 @@ contract SavingAccount {
         require(targetTokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
 
-        //是否满足清算下限 (Whether the lower limit of liquidation is met)
+        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
             totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
             "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
         );
 
-        //是否满足清算上限 (Whether the liquidation limit is met)
+        // The value of discounted collateral should be never less than the borrow amount.
+        // We assume this will never happen as the market will not drop extreamly fast so that
+        // the LTV changes from 85% to 95%, an 10% drop within one block.
         require(
             totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
             "Collateral is not sufficient to be liquidated."
         );
 
-        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
+        // Amount of colleteral to be liquidated so the LTV back to initial BORROW_LTV
         uint liquidationDebtValue = uint(
             totalBorrow.sub(totalCollateral.mul(BORROW_LTV)).div(LIQUIDATION_DISCOUNT_RATIO - BORROW_LTV)
         );
-        //清算者需要付的钱 (Liquidators need to pay)
+
+        // Amount of specific tokens that the liquidator is available
         uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
 
-        if(paymentOfLiquidationAmount < liquidationDebtValue) {
+        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(uint(LIQUIDATION_DISCOUNT_RATIO))) {
             liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(LIQUIDATION_DISCOUNT_RATIO));
         }
 
+        // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < getCoinLength(); i++) {
             address[] memory addr;
             uint[] memory u;

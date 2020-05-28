@@ -50,16 +50,6 @@ contract("SavingAccount", async (accounts) => {
         });
     });
 
-    context("borrow()", async () => {
-        context("should fail", async () => {
-            it("");
-        });
-
-        context("should succeed", async () => {
-            it("");
-        });
-    });
-
     context("repay()", async () => {
         context("should fail", async () => {
             it("");
