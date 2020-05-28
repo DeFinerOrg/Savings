@@ -46,6 +46,10 @@ module.exports = async function(deployer, network) {
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
 
+    console.log("ERC20", erc20Tokens);
+    console.log("chainLinkAggregators", chainLinkAggregators);
+    console.log("cTokens", cTokens);
+
     // Deploy TokenRegistry
     const tokenRegistry = await deployer.deploy(TokenRegistry, erc20Tokens);
     await tokenRegistry.addToken(ETH_ADDR);
@@ -59,6 +63,9 @@ module.exports = async function(deployer, network) {
         erc20Tokens,
         chainLinkAggregators
     );
+
+    console.log("chainLinkOracle address:", chainLinkOracle.address);
+    console.log("tokenRegistrycaddress:", tokenRegistry.address);
 
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(
@@ -84,7 +91,7 @@ const getCTokens = async (erc20Tokens) => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
                 // network = development || coverage
@@ -108,7 +115,7 @@ const getERC20Tokens = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.tokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
                 // network = development || coverage
@@ -129,7 +136,7 @@ const getChainLinkAggregators = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.aggregatorAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             } else {
                 // network = development || coverage

@@ -20,14 +20,20 @@ export class TestEngine {
     public cTokenRegistry!: t.CTokenRegistryInstance;
 
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
+        const network = process.env.NETWORK;
         var cTokens = new Array();
 
         await Promise.all(
-            erc20Tokens.map(async (tokenAddr) => {
+            erc20Tokens.map(async (tokenAddr: any) => {
                 let addr;
-                // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(tokenAddr)).address;
-
+                if (network == "development") {
+                    // Create MockCToken for given ERC20 token address
+                    addr = (await MockCToken.new(tokenAddr)).address;
+                } else if (network == "ropsten") {
+                    addr = tokenAddr.ropsten.cTokenAddress;
+                } else if (network == "mainnet" || network == "mainnet-fork") {
+                    addr = tokenAddr.mainnet.cTokenAddress;
+                }
                 cTokens.push(addr);
             })
         );
@@ -36,13 +42,22 @@ export class TestEngine {
     }
 
     public async deployMockERC20Tokens(): Promise<Array<string>> {
+        const network = process.env.NETWORK;
         const tokensToMint = new BN(10000);
         var erc20TokenAddresses = new Array();
         let addr;
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
-                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
-                    .address;
+                let addr;
+                if (network == "development") {
+                    addr = (
+                        await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint)
+                    ).address;
+                } else if (network == "ropsten") {
+                    addr = token.ropsten.tokenAddress;
+                } else if (network == "mainnet" || network == "mainnet-fork") {
+                    addr = token.mainnet.tokenAddress;
+                }
                 erc20TokenAddresses.push(addr);
             })
         );
@@ -52,12 +67,22 @@ export class TestEngine {
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         var aggregators = new Array();
-        let addr;
+        const network = process.env.NETWORK;
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
-                addr = (
-                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
-                ).address;
+                let addr;
+                if (network == "development") {
+                    addr = (
+                        await MockChainLinkAggregator.new(
+                            token.decimals,
+                            new BN(token.latestAnswer)
+                        )
+                    ).address;
+                } else if (network == "ropsten") {
+                    addr = token.ropsten.aggregatorAddress;
+                } else if (network == "mainnet" || network == "mainnet-fork") {
+                    addr = token.mainnet.aggregatorAddress;
+                }
                 aggregators.push(addr);
             })
         );
