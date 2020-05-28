@@ -481,16 +481,16 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
             });
 
-            it("when 10 whole ETH withdrawn", async () => {
+            it("when 1000 whole ETH withdrawn", async () => {
                 //Depositting ETH Token to SavingContract
-                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("20", "ether"), {
-                    value: web3.utils.toWei("20", "ether")
+                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("2000", "ether"), {
+                    value: web3.utils.toWei("2000", "ether")
                 });
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
 
                 //Withdrawing ETH
-                await savingAccount.withdrawToken(ETH_ADDRESS, web3.utils.toWei("10", "ether"));
+                await savingAccount.withdrawToken(ETH_ADDRESS, web3.utils.toWei("1000", "ether"));
 
                 /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
                 let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
@@ -501,7 +501,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
             //TODO:
             /* it("when full ETH withdrawn", async () => {
-                const depositAmount = new BN(100);
+                const depositAmount = new BN("1000000000000000000");
 
                 //Depositting ETH Token to SavingContract
                 await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {

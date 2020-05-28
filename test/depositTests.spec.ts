@@ -23,6 +23,10 @@ contract("SavingAccount.depositToken", async (accounts) => {
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
+    let addressCTokenForDAI: any;
+    let addressCTokenForUSDC: any;
+    let cTokenDAI: t.MockCTokenInstance;
+    let cTokenUSDC: t.MockCTokenInstance;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
 
@@ -39,6 +43,10 @@ contract("SavingAccount.depositToken", async (accounts) => {
         addressUSDC = tokens[1];
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
+        addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
+        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
+        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
 
     context("depositToken()", async () => {
@@ -63,19 +71,15 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported token address is passed", async () => {
-                // 1. Get DAI contract instance
-                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
-
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20DAI.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -84,34 +88,30 @@ contract("SavingAccount.depositToken", async (accounts) => {
                     balSavingAccount
                 );
 
-                // 4.2 SavingAccount variables are changed
+                // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
 
-                // 4.2 Some tokens are sent to Compound contract
+                // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
 
-                // 4.3 cToken must be minted for SavingAccount
+                // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
             it("when 1000 whole supported tokens are deposited", async () => {
-                // 1. Get DAI contract instance
-                const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForDAI);
-
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000000000000000000000");
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20DAI.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -120,34 +120,30 @@ contract("SavingAccount.depositToken", async (accounts) => {
                     balSavingAccount
                 );
 
-                // 4.2 SavingAccount variables are changed
+                // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
 
-                // 4.2 Some tokens are sent to Compound contract
+                // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
 
-                // 4.3 cToken must be minted for SavingAccount
+                // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
             it("when 1000 whole USDC tokens are deposited", async () => {
-                // 1. Get USDC contract instance
-                const addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
-                const cTokenDAI: t.MockCTokenInstance = await MockCToken.at(addressCTokenForUSDC);
-
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000000000");
                 await erc20USDC.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20USDC.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -156,17 +152,17 @@ contract("SavingAccount.depositToken", async (accounts) => {
                     balSavingAccount
                 );
 
-                // 4.2 SavingAccount variables are changed
+                // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
 
-                // 4.2 Some tokens are sent to Compound contract
+                // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
                 expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
 
-                // 4.3 cToken must be minted for SavingAccount
+                // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
@@ -186,11 +182,11 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(depositAmount);
             });
 
-            it("when 10 whole ETH are deposited", async () => {
+            it("when 1000 whole ETH are deposited", async () => {
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
 
-                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("10", "ether"), {
-                    value: web3.utils.toWei("10", "ether")
+                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("1000", "ether"), {
+                    value: web3.utils.toWei("1000", "ether")
                 });
 
                 const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
@@ -199,7 +195,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
                 // validate savingAccount ETH balance
                 expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
-                    web3.utils.toWei("10", "ether")
+                    web3.utils.toWei("1000", "ether")
                 );
             });
         });
