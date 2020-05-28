@@ -103,8 +103,9 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole supported tokens are deposited", async () => {
+                const ONE_DAI = new BN(10).pow(new BN(18));
                 // 1. Approve 1000 tokens
-                const numOfToken = new BN("1000000000000000000000");
+                const numOfToken = new BN("1000").mul(ONE_DAI);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
@@ -135,8 +136,9 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole USDC tokens are deposited", async () => {
+                const ONE_USDC = new BN(10).pow(new BN(6));
                 // 1. Approve 1000 tokens
-                const numOfToken = new BN("1000000000");
+                const numOfToken = new BN("1000").mul(ONE_USDC);
                 await erc20USDC.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
