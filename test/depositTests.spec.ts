@@ -112,6 +112,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
             it("when 1000 whole supported tokens are deposited", async () => {
                 const ONE_DAI = new BN(10).pow(new BN(18));
+
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000").mul(ONE_DAI);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
@@ -144,15 +145,15 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when TUSD address is passed", async () => {
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20TUSD.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -163,15 +164,17 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole TUSD tokens are deposited", async () => {
-                // 2. Approve 1000 tokens
-                const numOfToken = new BN("1000000000000000000000");
+                const ONE_TUSD = new BN(10).pow(new BN(18));
+
+                // 1. Approve 1000 tokens
+                const numOfToken = new BN("1000").mul(ONE_TUSD);
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20TUSD.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -182,15 +185,15 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when MKR address is passed", async () => {
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20MKR.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20MKR.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -201,15 +204,17 @@ contract("SavingAccount.depositToken", async (accounts) => {
             });
 
             it("when 1000 whole MKR tokens are deposited", async () => {
-                // 2. Approve 1000 tokens
-                const numOfToken = new BN("1000000000000000000000");
+                const ONE_MKR = new BN(10).pow(new BN(18));
+
+                // 1. Approve 1000 tokens
+                const numOfToken = new BN("1000").mul(ONE_MKR);
                 await erc20MKR.approve(savingAccount.address, numOfToken);
 
-                // 3. Deposit Token to SavingContract
+                // 2. Deposit Token to SavingContract
                 await savingAccount.depositToken(erc20MKR.address, numOfToken);
 
-                // 4. Validate that the tokens are deposited to SavingAccount
-                // 4.1 SavingAccount contract must received tokens
+                // 3. Validate that the tokens are deposited to SavingAccount
+                // 3.1 SavingAccount contract must received tokens
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -221,6 +226,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
 
             it("when 1000 whole USDC tokens are deposited", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
+
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000").mul(ONE_USDC);
                 await erc20USDC.approve(savingAccount.address, numOfToken);
