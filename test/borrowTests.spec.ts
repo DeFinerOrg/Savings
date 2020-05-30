@@ -394,6 +394,23 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     const user2ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user1})
                 //     expect(new BN(user2ETHBorrowValue[0]).add(new BN(user2ETHBorrowValue[1]))).to.be.bignumber.equal(new BN(-1).mul(limitAmount));
                 // });
+
+                it("When the amount is large, deposit DAI to borrow ETH.", async () => {
+                    const numOfDAI = new BN(10e19);
+                    const numOfETH = new BN(10e19);
+                    await erc20DAI.transfer(user1, numOfDAI);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                    await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
+                    await savingAccount.depositToken(ETH_ADDRESS, numOfETH, {
+                        from: user2,
+                        value: numOfETH
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user1})
+                    expect(new BN(user1ETHBorrowValue[0]).add(new BN(user1ETHBorrowValue[1]))).to.be.bignumber.equal(new BN(-10));
+                });
             });
         });
 
@@ -475,8 +492,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 it("When the amount is large, deposit DAI to borrow USDC.", async () => {
-                    const numOfDAI = new BN(10e19)
-                    const numOfUSDC = new BN(10e7)
+                    const numOfDAI = new BN(10e19);
+                    const numOfUSDC = new BN(10e7);
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20USDC.transfer(user2, numOfUSDC);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
