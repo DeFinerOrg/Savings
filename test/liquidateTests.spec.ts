@@ -108,27 +108,29 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2); //expect 601
 
-                let mockChainlinkAggregatorforDAIAddress: t.MockChainLinkAggregatorInstance =
+                let mockChainlinkAggregatorforDAIAddress: string =
                     testEngine.mockChainLinkAggregators[0];
-                let mockChainlinkAggregatorforUSDCAddress: t.MockChainLinkAggregatorInstance =
+                let mockChainlinkAggregatorforUSDCAddress: string =
                     testEngine.mockChainLinkAggregators[1];
-                //TODO:
-                //call latest ans function on same aggreagtor * 0.7 <-- put this in updateAnswer below
-                //console.log(mockChainlinkAggregatorforDAI);
 
                 const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
-                    mockChainlinkAggregatorforDAIAddress.address
+                    mockChainlinkAggregatorforDAIAddress
                 );
                 const mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
-                    mockChainlinkAggregatorforUSDCAddress.address
+                    mockChainlinkAggregatorforUSDCAddress
                 );
 
+                //console.log("mockChainlinkAggregatorforDAI", mockChainlinkAggregatorforDAI);
+
                 let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                //let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
 
-                expect(BN(DAIprice)).to.be.bignumber.equal(BN(USDCprice));
+                let updatedPrice = BN(DAIprice).mul(new BN(0.7));
 
-                //await savingAccount.liquidate(user2, addressDAI);
+                //console.log("updatedPrice", updatedPrice);
+
+                await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+                await savingAccount.liquidate(user2, addressDAI);
             });
 
             //it("When user tries to liquidate partially");
