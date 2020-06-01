@@ -25,6 +25,7 @@ require("@openzeppelin/test-helpers/configure")({
 
 const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
     // Deploy Libs
@@ -45,6 +46,10 @@ module.exports = async function(deployer, network) {
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
+
+    console.log("ERC20", erc20Tokens);
+    console.log("chainLinkAggregators", chainLinkAggregators);
+    console.log("cTokens", cTokens);
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
@@ -107,17 +112,23 @@ const getCTokens = async (erc20Tokens) => {
     const network = process.env.NETWORK;
     var cTokens = new Array();
 
+    let isSupportedByCompoundArray = tokenData.tokens.map((token) => token.isSupportedByCompound);
+
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
                 // network = development || coverage
+                let erc20Address = erc20Tokens[index];
+                if (!isSupportedByCompoundArray[index]) {
+                    erc20Address = ZERO_ADDRESS;
+                }
                 // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(erc20Tokens[index])).address;
+                addr = (await MockCToken.new(erc20Address)).address;
             }
             cTokens.push(addr);
         })
@@ -136,7 +147,7 @@ const getERC20Tokens = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.tokenAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
                 // network = development || coverage
@@ -157,7 +168,7 @@ const getChainLinkAggregators = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.aggregatorAddress;
-            } else if (network == "mainnet" || network == "fork") {
+            } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             } else {
                 // network = development || coverage

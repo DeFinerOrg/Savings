@@ -52,6 +52,12 @@ module.exports = {
             host: "127.0.0.1",
             port: 8546,
             network_id: "*"
+        },
+
+        mainnet: {
+            host: "127.0.0.1",
+            port: 8546,
+            network_id: "*"
         }
 
         // rinkeby: {

@@ -38,9 +38,11 @@ contract TokenInfoRegistry is Ownable {
 
         //TODO
         // Initial LTV to maintain when borrow this token
-        uint256 initLTV;
+        uint256 initLTV; // by default 60%
         // Maximum LTV for Liquidation threshold for this token
-        uint256 maxLTV;
+        uint256 maxLTV; // by default 85%
+
+        uint256 liquidationDiscount; // default 5%
     }
 
     event TokenAdded(address indexed token);
