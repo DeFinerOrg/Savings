@@ -71,6 +71,9 @@ contract("Integration Tests", async (accounts) => {
         erc20USDT = await MockERC20.at(addressUSDT);
         erc20TUSD = await MockERC20.at(addressTUSD);
         erc20MKR = await MockERC20.at(addressMKR);
+        erc20BAT = await MockERC20.at(addressBAT);
+        erc20ZRX = await MockERC20.at(addressZRX);
+        erc20REP = await MockERC20.at(addressREP);
         erc20WBTC = await MockERC20.at(addressWBTC);
         addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
@@ -84,7 +87,47 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Withdraw", async () => {
         it("should deposit all tokens and withdraw all tokens", async () => {
-            console.log("tt", tokens);
+            const numOfToken = new BN(1000);
+
+            //Approve 1000 tokens of each
+            await erc20DAI.approve(savingAccount.address, numOfToken);
+            await erc20USDC.approve(savingAccount.address, numOfToken);
+            await erc20USDT.approve(savingAccount.address, numOfToken);
+            await erc20TUSD.approve(savingAccount.address, numOfToken);
+            await erc20MKR.approve(savingAccount.address, numOfToken);
+            await erc20BAT.approve(savingAccount.address, numOfToken);
+            await erc20ZRX.approve(savingAccount.address, numOfToken);
+            await erc20DAI.approve(savingAccount.address, numOfToken);
+            await erc20REP.approve(savingAccount.address, numOfToken);
+            await erc20WBTC.approve(savingAccount.address, numOfToken);
+
+            let tempContractAddress: any;
+            let tempContractAddressforWithdraw: any;
+            let erc20contr: t.MockERC20Instance;
+
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                await savingAccount.depositToken(erc20contr.address, numOfToken);
+
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            for (let j = 0; j < 9; j++) {
+                tempContractAddress = tokens[j];
+                erc20contr = await MockERC20.at(tempContractAddress);
+                await savingAccount.withdrawAllToken(erc20contr.address);
+
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+            }
         });
 
         it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)");
