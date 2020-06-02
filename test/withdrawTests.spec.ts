@@ -64,10 +64,10 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
         erc20WBTC = await MockERC20.at(addressWBTC);
         erc20TUSD = await MockERC20.at(addressTUSD);
         erc20MKR = await MockERC20.at(addressMKR);
-        addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
-        addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
@@ -698,16 +698,6 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 await expectRevert(
                     savingAccount.withdrawToken(dummy, withdrawTokens),
                     "Unsupported token"
-                );
-            });
-
-            it("when tokenAddress is zero", async () => {
-                const withdrawTokens = new BN(20);
-
-                //Try depositting unsupported Token to SavingContract
-                await expectRevert(
-                    savingAccount.withdrawToken(addressZero, withdrawTokens),
-                    "Token address is zero"
                 );
             });
 

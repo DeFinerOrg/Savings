@@ -104,8 +104,7 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    const cToken = "";
-    await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, cToken, DEAD_ADDR);
+    await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, ZERO_ADDRESS, DEAD_ADDR);
 };
 
 const getCTokens = async (erc20Tokens) => {

@@ -44,6 +44,13 @@ contract SavingAccount {
         _;
     }
 
+    modifier onlySupported(address _token) {
+        if(!_isETH(_token)) {
+            require(tokenRegistry.isTokenExist(_token), "Unsupported token");
+        }
+        _;
+    }
+
     constructor(
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
@@ -227,8 +234,7 @@ contract SavingAccount {
         baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
     }
 
-    function borrow(address tokenAddress, uint256 amount) public {
-        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+    function borrow(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
         require(amount != 0, "Amount is zero");
         int divisor = INT_UNIT;
         if(tokenAddress != ETH_ADDR) {
@@ -241,8 +247,7 @@ contract SavingAccount {
         send(msg.sender, amount, tokenAddress);
     }
 
-    function repay(address tokenAddress, uint256 amount) public payable {
-        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+    function repay(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
         require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
@@ -253,8 +258,7 @@ contract SavingAccount {
     /**
      * Deposit the amount of tokenAddress to the saving pool.
      */
-    function depositToken(address tokenAddress, uint256 amount) public payable {
-        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+    function depositToken(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
         require(amount != 0, "Amount is zero");
         receive(msg.sender, amount, tokenAddress);
         baseVariable.depositToken(tokenAddress, amount);
@@ -264,16 +268,14 @@ contract SavingAccount {
      * Withdraw tokens from saving pool. If the interest is not empty, the interest
      * will be deducted first.
      */
-    function withdrawToken(address tokenAddress, uint256 amount) public {
-        require(tokenAddress != address(0), "Token address is zero");
-        require(tokenRegistry.isTokenExist(tokenAddress), "Unsupported token");
+    function withdrawToken(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
         require(amount != 0, "Amount is zero");
         //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
         uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
         send(msg.sender, _amount, tokenAddress);
     }
 
-    function withdrawAllToken(address tokenAddress) public {
+    function withdrawAllToken(address tokenAddress) public onlySupported(tokenAddress) {
         uint amount = baseVariable.withdrawAllToken(tokenAddress);
         send(msg.sender, amount, tokenAddress);
     }

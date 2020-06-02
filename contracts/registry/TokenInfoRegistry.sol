@@ -14,7 +14,7 @@ contract TokenInfoRegistry is Ownable {
     /**
      * @dev TokenInfo struct stores Token Information, this includes:
      *      ERC20 Token address, Compound Token address, ChainLink Aggregator address etc.
-     * @notice This struct will consume 2 storage locations
+     * @notice This struct will consume 5 storage locations
      */
     struct TokenInfo {
         // ERC20 Token Info
@@ -37,17 +37,19 @@ contract TokenInfoRegistry is Ownable {
         address chainLinkAggregator;
 
         //TODO
-        // Initial LTV to maintain when borrow this token
-        uint256 initLTV; // by default 60%
-        // Maximum LTV for Liquidation threshold for this token
-        uint256 maxLTV; // by default 85%
-
-        uint256 liquidationDiscount; // default 5%
+        // Initial LTV to maintain when borrow this token, by default 60%
+        uint256 initLTV;
+        // Maximum LTV for Liquidation threshold for this token, by default 85%
+        uint256 maxLTV;
+        // Liquidation discount given to Liquidator, default 5%
+        uint256 liquidationDiscount;
     }
 
     event TokenAdded(address indexed token);
     event TokenRemoved(address indexed token);
     event TokenUpdated(address indexed token);
+
+    address internal ETH_ADDR = 0x000000000000000000000000000000000000000E;
 
     // SCALE to represent 100%
     uint256 public SCALE = 1e8;
