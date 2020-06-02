@@ -41,8 +41,10 @@ contract TokenInfoRegistry is Ownable {
 
     address internal ETH_ADDR = 0x000000000000000000000000000000000000000E;
 
-    // SCALE to represent 100%
-    uint256 public SCALE = 1e8;
+    // TODO SCALE to represent 100%
+    //uint256 public SCALE = 1e8;
+
+    uint256 public SCALE = 100;
 
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
@@ -96,7 +98,7 @@ contract TokenInfoRegistry is Ownable {
         // Default values
         storageTokenInfo.borrowLTV = 60; //6e7; // 60%
         storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
-        storageTokenInfo.liquidationDiscountRatio = 95;
+        storageTokenInfo.liquidationDiscountRatio = 95; // 95%
 
         tokens.push(_token);
         emit TokenAdded(_token);
@@ -228,6 +230,11 @@ contract TokenInfoRegistry is Ownable {
         emit TokenRemoved(_token);
     }
 
+
+    // =====================
+    //      GETTERS
+    // =====================
+
     /**
      * @dev Is token address is registered
      * @param _token token address
@@ -243,12 +250,6 @@ contract TokenInfoRegistry is Ownable {
 
     /**
      */
-    function getCToken(address _token) external view returns (address cToken) {
-        cToken = tokenInfo[_token].cToken;
-    }
-
-    /**
-     */
     function getCTokens() external view returns (address[] memory cTokens) {
         uint256 len = tokens.length;
         cTokens = new address[](len);
@@ -257,11 +258,27 @@ contract TokenInfoRegistry is Ownable {
         }
     }
 
+    function getTokenDecimals(address _token) external view returns (uint8) {
+        return tokenInfo[_token].decimals;
+    }
+
+    function isTransferFeeEnabled(address _token) external view returns (bool) {
+        return tokenInfo[_token].isTransferFeeEnabled;
+    }
+
+    function isSupportedOnCompound(address _token) external view returns (bool) {
+        return tokenInfo[_token].isSupportedOnCompound;
+    }
+
+    /**
+     */
+    function getCToken(address _token) external view returns (address) {
+        return tokenInfo[_token].cToken;
+    }
+
     function getChainLinkAggregator(address _token) external view returns (address) {
         return tokenInfo[_token].chainLinkAggregator;
     }
-
-    // GETTERS
 
     function getBorrowLTV(address _token) external view returns (int256) {
         // TODO Use uint256
