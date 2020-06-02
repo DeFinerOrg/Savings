@@ -15,11 +15,6 @@ contract("Integration Tests", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
 
-    const owner = accounts[0];
-    const user1 = accounts[1];
-    const user2 = accounts[2];
-    const dummy = accounts[9];
-
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
@@ -85,32 +80,24 @@ contract("Integration Tests", async (accounts) => {
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
     });
 
-    context("Deposit and Withdraw", async () => {
+    context("Deposit and Withdraw", async (accounts) => {
         it("should deposit all tokens and withdraw all tokens", async () => {
             const numOfToken = new BN(1000);
 
-            //Approve 1000 tokens of each
-            await erc20DAI.approve(savingAccount.address, numOfToken);
-            await erc20USDC.approve(savingAccount.address, numOfToken);
-            await erc20USDT.approve(savingAccount.address, numOfToken);
-            await erc20TUSD.approve(savingAccount.address, numOfToken);
-            await erc20MKR.approve(savingAccount.address, numOfToken);
-            await erc20BAT.approve(savingAccount.address, numOfToken);
-            await erc20ZRX.approve(savingAccount.address, numOfToken);
-            await erc20DAI.approve(savingAccount.address, numOfToken);
-            await erc20REP.approve(savingAccount.address, numOfToken);
-            await erc20WBTC.approve(savingAccount.address, numOfToken);
-
             let tempContractAddress: any;
-            let tempContractAddressforWithdraw: any;
             let erc20contr: t.MockERC20Instance;
 
+            for (let userI = 0; userI <= 3; userI++) {}
+
+            //Deposit 1000 tokens of each Address
             for (let i = 0; i < 9; i++) {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
+                await erc20contr.approve(savingAccount.address, numOfToken);
                 await savingAccount.depositToken(erc20contr.address, numOfToken);
 
+                //Verify if deposit was successful
                 const expectedTokensAtSavingAccountContract = numOfToken
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -120,11 +107,13 @@ contract("Integration Tests", async (accounts) => {
                 );
             }
 
+            //Withdraw 1000 tokens of each Address
             for (let j = 0; j < 9; j++) {
                 tempContractAddress = tokens[j];
                 erc20contr = await MockERC20.at(tempContractAddress);
                 await savingAccount.withdrawAllToken(erc20contr.address);
 
+                //Verify if withdrawAll was successful
                 const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                 expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
             }
