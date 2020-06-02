@@ -45,7 +45,6 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     context("borrow()", async () => {
         context("with Token", async () => {
-
             context("should fail", async () => {
                 it("Deposit DAI then borrow DAI", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
@@ -135,7 +134,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Account not active, please deposit first. -- Reason given: Account not active, please deposit first.."
                     );
                 });
 
@@ -190,7 +189,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(user2Balance).to.be.bignumber.equal(limitAmount);
                 });
             });
-
         });
 
         context("with ETH", async () => {
@@ -362,9 +360,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
                     // 3. Verify the loan amount.
-                    const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                        from: user1
-                    })
+                    const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        {
+                            from: user1
+                        }
+                    );
                     expect(
                         new BN(user1ETHBorrowValue[0]).add(new BN(user1ETHBorrowValue[1]))
                     ).to.be.bignumber.equal(new BN(-1));
