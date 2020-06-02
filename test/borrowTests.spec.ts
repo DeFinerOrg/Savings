@@ -197,6 +197,22 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2Balance = await erc20DAI.balanceOf(user2);
                     expect(user2Balance).to.be.bignumber.equal(limitAmount);
                 });
+
+                it("when borrowing a whole DAI", async () => {
+                    const numOfDAI = new BN(10e19);
+                    const numOfUSDC = new BN(10e7);
+                    await erc20DAI.transfer(user1, numOfDAI);
+                    await erc20USDC.transfer(user2, numOfUSDC);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                    await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
+                    await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(addressDAI, numOfDAI.div(10), { from: user2 });
+                    // 3. Verify the loan amount.
+                    const user2Balance = await erc20DAI.balanceOf(user2);
+                    expect(user2Balance).to.be.bignumber.equal(numOfDAI.div(10));
+                });
             });
 
         });
