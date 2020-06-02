@@ -16,6 +16,8 @@ contract("Integration Tests", async (accounts) => {
         it("should deposit all and withdraw only token with less than 18 decimals");
 
         it("should deposit 1million of each token, wait for a week, withdraw all");
+
+        it("should deposit and withdraw with interest");
     });
 
     context("Deposit and Borrow", async () => {
