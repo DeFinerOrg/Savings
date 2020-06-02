@@ -17,32 +17,22 @@ contract TokenInfoRegistry is Ownable {
      * @notice This struct will consume 5 storage locations
      */
     struct TokenInfo {
-        // ERC20 Token Info
-        // ===================
         // ERC20 Token decimal
         uint8 decimals;
-        // Is ERC20 token charge transfer fee? For example USDT
+        // Is ERC20 token charge transfer fee?
         bool isTransferFeeEnabled;
-
-        // Compound Token
-        // ================
         // Is Token supported on Compound
         bool isSupportedOnCompound;
         // cToken address on Compound
         address cToken;
-
-        // ChainLinkOracle
-        // ================
-        // Chain Link Oracle's Aggregator address for TOKEN/ETH pair name. Example "DAI/ETH"
+        // Chain Link Aggregator address for TOKEN/ETH pair
         address chainLinkAggregator;
-
-        //TODO
-        // Initial LTV to maintain when borrow this token, by default 60%
-        uint256 initLTV;
-        // Maximum LTV for Liquidation threshold for this token, by default 85%
-        uint256 maxLTV;
-        // Liquidation discount given to Liquidator, default 5%
-        uint256 liquidationDiscount;
+        // Borrow LTV, by default 60%
+        uint256 borrowLTV;
+        // Liquidation threshold, by default 85%
+        uint256 liquidationThreshold;
+        // Liquidation discount ratio, by default 95%
+        uint256 liquidationDiscountRatio;
     }
 
     event TokenAdded(address indexed token);
@@ -89,7 +79,6 @@ contract TokenInfoRegistry is Ownable {
         bool _isSupportedOnCompound,
         address _cToken,
         address _chainLinkAggregator
-
     )
         public
         onlyOwner
@@ -104,34 +93,57 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.isSupportedOnCompound = _isSupportedOnCompound;
         storageTokenInfo.cToken = _cToken;
         storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
-        // Default Init LVT and Max LTV
-        storageTokenInfo.initLTV = 6e7; // 60%
-        storageTokenInfo.maxLTV = 85e6; // 85%
+        // Default values
+        storageTokenInfo.borrowLTV = 60; //6e7; // 60%
+        storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
+        storageTokenInfo.liquidationDiscountRatio = 95;
 
         tokens.push(_token);
         emit TokenAdded(_token);
     }
 
-    /**
-     * @dev Initialize LTV (Loan To Value) ratio
-     */
-    function updateLTV(
+    function updateBorrowLTV(
         address _token,
-        uint256 _initLTV,
-        uint256 _maxLTV
+        uint256 _borrowLTV
     )
         external
         onlyOwner
         whenTokenExists(_token)
     {
-        require(_initLTV != 0, "Init LTV is zero");
-        require(_initLTV < SCALE, "Init LTV must be less than Scale");
-        require(_maxLTV != 0, "Max LTV is zero");
-        require(_maxLTV < SCALE, "Max LTV must be less than Scale");
-        require(_maxLTV > _initLTV, "Max LTV must be greater then Init LTV");
+        require(_borrowLTV != 0, "Borrow LTV is zero");
+        require(_borrowLTV < SCALE, "Borrow LTV must be less than Scale");
+        require(tokenInfo[_token].liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
 
-        tokenInfo[_token].initLTV = _initLTV;
-        tokenInfo[_token].maxLTV = _maxLTV;
+        tokenInfo[_token].borrowLTV = _borrowLTV;
+        emit TokenUpdated(_token);
+    }
+
+    function updateLiquidationThreshold(
+        address _token,
+        uint256 _liquidationThreshold
+    )
+        external
+        onlyOwner
+        whenTokenExists(_token)
+    {
+        require(_liquidationThreshold != 0, "Liquidation threshold is zero");
+        require(_liquidationThreshold < SCALE, "Liquidation threshold must be less than Scale");
+        require(_liquidationThreshold > tokenInfo[_token].borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
+
+        tokenInfo[_token].liquidationThreshold = _liquidationThreshold;
+        emit TokenUpdated(_token);
+    }
+
+
+    function updateLiquidationDiscountRatio(
+        address _token,
+        uint256 _liquidationDiscountRatio
+    )
+        external
+        onlyOwner
+        whenTokenExists(_token)
+    {
+        tokenInfo[_token].liquidationDiscountRatio = _liquidationDiscountRatio;
         emit TokenUpdated(_token);
     }
 
@@ -247,5 +259,22 @@ contract TokenInfoRegistry is Ownable {
 
     function getChainLinkAggregator(address _token) external view returns (address) {
         return tokenInfo[_token].chainLinkAggregator;
+    }
+
+    // GETTERS
+
+    function getBorrowLTV(address _token) external view returns (int256) {
+        // TODO Use uint256
+        return int256(tokenInfo[_token].borrowLTV);
+    }
+
+    function getLiquidationThreshold(address _token) external view returns (int256) {
+        // TODO Use uint256
+        return int256(tokenInfo[_token].liquidationThreshold);
+    }
+
+    function getLiquidationDiscountRatio(address _token) external view returns (int256) {
+        // TODO Use uint256
+        return int256(tokenInfo[_token].liquidationDiscountRatio);
     }
 }
