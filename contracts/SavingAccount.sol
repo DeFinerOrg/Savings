@@ -18,8 +18,6 @@ contract SavingAccount {
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
-    mapping(address => bool) public liquidationSwitch;
-
     // TODO all should be in Config contract
     event LogNewProvableQuery(string description);
     event LogNewPriceTicker(string price);
@@ -290,21 +288,17 @@ contract SavingAccount {
         require(targetTokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
 
-        if(!liquidationSwitch[targetAccountAddr]) {
-            //是否满足清算下限 (Whether the lower limit of liquidation is met)
-            require(
-                totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
-                "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-            );
+        //是否满足清算下限 (Whether the lower limit of liquidation is met)
+        require(
+            totalBorrow.mul(100) > totalCollateral.mul(LIQUIDATE_THREADHOLD),
+            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+        );
 
-            //是否满足清算上限 (Whether the liquidation limit is met)
-            require(
-                totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
-                "Collateral is not sufficient to be liquidated."
-            );
-        } else {
-            liquidationSwitch[targetAccountAddr] = totalBorrow.mul(100) <= totalCollateral.mul(BORROW_LTV) ? false : true;
-        }
+        //是否满足清算上限 (Whether the liquidation limit is met)
+        require(
+            totalBorrow.mul(100) <= totalCollateral.mul(LIQUIDATION_DISCOUNT_RATIO),
+            "Collateral is not sufficient to be liquidated."
+        );
 
         require(
             msgTotalBorrow.mul(100)
@@ -351,11 +345,9 @@ contract SavingAccount {
                 addr, u
             );
             if(_liquidationDebtValue == 0){
-                liquidationSwitch[targetAccountAddr] = false;
                 break;
             } else {
                 liquidationDebtValue = _liquidationDebtValue;
-                liquidationSwitch[targetAccountAddr] = true;
             }
         }
     }
