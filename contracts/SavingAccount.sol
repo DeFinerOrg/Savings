@@ -285,9 +285,11 @@ contract SavingAccount {
         int256 totalCollateral;
         int256 msgTotalBorrow;
         int256 msgTotalCollateral;
+
         int256 borrowLTV;
         int256 liquidationThreshold;
         int256 liquidationDiscountRatio;
+        uint8 decimals;
     }
 
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
@@ -296,6 +298,8 @@ contract SavingAccount {
         vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
         vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1);
         vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
+
+        vars.decimals = tokenRegistry.getTokenDecimals(targetTokenAddress);
         vars.borrowLTV = tokenRegistry.getBorrowLTV(targetTokenAddress);
         vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
         vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
@@ -331,7 +335,7 @@ contract SavingAccount {
 
         int divisor = INT_UNIT;
         if(targetTokenAddress != ETH_ADDR) {
-            divisor = int(10**uint256(IERC20Extended(targetTokenAddress).decimals()));
+            divisor = int(10**uint256(vars.decimals));
         }
 
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
