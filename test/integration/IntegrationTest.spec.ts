@@ -262,7 +262,6 @@ contract("Integration Tests", async (accounts) => {
         //openzeppelintesthelper increase blocktime by  1 week
         it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
             const numOfToken = new BN(10).pow(new BN(6));
-            console.log(numOfToken);
 
             let tempContractAddress: any;
             let erc20contr: t.MockERC20Instance;
@@ -297,7 +296,7 @@ contract("Integration Tests", async (accounts) => {
 
                 //Verify if withdrawAll was successful
                 const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
             }
         });
 
