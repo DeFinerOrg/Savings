@@ -94,33 +94,37 @@ contract("Integration Tests", async (accounts) => {
             let erc20contr: t.MockERC20Instance;
 
             // use Promise - map (from TestEngine)
-            for (let userDeposit = 0; userDeposit <= 3; userDeposit++) {
+            for (let u = 0; u < 3; u++) {
+                //userDeposit --> u
+                const userDepositIndex = u;
                 //Deposit 1000 tokens of each Address
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await MockERC20.at(tempContractAddress);
 
-                    await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                    await erc20contr.transfer(accounts[u], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken, {
-                        from: accounts[userDeposit]
+                        from: accounts[u]
                     });
                     //await erc20contr.approve(savingAccount.address, numOfToken);
                     await savingAccount.depositToken(erc20contr.address, numOfToken, {
-                        from: accounts[userDeposit]
+                        from: accounts[u]
                     });
 
+                    console.log("User", u);
+                    console.log("Token", tempContractAddress);
                     //Verify if deposit was successful
-                    /* const expectedTokensAtSavingAccountContract = numOfToken
+                    const expectedTokensAtSavingAccountContract = numOfToken
                         .mul(new BN(15))
                         .div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
-                    ); */
+                    );
                 }
             }
 
-            for (let userWithdraw = 0; userWithdraw <= 3; userWithdraw++) {
+            /* for (let userWithdraw = 0; userWithdraw < 3; userWithdraw++) {
                 //Withdraw 1000 tokens of each Address
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
@@ -132,7 +136,8 @@ contract("Integration Tests", async (accounts) => {
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
                 }
-            }
+            } */
+            return numOfToken;
         });
 
         it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
@@ -178,7 +183,7 @@ contract("Integration Tests", async (accounts) => {
 
         it("should deposit all and withdraw only token with less than 18 decimals");
 
-        it("should deposit 1million of each token, wait for a week, withdraw all");
+        it("should deposit 1million of each token, wait for a week, withdraw all"); //openzeppelintesthelper increase blocktime by  1 week
 
         it("should deposit and withdraw with interest");
     });
