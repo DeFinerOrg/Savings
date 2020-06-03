@@ -715,7 +715,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdrawToken(erc20DAI.address, withdrawTokens),
-                    "Account not active, please deposit first."
+                    "Insufficient balance."
                 );
             });
 

@@ -128,13 +128,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 it("when user tries to borrow token, but he has not deposited any token before", async () => {
-                    await erc20DAI.transfer(user1, numOfToken);
-                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                    await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                    // 2. Start borrowing.
+                    // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Account not active, please deposit first. -- Reason given: Account not active, please deposit first.."
+                        "Account not active, please deposit first"
                     );
                 });
 
@@ -148,7 +145,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(1001), { from: user2 }),
-                        "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
+                        "SafeERC20: low-level call failed"
                     );
                 });
             });

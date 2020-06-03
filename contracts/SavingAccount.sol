@@ -18,10 +18,6 @@ contract SavingAccount {
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
-    // TODO all should be in Config contract
-    event LogNewProvableQuery(string description);
-    event LogNewPriceTicker(string price);
-
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
@@ -69,39 +65,39 @@ contract SavingAccount {
         }
     }
 
-    function approveAll(address tokenAddress) public {
-        baseVariable.approveAll(tokenAddress);
+    function approveAll(address _token) public {
+        baseVariable.approveAll(_token);
     }
 
     // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address tokenAddress) public {
-        baseVariable.updateBorrowRate(tokenAddress);
-        baseVariable.updateDepositRate(tokenAddress);
+    function updateDefinerRate(address _token) public {
+        baseVariable.updateBorrowRate(_token);
+        baseVariable.updateDepositRate(_token);
     }
 
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
+    function getAccountTotalUsdValue(address _accountAddr) public view returns (int256 usdValue) {
         int256 totalUsdValue = 0;
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            int balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
+            address token = symbols.addressFromIndex(i);
+            int balance = baseVariable.tokenBalanceAdd(token, _accountAddr);
             if(balance != 0) {
                 totalUsdValue = totalUsdValue.add(
-                    getTotalUsdValue(tokenAddress, balance, symbols.priceFromIndex(i))
+                    getTotalUsdValue(token, balance, symbols.priceFromIndex(i))
                 );
             }
         }
         return totalUsdValue;
     }
 
-    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
-        if(tokenAddress == ETH_ADDR) {
-            return amount.mul(int(price)).div(INT_UNIT);
+    function getTotalUsdValue(address _token, int256 _amount, uint _price) public view returns(int) {
+        if(_isETH(_token)) {
+            return _amount.mul(int(_price)).div(INT_UNIT);
         } else {
-            return amount.mul(int(price)).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+            return _amount.mul(int(_price)).div(int(10**uint256(IERC20Extended(_token).decimals())));
         }
     }
 
@@ -143,7 +139,7 @@ contract SavingAccount {
 	/*
 	 * Get the state of the given token
 	 */
-    function getTokenState(address tokenAddress) public view returns (
+    function getTokenState(address _token) public view returns (
         int256 deposits,
         int256 loans,
         int256 collateral,
@@ -151,7 +147,7 @@ contract SavingAccount {
         uint256 borrowRatePerBlock
     )
     {
-        return baseVariable.getTokenState(tokenAddress);
+        return baseVariable.getTokenState(_token);
     }
 
 	/**
@@ -198,23 +194,23 @@ contract SavingAccount {
         return symbols.getCoinLength();
     }
 
-    function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
+    function tokenBalanceOfAndInterestOf(address _token) public view returns(
         int256 totalBalance,
         int256 totalInterest
     ) {
-        return baseVariable.tokenBalanceOfAndInterestOf(tokenAddress, msg.sender);
+        return baseVariable.tokenBalanceOfAndInterestOf(_token, msg.sender);
     }
 
-    function getCoinAddress(uint256 coinIndex) public view returns(address) {
-        return symbols.addressFromIndex(coinIndex);
+    function getCoinAddress(uint256 _coinIndex) public view returns(address) {
+        return symbols.addressFromIndex(_coinIndex);
     }
 
-    function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
-        return symbols.priceFromIndex(coinIndex);
+    function getCoinToUsdRate(uint256 _coinIndex) public view returns(uint256) {
+        return symbols.priceFromIndex(_coinIndex);
     }
 
-    function transfer(address activeAccount, address tokenAddress, uint amount) public {
-        baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
+    function transfer(address _activeAccount, address _token, uint _amount) public {
+        baseVariable.transfer(_activeAccount, _token, _amount, symbols);
     }
 
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
@@ -277,20 +273,20 @@ contract SavingAccount {
         uint8 decimals;
     }
 
-    function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
+    function liquidate(address targetAccountAddr, address _token) public payable {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
         vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
         vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1);
         vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
 
-        vars.decimals = tokenRegistry.getTokenDecimals(targetTokenAddress);
-        vars.borrowLTV = tokenRegistry.getBorrowLTV(targetTokenAddress);
-        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
-        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
+        vars.decimals = tokenRegistry.getTokenDecimals(_token);
+        vars.borrowLTV = tokenRegistry.getBorrowLTV(_token);
+        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
+        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
 
-        require(targetTokenAddress != address(0), "Token address is zero");
-        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
+        require(_token != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(_token), "Unsupported token");
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
@@ -314,12 +310,12 @@ contract SavingAccount {
         );
 
         require(
-            baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender) > 0,
+            baseVariable.tokenBalanceAdd(_token, msg.sender) > 0,
             "The account amount must be greater than zero."
         );
 
         int divisor = INT_UNIT;
-        if(targetTokenAddress != ETH_ADDR) {
+        if(_token != ETH_ADDR) {
             divisor = int(10**uint256(vars.decimals));
         }
 
@@ -328,7 +324,7 @@ contract SavingAccount {
             vars.totalBorrow.sub(vars.totalCollateral.mul(vars.borrowLTV)).div(vars.liquidationDiscountRatio - vars.borrowLTV)
         );
         //清算者需要付的钱 (Liquidators need to pay)
-        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress)).div(uint(divisor));
+        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(_token, msg.sender)).mul(symbols.priceFromAddress(_token)).div(uint(divisor));
 
         if(paymentOfLiquidationAmount > uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow))) {
             paymentOfLiquidationAmount = uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow));
@@ -343,9 +339,9 @@ contract SavingAccount {
             address[] memory addr;
             uint[] memory u;
             addr[0] = targetAccountAddr;
-            addr[1] = targetTokenAddress;
+            addr[1] = _token;
             addr[2] = symbols.addressFromIndex(i);
-            u[0] = symbols.priceFromAddress(targetTokenAddress);
+            u[0] = symbols.priceFromAddress(_token);
             u[1] = symbols.priceFromIndex(i);
             u[2] = liquidationDebtValue;
             (uint _liquidationDebtValue) = baseVariable.liquidate(
