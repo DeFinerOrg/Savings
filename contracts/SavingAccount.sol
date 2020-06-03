@@ -178,37 +178,21 @@ contract SavingAccount {
         return (addresses, totalBalance, totalInterest);
     }
 
-    function getActiveAccounts() public view returns(address[] memory) {
-        return baseVariable.getActiveAccounts();
-    }
-
-    function getLiquidatableAccounts() public view returns(address[] memory) {
-        address[] memory liquidatableAccounts;
-        uint returnIdx;
-        //TODO `activeAccounts` not getting removed from array.
-        //TODO its always increasing. Call to this function needing
-        //TODO more gas, however, it will not be charged in ETH.
-        //TODO What could be the impact?
-        for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
-            address targetAddress = baseVariable.getActiveAccounts()[i];
-            int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
-            int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
-            if (
-                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1).mul(100)
-                >
-                getAccountTotalUsdValue(targetAddress).mul(liquidationThreshold)
-                &&
-                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)
-                .mul(liquidationDiscountRatio)
-                <=
-                getAccountTotalUsdValue(targetAddress).mul(100)
-
-            ) {
-                liquidatableAccounts[returnIdx++] = (targetAddress);
-            }
+    function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
+        int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
+        int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
+        int256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
+        int256 totalUSDValue = getAccountTotalUsdValue(_borrower);
+        if (
+            totalBalance.mul(-1).mul(100) > totalUSDValue.mul(liquidationThreshold) &&
+            totalBalance.mul(-1).mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
+        ) {
+            return true;
         }
-        return liquidatableAccounts;
+
+        return false;
     }
+
 
     function getCoinLength() public view returns(uint256 length){
         return symbols.getCoinLength();

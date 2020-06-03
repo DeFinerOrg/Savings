@@ -22,12 +22,13 @@ library Base {
         mapping(address => int256) totalReserve;
         mapping(address => int256) totalCompound;
         mapping(address => address) cTokenAddress;
+        // Token => block-num => rate
         mapping(address => mapping(uint => uint)) depositRateRecord;
+        // Token => block-num => rate
         mapping(address => mapping(uint => uint)) borrowRateRecord;
         mapping(address => uint) depositRateLastModifiedBlockNumber;
         mapping(address => uint) borrowRateLastModifiedBlockNumber;
-        mapping(address => Account) accounts;
-        address[] activeAccounts;
+        mapping(address => Account) accounts; // Store per account info
         address payable deFinerCommunityFund;
         mapping(address => int) deFinerFund;
     }
@@ -39,7 +40,6 @@ library Base {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
         mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
-        bool active;
     }
 
     //初始化
@@ -169,6 +169,8 @@ library Base {
         address tokenAddress,
         uint borrowRateRecordStart
     ) internal view returns (uint256) {
+        // borrow index rate
+        // As per the index concept on Compound
         uint256 borrowRate = self.borrowRateRecord[tokenAddress][borrowRateRecordStart];
         if (borrowRate == 0) {
             return 0;
@@ -176,8 +178,10 @@ library Base {
             borrowRate == self.borrowRateRecord[tokenAddress][block.number] ||
             borrowRateRecordStart == block.number
         ) {
+            // when block is same
             return borrowRate;
         } else {
+            // rate change
             return self.borrowRateRecord[tokenAddress][block.number]
             .mul(SafeDecimalMath.getUNIT())
             .div(borrowRate);
@@ -437,11 +441,7 @@ library Base {
     function depositToken(BaseVariable storage self, address tokenAddress, uint256 amount) public {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[tokenAddress];
-        if (!account.active) {
-            account.active = true;
-            self.activeAccounts.push(msg.sender);
-        }
-
+        
         int256 currentBalance = tokenInfo.getCurrentTotalAmount();
 
         require(currentBalance >= 0, "Token balance must be zero or positive.");
@@ -468,7 +468,6 @@ library Base {
     }
 
     function borrow(BaseVariable storage self, address tokenAddress, uint256 amount) public {
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         require(
             tokenInfo.getCurrentTotalAmount() <= 0,
@@ -497,7 +496,6 @@ library Base {
     }
 
     function repay(BaseVariable storage self, address tokenAddress, address activeAccount, uint256 amount) public returns(int) {
-        require(self.accounts[activeAccount].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
         getTotalCompoundNow(self, tokenAddress);
         getTotalLoansNow(self, tokenAddress);
@@ -538,7 +536,6 @@ library Base {
 	 * will be deducted first.
 	 */
     function withdrawToken(BaseVariable storage self, address tokenAddress, uint256 amount) public returns(uint){
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         getTotalCompoundNow(self, tokenAddress);
         getTotalLoansNow(self, tokenAddress);
@@ -574,7 +571,6 @@ library Base {
     }
 
     function withdrawAllToken(BaseVariable storage self, address tokenAddress) public returns(uint){
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[tokenAddress];
         getTotalCompoundNow(self, tokenAddress);
         getTotalLoansNow(self, tokenAddress);
@@ -692,12 +688,10 @@ library Base {
 //        return totalUsdValue;
 //    }
 
-    function getActiveAccounts(BaseVariable storage self) public view returns (address[] memory) {
-        return self.activeAccounts;
-    }
 
     function borrowInterest(BaseVariable storage self, address tokenAddress) public view returns(int256) {
         int balance = self.totalLoans[tokenAddress];
+        // TODO COMMENT uint256(-balance) Change to positive
         uint _balance = balance >= 0 ? uint256(balance) : uint256(-balance);
         uint rate = getBlockIntervalBorrowRateRecord(self, tokenAddress, self.borrowRateLastModifiedBlockNumber[tokenAddress]);
         if(rate == 0 || _balance == 0) {
