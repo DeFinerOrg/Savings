@@ -41,7 +41,7 @@ make mainnet
 
 `yarn`
 
-`ganache-cli -p 8546 -l 10000000`
+`ganache-cli -p 8546 -l 10000000 -e 10000`
 
 `make all`
 
