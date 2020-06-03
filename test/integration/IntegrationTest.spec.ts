@@ -5,7 +5,7 @@ var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../test-helpers/tokenData.json");
 
-const { BN, expectRevert } = require("@openzeppelin/test-helpers");
+const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
@@ -259,7 +259,47 @@ contract("Integration Tests", async (accounts) => {
             }
         });
 
-        it("should deposit 1million of each token, wait for a week, withdraw all"); //openzeppelintesthelper increase blocktime by  1 week
+        //openzeppelintesthelper increase blocktime by  1 week
+        it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
+            const numOfToken = new BN(10).pow(new BN(6));
+            console.log(numOfToken);
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.depositToken(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            await time.increase(new BN(604800));
+
+            for (let j = 0; j < 9; j++) {
+                tempContractAddress = tokens[j];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                await savingAccount.withdrawAllToken(erc20contr.address);
+
+                //Verify if withdrawAll was successful
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+            }
+        });
 
         it("should deposit and withdraw with interest");
     });
