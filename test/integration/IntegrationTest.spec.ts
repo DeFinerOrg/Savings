@@ -93,6 +93,7 @@ contract("Integration Tests", async (accounts) => {
             let tempContractAddress: any;
             let erc20contr: t.MockERC20Instance;
 
+            // use Promise - map (from TestEngine)
             for (let userDeposit = 0; userDeposit <= 3; userDeposit++) {
                 //Deposit 1000 tokens of each Address
                 for (let i = 0; i < 9; i++) {
@@ -134,7 +135,44 @@ contract("Integration Tests", async (accounts) => {
             }
         });
 
-        it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)");
+        it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
+            const numOfToken = new BN(1000);
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.depositToken(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            //Withdraw TUSD & MKR
+            for (let i = 3; i <= 4; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                await savingAccount.withdrawAllToken(erc20contr.address);
+
+                //Verify if withdrawAll was successful
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+            }
+        });
 
         it("should deposit all and withdraw Compound supported tokens");
 
