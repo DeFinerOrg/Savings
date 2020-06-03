@@ -280,40 +280,77 @@ contract SavingAccount {
         send(msg.sender, amount, tokenAddress);
     }
 
+    struct LiquidationVars {
+        int256 totalBorrow;
+        int256 totalCollateral;
+        int256 msgTotalBorrow;
+        int256 msgTotalCollateral;
+
+        int256 borrowLTV;
+        int256 liquidationThreshold;
+        int256 liquidationDiscountRatio;
+        uint8 decimals;
+    }
+
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
-        int totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
-        int totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
-        int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
-        int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
-        int256 borrowLTV = tokenRegistry.getBorrowLTV(targetTokenAddress);
+        LiquidationVars memory vars;
+        vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
+        vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
+        vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1);
+        vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
+
+        vars.decimals = tokenRegistry.getTokenDecimals(targetTokenAddress);
+        vars.borrowLTV = tokenRegistry.getBorrowLTV(targetTokenAddress);
+        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
+        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
 
         require(targetTokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
-            totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 95% in order to be liquidated."
+            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(vars.liquidationThreshold),
+            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
         );
 
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that
         // the LTV changes from 85% to 95%, an 10% drop within one block.
         require(
-            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(vars.liquidationDiscountRatio),
             "Collateral is not sufficient to be liquidated."
         );
 
-        // Amount of colleteral to be liquidated so the LTV back to initial BORROW_LTV
-        uint liquidationDebtValue = uint(
-            totalBorrow.sub(totalCollateral.mul(borrowLTV)).div(liquidationDiscountRatio - borrowLTV)
+        require(
+            vars.msgTotalBorrow.mul(100)
+            <
+            vars.msgTotalCollateral.mul(vars.borrowLTV),
+            "No extra funds are used for liquidation."
         );
 
-        // Amount of specific tokens that the liquidator is available
-        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender));
+        require(
+            baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender) > 0,
+            "The account amount must be greater than zero."
+        );
 
-        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(uint(liquidationDiscountRatio))) {
-            liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(liquidationDiscountRatio));
+        int divisor = INT_UNIT;
+        if(targetTokenAddress != ETH_ADDR) {
+            divisor = int(10**uint256(vars.decimals));
+        }
+
+        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
+        uint liquidationDebtValue = uint(
+            vars.totalBorrow.sub(vars.totalCollateral.mul(vars.borrowLTV)).div(vars.liquidationDiscountRatio - vars.borrowLTV)
+        );
+        //清算者需要付的钱 (Liquidators need to pay)
+        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress)).div(uint(divisor));
+
+        if(paymentOfLiquidationAmount > uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow))) {
+            paymentOfLiquidationAmount = uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow));
+        }
+
+        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(uint(vars.liquidationDiscountRatio))) {
+            liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(vars.liquidationDiscountRatio));
         }
 
         // The collaterals are liquidate in the order of their market liquidity
