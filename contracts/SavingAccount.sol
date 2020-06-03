@@ -217,51 +217,52 @@ contract SavingAccount {
         baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
     }
 
-    function borrow(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        int256 borrowLTV = tokenRegistry.getBorrowLTV(tokenAddress);
+    function borrow(address _token, uint256 _amount) public onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        int256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
+        uint8 decimals = tokenRegistry.getTokenDecimals(_token);
         int divisor = INT_UNIT;
-        if(tokenAddress != ETH_ADDR) {
-            divisor = int(10**uint256(IERC20Extended(tokenAddress).decimals()));
+        if(_token != ETH_ADDR) {
+            divisor = int(10**uint256(decimals));
         }
         int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
+        .add(int256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
         require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
-        baseVariable.borrow(tokenAddress, amount);
-        send(msg.sender, amount, tokenAddress);
+        baseVariable.borrow(_token, _amount);
+        send(msg.sender, _amount, _token);
     }
 
-    function repay(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        receive(msg.sender, amount, tokenAddress);
-        uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
+    function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        receive(msg.sender, _amount, _token);
+        uint money = uint(baseVariable.repay(_token, msg.sender, _amount));
         if(money != 0) {
-            send(msg.sender, money, tokenAddress);
+            send(msg.sender, money, _token);
         }
     }
     /**
      * Deposit the amount of tokenAddress to the saving pool.
      */
-    function depositToken(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        receive(msg.sender, amount, tokenAddress);
-        baseVariable.depositToken(tokenAddress, amount);
+    function depositToken(address _token, uint256 _amount) public payable onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        receive(msg.sender, _amount, _token);
+        baseVariable.depositToken(_token, _amount);
     }
 
     /**
      * Withdraw tokens from saving pool. If the interest is not empty, the interest
      * will be deducted first.
      */
-    function withdrawToken(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
+    function withdrawToken(address _token, uint256 _amount) public onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
         //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
-        uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
-        send(msg.sender, _amount, tokenAddress);
+        uint amount = baseVariable.withdrawToken(_token, _amount);
+        send(msg.sender, amount, _token);
     }
 
-    function withdrawAllToken(address tokenAddress) public onlySupported(tokenAddress) {
-        uint amount = baseVariable.withdrawAllToken(tokenAddress);
-        send(msg.sender, amount, tokenAddress);
+    function withdrawAllToken(address _token) public onlySupported(_token) {
+        uint amount = baseVariable.withdrawAllToken(_token);
+        send(msg.sender, amount, _token);
     }
 
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
@@ -321,35 +322,35 @@ contract SavingAccount {
         }
     }
 
-    function recycleCommunityFund(address tokenAddress) public {
-        baseVariable.recycleCommunityFund(tokenAddress);
+    function recycleCommunityFund(address _token) public {
+        baseVariable.recycleCommunityFund(_token);
     }
 
-    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-        baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
+    function setDeFinerCommunityFund(address payable _deFinerCommunityFund) public {
+        baseVariable.setDeFinerCommunityFund(_deFinerCommunityFund);
     }
 
-    function getDeFinerCommunityFund(address tokenAddress) public view returns(int256) {
-        return baseVariable.getDeFinerCommunityFund(tokenAddress);
+    function getDeFinerCommunityFund(address _token) public view returns(int256) {
+        return baseVariable.getDeFinerCommunityFund(_token);
     }
 
-    function receive(address from, uint256 amount, address tokenAddress) private {
-        if (_isETH(tokenAddress)) {
-            require(msg.value == amount, "The amount is not sent from address.");
+    function receive(address _from, uint256 _amount, address _token) private {
+        if (_isETH(_token)) {
+            require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
             require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-            IERC20(tokenAddress).safeTransferFrom(from, address(this), amount);
+            IERC20(_token).safeTransferFrom(_from, address(this), _amount);
         }
     }
 
-    function send(address to, uint256 amount, address tokenAddress) private {
-        if (_isETH(tokenAddress)) {
+    function send(address _to, uint256 _amount, address _token) private {
+        if (_isETH(_token)) {
             //TODO need to check for re-entrancy security attack
             //TODO Can this ETH be received by a contract?
-            msg.sender.transfer(amount);
+            msg.sender.transfer(_amount);
         } else {
-            IERC20(tokenAddress).safeTransfer(to, amount);
+            IERC20(_token).safeTransfer(_to, _amount);
         }
     }
 
