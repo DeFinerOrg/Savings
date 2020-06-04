@@ -106,23 +106,41 @@ contract("Integration Tests", async (accounts) => {
                     await erc20contr.approve(savingAccount.address, numOfToken, {
                         from: accounts[u]
                     });
+
+                    const balSavingAccountBeforeDeposit = await erc20contr.balanceOf(
+                        savingAccount.address
+                    );
+                    console.log("user", u);
+                    console.log("token", tempContractAddress);
+                    console.log("balSavingAccountBeforeDeposit", BN(balSavingAccountBeforeDeposit));
+
                     //await erc20contr.approve(savingAccount.address, numOfToken);
                     await savingAccount.depositToken(erc20contr.address, numOfToken, {
                         from: accounts[u]
                     });
+
+                    const balSavingAccountAfterDeposit = await erc20contr.balanceOf(
+                        savingAccount.address
+                    );
+                    console.log("user", u);
+                    console.log("Token", tempContractAddress);
+                    console.log("balSavingAccountAfterDeposit", BN(balSavingAccountAfterDeposit));
 
                     //console.log("User", u);
                     //console.log("Token", tempContractAddress);
 
                     //Verify if deposit was successful
 
-                    /* const expectedTokensAtSavingAccountContract = numOfToken
+                    //array that stores no. of tokens
+
+                    const expectedTokensAtSavingAccountContract = numOfToken
+                        .mul(new BN(u + 1))
                         .mul(new BN(15))
                         .div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
-                    ); */
+                    );
                 }
             }
 
@@ -139,7 +157,6 @@ contract("Integration Tests", async (accounts) => {
                     //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
                 }
             } */
-            return numOfToken;
         });
 
         it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
