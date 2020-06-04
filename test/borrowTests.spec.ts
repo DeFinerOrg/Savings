@@ -341,7 +341,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     );
                 // });
 
-                it("when there is no liquidity for the asked token", async () => {
+                it("when there is no liquidity for the asked ETH", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
@@ -352,7 +352,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(1001), { from: user1 }),
-                        "Insufficient collateral."
+                        "revert"
                     );
                 });
             });
