@@ -5,7 +5,7 @@ var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../test-helpers/tokenData.json");
 
-const { BN, expectRevert } = require("@openzeppelin/test-helpers");
+const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
@@ -688,6 +688,24 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 //Withdrawing ETH
                 await savingAccount.withdrawAllToken(ETH_ADDRESS);
             }); */
+
+            it("when tokens are withdrawn with interest", async () => {
+                const depositAmount = new BN(1000);
+                await erc20DAI.approve(savingAccount.address, depositAmount);
+
+                // deposit tokens
+                await savingAccount.depositToken(erc20DAI.address, depositAmount);
+
+                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+
+                await time.increase(new BN("31536000"));
+
+                //Withdrawing DAI
+                await savingAccount.withdrawAllToken(erc20DAI.address);
+
+                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+                expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
+            });
         });
 
         context("should fail", async () => {
