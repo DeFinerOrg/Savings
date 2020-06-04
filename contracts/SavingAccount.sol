@@ -215,6 +215,7 @@ contract SavingAccount {
 
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
+        //baseVariable.
         int256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint8 decimals = tokenRegistry.getTokenDecimals(_token);
         int divisor = INT_UNIT;

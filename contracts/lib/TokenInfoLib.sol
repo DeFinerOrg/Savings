@@ -57,9 +57,13 @@ library TokenInfoLib {
         }
     }
 
+    // TODO Principal + interest
+    // `balance` should be called `principal`
     function addAmount(TokenInfo storage self, uint256 amount, uint rate, uint256 blockNumber) public returns(int256) {
+        // updated rate (new index rate), applying the rate from startBlock(checkpoint) to currBlock
         resetInterest(self, blockNumber, rate);
         int256 _amount = int256(amount);
+        // user owes money, then he tries to repays
         if (self.balance.add(self.interest) < 0) {
             if (self.interest.add(_amount) <= 0) {
                 self.interest = self.interest.add(_amount);
@@ -74,6 +78,7 @@ library TokenInfoLib {
                 self.interest = 0;
             }
         }
+        // TODO _amount will always is greater than 0, then why?
         if (_amount > 0) {
             require(self.balance.add(self.interest) >= 0, "To add amount, the total balance must be larger than 0.");
             self.balance = self.balance.add(_amount);
@@ -81,14 +86,18 @@ library TokenInfoLib {
         return self.balance;
     }
 
+    // 1. Calculate interest from startBlockNum(checkpoint) to CurrentBlockNum
+    // 2. Reset the startBlockNum of the user to the latest blockNum(new checkpoint)
     function resetInterest(TokenInfo storage self, uint256 blockNumber, uint rate) public {
         self.interest = viewInterest(self, rate);
         self.StartBlockNumber = blockNumber;
     }
 
+    // Calculating interest according to the new rate
     function viewInterest(TokenInfo storage self, uint rate) public view returns(int256) {
+        // owes money (on borrows) or add money(on deposits)
         int256 _sign = self.balance < 0 ? NEGATIVE : POSITIVE;
-        //TODO uint256(-amount) ???
+        // TODO uint256(-amount) ???
         uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
         //uint256 _interest = self.interest >= 0 ? uint256(self.interest) : uint256(-self.interest);
         if(rate == 0 || _balance == 0) {

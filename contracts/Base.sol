@@ -28,7 +28,8 @@ library Base {
         mapping(address => mapping(uint => uint)) borrowRateRecord;
         mapping(address => uint) depositRateLastModifiedBlockNumber;
         mapping(address => uint) borrowRateLastModifiedBlockNumber;
-        mapping(address => Account) accounts; // Store per account info
+        // Store per account info
+        mapping(address => Account) accounts;
         address payable deFinerCommunityFund;
         mapping(address => int) deFinerFund;
     }
@@ -61,6 +62,9 @@ library Base {
         int256 totalLoans = self.totalLoans[_token];
         int256 totalReserve = self.totalReserve[_token];
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve);
+        // totalAmount = U + C + R
+        // Total amount of tokens that DeFiner has
+        // TODO Are all of these variables are in same token decimals?
     }
 
     function getTotalCompoundNow(BaseVariable storage self, address _token) public {
@@ -453,13 +457,16 @@ library Base {
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
         uint rate = getBlockIntervalDepositRateRecord(self, _token, tokenInfo.getStartBlockNumber());
+        // Add principa + interest (on borrows/on deposits)
         tokenInfo.addAmount(_amount, rate, block.number);
+        // Total reserve of the token deposited to
+        // TODO Why we need to maintain reserve?
         self.totalReserve[_token] = self.totalReserve[_token].add(int(_amount));
         int totalAmount = getTotalDepositsNow(self, _token);
         if(
             self.totalReserve[_token].mul(SafeDecimalMath.getINT_UNIT()).div(totalAmount)
             >
-            20 * 10**16
+            20 * 10**16 // 10^18 = 100% , 0.2 * 10^18
             &&
             self.cTokenAddress[_token] != address(0)
         ) {
