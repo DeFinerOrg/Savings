@@ -52,6 +52,12 @@ module.exports = {
             host: "127.0.0.1",
             port: 8546,
             network_id: "*"
+        },
+
+        mainnet: {
+            host: "127.0.0.1",
+            port: 8546,
+            network_id: "*"
         }
 
         // rinkeby: {
@@ -67,6 +73,7 @@ module.exports = {
         // },
     },
 
+    plugins: ["solidity-coverage"],
     // Set default mocha options here, use special reporters etc.
     mocha: {
         reporter: "eth-gas-reporter"

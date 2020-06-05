@@ -7,11 +7,12 @@
     "compile": "truffle compile",
     "test": "yarn prepare && truffle test",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
-    "prepare": "yarn generate"
+    "prepare": "yarn generate",
+    "coverage": "truffle run coverage --file='test/*.ts'"
   },
   "repository": {
     "type": "git",
-    "url": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/saving-pool-contract"
+    "url": "https://github.com/DeFinerOrg/Savings.git"
   },
   "keywords": [
     "Saving",
@@ -28,6 +29,7 @@
     "eth-gas-reporter": "^0.2.17",
     "openzeppelin-solidity": "^2.4.0",
     "solc": "0.5.14",
+    "solidity-coverage": "^0.7.0-beta.3",
     "truffle": "^5.1.24",
     "truffle-typings": "^1.0.7",
     "ts-generator": "^0.0.8",
