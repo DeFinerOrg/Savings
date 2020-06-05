@@ -16,11 +16,14 @@ library TokenInfoLib {
     int256 constant POSITIVE = 1;
     int256 constant NEGATIVE = -1;
 
+    // returns the principal
+    // TODO: change the name from balance to principal
     function totalBalance(TokenInfo storage self) public view returns(int256) {
         return self.balance;
     }
 
     // returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
+    // TODO: change the name from amount to balance
     function totalAmount(TokenInfo storage self, uint rate) public view returns(int256) {
         return self.balance.add(viewInterest(self, rate));
     }
