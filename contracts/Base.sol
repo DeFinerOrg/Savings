@@ -311,12 +311,10 @@ library Base {
         if(tokenInfo.getCurrentTotalAmount() == 0) {
             return (0, 0);
         } else {
-            if(tokenInfo.getCurrentTotalAmount() > 0) {
-                if(
-                    tokenInfo.getStartBlockNumber() == block.number
-                ) {
-                    rate = self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()];
-                } else if(self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
+            if(tokenInfo.getStartBlockNumber() == block.number) {
+                rate = 0;
+            } else if (tokenInfo.getCurrentTotalAmount() > 0) {
+                if(self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
                     rate = getNowDepositRate(self, _token);
                 } else {
                     rate = getNowDepositRate(self, _token)
@@ -324,11 +322,7 @@ library Base {
                     .div(self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()]);
                 }
             } else {
-                if(
-                    tokenInfo.getStartBlockNumber() == block.number
-                ) {
-                    rate = self.borrowRateRecord[_token][tokenInfo.getStartBlockNumber()];
-                } else if(self.borrowRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
+                if(self.borrowRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
                     rate = getNowBorrowRate(self, _token);
                 } else {
                     rate = getNowBorrowRate(self, _token)
@@ -363,13 +357,10 @@ library Base {
             TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[tokenAddress];
             uint256 startBlockNum = tokenInfo.getStartBlockNumber();
             uint rate;
-            if(_isPositive && tokenInfo.getCurrentTotalAmount() >= 0) {
-                if(
-                    startBlockNum == block.number
-                ) {
-                    // TODO rate should be 0 here
-                    rate = self.depositRateRecord[tokenAddress][startBlockNum];
-                } else if(self.depositRateRecord[tokenAddress][startBlockNum] == 0) {
+            if(startBlockNum == block.number) {
+                rate = 0;
+            } else if(_isPositive && tokenInfo.getCurrentTotalAmount() >= 0) {
+                if(self.depositRateRecord[tokenAddress][startBlockNum] == 0) {
                     rate = getNowDepositRate(self, tokenAddress);
                 } else {
                     rate = getNowDepositRate(self, tokenAddress)
@@ -377,11 +368,7 @@ library Base {
                     .div(self.depositRateRecord[tokenAddress][startBlockNum]);
                 }
             } else if(!_isPositive && tokenInfo.getCurrentTotalAmount() < 0) {
-                if(
-                    startBlockNum == block.number
-                ) {
-                    rate = self.borrowRateRecord[tokenAddress][startBlockNum];
-                }else if(self.borrowRateRecord[tokenAddress][startBlockNum] == 0) {
+                if(self.borrowRateRecord[tokenAddress][startBlockNum] == 0) {
                     rate = getNowBorrowRate(self, tokenAddress);
                 } else {
                     rate = getNowBorrowRate(self, tokenAddress)
