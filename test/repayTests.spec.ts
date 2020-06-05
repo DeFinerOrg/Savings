@@ -350,7 +350,7 @@ contract("SavingAccount", async (accounts) => {
                     });
                     // 4. Verify the repay amount.
                     expect(new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)).mul(new BN(-1)));
-                    expect(new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))).to.be.bignumber.equal(new BN(0));
+                    expect(new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))).to.be.bignumber.equal(new BN(-14269406391));
                 });
             });
         });
