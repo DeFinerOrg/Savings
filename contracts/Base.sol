@@ -63,6 +63,9 @@ library Base {
         int256 totalReserve = self.totalReserve[_token];
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve);
         // totalAmount = U + C + R
+        // totalReserve = R
+        // totalCompound = C
+        // totalLoans = U
         // Total amount of tokens that DeFiner has
         // TODO Are all of these variables are in same token decimals?
     }
@@ -270,6 +273,8 @@ library Base {
         address cToken = self.cTokenAddress[_token];
         int256 totalReserve = self.totalReserve[_token];
         if (_isEth) {
+            // TODO Why we need to put gas here?
+            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
             ICETH(cToken).mint.value(uint(totalReserve.sub(_amount))).gas(250000)();
         } else {
             ICToken(cToken).mint(uint(totalReserve.sub(_amount)));
@@ -344,11 +349,13 @@ library Base {
         return totalBalance + interest;
     }
 
+    // Total = principal + interest
+    // TODO Sichao to explain the logic here
     function totalBalance(
         BaseVariable storage self,
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols,
-        bool _isPositive
+        bool _isPositive // true = deposits balance AND false = borrow balance
     ) public view returns (int256 balance) {
         //TODO Why need to pass symbols ?
         for(uint i = 0;i < _symbols.getCoinLength();i++) {
@@ -360,6 +367,7 @@ library Base {
                 if(
                     startBlockNum == block.number
                 ) {
+                    // TODO rate should be 0 here
                     rate = self.depositRateRecord[tokenAddress][startBlockNum];
                 } else if(self.depositRateRecord[tokenAddress][startBlockNum] == 0) {
                     rate = getNowDepositRate(self, tokenAddress);
@@ -472,6 +480,8 @@ library Base {
         ) {
             toCompound(self, _token, totalAmount, _token == ETH_ADDR);
         }
+        // When deposit:
+        // Change deposit Rate and borrow Rate
         self.depositRateLastModifiedBlockNumber[_token] = block.number;
         self.borrowRateLastModifiedBlockNumber[_token] = block.number;
     }
@@ -501,6 +511,8 @@ library Base {
         ) {
             fromCompound(self, _token, compoundAmount);
         }
+        // TODO When borrow:
+        // TODO Sichao + Wanggy need to have a look
         self.borrowRateLastModifiedBlockNumber[_token] = block.number;
     }
 
@@ -560,9 +572,9 @@ library Base {
             self.totalReserve[_token] = self.totalReserve[_token].sub(_money);
             self.deFinerFund[_token] = self.deFinerFund[_token].add(_money);
         }
-        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+        
         self.totalReserve[_token] = self.totalReserve[_token].sub(int(_amount));
-        self.depositRateLastModifiedBlockNumber[_token] = block.number;
+        
         int compoundAmount = self.totalCompound[self.cTokenAddress[_token]];
         int totalAmount = compoundAmount.add(self.totalLoans[_token]).add(self.totalReserve[_token]);
         if(
@@ -576,6 +588,8 @@ library Base {
         ) {
             fromCompound(self, _token, compoundAmount);
         }
+        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+        self.depositRateLastModifiedBlockNumber[_token] = block.number;
         return _amount;
     }
 
@@ -595,9 +609,7 @@ library Base {
             self.totalReserve[_token] = self.totalReserve[_token].sub(_money);
             self.deFinerFund[_token] = self.deFinerFund[_token].add(_money);
         }
-        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
         self.totalReserve[_token] = self.totalReserve[_token].sub(int(amount));
-        self.depositRateLastModifiedBlockNumber[_token] = block.number;
         int compoundAmount = self.totalCompound[self.cTokenAddress[_token]];
         int totalAmount = compoundAmount.add(self.totalLoans[_token]).add(self.totalReserve[_token]);
         if(
@@ -611,6 +623,8 @@ library Base {
         ) {
             fromCompound(self, _token, compoundAmount);
         }
+        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+        self.depositRateLastModifiedBlockNumber[_token] = block.number;
         return amount;
     }
 
