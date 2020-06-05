@@ -58,7 +58,6 @@ contract("SavingAccount", async (accounts) => {
 
     context("repay()", async () => {
         context("with Token", async () => {
-
             context("should fail", async () => {
                 beforeEach(async () => {
                     // 1.1 Set up collateral.
@@ -253,9 +252,12 @@ contract("SavingAccount", async (accounts) => {
                         value: new BN(5)
                     });
                     // 4. Verify the repay amount.
-                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                        from: user2
-                    });
+                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        {
+                            from: user2
+                        }
+                    );
                     expect(
                         new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
                     ).to.be.bignumber.equal(new BN(-5));
@@ -268,9 +270,12 @@ contract("SavingAccount", async (accounts) => {
                         value: new BN(20)
                     });
                     // 4. Verify the repay amount.
-                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                        from: user2
-                    });
+                    const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        {
+                            from: user2
+                        }
+                    );
                     expect(
                         new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
                     ).to.be.bignumber.equal(new BN(0));
@@ -292,10 +297,14 @@ contract("SavingAccount", async (accounts) => {
                     await savingAccount.depositToken(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, USDCNumOfToken, { from: user2 });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, DAINumOfToken.div(new BN(10)), { from: user2 });
+                    await savingAccount.borrow(addressDAI, DAINumOfToken.div(new BN(10)), {
+                        from: user2
+                    });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
                     // 3. Start repayment.
-                    await savingAccount.repay(addressDAI, DAINumOfToken.div(new BN(10)), { from: user2 });
+                    await savingAccount.repay(addressDAI, DAINumOfToken.div(new BN(10)), {
+                        from: user2
+                    });
                     // 4. Verify the repay amount.
                     const user2BalanceAfter = await erc20DAI.balanceOf(user2);
                     expect(user2BalanceBefore).to.be.bignumber.equal(DAINumOfToken.div(new BN(10)));
@@ -314,13 +323,19 @@ contract("SavingAccount", async (accounts) => {
                     await savingAccount.depositToken(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, USDCNumOfToken, { from: user2 });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(addressUSDC, USDCNumOfToken.div(new BN(10)), { from: user1 });
+                    await savingAccount.borrow(addressUSDC, USDCNumOfToken.div(new BN(10)), {
+                        from: user1
+                    });
                     const user1BalanceBefore = await erc20USDC.balanceOf(user1);
                     // 3. Start repayment.
-                    await savingAccount.repay(addressUSDC, USDCNumOfToken.div(new BN(10)), { from: user1 });
+                    await savingAccount.repay(addressUSDC, USDCNumOfToken.div(new BN(10)), {
+                        from: user1
+                    });
                     // 4. Verify the repay amount.
                     const user1BalanceAfter = await erc20USDC.balanceOf(user1);
-                    expect(user1BalanceBefore).to.be.bignumber.equal(USDCNumOfToken.div(new BN(10)));
+                    expect(user1BalanceBefore).to.be.bignumber.equal(
+                        USDCNumOfToken.div(new BN(10))
+                    );
                     expect(user1BalanceAfter).to.be.bignumber.equal(new BN(0));
                 });
 
@@ -336,26 +351,38 @@ contract("SavingAccount", async (accounts) => {
                         value: ETHNumOfToken
                     });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), { from: user1 });
-                    const user1ETHValueBefore = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
+                    await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1
                     });
+                    const user1ETHValueBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        {
+                            from: user1
+                        }
+                    );
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1,
                         value: ETHNumOfToken.div(new BN(10))
                     });
-                    const user1ETHValueAfter = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
-                        from: user1
-                    });
+                    const user1ETHValueAfter = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        {
+                            from: user1
+                        }
+                    );
                     // 4. Verify the repay amount.
-                    expect(new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)).mul(new BN(-1)));
-                    expect(new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))).to.be.bignumber.equal(new BN(-14269406391));
+                    expect(
+                        new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))
+                    ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)).mul(new BN(-1)));
+                    expect(
+                        new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))
+                    ).to.be.bignumber.equal(new BN(-14269406391));
                 });
             });
         });
 
-        context("Token without Compound (MKR, TUSD)", async() => {
+        context("Token without Compound (MKR, TUSD)", async () => {
             context("should fail", async () => {
                 it("when repaying MKR, amount is zero", async () => {
                     // 1.1 Set up collateral.
@@ -424,10 +451,14 @@ contract("SavingAccount", async (accounts) => {
                     await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.depositToken(addressMKR, numOfMKR, { from: user2 });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(addressMKR, numOfMKR.div(new BN(10)), { from: user1 });
+                    await savingAccount.borrow(addressMKR, numOfMKR.div(new BN(10)), {
+                        from: user1
+                    });
                     const user1BalanceBefore = await erc20MKR.balanceOf(user1);
                     // 3. Start repayment.
-                    await savingAccount.repay(addressMKR, numOfMKR.div(new BN(10)), { from: user1 });
+                    await savingAccount.repay(addressMKR, numOfMKR.div(new BN(10)), {
+                        from: user1
+                    });
                     const user1BalanceAfter = await erc20MKR.balanceOf(user1);
                     // 4. Verify the loan amount.
                     expect(user1BalanceBefore).to.be.bignumber.equal(numOfMKR.div(new BN(10)));
