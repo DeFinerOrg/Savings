@@ -321,7 +321,26 @@ contract("Integration Tests", async (accounts) => {
     });
 
     context("Deposit and Borrow", async () => {
-        it("should deposit $1 million value and borrow 0.6 million");
+        it("should deposit $1 million value and borrow 0.6 million", async () => {
+            const numOfToken = new BN(10).pow(new BN(6));
+            const borrowTokens = new BN(6).mul(new BN(10).pow(new BN(5)));
+
+            console.log("numOfT", numOfToken);
+            console.log("borrowTokens", borrowTokens);
+
+            await erc20DAI.transfer(user1, numOfToken);
+            await erc20USDT.transfer(user2, numOfToken);
+            await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+            await erc20USDT.approve(savingAccount.address, numOfToken, { from: user2 });
+            // 1. Deposit $1 million
+            await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+            await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+            // 2. Borrow $0.6 million
+            await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
+            // 3. Verify the amount borrowed
+            const user2Balance = await erc20DAI.balanceOf(user2);
+            expect(user2Balance).to.be.bignumber.equal(borrowTokens);
+        });
     });
 
     context("Deposit, Borrow, Repay", async () => {
