@@ -321,14 +321,14 @@ contract("Integration Tests", async (accounts) => {
     });
 
     context("Deposit and Borrow", async () => {
-        /* it("should deposit $1 million value and borrow 0.6 million", async () => {
-            const numOfToken = new BN("1000");
-            const borrowTokens = new BN("600");
+        it("should deposit $1 million value and borrow 0.6 million", async () => {
+            const numOfToken = new BN("1000000");
+            const borrowTokens = new BN("600000");
 
             await erc20DAI.transfer(user1, numOfToken);
-            await erc20USDT.transfer(user2, numOfToken);
+            await erc20USDC.transfer(user2, numOfToken);
             await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-            await erc20USDT.approve(savingAccount.address, numOfToken, { from: user2 });
+            await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
             // 1. Deposit $1 million
             await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
             await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
@@ -337,23 +337,6 @@ contract("Integration Tests", async (accounts) => {
             // 3. Verify the amount borrowed
             const user2Balance = await erc20DAI.balanceOf(user2);
             expect(user2Balance).to.be.bignumber.equal(borrowTokens);
-        }); */
-
-        it("should deposit $1 million value and borrow 0.6 million", async () => {
-            const numOfToken = new BN("1000000");
-            //const borrowTokens = new BN("600");
-
-            await erc20DAI.transfer(user1, numOfToken);
-            await erc20USDC.transfer(user2, numOfToken);
-            await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-            await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-            await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-            await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
-            // 2. Start borrowing.
-            await savingAccount.borrow(addressDAI, new BN("600000"), { from: user2 });
-            // 3. Verify the loan amount.
-            const user2Balance = await erc20DAI.balanceOf(user2);
-            expect(user2Balance).to.be.bignumber.equal(new BN("600000"));
         });
     });
 
