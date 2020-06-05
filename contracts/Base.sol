@@ -297,17 +297,10 @@ library Base {
         if(tokenInfo.getCurrentTotalAmount() == 0) {
             return (0, 0);
         } else {
-<<<<<<< HEAD
-            if(tokenInfo.getCurrentTotalAmount() > 0) {
-                if(tokenInfo.getStartBlockNumber() == block.number) {
-                    rate = self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()];
-                } else if(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
-=======
             if(tokenInfo.getStartBlockNumber() == block.number) {
                 rate = 0;
             } else if (tokenInfo.getCurrentTotalAmount() > 0) {
                 if(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
->>>>>>> fix-interest-error
                     rate = getNowDepositRate(self, tokenAddress);
                 } else {
                     rate = getNowDepositRate(self, tokenAddress)
@@ -315,13 +308,7 @@ library Base {
                     .div(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
             } else {
-<<<<<<< HEAD
-                if(tokenInfo.getStartBlockNumber() == block.number) {
-                    rate = self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()];
-                } else if(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
-=======
                if(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()] == 0) {
->>>>>>> fix-interest-error
                     rate = getNowBorrowRate(self, tokenAddress);
                 } else {
                     rate = getNowBorrowRate(self, tokenAddress)
