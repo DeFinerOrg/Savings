@@ -209,7 +209,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(10)), { from: user2 });
+                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(10)), {
+                        from: user2
+                    });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
                     expect(user2Balance).to.be.bignumber.equal(numOfDAI.div(new BN(10)));
@@ -427,13 +429,18 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
                     // 3. Verify the loan amount.
-                    const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user1})
-                    expect(new BN(user1ETHBorrowValue[0]).add(new BN(user1ETHBorrowValue[1]))).to.be.bignumber.equal(new BN(-10));
+                    const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                        ETH_ADDRESS,
+                        { from: user1 }
+                    );
+                    expect(
+                        new BN(user1ETHBorrowValue[0]).add(new BN(user1ETHBorrowValue[1]))
+                    ).to.be.bignumber.equal(new BN(-10));
                 });
             });
         });
 
-        context("Token without Compound (MKR, TUSD)",async () => {
+        context("Token without Compound (MKR, TUSD)", async () => {
             context("should fail", async () => {
                 it("Deposit MKR then borrow MKR", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
@@ -717,7 +724,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), { from: user1 });
+                    await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), {
+                        from: user1
+                    });
                     // 3. Verify the loan amount.
                     const user1Balance = await erc20USDC.balanceOf(user1);
                     expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
@@ -743,6 +752,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(user2Balance).to.be.bignumber.equal(limitAmount);
                 });
             });
-        })
+        });
     });
 });
