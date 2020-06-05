@@ -144,11 +144,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-<<<<<<< HEAD
                         "Account not active, please deposit first."
-=======
-                        "Account not active, please deposit first. -- Reason given: Account not active, please deposit first.."
->>>>>>> fix-interest-error
                     );
                 });
 
