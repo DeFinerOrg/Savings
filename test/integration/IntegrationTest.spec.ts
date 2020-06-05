@@ -354,33 +354,22 @@ contract("Integration Tests", async (accounts) => {
             await erc20USDC.transfer(user2, numOfUSDC);
             await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
             await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+
+            //1. Deposit DAI
             await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
             await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
-            // 2. Start borrowing.
+
+            // 2. Borrow USDC
             await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), { from: user1 });
-            // 3. Verify the loan amount.
+
+            // 3. Verify the loan amount
             const user1Balance = await erc20USDC.balanceOf(user1);
             expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
 
-            /*const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
-            const balSavingAccountUSDC = await erc20USDC.balanceOf(savingAccount.address);
-
-            expect(balSavingAccountDAI).to.be.bignumber.equal(balSavingAccountUSDC); */
-            const ownerAccountBalanceDAIBefore = await erc20DAI.balanceOf(owner);
-            console.log("ownerAccountBalanceDAIBefore", ownerAccountBalanceDAIBefore);
-
+            // 4. Withdraw remaining DAI
             await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
-
-            const ownerAccountBalanceDAIAfter = await erc20DAI.balanceOf(owner);
-            console.log("ownerAccountBalanceDAIAfter", ownerAccountBalanceDAIAfter);
-
             const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
-
             expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(0));
-
-            /* expect(userAccountBalanceDAI).to.be.bignumber.equal(
-                new BN(15).mul(new BN(10).pow(new BN(17)))
-            ); */
         });
 
         it("should get deposit interests when he deposits, wait for a week and withdraw");
