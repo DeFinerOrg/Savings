@@ -26,6 +26,8 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
     let addressUSDC: any;
     let addressUSDT: any;
     let addressWBTC: any;
+    let addressTUSD: any;
+    let addressMKR: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
@@ -38,6 +40,8 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
     let erc20USDC: t.MockERC20Instance;
     let erc20USDT: t.MockERC20Instance;
     let erc20WBTC: t.MockERC20Instance;
+    let erc20TUSD: t.MockERC20Instance;
+    let erc20MKR: t.MockERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -51,15 +55,19 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
+        addressTUSD = tokens[3];
+        addressMKR = tokens[4];
         addressWBTC = tokens[8];
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
         erc20USDT = await MockERC20.at(addressUSDT);
         erc20WBTC = await MockERC20.at(addressWBTC);
-        addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
-        addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
+        erc20TUSD = await MockERC20.at(addressTUSD);
+        erc20MKR = await MockERC20.at(addressMKR);
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
@@ -387,13 +395,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when partial TUSD withdrawn", async () => {
-                // 1. Get TUSD contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressTUSD = tokens[3];
-
-                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
-
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfTokens = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, numOfTokens);
 
@@ -403,7 +405,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 //Number of tokens to withdraw
                 const withdrawTokens = new BN(20);
 
-                // 3. validate if amount to be withdrawn is less than saving account balance
+                // 2. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccountBeforeWithdraw = await erc20TUSD.balanceOf(
                     savingAccount.address
                 );
@@ -411,19 +413,19 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 let userBalanceBeforeWithdraw = await erc20TUSD.balanceOf(owner);
 
-                // 4. Withdraw Token from SavingContract
+                // 3. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20TUSD.address, withdrawTokens);
 
-                // 4.1 Validate user balance
+                // 3.1 Validate user balance
                 let userBalanceAfterWithdraw = await erc20TUSD.balanceOf(owner);
                 const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
                     BN(userBalanceBeforeWithdraw)
                 );
                 expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
 
-                // 5. Validate Withdraw
+                // 4. Validate Withdraw
 
-                // 5.1 Validate savingAccount contract balance
+                // 4.1 Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
@@ -435,23 +437,19 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when 1000 whole TUSD withdrawn", async () => {
-                // 1. Get TUSD contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressTUSD = tokens[3];
+                const ONE_TUSD = new BN(10).pow(new BN(18));
 
-                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
-
-                // 2. Approve 1000 tokens
-                const numOfTokens = new BN("1000000000000000000000");
+                // 1. Approve 1000 tokens
+                const numOfTokens = new BN("10000").mul(ONE_TUSD);
                 await erc20TUSD.approve(savingAccount.address, numOfTokens);
 
                 // deposit tokens
                 await savingAccount.depositToken(erc20TUSD.address, numOfTokens);
 
                 //Number of tokens to withdraw
-                const withdrawTokens = new BN(20);
+                const withdrawTokens = new BN("1000").mul(ONE_TUSD);
 
-                // 3. validate if amount to be withdrawn is less than saving account balance
+                // 2. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccountBeforeWithdraw = await erc20TUSD.balanceOf(
                     savingAccount.address
                 );
@@ -459,23 +457,23 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 let userBalanceBeforeWithdraw = await erc20TUSD.balanceOf(owner);
 
-                // 4. Withdraw Token from SavingContract
+                // 3. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20TUSD.address, withdrawTokens);
 
-                // 4.1 Validate user balance
+                // 3.1 Validate user balance
                 let userBalanceAfterWithdraw = await erc20TUSD.balanceOf(owner);
                 const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
                     BN(userBalanceBeforeWithdraw)
                 );
                 expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
 
-                // 5. Validate Withdraw
+                // 4. Validate Withdraw
 
-                // 5.1 Validate savingAccount contract balance
+                // 4.1 Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
-                    .sub(new BN(20));
+                    .sub(new BN("1000").mul(ONE_TUSD));
                 const newbalSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
@@ -483,13 +481,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when partial MKR withdrawn", async () => {
-                // 1. Get MKR contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressMKR = tokens[4];
-
-                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
-
-                // 2. Approve 1000 tokens
+                // 1. Approve 1000 tokens
                 const numOfTokens = new BN(1000);
                 await erc20MKR.approve(savingAccount.address, numOfTokens);
 
@@ -499,7 +491,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 //Number of tokens to withdraw
                 const withdrawTokens = new BN(20);
 
-                // 3. validate if amount to be withdrawn is less than saving account balance
+                // 2. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccountBeforeWithdraw = await erc20MKR.balanceOf(
                     savingAccount.address
                 );
@@ -507,19 +499,19 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 let userBalanceBeforeWithdraw = await erc20MKR.balanceOf(owner);
 
-                // 4. Withdraw Token from SavingContract
+                // 3. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20MKR.address, withdrawTokens);
 
-                // 4.1 Validate user balance
+                // 3.1 Validate user balance
                 let userBalanceAfterWithdraw = await erc20MKR.balanceOf(owner);
                 const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
                     BN(userBalanceBeforeWithdraw)
                 );
                 expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
 
-                // 5. Validate Withdraw
+                // 4. Validate Withdraw
 
-                // 5.1 Validate savingAccount contract balance
+                // 4.1 Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
@@ -531,23 +523,19 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when 1000 whole MKR withdrawn", async () => {
-                // 1. Get MKR contract instance
-                const tokens = testEngine.erc20Tokens;
-                const addressMKR = tokens[4];
+                const ONE_MKR = new BN(10).pow(new BN(18));
 
-                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
-
-                // 2. Approve 1000 tokens
-                const numOfTokens = new BN("1000000000000000000000");
+                // 1. Approve 1000 tokens
+                const numOfTokens = new BN("10000").mul(ONE_MKR);
                 await erc20MKR.approve(savingAccount.address, numOfTokens);
 
                 // deposit tokens
                 await savingAccount.depositToken(erc20MKR.address, numOfTokens);
 
-                //Number of tokens to withdraw
-                const withdrawTokens = new BN(20);
+                // Number of tokens to withdraw
+                const withdrawTokens = new BN("1000").mul(ONE_MKR);
 
-                // 3. validate if amount to be withdrawn is less than saving account balance
+                // 2. validate if amount to be withdrawn is less than saving account balance
                 const balSavingAccountBeforeWithdraw = await erc20MKR.balanceOf(
                     savingAccount.address
                 );
@@ -555,23 +543,23 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 let userBalanceBeforeWithdraw = await erc20MKR.balanceOf(owner);
 
-                // 4. Withdraw Token from SavingContract
+                // 3. Withdraw Token from SavingContract
                 await savingAccount.withdrawToken(erc20MKR.address, withdrawTokens);
 
-                // 4.1 Validate user balance
+                // 3.1 Validate user balance
                 let userBalanceAfterWithdraw = await erc20MKR.balanceOf(owner);
                 const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
                     BN(userBalanceBeforeWithdraw)
                 );
                 expect(withdrawTokens).to.be.bignumber.equal(userBalanceDiff);
 
-                // 5. Validate Withdraw
+                // 4. Validate Withdraw
 
-                // 5.1 Validate savingAccount contract balance
+                // 4.1 Validate savingAccount contract balance
                 const expectedTokenBalanceAfterWithdraw = numOfTokens
                     .mul(new BN(15))
                     .div(new BN(100))
-                    .sub(new BN(20));
+                    .sub(new BN("1000").mul(ONE_MKR));
                 const newbalSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
@@ -625,12 +613,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when full TUSD withdrawn", async () => {
-                const tokens = testEngine.erc20Tokens;
-                const addressTUSD = tokens[3];
                 const depositAmount = new BN(1000);
-                //const withdrawAmount = new BN(20);
-
-                const erc20TUSD: t.MockERC20Instance = await MockERC20.at(addressTUSD);
                 await erc20TUSD.approve(savingAccount.address, depositAmount);
 
                 // deposit tokens
@@ -641,12 +624,7 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
             });
 
             it("when full MKR withdrawn", async () => {
-                const tokens = testEngine.erc20Tokens;
-                const addressMKR = tokens[4];
-                const depositAmount = new BN("1000000000000000000");
-                //const withdrawAmount = new BN(20);
-
-                const erc20MKR: t.MockERC20Instance = await MockERC20.at(addressMKR);
+                const depositAmount = new BN("1000");
                 await erc20MKR.approve(savingAccount.address, depositAmount);
 
                 // deposit tokens
@@ -720,16 +698,6 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 await expectRevert(
                     savingAccount.withdrawToken(dummy, withdrawTokens),
                     "Unsupported token"
-                );
-            });
-
-            it("when tokenAddress is zero", async () => {
-                const withdrawTokens = new BN(20);
-
-                //Try depositting unsupported Token to SavingContract
-                await expectRevert(
-                    savingAccount.withdrawToken(addressZero, withdrawTokens),
-                    "Token address is zero"
                 );
             });
 
