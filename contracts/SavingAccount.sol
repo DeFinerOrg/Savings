@@ -34,7 +34,7 @@ contract SavingAccount {
     uint256 MIN_RESERVE_RATIO = 10;
     uint256 MAX_RESERVE_RATIO = 20;
 
-    int256 public constant INT_UNIT = int256(10 ** uint256(18));
+    uint256 public constant UINT_UNIT = 10 ** 18;
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
@@ -83,11 +83,11 @@ contract SavingAccount {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address accountAddr) public view returns (int256 usdValue) {
-        int256 totalUsdValue = 0;
+    function getAccountTotalUsdValue(address accountAddr) public view returns (uint256 usdValue) {
+        uint256 totalUsdValue = 0;
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
             address tokenAddress = symbols.addressFromIndex(i);
-            int balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
+            uint balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
             if(balance != 0) {
                 totalUsdValue = totalUsdValue.add(
                     getTotalUsdValue(tokenAddress, balance, symbols.priceFromIndex(i))
@@ -97,11 +97,11 @@ contract SavingAccount {
         return totalUsdValue;
     }
 
-    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
+    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {
         if(tokenAddress == ETH_ADDR) {
-            return amount.mul(int(price)).div(INT_UNIT);
+            return amount.mul(price).div(UINT_UNIT);
         } else {
-            return amount.mul(int(price)).div(int(10**uint256(IERC20Extended(tokenAddress).decimals())));
+            return amount.mul(price).div(10 ** uint256(IERC20Extended(tokenAddress).decimals()));
         }
     }
 
@@ -110,9 +110,9 @@ contract SavingAccount {
 	 */
     function getMarketState() public view returns (
         address[] memory addresses,
-        int256[] memory deposits,
-        int256[] memory loans,
-        int256[] memory collateral,
+        uint256[] memory deposits,
+        uint256[] memory loans,
+        uint256[] memory collateral,
         uint256[] memory depositRatePerBlock,
         uint256[] memory borrowRatePerBlock
     )
@@ -120,9 +120,9 @@ contract SavingAccount {
         uint coinsLen = getCoinLength();
 
         addresses = new address[](coinsLen);
-        deposits = new int256[](coinsLen);
-        loans = new int256[](coinsLen);
-        collateral = new int256[](coinsLen);
+        deposits = new uint256[](coinsLen);
+        loans = new uint256[](coinsLen);
+        collateral = new uint256[](coinsLen);
         depositRatePerBlock = new uint256[](coinsLen);
         borrowRatePerBlock = new uint256[](coinsLen);
 
@@ -144,9 +144,9 @@ contract SavingAccount {
 	 * Get the state of the given token
 	 */
     function getTokenState(address tokenAddress) public view returns (
-        int256 deposits,
-        int256 loans,
-        int256 collateral,
+        uint256 deposits,
+        uint256 loans,
+        uint256 collateral,
         uint256 depositRatePerBlock,
         uint256 borrowRatePerBlock
     )
@@ -159,15 +159,15 @@ contract SavingAccount {
 	 */
     function getBalances() public view returns (
         address[] memory addresses,
-        int256[] memory totalBalance,
-        int256[] memory totalInterest
+        uint256[] memory totalBalance,
+        uint256[] memory totalInterest
     )
     {
         uint coinsLen = getCoinLength();
 
         addresses = new address[](coinsLen);
-        totalBalance = new int256[](coinsLen);
-        totalInterest = new int256[](coinsLen);
+        totalBalance = new uint256[](coinsLen);
+        totalInterest = new uint256[](coinsLen);
 
         for (uint i = 0; i < coinsLen; i++) {
             address tokenAddress = symbols.addressFromIndex(i);
@@ -191,8 +191,8 @@ contract SavingAccount {
         //TODO What could be the impact?
         for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
             address targetAddress = baseVariable.getActiveAccounts()[i];
-            int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
-            int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
+            uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
+            uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
             if (
                 baseVariable.totalBalance(targetAddress, symbols, false).mul(-1).mul(100)
                 >
@@ -215,8 +215,8 @@ contract SavingAccount {
     }
 
     function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
-        int256 totalBalance,
-        int256 totalInterest
+        uint256 totalBalance,
+        uint256 totalInterest
     ) {
         return baseVariable.tokenBalanceOfAndInterestOf(tokenAddress, msg.sender);
     }
@@ -235,13 +235,13 @@ contract SavingAccount {
 
     function borrow(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
         require(amount != 0, "Amount is zero");
-        int256 borrowLTV = tokenRegistry.getBorrowLTV(tokenAddress);
-        int divisor = INT_UNIT;
+        uint256 borrowLTV = tokenRegistry.getBorrowLTV(tokenAddress);
+        uint divisor = UINT_UNIT;
         if(tokenAddress != ETH_ADDR) {
-            divisor = int(10**uint256(IERC20Extended(tokenAddress).decimals()));
+            divisor = 10 ** uint256(IERC20Extended(tokenAddress).decimals());
         }
-        int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-        .add(int256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
+        uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        .add(uint256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
         require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
@@ -281,14 +281,14 @@ contract SavingAccount {
     }
 
     struct LiquidationVars {
-        int256 totalBorrow;
-        int256 totalCollateral;
-        int256 msgTotalBorrow;
-        int256 msgTotalCollateral;
+        uint256 totalBorrow;
+        uint256 totalCollateral;
+        uint256 msgTotalBorrow;
+        uint256 msgTotalCollateral;
 
-        int256 borrowLTV;
-        int256 liquidationThreshold;
-        int256 liquidationDiscountRatio;
+        uint256 borrowLTV;
+        uint256 liquidationThreshold;
+        uint256 liquidationDiscountRatio;
         uint8 decimals;
     }
 
@@ -333,9 +333,9 @@ contract SavingAccount {
             "The account amount must be greater than zero."
         );
 
-        int divisor = INT_UNIT;
+        uint divisor = UINT_UNIT;
         if(targetTokenAddress != ETH_ADDR) {
-            divisor = int(10**uint256(vars.decimals));
+            divisor = 10 ** uint256(vars.decimals);
         }
 
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
@@ -382,7 +382,7 @@ contract SavingAccount {
         baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
     }
 
-    function getDeFinerCommunityFund(address tokenAddress) public view returns(int256) {
+    function getDeFinerCommunityFund(address tokenAddress) public view returns(uint256) {
         return baseVariable.getDeFinerCommunityFund(tokenAddress);
     }
 

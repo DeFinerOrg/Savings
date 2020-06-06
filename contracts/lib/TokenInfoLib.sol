@@ -17,8 +17,8 @@ library TokenInfoLib {
         uint256 StartBlockNumber;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?
-    int256 constant POSITIVE = 1;
-    int256 constant NEGATIVE = -1;
+//    int256 constant POSITIVE = 1;
+//    int256 constant NEGATIVE = -1;
 
     function isDeposit() public view returns(bool) {
         return self.depositBalance >= self.borrowBalance ? true : false;
@@ -167,10 +167,8 @@ library TokenInfoLib {
 
     function viewInterest(TokenInfo storage self, uint rate) public view returns(uint256) {
         uint256 _balance = self.depositBalance == 0 ? self.borrowBalance : self.depositBalance;
-        if(rate == 0 || _balance == 0) {
+        if(rate == 0 || _balance == 0 || BASE > rate) {
             return self.interest;
-        } else if(BASE > rate) {
-            return 0;
         } else {
             return _balance.add(self.interest).mul(rate).sub(_balance.mul(BASE)).div(BASE);
         }
