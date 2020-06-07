@@ -698,11 +698,13 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
 
                 let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
 
-                await time.increase(new BN("31536000"));
+                //Increasing block time to 1 year
+                await time.increase(new BN(365).mul(new BN(24).mul(new BN(3600))));
 
                 //Withdrawing DAI
                 await savingAccount.withdrawAllToken(erc20DAI.address);
 
+                //Need to modify this logic
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
                 expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
             });
