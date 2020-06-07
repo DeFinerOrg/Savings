@@ -226,7 +226,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Insufficient collateral."
                     );
                 });
 
@@ -325,7 +325,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(1001), { from: user1 }),
-                        "Insufficient collateral."
+                        "Lack of liquidity."
                     );
                 });
             });

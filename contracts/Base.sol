@@ -348,6 +348,10 @@ library Base {
             TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[accountAddr].tokenInfos[tokenAddress];
             uint256 startBlockNum = tokenInfo.getStartBlockNumber();
             uint rate;
+            uint divisor = INT_UNIT;
+            if(tokenAddress != ETH_ADDR) {
+                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+            }
             if(isPositive && tokenInfo.isDeposit()) {
                 if(
                     startBlockNum == block.number
@@ -360,6 +364,7 @@ library Base {
                     .mul(SafeDecimalMath.getUNIT())
                     .div(self.depositRateRecord[tokenAddress][startBlockNum]);
                 }
+                balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(symbols.priceFromIndex(i)).div(divisor));
             } else if(!isPositive && !tokenInfo.isDeposit()) {
                 if(
                     startBlockNum == block.number
@@ -372,12 +377,8 @@ library Base {
                     .mul(SafeDecimalMath.getUNIT())
                     .div(self.borrowRateRecord[tokenAddress][startBlockNum]);
                 }
+                balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(symbols.priceFromIndex(i)).div(divisor));
             }
-            uint divisor = INT_UNIT;
-            if(tokenAddress != ETH_ADDR) {
-                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
-            }
-            balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(symbols.priceFromIndex(i)).div(divisor));
         }
         return balance;
     }
@@ -420,8 +421,9 @@ library Base {
             uint bRate = getBlockIntervalBorrowRateRecord(self, tokenAddress,activeTokenInfo.getStartBlockNumber());
             uint256 amountBorrowed = activeTokenInfo.totalAmount(bRate);
             uint _amount = amount > amountBorrowed ? amountBorrowed : amount;
+            require(self.totalReserve[tokenAddress] >= amount, "Lack of liquidity.");
             activeTokenInfo.addAmount(_amount, bRate, block.number);
-            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].sub(_amount);
+            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(_amount);
             self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
             self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_amount);
             self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
@@ -477,6 +479,7 @@ library Base {
         updateBorrowRate(self, tokenAddress);
         uint rate = getBlockIntervalBorrowRateRecord(self, tokenAddress, tokenInfo.getStartBlockNumber());
         tokenInfo.minusAmount(amount, rate, block.number);
+        require(self.totalReserve[tokenAddress] >= amount, "Lack of liquidity.");
         self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
         self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(amount);
         uint compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
@@ -542,6 +545,7 @@ library Base {
         require(tokenInfo.isDeposit() && tokenInfo.totalAmount(rate) >= amount, "Insufficient balance.");
         uint interest = tokenInfo.viewInterest(rate);
         tokenInfo.minusAmount(amount, rate, block.number);
+        require(self.totalReserve[tokenAddress] >= amount, "Lack of liquidity.");
         if(interest > 0) {
             uint256 _money = interest <= amount ? interest.div(10) : amount.div(10);
             amount = amount.sub(_money);
@@ -579,6 +583,7 @@ library Base {
         uint amount = tokenInfo.totalAmount(rate);
         uint interest = tokenInfo.viewInterest(rate);
         tokenInfo.minusAmount(amount, rate, block.number);
+        require(self.totalReserve[tokenAddress] >= amount, "Lack of liquidity.");
         if(interest > 0) {
             uint256 _money = interest.div(10);
             amount = amount.sub(_money);

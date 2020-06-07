@@ -7,7 +7,6 @@ library TokenInfoLib {
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     struct TokenInfo {
-        bool isDeposit;
 //        int256 balance;
         uint256 depositBalance;
         uint256 borrowBalance;
@@ -20,7 +19,7 @@ library TokenInfoLib {
 //    int256 constant POSITIVE = 1;
 //    int256 constant NEGATIVE = -1;
 
-    function isDeposit() public view returns(bool) {
+    function isDeposit(TokenInfo storage self) public view returns(bool) {
         return self.depositBalance >= self.borrowBalance ? true : false;
     }
 

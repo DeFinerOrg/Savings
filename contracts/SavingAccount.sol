@@ -194,11 +194,11 @@ contract SavingAccount {
             uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
             uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
             if (
-                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1).mul(100)
+                baseVariable.totalBalance(targetAddress, symbols, false).mul(100)
                 >
                 getAccountTotalUsdValue(targetAddress).mul(liquidationThreshold)
                 &&
-                baseVariable.totalBalance(targetAddress, symbols, false).mul(-1)
+                baseVariable.totalBalance(targetAddress, symbols, false)
                 .mul(liquidationDiscountRatio)
                 <=
                 getAccountTotalUsdValue(targetAddress).mul(100)
@@ -240,7 +240,7 @@ contract SavingAccount {
         if(tokenAddress != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(tokenAddress).decimals());
         }
-        uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
+        uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
         .add(uint256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
         require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
@@ -294,9 +294,9 @@ contract SavingAccount {
 
     function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
         LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);
+        vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false);
         vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
-        vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1);
+        vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false);
         vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
 
         vars.decimals = tokenRegistry.getTokenDecimals(targetTokenAddress);

@@ -12,7 +12,7 @@ library SafeDecimalMath {
 
     /* The number representing 1.0. */
     uint256 public constant UNIT = 10 ** uint256(decimals);
-    int256 public constant UINT_UNIT = 10 ** uint256(18);
+    uint256 public constant UINT_UNIT = 10 ** uint256(18);
 
     function getUNIT() internal pure returns (uint256) {
         return UNIT;
