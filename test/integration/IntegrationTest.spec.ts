@@ -78,14 +78,14 @@ contract("Integration Tests", async (accounts) => {
         erc20ZRX = await MockERC20.at(addressZRX);
         erc20REP = await MockERC20.at(addressREP);
         erc20WBTC = await MockERC20.at(addressWBTC);
-        addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+        /* addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
         addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC); */
     });
 
     context("Deposit and Withdraw", async () => {
