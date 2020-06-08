@@ -485,6 +485,9 @@ library Base {
         uint rate = getBlockIntervalBorrowRateRecord(self, _token, tokenInfo.getStartBlockNumber());
         tokenInfo.minusAmount(amount, rate, block.number);
         int _amount = int(amount);
+        // TODO Issue: @Wanggy would look into this
+        // get tokens from Compound when Reserve does not have enough balance
+        // Again maintain the reserve
         self.totalReserve[_token] = self.totalReserve[_token].sub(_amount);
         self.totalLoans[_token] = self.totalLoans[_token].add(_amount);
         int compoundAmount = self.totalCompound[self.cTokenAddress[_token]];

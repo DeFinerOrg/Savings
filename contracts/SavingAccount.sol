@@ -225,9 +225,15 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = int(10**uint256(decimals));
         }
+        // TODO Understand this logic
+        // totalBorrow = (-totalBalance + amountInETH) / 1e18 * 100
+        // TODO How much a user wants to borrow?
+        // mul(100) == 100%
         int totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false).mul(-1)
-        .add(int256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
-        require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
+        .add(int256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor));
+
+        // borrowAmount <= borrowPower
+        require(totalBorrow.mul(100) <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
         send(msg.sender, _amount, _token);
     }
