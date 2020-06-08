@@ -141,7 +141,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Account not active, please deposit first."
+                        "User not have any deposits"
                     );
                 });
 
@@ -553,7 +553,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "Account not active, please deposit first."
+                        "User not have any deposits"
                     );
                 });
 
