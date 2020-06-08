@@ -69,9 +69,9 @@ library Base {
         return self.borrowBitmap > 0;
     }
 
-    function setInDepositBitmap(BaseVariable storage self, address _sender, uint8 _index) public {
+    function setInDepositBitmap(Account storage account, uint8 _index) public {
         // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) token is deposited
-        uint128 currDepositBitmap = self.accounts[_sender].depositBitmap;
+        uint128 currDepositBitmap = account.depositBitmap;
         // 0000 0100 = Left shift to create mask to find third bit status
         uint128 mask = uint128(1) << _index;
         // Example-1: 0001 0100 AND 0000 0100 => 0000 0100 (isDeposited > 0)
@@ -81,7 +81,7 @@ library Base {
         if(isDeposited == 0) {
             // Corrospending bit is set in depositBitmap
             // Example-2: 0001 0000 OR 0000 0100 => 0001 0100 (depositBitmap)
-            self.accounts[_sender].depositBitmap = currDepositBitmap | mask;
+            account.depositBitmap = currDepositBitmap | mask;
         }
     }
 
@@ -99,7 +99,7 @@ library Base {
             uint128 mask = uint128(1) << i;
             uint128 isSet = currDepositBitmap & mask;
             if(isSet > 0) {
-
+                // TODO
             }
         }
     }
@@ -493,7 +493,7 @@ library Base {
         }
     }
 
-    function deposit(BaseVariable storage self, address _token, uint256 _amount) public {
+    function deposit(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
         
@@ -525,9 +525,12 @@ library Base {
         // Change deposit Rate and borrow Rate
         self.depositRateLastModifiedBlockNumber[_token] = block.number;
         self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+
+        setInDepositBitmap(account, _tokenIndex);
     }
 
     function borrow(BaseVariable storage self, address _token, uint256 amount) public {
+        require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         require(
             tokenInfo.getCurrentTotalAmount() <= 0,

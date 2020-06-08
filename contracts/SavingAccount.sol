@@ -256,7 +256,7 @@ contract SavingAccount {
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        baseVariable.deposit(_token, _amount);
+        baseVariable.deposit(_token, _amount, tokenRegistry.getTokenIndex(_token));
         // Update depositBitmap
     }
 
