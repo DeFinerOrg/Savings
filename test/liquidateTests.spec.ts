@@ -60,8 +60,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                 // 3. Verify the loan amount.
@@ -93,8 +93,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, new BN(90000000), { from: user2 });
                 // 3. Verify the loan amount
@@ -121,8 +121,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, new BN(100000000), { from: user2 });
                 // 3. Verify the loan amount

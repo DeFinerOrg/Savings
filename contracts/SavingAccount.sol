@@ -213,6 +213,9 @@ contract SavingAccount {
         baseVariable.transfer(_activeAccount, _token, _amount, symbols);
     }
 
+    /**
+     * Borrow the amount of token to the saving pool.
+     */
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         //baseVariable.
@@ -229,6 +232,9 @@ contract SavingAccount {
         send(msg.sender, _amount, _token);
     }
 
+    /**
+     * Repay the amount of token back to the saving pool.
+     */
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
@@ -237,28 +243,32 @@ contract SavingAccount {
             send(msg.sender, money, _token);
         }
     }
+
     /**
-     * Deposit the amount of tokenAddress to the saving pool.
+     * Deposit the amount of token to the saving pool.
      */
-    function depositToken(address _token, uint256 _amount) public payable onlySupported(_token) {
+    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        baseVariable.depositToken(_token, _amount);
+        baseVariable.deposit(_token, _amount);
     }
 
     /**
-     * Withdraw tokens from saving pool. If the interest is not empty, the interest
+     * Withdraw tokens from the saving pool. If the interest is not empty, the interest
      * will be deducted first.
      */
-    function withdrawToken(address _token, uint256 _amount) public onlySupported(_token) {
+    function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
-        uint amount = baseVariable.withdrawToken(_token, _amount);
+        uint amount = baseVariable.withdraw(_token, _amount);
         send(msg.sender, amount, _token);
     }
 
-    function withdrawAllToken(address _token) public onlySupported(_token) {
-        uint amount = baseVariable.withdrawAllToken(_token);
+    /**
+     * Withdraw all tokens from the saving pool.
+     */
+    function withdrawAll(address _token) public onlySupported(_token) {
+        uint amount = baseVariable.withdrawAll(_token);
         send(msg.sender, amount, _token);
     }
 
@@ -274,6 +284,9 @@ contract SavingAccount {
         uint8 decimals;
     }
 
+    /**
+     * Liquidate function
+     */
     function liquidate(address targetAccountAddr, address _token) public payable {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false).mul(-1);

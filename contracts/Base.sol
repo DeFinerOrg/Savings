@@ -439,7 +439,7 @@ library Base {
         }
     }
 
-    function depositToken(BaseVariable storage self, address _token, uint256 _amount) public {
+    function deposit(BaseVariable storage self, address _token, uint256 _amount) public {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
         
@@ -543,7 +543,7 @@ library Base {
 	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
 	 * will be deducted first.
 	 */
-    function withdrawToken(BaseVariable storage self, address _token, uint256 _amount) public returns(uint){
+    function withdraw(BaseVariable storage self, address _token, uint256 _amount) public returns(uint){
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
@@ -580,7 +580,7 @@ library Base {
         return _amount;
     }
 
-    function withdrawAllToken(BaseVariable storage self, address _token) public returns(uint){
+    function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
