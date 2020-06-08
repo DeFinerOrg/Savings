@@ -86,7 +86,7 @@ library Base {
     }
 
     function unsetFromDepositBitmap(BaseVariable storage self, address _sender) public {
-        
+        // TODO still working on
     }
 
     function getDepositTokenIndexes(BaseVariable storage self, address _sender)
@@ -99,7 +99,7 @@ library Base {
             uint128 mask = uint128(1) << i;
             uint128 isSet = currDepositBitmap & mask;
             if(isSet > 0) {
-                // TODO
+                // TODO Still working on
             }
         }
     }

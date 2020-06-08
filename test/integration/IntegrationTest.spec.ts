@@ -305,8 +305,6 @@ contract("Integration Tests", async (accounts) => {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
-                console.log("token length", tokens.length);
-
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
