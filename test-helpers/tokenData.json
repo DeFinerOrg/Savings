@@ -188,5 +188,18 @@
                 "cTokenAddress": "0x4d15ee7de1f86248c986f5ae7dce855b1c1a8806"
             }
         }
-    ]
+    ],
+    "ETH": 
+    {
+        "decimals": 18,
+        "latestAnswer": "1",
+
+        "mainnet": {
+            "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
+        },
+
+        "ropsten": {
+            "cTokenAddress": "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff"
+        }
+    }
 }

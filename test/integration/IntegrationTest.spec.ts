@@ -389,7 +389,6 @@ contract("Integration Tests", async (accounts) => {
         it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
             const numOfDAI = eighteenPrecision.mul(new BN(10));
             const numOfUSDC = sixPrecision.mul(new BN(10));
-
             await erc20DAI.transfer(user1, numOfDAI);
             await erc20USDC.transfer(user2, numOfUSDC);
             await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
