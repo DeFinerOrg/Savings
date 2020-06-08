@@ -305,8 +305,6 @@ contract("Integration Tests", async (accounts) => {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
-                console.log("token length", tokens.length);
-
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
@@ -372,10 +370,16 @@ contract("Integration Tests", async (accounts) => {
         it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
             const numOfDAI = eighteenPrecision.mul(new BN(10));
             const numOfUSDC = sixPrecision.mul(new BN(10));
+
+            console.log("numOfDAI", numOfDAI);
+            console.log("numOfUSDC", numOfUSDC);
             await erc20DAI.transfer(user1, numOfDAI);
             await erc20USDC.transfer(user2, numOfUSDC);
             await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
             await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+
+            const balSavingAccountUSDCInit = await erc20USDC.balanceOf(savingAccount.address);
+            console.log("balSavingAccountUSDCInit", balSavingAccountUSDCInit);
 
             //1. Deposit DAI
             await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
@@ -388,10 +392,13 @@ contract("Integration Tests", async (accounts) => {
             const user1Balance = await erc20USDC.balanceOf(user1);
             expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
 
+            const remainingDAI = numOfDAI.sub(new BN(1631454));
+
             // 4. Withdraw remaining DAI
-            await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
+            //await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
+            await savingAccount.withdrawToken(erc20DAI.address, remainingDAI, { from: user1 });
             const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
-            expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(0));
+            expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(1631454));
         });
 
         it("should get deposit interests when he deposits, wait for a week and withdraw");
