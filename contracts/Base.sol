@@ -41,12 +41,66 @@ library Base {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
         mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
+        uint128 depositBitmap;
+        uint128 borrowBitmap;
     }
 
     //初始化
     function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens) public {
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
+        }
+    }
+
+
+    function getDepositBitmap(Account storage self) public view returns (uint128) {
+        return self.depositBitmap;
+    }
+
+    function isUserHasAnyDeposits(Account storage self) public view returns (bool) {
+        return self.depositBitmap > 0;
+    }
+
+    function getBorrowBitmap(Account storage self) public view returns (uint128) {
+        return self.borrowBitmap;
+    }
+
+    function isUserHasAnyBorrows(Account storage self) public view returns (bool) {
+        return self.borrowBitmap > 0;
+    }
+
+    function setInDepositBitmap(BaseVariable storage self, address _sender, uint8 _index) public {
+        // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) token is deposited
+        uint128 currDepositBitmap = self.accounts[_sender].depositBitmap;
+        // 0000 0100 = Left shift to create mask to find third bit status
+        uint128 mask = uint128(1) << _index;
+        // Example-1: 0001 0100 AND 0000 0100 => 0000 0100 (isDeposited > 0)
+        // Example-2: 0001 0000 AND 0000 0100 => 0000 0000 (isDeposited == 0)
+        uint128 isDeposited = currDepositBitmap & mask;
+        // Not deposited before, hence, set the bit in depositBitmap
+        if(isDeposited == 0) {
+            // Corrospending bit is set in depositBitmap
+            // Example-2: 0001 0000 OR 0000 0100 => 0001 0100 (depositBitmap)
+            self.accounts[_sender].depositBitmap = currDepositBitmap | mask;
+        }
+    }
+
+    function unsetFromDepositBitmap(BaseVariable storage self, address _sender) public {
+        
+    }
+
+    function getDepositTokenIndexes(BaseVariable storage self, address _sender)
+        public
+        view
+        returns (uint8[] memory)
+    {
+        uint128 currDepositBitmap = self.accounts[_sender].depositBitmap;
+        for(uint8 i = 0; i < 256; i++) {
+            uint128 mask = uint128(1) << i;
+            uint128 isSet = currDepositBitmap & mask;
+            if(isSet > 0) {
+
+            }
         }
     }
 
