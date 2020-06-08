@@ -89,7 +89,7 @@ contract("Integration Tests", async (accounts) => {
     });
 
     context("Deposit and Withdraw", async () => {
-        it("should deposit all tokens and withdraw all tokens", async () => {
+        /* it("should deposit all tokens and withdraw all tokens", async () => {
             const numOfToken = new BN(1000);
 
             let tempContractAddress: any;
@@ -128,9 +128,6 @@ contract("Integration Tests", async (accounts) => {
                     console.log("Token", tempContractAddress);
                     console.log("balSavingAccountAfterDeposit", BN(balSavingAccountAfterDeposit));
 
-                    //console.log("User", u);
-                    //console.log("Token", tempContractAddress);
-
                     //Verify if deposit was successful
 
                     //array that stores no. of tokens
@@ -146,7 +143,7 @@ contract("Integration Tests", async (accounts) => {
                 }
             }
 
-            /* for (let userWithdraw = 0; userWithdraw < 3; userWithdraw++) {
+            for (let userWithdraw = 0; userWithdraw < 3; userWithdraw++) {
                 //Withdraw 1000 tokens of each Address
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
@@ -158,8 +155,8 @@ contract("Integration Tests", async (accounts) => {
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
                 }
-            } */
-        });
+            }
+        }); */
 
         it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
             const numOfToken = new BN(1000);
@@ -278,17 +275,37 @@ contract("Integration Tests", async (accounts) => {
             }
         });
 
-        //openzeppelintesthelper increase blocktime by  1 week
         it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
             const numOfToken = new BN(10).pow(new BN(6));
 
             let tempContractAddress: any;
             let erc20contr: t.MockERC20Instance;
 
+            /* await Promise.all(
+                tokens.map(async (token: string) => {
+                    erc20contr = await MockERC20.at(token);
+                    console.log("token", token);
+                    //console.log("erc20contr", erc20contr.address);
+                    await erc20contr.approve(savingAccount.address, numOfToken);
+                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+
+                    //Verify if deposit was successful
+                    const expectedTokensAtSavingAccountContract = numOfToken
+                        .mul(new BN(15))
+                        .div(new BN(100));
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccount
+                    );
+                })
+            ); */
+
             // Deposit all tokens
             for (let i = 0; i < 9; i++) {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
+
+                console.log("token length", tokens.length);
 
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
@@ -340,6 +357,11 @@ contract("Integration Tests", async (accounts) => {
             const user2Balance = await erc20DAI.balanceOf(user2);
             expect(user2Balance).to.be.bignumber.equal(borrowTokens);
         });
+
+        it("should allow borrow more than reserve if user has enough collateral");
+        //user1 deposits 1000 full tokens of DAI
+        //user2 deposits 1000 full of USDC
+        //user1 borrows 300 ful tokens of USDC --> should fail acc to current logic
     });
 
     context("Deposit, Borrow, Repay", async () => {
