@@ -257,6 +257,7 @@ contract SavingAccount {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         baseVariable.deposit(_token, _amount);
+        // Update depositBitmap
     }
 
     /**
