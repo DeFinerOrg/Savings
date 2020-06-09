@@ -78,10 +78,10 @@ contract("Integration Tests", async (accounts) => {
         erc20ZRX = await MockERC20.at(addressZRX);
         erc20REP = await MockERC20.at(addressREP);
         erc20WBTC = await MockERC20.at(addressWBTC);
-        addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.cTokenRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.cTokenRegistry.getCToken(addressUSDT);
-        addressCTokenForWBTC = await testEngine.cTokenRegistry.getCToken(addressWBTC);
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
@@ -172,7 +172,7 @@ contract("Integration Tests", async (accounts) => {
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
-                await savingAccount.depositToken(erc20contr.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
 
                 //Verify if deposit was successful
                 const expectedTokensAtSavingAccountContract = numOfToken
@@ -189,7 +189,7 @@ contract("Integration Tests", async (accounts) => {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
-                await savingAccount.withdrawAllToken(erc20contr.address);
+                await savingAccount.withdrawAll(erc20contr.address);
 
                 //Verify if withdrawAll was successful
                 const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -211,7 +211,7 @@ contract("Integration Tests", async (accounts) => {
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
-                await savingAccount.depositToken(erc20contr.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
 
                 //Verify if deposit was successful
                 const expectedTokensAtSavingAccountContract = numOfToken
@@ -227,7 +227,7 @@ contract("Integration Tests", async (accounts) => {
                 if (i != 3 && i != 4) {
                     tempContractAddress = tokens[i];
                     erc20contr = await MockERC20.at(tempContractAddress);
-                    await savingAccount.withdrawAllToken(erc20contr.address);
+                    await savingAccount.withdrawAll(erc20contr.address);
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -250,7 +250,7 @@ contract("Integration Tests", async (accounts) => {
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
-                await savingAccount.depositToken(erc20contr.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
 
                 //Verify if deposit was successful
                 const expectedTokensAtSavingAccountContract = numOfToken
@@ -266,7 +266,7 @@ contract("Integration Tests", async (accounts) => {
                 if (i == 1 || i == 2 || i == 8) {
                     tempContractAddress = tokens[i];
                     erc20contr = await MockERC20.at(tempContractAddress);
-                    await savingAccount.withdrawAllToken(erc20contr.address);
+                    await savingAccount.withdrawAll(erc20contr.address);
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -305,12 +305,10 @@ contract("Integration Tests", async (accounts) => {
                 tempContractAddress = tokens[i];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
-                console.log("token length", tokens.length);
-
                 //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                 await erc20contr.approve(savingAccount.address, numOfToken);
                 //await erc20contr.approve(savingAccount.address, numOfToken);
-                await savingAccount.depositToken(erc20contr.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
 
                 //Verify if deposit was successful
                 const expectedTokensAtSavingAccountContract = numOfToken
@@ -328,7 +326,7 @@ contract("Integration Tests", async (accounts) => {
                 tempContractAddress = tokens[j];
                 erc20contr = await MockERC20.at(tempContractAddress);
 
-                await savingAccount.withdrawAllToken(erc20contr.address);
+                await savingAccount.withdrawAll(erc20contr.address);
 
                 //Verify if withdrawAll was successful
                 const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -349,8 +347,8 @@ contract("Integration Tests", async (accounts) => {
             await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
             await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
             // 1. Deposit $1 million
-            await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-            await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+            await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+            await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
             // 2. Borrow $0.6 million
             await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
             // 3. Verify the amount borrowed
@@ -378,8 +376,8 @@ contract("Integration Tests", async (accounts) => {
             await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
             //1. Deposit DAI
-            await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-            await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
+            await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+            await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
             // 2. Borrow USDC
             await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), { from: user1 });
@@ -389,7 +387,7 @@ contract("Integration Tests", async (accounts) => {
             expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
 
             // 4. Withdraw remaining DAI
-            await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
+            await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
             const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
             expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(0));
         });
