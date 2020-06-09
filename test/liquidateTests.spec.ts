@@ -95,7 +95,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
-                const borrowAmt = new BN(601);
+                const borrowAmt = new BN(600);
 
                 await erc20DAI.transfer(user1, numOfToken);
                 await erc20USDC.transfer(user2, numOfToken);
@@ -108,10 +108,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2); //expect 601
 
-                let mockChainlinkAggregatorforDAIAddress: string =
-                    testEngine.mockChainLinkAggregators[0];
-                let mockChainlinkAggregatorforUSDCAddress: string =
-                    testEngine.mockChainLinkAggregators[1];
+                let mockChainlinkAggregatorforDAIAddress: string = testEngine.aggregators[0];
+                let mockChainlinkAggregatorforUSDCAddress: string = testEngine.aggregators[1];
 
                 const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
                     mockChainlinkAggregatorforDAIAddress
@@ -123,9 +121,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 //console.log("mockChainlinkAggregatorforDAI", mockChainlinkAggregatorforDAI);
 
                 let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                //let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                // let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
 
-                let updatedPrice = BN(DAIprice).mul(new BN(0.7));
+                // update price of DAI to 70% of it's value
+                let updatedPrice = BN(DAIprice)
+                    .mul(new BN(7))
+                    .div(new BN(10));
 
                 //console.log("updatedPrice", updatedPrice);
 
