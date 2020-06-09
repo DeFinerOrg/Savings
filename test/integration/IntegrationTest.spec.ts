@@ -438,6 +438,7 @@ contract("Integration Tests", async (accounts) => {
         it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
             const numOfDAI = eighteenPrecision.mul(new BN(10));
             const numOfUSDC = sixPrecision.mul(new BN(10));
+            const borrowAmount = numOfUSDC.div(new BN(10));
             await erc20DAI.transfer(user1, numOfDAI);
             await erc20USDC.transfer(user2, numOfUSDC);
             await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
@@ -448,20 +449,23 @@ contract("Integration Tests", async (accounts) => {
             await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
 
             // 2. Borrow USDC
-            await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), { from: user1 });
+            await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
+
+            // Amount that is locked as collateral
+            const collateralLocked = borrowAmount.mul(new BN(100)).div(new BN(60));
 
             // 3. Verify the loan amount
             const user1Balance = await erc20USDC.balanceOf(user1);
             expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
 
             // Total remaining DAI after borrow
-            const remainingDAI = numOfDAI.sub(new BN(1631454));
+            const remainingDAI = numOfDAI.sub(collateralLocked); //.sub(new BN(1631454));
 
             // 4. Withdraw remaining DAI
             //await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
             await savingAccount.withdrawToken(erc20DAI.address, remainingDAI, { from: user1 });
             const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
-            expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(1631454));
+            expect(balSavingAccountDAI).to.be.bignumber.equal(collateralLocked);
         });
 
         it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
