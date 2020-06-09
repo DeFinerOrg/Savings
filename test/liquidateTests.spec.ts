@@ -51,7 +51,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 );
             });
 
-            it("when the ratio of borrowed money and collateral is less than 95%", async () => {
+            it("when the ratio of borrowed money and collateral is less than 85%", async () => {
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
