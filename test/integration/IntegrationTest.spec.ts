@@ -452,7 +452,11 @@ contract("Integration Tests", async (accounts) => {
             await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
 
             // Amount that is locked as collateral
-            const collateralLocked = borrowAmount.mul(new BN(100)).div(new BN(60));
+            const collateralLocked = borrowAmount
+                .mul(await savingAccount.getCoinToUsdRate(1))
+                .mul(new BN(100))
+                .div(new BN(60))
+                .div(await savingAccount.getCoinToUsdRate(0));
 
             // 3. Verify the loan amount
             const user1Balance = await erc20USDC.balanceOf(user1);
