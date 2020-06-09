@@ -8,6 +8,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -23,8 +24,10 @@ contract("SavingAccount.borrow", async (accounts) => {
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
+    let addressCTokenForDAI: any;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
+    let cTokenDAI: t.MockCTokenInstance;
     let numOfToken: any;
 
     before(async () => {
@@ -38,8 +41,10 @@ contract("SavingAccount.borrow", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
+        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         numOfToken = new BN(1000);
     });
 
@@ -177,6 +182,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                    const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                    console.log(balCTokens);
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
                         .mul(await savingAccount.getCoinToUsdRate(1))
@@ -332,13 +339,14 @@ contract("SavingAccount.borrow", async (accounts) => {
 
             context("should succeed", async () => {
                 beforeEach(async () => {
-                    await erc20DAI.transfer(user1, numOfToken);
-                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                    const numOfDAI = new BN(1000000000000000000);
+                    await erc20DAI.transfer(user1, numOfDAI);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
                         from: user2,
                         value: numOfToken
                     });
-                    await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                    await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
                 });
 
                 /*
@@ -368,7 +376,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                     expect(
                         new BN(user1ETHBorrowValue[0]).add(new BN(user1ETHBorrowValue[1]))
-                    ).to.be.bignumber.equal(new BN(-1));
+                    ).to.be.bignumber.equal(new BN(1));
                 });
 
                 /*

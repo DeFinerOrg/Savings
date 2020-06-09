@@ -272,20 +272,21 @@ library Base {
         self.totalReserve[tokenAddress] = _amount;
     }
 
-    function fromCompound(BaseVariable storage self, address tokenAddress, uint compoundAmount) public {
+    function fromCompound(BaseVariable storage self, address tokenAddress, uint compoundAmount, uint amount) public {
         ICToken cToken = ICToken(self.cTokenAddress[tokenAddress]);
         uint256 totalReserve = self.totalReserve[tokenAddress];
-        uint _amount = compoundAmount.add(self.totalLoans[tokenAddress].add(totalReserve))
-        .mul(15).div(100).sub(totalReserve);
+        uint _amount1 = compoundAmount.add(self.totalLoans[tokenAddress].add(totalReserve)).sub(amount);
+        uint _amount2 = _amount1.mul(15).div(100).add(amount).sub(totalReserve);
+
         uint256 totalCompound = self.totalCompound[address(cToken)];
-        if(_amount >= compoundAmount) {
+        if(_amount2 >= compoundAmount) {
             cToken.redeem(cToken.balanceOf(address(this)));
             self.totalReserve[tokenAddress] = totalReserve.add(totalCompound);
             self.totalCompound[address(cToken)] = 0;
         } else {
-            cToken.redeemUnderlying(_amount);
-            self.totalCompound[address(cToken)] = totalCompound.sub(_amount);
-            self.totalReserve[tokenAddress] = totalReserve.add(_amount);
+            cToken.redeemUnderlying(_amount2);
+            self.totalCompound[address(cToken)] = totalCompound.sub(_amount2);
+            self.totalReserve[tokenAddress] = totalReserve.add(_amount2);
         }
     }
 
@@ -481,19 +482,21 @@ library Base {
         tokenInfo.minusAmount(amount, rate, block.number);
         address cToken = self.cTokenAddress[tokenAddress];
         require(self.totalReserve[tokenAddress].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
-        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
-        self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(amount);
         uint compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
         uint totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
         if(
-            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount)
+            self.totalReserve[tokenAddress] <= amount
+            ||
+            self.totalReserve[tokenAddress].sub(amount).mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount.sub(amount))
             <
             10 * 10**16
             &&
             cToken != address(0)
         ) {
-            fromCompound(self, tokenAddress, compoundAmount);
+            fromCompound(self, tokenAddress, compoundAmount, amount);
         }
+        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
+        self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(amount);
         self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
     }
 
@@ -554,22 +557,23 @@ library Base {
             self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_money);
             self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
-        self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
-        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
-        self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
+        uint reserveAmount = self.totalReserve[tokenAddress];
         uint compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
-        uint totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
+        uint totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(reserveAmount);
         if(
-            totalAmount <= 0
+            reserveAmount <= amount
             ||
-            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount)
+            reserveAmount.sub(amount).mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount.sub(amount))
             <
             10 * 10**16
             &&
             cToken != address(0)
         ) {
-            fromCompound(self, tokenAddress, compoundAmount);
+            fromCompound(self, tokenAddress, compoundAmount, amount);
         }
+        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
+        self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
+        self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
         return amount;
     }
 
@@ -593,22 +597,23 @@ library Base {
             self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_money);
             self.deFinerFund[tokenAddress] = self.deFinerFund[tokenAddress].add(_money);
         }
-        self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
-        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
-        self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
+        uint reserveAmount = self.totalReserve[tokenAddress];
         uint compoundAmount = self.totalCompound[self.cTokenAddress[tokenAddress]];
-        uint totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(self.totalReserve[tokenAddress]);
+        uint totalAmount = compoundAmount.add(self.totalLoans[tokenAddress]).add(reserveAmount);
         if(
-            totalAmount <= 0
+            reserveAmount <= amount
             ||
-            self.totalReserve[tokenAddress].mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount)
+            reserveAmount.sub(amount).mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount.sub(amount))
             <
             10 * 10**16
             &&
             cToken != address(0)
         ) {
-            fromCompound(self, tokenAddress, compoundAmount);
+            fromCompound(self, tokenAddress, compoundAmount, amount);
         }
+        self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(amount);
+        self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
+        self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
         return amount;
     }
 
