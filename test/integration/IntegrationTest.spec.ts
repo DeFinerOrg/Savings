@@ -359,7 +359,7 @@ contract("Integration Tests", async (accounts) => {
         it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {
             //user1 deposits 1000 full tokens of DAI
             //user2 deposits 1000 full of USDC
-            //user1 borrows 300 ful tokens of USDC --> should fail acc to current logic
+            //user1 borrows 300 ful tokens of USDC
             const numOfDAI = eighteenPrecision.mul(new BN(1000));
             const numOfUSDC = sixPrecision.mul(new BN(1000));
 
@@ -379,10 +379,12 @@ contract("Integration Tests", async (accounts) => {
             const user1Balance = await erc20USDC.balanceOf(user1);
             expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(300)));
         });
+
+        it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral");
     });
 
     context("Deposit, Borrow, Repay", async () => {
-        it("");
+        it("should deposit DAI, borrow USDC and repay after one month");
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -415,7 +417,7 @@ contract("Integration Tests", async (accounts) => {
             expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(1631454));
         });
 
-        it("should get deposit interests when he deposits, wait for a week and withdraw");
+        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
     });
 
     context("Deposit, Borrow and liquidate", async () => {
