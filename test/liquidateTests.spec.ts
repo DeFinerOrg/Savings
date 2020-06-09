@@ -108,8 +108,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2); //expect 601
 
-                let mockChainlinkAggregatorforDAIAddress: string = testEngine.aggregators[0];
-                let mockChainlinkAggregatorforUSDCAddress: string = testEngine.aggregators[1];
+                let mockChainlinkAggregatorforDAIAddress: string =
+                    testEngine.mockChainlinkAggregators[0];
+                let mockChainlinkAggregatorforUSDCAddress: string =
+                    testEngine.mockChainlinkAggregators[1];
 
                 const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
                     mockChainlinkAggregatorforDAIAddress
