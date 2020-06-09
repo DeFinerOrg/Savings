@@ -570,11 +570,17 @@ contract("SavingAccount.withdrawToken", async (accounts) => {
                 const depositAmount = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, depositAmount);
 
+                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+
                 // deposit tokens
                 await savingAccount.depositToken(erc20DAI.address, depositAmount);
 
                 //Withdrawing DAI
                 await savingAccount.withdrawAllToken(erc20DAI.address);
+
+                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+
+                expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
             });
 
             //Full withdrawal of tokens with 6 decimals
