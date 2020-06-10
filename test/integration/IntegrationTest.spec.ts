@@ -382,8 +382,8 @@ contract("Integration Tests", async (accounts) => {
 
         it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async () => {
             // 1. Initiate deposit
-            const numOfDAI = new BN(1000); // eighteenPrecision.mul(new BN(10).pow(new BN(6)));
-            const numOfToken = new BN(650); //sixPrecision.mul(new BN(100));
+            const numOfDAI = eighteenPrecision.mul(new BN(1000)); //new BN(1000);  eighteenPrecision.mul(new BN(10).pow(new BN(6)));
+            const numOfToken = sixPrecision.mul(new BN(1000)); //new BN(650); sixPrecision.mul(new BN(100));
             await erc20DAI.transfer(user1, numOfDAI);
             await erc20USDC.transfer(user2, numOfToken);
             await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
@@ -397,11 +397,16 @@ contract("Integration Tests", async (accounts) => {
                 .mul(new BN(60))
                 .div(new BN(100))
                 .div(await savingAccount.getCoinToUsdRate(1)); //borrowAmount = 612 USDC which is 60% of DAI (collateral)
-            await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
+            //converting borrowAmount to six precision
+            await savingAccount.borrow(addressUSDC, borrowAmount.div(new BN(10).pow(new BN(12))), {
+                from: user1
+            });
 
             // 3. Verify the loan amount.
             const user1Balance = await erc20USDC.balanceOf(user1);
-            expect(user1Balance).to.be.bignumber.equal(borrowAmount);
+            expect(user1Balance).to.be.bignumber.equal(
+                borrowAmount.div(new BN(10).pow(new BN(12)))
+            );
         });
     });
 
