@@ -339,7 +339,7 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Borrow", async () => {
         it("should deposit $1 million value and borrow 0.6 million", async () => {
-            const numOfToken = new BN("1000000");
+            const numOfToken = new BN("1000000"); //eighteenPrecision.mul(new BN(10).pow(new BN(6)));
             const borrowTokens = new BN("600000");
 
             await erc20DAI.transfer(user1, numOfToken);
@@ -382,7 +382,7 @@ contract("Integration Tests", async (accounts) => {
 
         it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async () => {
             // 1. Initiate deposit
-            const numOfDAI = new BN(1000); // eighteenPrecision.mul(new BN(10).pow(6));
+            const numOfDAI = new BN(1000); // eighteenPrecision.mul(new BN(10).pow(new BN(6)));
             const numOfToken = new BN(650); //sixPrecision.mul(new BN(100));
             await erc20DAI.transfer(user1, numOfDAI);
             await erc20USDC.transfer(user2, numOfToken);
@@ -396,7 +396,7 @@ contract("Integration Tests", async (accounts) => {
                 .mul(await savingAccount.getCoinToUsdRate(0))
                 .mul(new BN(60))
                 .div(new BN(100))
-                .div(await savingAccount.getCoinToUsdRate(1));
+                .div(await savingAccount.getCoinToUsdRate(1)); //borrowAmount = 612 USDC which is 60% of DAI (collateral)
             await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
 
             // 3. Verify the loan amount.
@@ -406,6 +406,7 @@ contract("Integration Tests", async (accounts) => {
     });
 
     context("Deposit, Borrow, Repay", async () => {
+        // Borrow and repay of tokens with less than 18 decimals
         it("should deposit DAI, borrow USDC and repay after one month", async () => {
             // 1. Initiate deposit
             const numOfDAI = eighteenPrecision.div(new BN(1000));
