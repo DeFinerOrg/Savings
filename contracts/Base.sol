@@ -18,11 +18,11 @@ library Base {
     using SymbolsLib for SymbolsLib.Symbols;
 
     struct BaseVariable {
-//        mapping(address => int256) totalLoans;
+        //        mapping(address => int256) totalLoans;
         mapping(address => uint256) totalLoans;
-//        mapping(address => int256) totalReserve;
+        //        mapping(address => int256) totalReserve;
         mapping(address => uint256) totalReserve;
-//        mapping(address => int256) totalCompound;
+        //        mapping(address => int256) totalCompound;
         mapping(address => uint256) totalCompound;
         mapping(address => address) cTokenAddress;
         mapping(address => mapping(uint => uint)) depositRateRecord;
@@ -32,12 +32,12 @@ library Base {
         mapping(address => Account) accounts;
         address[] activeAccounts;
         address payable deFinerCommunityFund;
-//        mapping(address => int) deFinerFund;
+        //        mapping(address => int) deFinerFund;
         mapping(address => uint) deFinerFund;
     }
 
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
-//    int256 public constant INT_UNIT = int256(10 ** uint256(18));
+    //    int256 public constant INT_UNIT = int256(10 ** uint256(18));
     uint256 public constant INT_UNIT = 10 ** uint256(18);
 
     struct Account {
@@ -138,14 +138,14 @@ library Base {
         }
     }
 
-//    //准备金率 R  The scaling is 10 ** 18
-//    function getCapitalReserveRate(BaseVariable storage self, address tokenAddress) public returns(int) {
-//        if(self.totalReserve[tokenAddress] == 0) {
-//            return 0;
-//        } else {
-//            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsNow(self, tokenAddress));
-//        }
-//    }
+    //    //准备金率 R  The scaling is 10 ** 18
+    //    function getCapitalReserveRate(BaseVariable storage self, address tokenAddress) public returns(int) {
+    //        if(self.totalReserve[tokenAddress] == 0) {
+    //            return 0;
+    //        } else {
+    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsNow(self, tokenAddress));
+    //        }
+    //    }
 
     //Get the deposit rate of the block interval.
     function getBlockIntervalDepositRateRecord(
@@ -186,9 +186,9 @@ library Base {
         }
     }
 
-//    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
-//        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
-//    }
+    //    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
+    //        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
+    //    }
 
     //Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
     function updateDepositRate(BaseVariable storage self, address tokenAddress) public {
@@ -690,7 +690,7 @@ library Base {
         if(
             rate == 0 ||
             balance == 0 ||
-            SafeDecimalMath.getUNIT() > rate
+        SafeDecimalMath.getUNIT() > rate
         ) {
             return balance;
         } else {

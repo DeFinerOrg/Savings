@@ -182,8 +182,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
-                    const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                    console.log(balCTokens);
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
                         .mul(await savingAccount.getCoinToUsdRate(1))
@@ -339,7 +337,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
             context("should succeed", async () => {
                 beforeEach(async () => {
-                    const numOfDAI = new BN(1000000000000000000);
+                    const numOfDAI = new BN(10).pow(new BN(18));
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await savingAccount.depositToken(ETH_ADDRESS, numOfToken, {
