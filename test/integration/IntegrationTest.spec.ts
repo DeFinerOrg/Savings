@@ -411,22 +411,31 @@ contract("Integration Tests", async (accounts) => {
 
         it("should deposit DAI and 3 different users should borrow USDC", async () => {
             // 1. User 1 deposits 10,000 DAI & USDC
-            const numOfDAI = new BN(10000);
-            const numOfUSDC = new BN(10000);
+            const numOfUSDC = new BN(100000);
             const numOfToken = new BN(1000);
-            await erc20DAI.transfer(user1, numOfDAI);
+
             await erc20USDC.transfer(user1, numOfUSDC);
-            await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
             await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
-            await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
             await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user1 });
 
             // 2. other users to borrow
             for (let u = 2; u <= 4; u++) {
                 const userBorrowIndex = new BN(u);
                 const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1)));
-                const depositAmountCollateral = borrowAmount * 2;
+                const depositAmountCollateral = borrowAmount.mul(new BN(3));
                 const userNumber = accounts[userBorrowIndex];
+
+                await erc20DAI.transfer(userNumber, eighteenPrecision);
+                await erc20DAI.approve(savingAccount.address, eighteenPrecision, {
+                    from: userNumber
+                });
+
+                await savingAccount.depositToken(addressDAI, eighteenPrecision, {
+                    from: userNumber
+                });
+                await savingAccount.borrow(addressUSDC, borrowAmount, {
+                    from: userNumber
+                });
 
                 console.log("borrowAmount", borrowAmount);
                 console.log("depositAmountCollateral", depositAmountCollateral);
