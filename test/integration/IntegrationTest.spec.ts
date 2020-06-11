@@ -410,7 +410,7 @@ contract("Integration Tests", async (accounts) => {
         });
 
         it("should deposit DAI and 3 different users should borrow USDC", async () => {
-            // 1. User 1 deposits 10,000 DAI & USDC
+            // 1. User 1 deposits 100,000 USDC
             const numOfUSDC = new BN(100000);
             const numOfToken = new BN(1000);
 
@@ -433,10 +433,18 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.depositToken(addressDAI, eighteenPrecision, {
                     from: userNumber
                 });
+
+                const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
                     from: userNumber
                 });
+                const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
+                const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
+                    new BN(userBalanceBeforeBorrow)
+                );
+                expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
 
+                //console.log("balSavingAccount", balSavingAccount);
                 console.log("borrowAmount", borrowAmount);
                 console.log("depositAmountCollateral", depositAmountCollateral);
                 console.log("userNumber", userNumber);
