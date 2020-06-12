@@ -467,7 +467,27 @@ contract("Integration Tests", async (accounts) => {
             });
         });
         context("should fail", async () => {
-            it("when user borrows and wants to deposit again without repying", async () => {});
+            it("when user deposits USDC, borrows DAI and wants to deposit USDC again without repaying", async () => {
+                const numOfToken = new BN(2000);
+                const depositTokens = new BN(1000);
+                const borrowTokens = new BN(600);
+
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                // 1. Deposit
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 }); //2000 DAI
+                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 }); //2000 USDC
+                // 2. Borrow
+                await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 }); //600 DAI, ~1000 USDC locked as collateral
+                // 3. Verify the amount borrowed
+                const user2Balance = await erc20DAI.balanceOf(user2);
+                expect(user2Balance).to.be.bignumber.equal(borrowTokens);
+
+                // Should fail, but it's passing
+                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 });
+            });
         });
     });
 
@@ -614,5 +634,4 @@ contract("Integration Tests", async (accounts) => {
     });
 });
 
-// should fail if user borrows and wants to deposit again without repying
 // deposit, withdraw first and then borrow
