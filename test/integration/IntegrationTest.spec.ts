@@ -282,25 +282,6 @@ contract("Integration Tests", async (accounts) => {
                 let tempContractAddress: any;
                 let erc20contr: t.MockERC20Instance;
 
-                /* await Promise.all(
-                tokens.map(async (token: string) => {
-                    erc20contr = await MockERC20.at(token);
-                    console.log("token", token);
-                    //console.log("erc20contr", erc20contr.address);
-                    await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken);
-
-                    //Verify if deposit was successful
-                    const expectedTokensAtSavingAccountContract = numOfToken
-                        .mul(new BN(15))
-                        .div(new BN(100));
-                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                        balSavingAccount
-                    );
-                })
-            ); */
-
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
@@ -342,6 +323,7 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
+                // WIP
                 /* const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
     
@@ -362,7 +344,7 @@ contract("Integration Tests", async (accounts) => {
             it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {
                 //user1 deposits 1000 full tokens of DAI
                 //user2 deposits 1000 full of USDC
-                //user1 borrows 300 ful tokens of USDC
+                //user1 borrows 300 full tokens of USDC which are more than reserve(150 full tokens)
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
 
@@ -467,7 +449,8 @@ contract("Integration Tests", async (accounts) => {
             });
         });
         context("should fail", async () => {
-            it("when user deposits USDC, borrows DAI and wants to deposit USDC again without repaying", async () => {
+            //Review
+            it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async () => {
                 const numOfToken = new BN(2000);
                 const depositTokens = new BN(1000);
                 const borrowTokens = new BN(600);
@@ -477,16 +460,18 @@ contract("Integration Tests", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                 // 1. Deposit
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 }); //2000 DAI
-                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 }); //2000 USDC
+                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 });
                 // 2. Borrow
-                await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 }); //600 DAI, ~1000 USDC locked as collateral
+                await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
                 const user2Balance = await erc20DAI.balanceOf(user2);
                 expect(user2Balance).to.be.bignumber.equal(borrowTokens);
 
-                // Should fail, but it's passing
-                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 });
+                await expectRevert(
+                    savingAccount.depositToken(addressDAI, borrowTokens, { from: user2 }),
+                    "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
+                );
             });
         });
     });
@@ -521,21 +506,44 @@ contract("Integration Tests", async (accounts) => {
                 expect(user1BalanceAfter).to.be.bignumber.equal(new BN(0));
             });
 
-            it("should deposit USDC, multiple users should deposit DAI, borrow USDC and repay after 1 week", async () => {
-                // 1. User 1 deposits 100,000 USDC
-                /* const numOfUSDC = new BN(100000);
-            const numOfToken = new BN(1000);
+            it("User 1 should deposit USDC, multiple users should borrow USDC and repay after 1 week", async () => {
+                // WIP
+                /* const numOfDAI = eighteenPrecision.div(new BN(1000));
+                const numOfToken = new BN(100000);
+                const borrowAmount = new BN(1000);
 
-            await erc20USDC.transfer(user1, numOfUSDC);
-            await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
-            await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user1 });
+                await erc20DAI.transfer(user1, numOfDAI);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
 
-            // 2. other users to borrow
-            for (let u = 2; u <= 4; u++) {
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
+                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
+
+                // 3. Start repayment.
+                await time.increase(new BN(30).mul(new BN(24).mul(new BN(3600))));
+                await savingAccount.repay(addressUSDC, borrowAmount, { from: user1 });
+
+                // 4. Verify the repay amount.
+                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
+                expect(user1BalanceBefore).to.be.bignumber.equal(borrowAmount);
+                expect(user1BalanceAfter).to.be.bignumber.equal(new BN(0)); */
+                /*const numOfUSDC = new BN(100000);
+                const numOfToken = new BN(1000);
+
+                await erc20USDC.transfer(user1, sixPrecision);
+                await erc20USDC.approve(savingAccount.address, sixPrecision, { from: user1 });
+                await savingAccount.depositToken(addressUSDC, sixPrecision, { from: user1 });
+                let u = 2;
+
                 const userBorrowIndex = new BN(u);
-                const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1)));
-                const depositAmountCollateral = eighteenPrecision;
-                const userNumber = accounts[userBorrowIndex];
+                const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1))); //1000
+                const depositAmountCollateral = eighteenPrecision; //10**18 DAI
+                const userNumber = accounts[userBorrowIndex]; //account 3
 
                 console.log("borrowAmount", borrowAmount);
                 console.log("depositAmountCollateral", depositAmountCollateral);
@@ -561,17 +569,59 @@ contract("Integration Tests", async (accounts) => {
                 });
 
                 const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
-                const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
-                    new BN(userBalanceBeforeBorrow)
-                );
-                expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
-
+                    const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
+                        new BN(userBalanceBeforeBorrow)
+                    );
+                    expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
 
                 //console.log("balSavingAccount", balSavingAccount);
                 console.log("borrowAmount", borrowAmount);
                 console.log("depositAmountCollateral", depositAmountCollateral);
-                console.log("userNumber", userNumber); 
-            } */
+                console.log("userNumber", userNumber);
+
+                // 2. other users to borrow
+                    for (let u = 2; u <= 4; u++) {
+                    console.log("user", u);
+
+                    const userBorrowIndex = new BN(u);
+                    const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1)));
+                    const depositAmountCollateral = eighteenPrecision;
+                    const userNumber = accounts[userBorrowIndex];
+
+                    console.log("borrowAmount", borrowAmount);
+                    console.log("depositAmountCollateral", depositAmountCollateral);
+                    console.log("userNumber", userNumber);
+
+                    await erc20DAI.transfer(userNumber, depositAmountCollateral);
+                    await erc20DAI.approve(savingAccount.address, depositAmountCollateral, {
+                        from: userNumber
+                    });
+
+                    await savingAccount.depositToken(addressDAI, depositAmountCollateral, {
+                        from: userNumber
+                    });
+
+                    const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
+                    await savingAccount.borrow(addressUSDC, borrowAmount, {
+                        from: userNumber
+                    });
+
+                    await time.increase(new BN(7).mul(new BN(24).mul(new BN(3600))));
+                    await savingAccount.repay(addressUSDC, borrowAmount, {
+                        from: userNumber
+                    });
+
+                    const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
+                    const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
+                        new BN(userBalanceBeforeBorrow)
+                    );
+                    expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
+
+                    //console.log("balSavingAccount", balSavingAccount);
+                    console.log("borrowAmount", borrowAmount);
+                    console.log("depositAmountCollateral", depositAmountCollateral);
+                    console.log("userNumber", userNumber);
+                } */
             });
         });
         context("should fail", async () => {});
