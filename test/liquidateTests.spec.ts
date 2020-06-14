@@ -123,16 +123,22 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 //console.log("mockChainlinkAggregatorforDAI", mockChainlinkAggregatorforDAI);
 
                 let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                console.log(DAIprice);
+                console.log(DAIprice.toString());
                 // let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
 
                 // update price of DAI to 70% of it's value
-                let updatedPrice = BN(DAIprice)
-                    .mul(new BN(7))
-                    .div(new BN(10));
+                let updatedPrice = new BN(DAIprice).mul(new BN(70)).div(new BN(100));
 
-                //console.log("updatedPrice", updatedPrice);
+                console.log("updatedPrice", updatedPrice);
+                console.log("updatedPrice", updatedPrice.toString());
 
                 await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+
+                DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                console.log(DAIprice);
+                console.log(DAIprice.toString());
+
                 await savingAccount.liquidate(user2, addressDAI);
             });
 
