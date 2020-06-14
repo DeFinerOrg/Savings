@@ -83,27 +83,27 @@ contract SavingAccount {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address accountAddr) public view returns (uint256 usdValue) {
+    function getAccountTotalUsdValue(address accountAddr) public view returns (bool sign, uint256 usdValue) {
         uint256 totalUsdValue = 0;
-        for(uint i = 0; i < symbols.getCoinLength(); i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            uint balance = baseVariable.tokenBalanceAdd(tokenAddress, accountAddr);
-            if(balance != 0) {
-                totalUsdValue = totalUsdValue.add(
-                    getTotalUsdValue(tokenAddress, balance, symbols.priceFromIndex(i))
-                );
-            }
+        bool sign = true;
+        uint256 totalBorrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
+        uint256 totalMortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
+        if(totalBorrowUsdValue > totalMortgageUsdValue) {
+            sign = false;
+            totalUsdValue = totalBorrowUsdValue.sub(totalMortgageUsdValue);
+        } else {
+            totalUsdValue = totalMortgageUsdValue.sub(totalBorrowUsdValue);
         }
-        return totalUsdValue;
+        return (sign, totalUsdValue);
     }
 
-    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {
-        if(tokenAddress == ETH_ADDR) {
-            return amount.mul(price).div(UINT_UNIT);
-        } else {
-            return amount.mul(price).div(10 ** uint256(IERC20Extended(tokenAddress).decimals()));
-        }
-    }
+//    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {
+//        if(tokenAddress == ETH_ADDR) {
+//            return amount.mul(price).div(UINT_UNIT);
+//        } else {
+//            return amount.mul(price).div(10 ** uint256(IERC20Extended(tokenAddress).decimals()));
+//        }
+//    }
 
 	/**
 	 * Get the overall state of the saving pool
