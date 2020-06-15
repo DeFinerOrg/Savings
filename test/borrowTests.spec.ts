@@ -157,7 +157,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(1001), { from: user2 }),
-                        "SafeERC20: low-level call failed"
+                        "Lack of liquidity."
                     );
                 });
             });
@@ -586,7 +586,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(1001), { from: user1 }),
-                        "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
+                        "Lack of liquidity."
                     );
                 });
             });
