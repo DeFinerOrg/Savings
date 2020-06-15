@@ -2,7 +2,6 @@ pragma solidity 0.5.14;
 
 import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
@@ -26,9 +25,6 @@ contract SavingAccount {
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
 
-    uint COMMUNITY_FUND_RATIO = 10;
-    uint256 MIN_RESERVE_RATIO = 10;
-    uint256 MAX_RESERVE_RATIO = 20;
 
     int256 public constant INT_UNIT = int256(10 ** uint256(18));
 
