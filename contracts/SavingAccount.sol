@@ -168,36 +168,36 @@ contract SavingAccount {
         return (addresses, totalBalance, totalInterest, sign);
     }
 
-    function getLiquidatableAccounts() public view returns(address[] memory) {
-        address[] memory liquidatableAccounts;
-        uint returnIdx;
-        //TODO `activeAccounts` not getting removed from array.
-        //TODO its always increasing. Call to this function needing
-        //TODO more gas, however, it will not be charged in ETH.
-        //TODO What could be the impact?
-        for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
-            address targetAddress = baseVariable.getActiveAccounts()[i];
-            uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
-            uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
-            (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
-            if (
-                sign
-                &&
-                baseVariable.totalBalance(targetAddress, symbols, false).mul(100)
-                >
-                usdValue.mul(liquidationThreshold)
-                &&
-                baseVariable.totalBalance(targetAddress, symbols, false)
-                .mul(liquidationDiscountRatio)
-                <=
-                usdValue.mul(100)
-
-            ) {
-                liquidatableAccounts[returnIdx++] = (targetAddress);
-            }
-        }
-        return liquidatableAccounts;
-    }
+//    function getLiquidatableAccounts() public view returns(address[] memory) {
+//        address[] memory liquidatableAccounts;
+//        uint returnIdx;
+//        //TODO `activeAccounts` not getting removed from array.
+//        //TODO its always increasing. Call to this function needing
+//        //TODO more gas, however, it will not be charged in ETH.
+//        //TODO What could be the impact?
+//        for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
+//            address targetAddress = baseVariable.getActiveAccounts()[i];
+//            uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
+//            uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
+//            (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
+//            if (
+//                sign
+//                &&
+//                baseVariable.totalBalance(targetAddress, symbols, false).mul(100)
+//                >
+//                usdValue.mul(liquidationThreshold)
+//                &&
+//                baseVariable.totalBalance(targetAddress, symbols, false)
+//                .mul(liquidationDiscountRatio)
+//                <=
+//                usdValue.mul(100)
+//
+//            ) {
+//                liquidatableAccounts[returnIdx++] = (targetAddress);
+//            }
+//        }
+//        return liquidatableAccounts;
+//    }
 
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
         int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
