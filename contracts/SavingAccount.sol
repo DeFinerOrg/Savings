@@ -325,9 +325,9 @@ contract SavingAccount {
         vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
 
-        (uint targetTokenBalance, bool sign) = baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender);
-        require(targetTokenAddress != address(0), "Token address is zero");
-        require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
+        (uint targetTokenBalance, bool sign) = baseVariable.tokenBalanceAdd(_token, msg.sender);
+        require(_token != address(0), "Token address is zero");
+        require(tokenRegistry.isTokenExist(_token), "Unsupported token");
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
@@ -356,7 +356,7 @@ contract SavingAccount {
         );
 
         uint divisor = UINT_UNIT;
-        if(targetTokenAddress != ETH_ADDR) {
+        if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(vars.decimals);
         }
 
@@ -366,7 +366,7 @@ contract SavingAccount {
         ).div(vars.liquidationDiscountRatio - vars.borrowLTV);
         //清算者需要付的钱 (Liquidators need to pay)
 
-        uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(targetTokenAddress)).div(divisor);
+        uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(_token)).div(divisor);
 
         if(paymentOfLiquidationAmount > vars.msgTotalCollateral.sub(vars.msgTotalBorrow)) {
             paymentOfLiquidationAmount = vars.msgTotalCollateral.sub(vars.msgTotalBorrow);
