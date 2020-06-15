@@ -504,10 +504,6 @@ library Base {
     function deposit(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
-        if (!account.active) {
-            account.active = true;
-            self.activeAccounts.push(msg.sender);
-        }
 
         require(tokenInfo.isDeposit(), "Token balance must be zero or positive.");
 
@@ -572,7 +568,6 @@ library Base {
     }
 
     function repay(BaseVariable storage self, address _token, address activeAccount, uint256 amount) public returns(uint) {
-        require(self.accounts[activeAccount].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[activeAccount].tokenInfos[_token];
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
@@ -610,7 +605,6 @@ library Base {
 	 */
 
     function withdraw(BaseVariable storage self, address _token, uint256 _amount) public returns(uint){
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
@@ -649,7 +643,6 @@ library Base {
     }
 
     function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
-        require(self.accounts[msg.sender].active, "Account not active, please deposit first.");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
