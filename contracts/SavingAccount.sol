@@ -85,7 +85,7 @@ contract SavingAccount {
 	 */
     function getAccountTotalUsdValue(address accountAddr) public view returns (uint256 usdValue, bool sign) {
         usdValue = 0;
-        bool sign = true;
+        sign = true;
         uint256 borrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
         uint256 mortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
         if(borrowUsdValue > mortgageUsdValue) {
@@ -94,7 +94,7 @@ contract SavingAccount {
         } else {
             usdValue = mortgageUsdValue.sub(borrowUsdValue);
         }
-        return (sign, usdValue);
+        return (usdValue, sign);
     }
 
 //    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {

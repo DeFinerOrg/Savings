@@ -298,7 +298,7 @@ library Base {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[accountAddr].tokenInfos[tokenAddress];
         uint rate;
         if(tokenInfo.getCurrentTotalAmount() == 0) {
-            return (0, 0);
+            return (0, 0, true);
         } else {
             if(tokenInfo.isDeposit()) {
                 if(
