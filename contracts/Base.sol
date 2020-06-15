@@ -744,10 +744,6 @@ library Base {
         return self.deFinerFund[_token];
     }
 
-    function getActiveAccounts(BaseVariable storage self) public view returns (address[] memory) {
-        return self.activeAccounts;
-    }
-
     function borrowInterest(BaseVariable storage self, address _token) public view returns(uint256) {
         uint balance = self.totalLoans[_token];
         uint rate = getBlockIntervalBorrowRateRecord(self, _token, self.borrowRateLastModifiedBlockNumber[_token]);
