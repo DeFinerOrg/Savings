@@ -200,10 +200,10 @@ contract SavingAccount {
 //    }
 
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
-        int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
-        int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
-        int256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
-        int256 totalUSDValue = getAccountTotalUsdValue(_borrower);
+        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
+        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
+        uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
+        uint256 totalUSDValue = getAccountTotalUsdValue(_borrower);
         if (
             totalBalance.mul(-1).mul(100) > totalUSDValue.mul(liquidationThreshold) &&
             totalBalance.mul(-1).mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
