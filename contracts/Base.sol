@@ -114,8 +114,8 @@ library Base {
 
     function getTotalDepositsNow(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = self.cTokenAddress[_token];
-        int256 totalLoans = self.totalLoans[_token];
-        int256 totalReserve = self.totalReserve[_token];
+        uint256 totalLoans = self.totalLoans[_token];
+        uint256 totalReserve = self.totalReserve[_token];
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve);
         // totalAmount = U + C + R
         // totalReserve = R
@@ -178,11 +178,11 @@ library Base {
     //Get capital utilization. Capital Utilization Rate (U )= total loan outstanding / Total market deposit
     //The scaling is 10 ** 18  U
     function getCapitalUtilizationRate(BaseVariable storage self, address _token) public view returns(uint) {
-        int256 totalDepositsNow = getTotalDepositsNow(self, _token);
+        uint256 totalDepositsNow = getTotalDepositsNow(self, _token);
         if(totalDepositsNow == 0) {
             return 0;
         } else {
-            return uint(self.totalLoans[_token].mul(SafeDecimalMath.getINT_UNIT()).div(totalDepositsNow));
+            return self.totalLoans[_token].mul(SafeDecimalMath.getUINT_UNIT()).div(totalDepositsNow);
         }
     }
 
@@ -192,7 +192,7 @@ library Base {
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getINT_UNIT()).div(getTotalDepositsNow(self, _token)));
+            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsNow(self, _token)));
         }
     }
 
