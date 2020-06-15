@@ -294,7 +294,7 @@ library Base {
         BaseVariable storage self,
         address tokenAddress,
         address accountAddr
-    ) public view returns (uint256 totalBalance, uint256 totalInterest) {
+    ) public view returns (uint256 totalBalance, uint256 totalInterest, bool sign) {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[accountAddr].tokenInfos[tokenAddress];
         uint rate;
         if(tokenInfo.getCurrentTotalAmount() == 0) {
@@ -312,6 +312,7 @@ library Base {
                     .mul(SafeDecimalMath.getUNIT())
                     .div(self.depositRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
+                sign = true;
             } else {
                 if(
                     tokenInfo.getStartBlockNumber() == block.number
@@ -324,8 +325,9 @@ library Base {
                     .mul(SafeDecimalMath.getUNIT())
                     .div(self.borrowRateRecord[tokenAddress][tokenInfo.getStartBlockNumber()]);
                 }
+                sign = false;
             }
-            return (tokenInfo.totalBalance(), tokenInfo.viewInterest(rate));
+            return (tokenInfo.totalBalance(), tokenInfo.viewInterest(rate), sign);
         }
     }
 
@@ -333,9 +335,9 @@ library Base {
         BaseVariable storage self,
         address tokenAddress,
         address accountAddr
-    ) public view returns(uint) {
-        (uint totalBalance, uint interest) = tokenBalanceOfAndInterestOf(self, tokenAddress, accountAddr);
-        return totalBalance + interest;
+    ) public view returns(uint, bool) {
+        (uint totalBalance, uint interest, bool sign) = tokenBalanceOfAndInterestOf(self, tokenAddress, accountAddr);
+        return (totalBalance + interest, sign);
     }
 
     function totalBalance(

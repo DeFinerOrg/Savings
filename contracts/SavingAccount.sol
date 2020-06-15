@@ -83,16 +83,16 @@ contract SavingAccount {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address accountAddr) public view returns (bool sign, uint256 usdValue) {
-        uint256 totalUsdValue = 0;
+    function getAccountTotalUsdValue(address accountAddr) public view returns (uint256 usdValue, bool sign) {
+        usdValue = 0;
         bool sign = true;
-        uint256 totalBorrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
-        uint256 totalMortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
+        uint256 borrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
+        uint256 mortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
         if(totalBorrowUsdValue > totalMortgageUsdValue) {
             sign = false;
-            totalUsdValue = totalBorrowUsdValue.sub(totalMortgageUsdValue);
+            usdValue = totalBorrowUsdValue.sub(totalMortgageUsdValue);
         } else {
-            totalUsdValue = totalMortgageUsdValue.sub(totalBorrowUsdValue);
+            usdValue = totalMortgageUsdValue.sub(totalBorrowUsdValue);
         }
         return (sign, totalUsdValue);
     }
@@ -160,7 +160,8 @@ contract SavingAccount {
     function getBalances() public view returns (
         address[] memory addresses,
         uint256[] memory totalBalance,
-        uint256[] memory totalInterest
+        uint256[] memory totalInterest,
+        bool[] memory sign
     )
     {
         uint coinsLen = getCoinLength();
@@ -168,14 +169,15 @@ contract SavingAccount {
         addresses = new address[](coinsLen);
         totalBalance = new uint256[](coinsLen);
         totalInterest = new uint256[](coinsLen);
+        sign = new bool[](coinsLen);
 
         for (uint i = 0; i < coinsLen; i++) {
             address tokenAddress = symbols.addressFromIndex(i);
             addresses[i] = tokenAddress;
-            (totalBalance[i], totalInterest[i]) = tokenBalanceOfAndInterestOf(tokenAddress);
+            (totalBalance[i], totalInterest[i], sign[i]) = tokenBalanceOfAndInterestOf(tokenAddress);
         }
 
-        return (addresses, totalBalance, totalInterest);
+        return (addresses, totalBalance, totalInterest, sign);
     }
 
     function getActiveAccounts() public view returns(address[] memory) {
@@ -193,15 +195,18 @@ contract SavingAccount {
             address targetAddress = baseVariable.getActiveAccounts()[i];
             uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
             uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
+            (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
             if (
+                sign
+                &&
                 baseVariable.totalBalance(targetAddress, symbols, false).mul(100)
                 >
-                getAccountTotalUsdValue(targetAddress).mul(liquidationThreshold)
+                usdValue.mul(liquidationThreshold)
                 &&
                 baseVariable.totalBalance(targetAddress, symbols, false)
                 .mul(liquidationDiscountRatio)
                 <=
-                getAccountTotalUsdValue(targetAddress).mul(100)
+                usdValue.mul(100)
 
             ) {
                 liquidatableAccounts[returnIdx++] = (targetAddress);
@@ -216,7 +221,8 @@ contract SavingAccount {
 
     function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
         uint256 totalBalance,
-        uint256 totalInterest
+        uint256 totalInterest,
+        bool sign
     ) {
         return baseVariable.tokenBalanceOfAndInterestOf(tokenAddress, msg.sender);
     }
@@ -242,7 +248,8 @@ contract SavingAccount {
         }
         uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
         .add(uint256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
-        require(totalBorrow <= getAccountTotalUsdValue(msg.sender).mul(borrowLTV), "Insufficient collateral.");
+        (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
+        require(sign && totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
     }
@@ -304,6 +311,7 @@ contract SavingAccount {
         vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
         vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
 
+        (uint targetTokenBalance, bool sign) = baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender);
         require(targetTokenAddress != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(targetTokenAddress), "Unsupported token");
 
@@ -329,7 +337,7 @@ contract SavingAccount {
         );
 
         require(
-            baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender) > 0,
+            sign && targetTokenBalance > 0,
             "The account amount must be greater than zero."
         );
 
@@ -339,18 +347,18 @@ contract SavingAccount {
         }
 
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
-        uint liquidationDebtValue = uint(
-            vars.totalBorrow.sub(vars.totalCollateral.mul(vars.borrowLTV)).div(vars.liquidationDiscountRatio - vars.borrowLTV)
-        );
+        uint liquidationDebtValue = vars.totalBorrow.sub(
+            vars.totalCollateral.mul(vars.borrowLTV)
+        ).div(vars.liquidationDiscountRatio - vars.borrowLTV);
         //清算者需要付的钱 (Liquidators need to pay)
-        uint paymentOfLiquidationAmount = uint(baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender)).mul(symbols.priceFromAddress(targetTokenAddress)).div(uint(divisor));
+        uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(targetTokenAddress)).div(divisor);
 
-        if(paymentOfLiquidationAmount > uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow))) {
-            paymentOfLiquidationAmount = uint(vars.msgTotalCollateral.sub(vars.msgTotalBorrow));
+        if(paymentOfLiquidationAmount > vars.msgTotalCollateral.sub(vars.msgTotalBorrow)) {
+            paymentOfLiquidationAmount = vars.msgTotalCollateral.sub(vars.msgTotalBorrow);
         }
 
-        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(uint(vars.liquidationDiscountRatio))) {
-            liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(uint(vars.liquidationDiscountRatio));
+        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(vars.liquidationDiscountRatio)) {
+            liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(vars.liquidationDiscountRatio);
         }
 
         // The collaterals are liquidate in the order of their market liquidity
