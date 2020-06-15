@@ -47,10 +47,6 @@ module.exports = async function(deployer, network) {
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
 
-    console.log("ERC20", erc20Tokens);
-    console.log("chainLinkAggregators", chainLinkAggregators);
-    console.log("cTokens", cTokens);
-
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
     await initializeTokenInfoRegistry(

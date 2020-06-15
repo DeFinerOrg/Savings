@@ -47,34 +47,4 @@ contract("SavingAccount", async (accounts) => {
             it("when all parameters are valid");
         });
     });
-
-    context("repay()", async () => {
-        context("should fail", async () => {
-            it("");
-        });
-
-        context("should succeed", async () => {
-            it("");
-        });
-    });
-
-    context("toCompound()", async () => {
-        context("should fail", async () => {
-            it("");
-        });
-
-        context("should succeed", async () => {
-            it("");
-        });
-    });
-
-    context("fromCompound()", async () => {
-        context("should fail", async () => {
-            it("");
-        });
-
-        context("should succeed", async () => {
-            it("");
-        });
-    });
 });

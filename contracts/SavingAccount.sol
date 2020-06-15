@@ -18,10 +18,6 @@ contract SavingAccount {
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
-    // TODO all should be in Config contract
-    event LogNewProvableQuery(string description);
-    event LogNewPriceTicker(string price);
-
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
@@ -69,25 +65,25 @@ contract SavingAccount {
         }
     }
 
-    function approveAll(address tokenAddress) public {
-        baseVariable.approveAll(tokenAddress);
+    function approveAll(address _token) public {
+        baseVariable.approveAll(_token);
     }
 
     // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address tokenAddress) public {
-        baseVariable.updateBorrowRate(tokenAddress);
-        baseVariable.updateDepositRate(tokenAddress);
+    function updateDefinerRate(address _token) public {
+        baseVariable.updateBorrowRate(_token);
+        baseVariable.updateDepositRate(_token);
     }
 
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address accountAddr) public view returns (uint256 usdValue, bool sign) {
+    function getAccountTotalUsdValue(address _accountAddr) public view returns (uint256 usdValue, bool sign) {
         usdValue = 0;
         sign = true;
-        uint256 borrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
-        uint256 mortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
+        uint256 borrowUsdValue = baseVariable.totalBalance(_accountAddr, symbols, false);
+        uint256 mortgageUsdValue = baseVariable.totalBalance(_accountAddr, symbols, true);
         if(borrowUsdValue > mortgageUsdValue) {
             sign = false;
             usdValue = borrowUsdValue.sub(mortgageUsdValue);
@@ -96,14 +92,6 @@ contract SavingAccount {
         }
         return (usdValue, sign);
     }
-
-//    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {
-//        if(tokenAddress == ETH_ADDR) {
-//            return amount.mul(price).div(UINT_UNIT);
-//        } else {
-//            return amount.mul(price).div(10 ** uint256(IERC20Extended(tokenAddress).decimals()));
-//        }
-//    }
 
 	/**
 	 * Get the overall state of the saving pool
@@ -143,7 +131,7 @@ contract SavingAccount {
 	/*
 	 * Get the state of the given token
 	 */
-    function getTokenState(address tokenAddress) public view returns (
+    function getTokenState(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral,
@@ -151,7 +139,7 @@ contract SavingAccount {
         uint256 borrowRatePerBlock
     )
     {
-        return baseVariable.getTokenState(tokenAddress);
+        return baseVariable.getTokenState(_token);
     }
 
 	/**
@@ -178,10 +166,6 @@ contract SavingAccount {
         }
 
         return (addresses, totalBalance, totalInterest, sign);
-    }
-
-    function getActiveAccounts() public view returns(address[] memory) {
-        return baseVariable.getActiveAccounts();
     }
 
     function getLiquidatableAccounts() public view returns(address[] memory) {
@@ -215,76 +199,103 @@ contract SavingAccount {
         return liquidatableAccounts;
     }
 
+    function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
+        int256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
+        int256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
+        int256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
+        int256 totalUSDValue = getAccountTotalUsdValue(_borrower);
+        if (
+            totalBalance.mul(-1).mul(100) > totalUSDValue.mul(liquidationThreshold) &&
+            totalBalance.mul(-1).mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+
     function getCoinLength() public view returns(uint256 length){
         return symbols.getCoinLength();
     }
 
-    function tokenBalanceOfAndInterestOf(address tokenAddress) public view returns(
+    function tokenBalanceOfAndInterestOf(address _token) public view returns(
         uint256 totalBalance,
         uint256 totalInterest,
         bool sign
     ) {
-        return baseVariable.tokenBalanceOfAndInterestOf(tokenAddress, msg.sender);
+        return baseVariable.tokenBalanceOfAndInterestOf(_token, msg.sender);
     }
 
-    function getCoinAddress(uint256 coinIndex) public view returns(address) {
-        return symbols.addressFromIndex(coinIndex);
+    function getCoinAddress(uint256 _coinIndex) public view returns(address) {
+        return symbols.addressFromIndex(_coinIndex);
     }
 
-    function getCoinToUsdRate(uint256 coinIndex) public view returns(uint256) {
-        return symbols.priceFromIndex(coinIndex);
+    function getCoinToUsdRate(uint256 _coinIndex) public view returns(uint256) {
+        return symbols.priceFromIndex(_coinIndex);
     }
 
-    function transfer(address activeAccount, address tokenAddress, uint amount) public {
-        baseVariable.transfer(activeAccount, tokenAddress, amount, symbols);
+    function transfer(address _activeAccount, address _token, uint _amount) public {
+        baseVariable.transfer(_activeAccount, _token, _amount, symbols);
     }
 
-    function borrow(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        uint256 borrowLTV = tokenRegistry.getBorrowLTV(tokenAddress);
+
+    /**
+     * Borrow the amount of token to the saving pool.
+     */
+    function borrow(address _token, uint256 _amount) public onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint divisor = UINT_UNIT;
-        if(tokenAddress != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(tokenAddress).decimals());
+        if(_token != ETH_ADDR) {
+            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
         uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
-        .add(uint256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
+        .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
         (uint usdValue, bool sign) = getAccountTotalUsdValue(msg.sender);
         require(sign && totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
-        baseVariable.borrow(tokenAddress, amount);
-        send(msg.sender, amount, tokenAddress);
+        baseVariable.borrow(_token, _amount);
+        send(msg.sender, _amount, _token);
     }
 
-    function repay(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        receive(msg.sender, amount, tokenAddress);
-        uint money = uint(baseVariable.repay(tokenAddress, msg.sender, amount));
+    /**
+     * Repay the amount of token back to the saving pool.
+     */
+    function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        receive(msg.sender, _amount, _token);
+        uint money = uint(baseVariable.repay(_token, msg.sender, _amount));
         if(money != 0) {
-            send(msg.sender, money, tokenAddress);
+            send(msg.sender, money, _token);
         }
     }
+
     /**
-     * Deposit the amount of tokenAddress to the saving pool.
+     * Deposit the amount of token to the saving pool.
      */
-    function depositToken(address tokenAddress, uint256 amount) public payable onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
-        receive(msg.sender, amount, tokenAddress);
-        baseVariable.depositToken(tokenAddress, amount);
+    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
+        receive(msg.sender, _amount, _token);
+        baseVariable.deposit(_token, _amount, tokenRegistry.getTokenIndex(_token));
+        // Update depositBitmap
     }
 
     /**
-     * Withdraw tokens from saving pool. If the interest is not empty, the interest
+     * Withdraw tokens from the saving pool. If the interest is not empty, the interest
      * will be deducted first.
      */
-    function withdrawToken(address tokenAddress, uint256 amount) public onlySupported(tokenAddress) {
-        require(amount != 0, "Amount is zero");
+    function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
+        require(_amount != 0, "Amount is zero");
         //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
-        uint _amount = baseVariable.withdrawToken(tokenAddress, amount);
-        send(msg.sender, _amount, tokenAddress);
+        uint amount = baseVariable.withdraw(_token, _amount);
+        send(msg.sender, amount, _token);
     }
 
-    function withdrawAllToken(address tokenAddress) public onlySupported(tokenAddress) {
-        uint amount = baseVariable.withdrawAllToken(tokenAddress);
-        send(msg.sender, amount, tokenAddress);
+    /**
+     * Withdraw all tokens from the saving pool.
+     */
+    function withdrawAll(address _token) public onlySupported(_token) {
+        uint amount = baseVariable.withdrawAll(_token);
+        send(msg.sender, amount, _token);
     }
 
     struct LiquidationVars {
@@ -299,17 +310,20 @@ contract SavingAccount {
         uint8 decimals;
     }
 
-    function liquidate(address targetAccountAddr, address targetTokenAddress) public payable {
+    /**
+     * Liquidate function
+     */
+    function liquidate(address targetAccountAddr, address _token) public payable {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false);
         vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
         vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false);
         vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
 
-        vars.decimals = tokenRegistry.getTokenDecimals(targetTokenAddress);
-        vars.borrowLTV = tokenRegistry.getBorrowLTV(targetTokenAddress);
-        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetTokenAddress);
-        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetTokenAddress);
+        vars.decimals = tokenRegistry.getTokenDecimals(_token);
+        vars.borrowLTV = tokenRegistry.getBorrowLTV(_token);
+        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
+        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
 
         (uint targetTokenBalance, bool sign) = baseVariable.tokenBalanceAdd(targetTokenAddress, msg.sender);
         require(targetTokenAddress != address(0), "Token address is zero");
@@ -351,6 +365,7 @@ contract SavingAccount {
             vars.totalCollateral.mul(vars.borrowLTV)
         ).div(vars.liquidationDiscountRatio - vars.borrowLTV);
         //清算者需要付的钱 (Liquidators need to pay)
+
         uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(targetTokenAddress)).div(divisor);
 
         if(paymentOfLiquidationAmount > vars.msgTotalCollateral.sub(vars.msgTotalBorrow)) {
@@ -366,9 +381,9 @@ contract SavingAccount {
             address[] memory addr;
             uint[] memory u;
             addr[0] = targetAccountAddr;
-            addr[1] = targetTokenAddress;
+            addr[1] = _token;
             addr[2] = symbols.addressFromIndex(i);
-            u[0] = symbols.priceFromAddress(targetTokenAddress);
+            u[0] = symbols.priceFromAddress(_token);
             u[1] = symbols.priceFromIndex(i);
             u[2] = liquidationDebtValue;
             (uint _liquidationDebtValue) = baseVariable.liquidate(
@@ -382,35 +397,36 @@ contract SavingAccount {
         }
     }
 
-    function recycleCommunityFund(address tokenAddress) public {
-        baseVariable.recycleCommunityFund(tokenAddress);
+    function recycleCommunityFund(address _token) public {
+        baseVariable.recycleCommunityFund(_token);
     }
 
-    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-        baseVariable.setDeFinerCommunityFund(_DeFinerCommunityFund);
+    function setDeFinerCommunityFund(address payable _deFinerCommunityFund) public {
+        baseVariable.setDeFinerCommunityFund(_deFinerCommunityFund);
     }
 
-    function getDeFinerCommunityFund(address tokenAddress) public view returns(uint256) {
-        return baseVariable.getDeFinerCommunityFund(tokenAddress);
+
+    function getDeFinerCommunityFund(address _token) public view returns(uint256) {
+        return baseVariable.getDeFinerCommunityFund(_token);
     }
 
-    function receive(address from, uint256 amount, address tokenAddress) private {
-        if (_isETH(tokenAddress)) {
-            require(msg.value == amount, "The amount is not sent from address.");
+    function receive(address _from, uint256 _amount, address _token) private {
+        if (_isETH(_token)) {
+            require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
             require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-            IERC20(tokenAddress).safeTransferFrom(from, address(this), amount);
+            IERC20(_token).safeTransferFrom(_from, address(this), _amount);
         }
     }
 
-    function send(address to, uint256 amount, address tokenAddress) private {
-        if (_isETH(tokenAddress)) {
+    function send(address _to, uint256 _amount, address _token) private {
+        if (_isETH(_token)) {
             //TODO need to check for re-entrancy security attack
             //TODO Can this ETH be received by a contract?
-            msg.sender.transfer(amount);
+            msg.sender.transfer(_amount);
         } else {
-            IERC20(tokenAddress).safeTransfer(to, amount);
+            IERC20(_token).safeTransfer(_to, _amount);
         }
     }
 
