@@ -88,13 +88,13 @@ contract SavingAccount {
         bool sign = true;
         uint256 borrowUsdValue = baseVariable.totalBalance(accountAddr, symbols, false);
         uint256 mortgageUsdValue = baseVariable.totalBalance(accountAddr, symbols, true);
-        if(totalBorrowUsdValue > totalMortgageUsdValue) {
+        if(borrowUsdValue > mortgageUsdValue) {
             sign = false;
-            usdValue = totalBorrowUsdValue.sub(totalMortgageUsdValue);
+            usdValue = borrowUsdValue.sub(mortgageUsdValue);
         } else {
-            usdValue = totalMortgageUsdValue.sub(totalBorrowUsdValue);
+            usdValue = mortgageUsdValue.sub(borrowUsdValue);
         }
-        return (sign, totalUsdValue);
+        return (sign, usdValue);
     }
 
 //    function getTotalUsdValue(address tokenAddress, uint256 amount, uint price) public view returns(uint) {
@@ -248,7 +248,7 @@ contract SavingAccount {
         }
         uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
         .add(uint256(amount.mul(symbols.priceFromAddress(tokenAddress))).div(divisor)).mul(100);
-        (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
+        (uint usdValue, bool sign) = getAccountTotalUsdValue(msg.sender);
         require(sign && totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(tokenAddress, amount);
         send(msg.sender, amount, tokenAddress);
