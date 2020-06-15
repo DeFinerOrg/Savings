@@ -203,10 +203,11 @@ contract SavingAccount {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
         uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
-        uint256 totalUSDValue = getAccountTotalUsdValue(_borrower);
+        (uint256 totalUSDValue, bool sign) = getAccountTotalUsdValue(_borrower);
         if (
-            totalBalance.mul(-1).mul(100) > totalUSDValue.mul(liquidationThreshold) &&
-            totalBalance.mul(-1).mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
+            !sign &&
+            totalBalance.mul(100) > totalUSDValue.mul(liquidationThreshold) &&
+            totalBalance.mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
         ) {
             return true;
         }
