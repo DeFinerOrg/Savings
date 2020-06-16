@@ -118,7 +118,7 @@ contract("Integration Tests", async (accounts) => {
                     console.log("balSavingAccountBeforeDeposit", BN(balSavingAccountBeforeDeposit));
 
                     //await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken, {
+                    await savingAccount.deposit(erc20contr.address, numOfToken, {
                         from: accounts[u]
                     });
 
@@ -173,7 +173,7 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+                    await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract = numOfToken
@@ -190,7 +190,7 @@ contract("Integration Tests", async (accounts) => {
                     tempContractAddress = tokens[i];
                     erc20contr = await MockERC20.at(tempContractAddress);
 
-                    await savingAccount.withdrawAllToken(erc20contr.address);
+                    await savingAccount.withdrawAll(erc20contr.address);
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -212,7 +212,7 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+                    await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract = numOfToken
@@ -228,7 +228,7 @@ contract("Integration Tests", async (accounts) => {
                     if (i != 3 && i != 4) {
                         tempContractAddress = tokens[i];
                         erc20contr = await MockERC20.at(tempContractAddress);
-                        await savingAccount.withdrawAllToken(erc20contr.address);
+                        await savingAccount.withdrawAll(erc20contr.address);
 
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -251,7 +251,7 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+                    await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract = numOfToken
@@ -267,7 +267,7 @@ contract("Integration Tests", async (accounts) => {
                     if (i == 1 || i == 2 || i == 8) {
                         tempContractAddress = tokens[i];
                         erc20contr = await MockERC20.at(tempContractAddress);
-                        await savingAccount.withdrawAllToken(erc20contr.address);
+                        await savingAccount.withdrawAll(erc20contr.address);
 
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -290,7 +290,7 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
-                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+                    await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract = numOfToken
@@ -308,7 +308,7 @@ contract("Integration Tests", async (accounts) => {
                     tempContractAddress = tokens[j];
                     erc20contr = await MockERC20.at(tempContractAddress);
 
-                    await savingAccount.withdrawAllToken(erc20contr.address);
+                    await savingAccount.withdrawAll(erc20contr.address);
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
@@ -325,20 +325,24 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
                 // WIP
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
-                const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
+                const numOfUSDC = sixPrecision.mul(new BN(10)).pow(new BN(6));
+                //const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
+                const borrowTokens = eighteenPrecision
+                    .mul(new BN(6))
+                    .mul(new BN(10).pow(new BN(5)));
 
                 // Transfer 1 million DAI tokens (18 decimals) to user1
                 await erc20DAI.transfer(user1, numOfToken);
 
                 // Transfer 1 million USDC tokens (18 decimals) to user2 ??
                 // TODO Is sending "18 decimal" tokens correct for USDC?
-                await erc20USDC.transfer(user2, numOfToken);
+                await erc20USDC.transfer(user2, numOfUSDC);
 
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 // 1. Deposit $1 million
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
                 // 2. Borrow $0.6 million
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
@@ -359,8 +363,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
                 //1. Deposit DAI
-                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(300)), {
@@ -380,8 +384,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
 
                 // 2. Start borrowing.
                 const borrowAmount = numOfDAI
@@ -412,7 +416,7 @@ contract("Integration Tests", async (accounts) => {
 
                 await erc20USDC.transfer(user1, numOfUSDC);
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
 
                 // 2. other users to borrow
                 for (let u = 2; u <= 4; u++) {
@@ -427,7 +431,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    await savingAccount.depositToken(addressDAI, depositAmountCollateral, {
+                    await savingAccount.deposit(addressDAI, depositAmountCollateral, {
                         from: userNumber
                     });
 
@@ -465,8 +469,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                 // 1. Deposit
-                await savingAccount.depositToken(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, depositTokens, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, depositTokens, { from: user2 });
                 // 2. Borrow
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
@@ -474,7 +478,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(user2Balance).to.be.bignumber.equal(borrowTokens);
 
                 await expectRevert(
-                    savingAccount.depositToken(addressDAI, borrowTokens, { from: user2 }),
+                    savingAccount.deposit(addressDAI, borrowTokens, { from: user2 }),
                     "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
                 );
             });
@@ -493,8 +497,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
 
                 // 2. Start borrowing.
@@ -521,8 +525,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.transfer(user2, numOfToken);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
 
                 // 2. Start borrowing.
@@ -542,7 +546,7 @@ contract("Integration Tests", async (accounts) => {
 
                 await erc20USDC.transfer(user1, sixPrecision);
                 await erc20USDC.approve(savingAccount.address, sixPrecision, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, sixPrecision, { from: user1 });
+                await savingAccount.deposit(addressUSDC, sixPrecision, { from: user1 });
                 let u = 2;
 
                 const userBorrowIndex = new BN(u);
@@ -559,7 +563,7 @@ contract("Integration Tests", async (accounts) => {
                     from: userNumber
                 });
 
-                await savingAccount.depositToken(addressDAI, depositAmountCollateral, {
+                await savingAccount.deposit(addressDAI, depositAmountCollateral, {
                     from: userNumber
                 });
 
@@ -602,7 +606,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    await savingAccount.depositToken(addressDAI, depositAmountCollateral, {
+                    await savingAccount.deposit(addressDAI, depositAmountCollateral, {
                         from: userNumber
                     });
 
@@ -644,8 +648,8 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
                 //1. Deposit DAI
-                await savingAccount.depositToken(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.depositToken(addressUSDC, numOfUSDC, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
@@ -666,9 +670,54 @@ contract("Integration Tests", async (accounts) => {
 
                 // 4. Withdraw remaining DAI
                 //await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
-                await savingAccount.withdrawToken(erc20DAI.address, remainingDAI, { from: user1 });
+                await savingAccount.withdraw(erc20DAI.address, remainingDAI, { from: user1 });
                 const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
                 expect(balSavingAccountDAI).to.be.bignumber.equal(collateralLocked);
+            });
+
+            it("should deposit DAI and borrow DAI only after withdrawing first", async () => {
+                const numOfToken = new BN(1000);
+                // 1. Transfer 1000 DAI to user 1 & 2, 1000 USDC to user 1
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user1, numOfToken);
+                await erc20DAI.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+                let userBalanceBeforeDeposit = await erc20DAI.balanceOf(user1);
+
+                // 2. User 1 & 2 deposit DAI
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
+                // 3. User 1 tries to borrow DAI
+                await expectRevert(
+                    savingAccount.borrow(addressDAI, numOfToken.div(new BN(10)), {
+                        from: user1
+                    }),
+                    "Deposit is greater than or equal to zero, please use withdraw instead."
+                );
+
+                // 4. User 1 withdraws all DAI
+                await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
+                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
+
+                // 4.1 Verify if withdraw was successful
+                expect(userBalanceBeforeDeposit).to.be.bignumber.equal(userBalanceAfterWithdraw);
+
+                // 5. Deposit USDC and borrow DAI
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user1 });
+                const limitAmount = numOfToken
+                    .mul(await savingAccount.getCoinToUsdRate(1))
+                    .mul(new BN(50))
+                    .div(new BN(100))
+                    .div(await savingAccount.getCoinToUsdRate(0));
+                await savingAccount.borrow(addressDAI, limitAmount, { from: user1 });
+                let userBalanceAfterBorrow = await erc20DAI.balanceOf(user1);
+                let expectedBalanceAfterBorrow = new BN(userBalanceAfterWithdraw).add(limitAmount);
+
+                // Verify that borrow was successful
+                expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow);
             });
 
             it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
