@@ -35,7 +35,7 @@ library TokenInfoLib {
         return (self.depositBalance == 0 ? self.borrowBalance : self.depositBalance).add(self.interest);
     }
 
-    function getStartBlockNumber(TokenInfo storage self) public view returns(uint256){
+    function getStartBlockNumber(TokenInfo storage self) public view returns(uint256) {
         return self.StartBlockNumber;
     }
 
@@ -57,7 +57,7 @@ library TokenInfoLib {
         }
 
         if (amount > 0) {
-            require(self.borrowBalance.add(self.interest) == 0, "To minus amount, the total balance must be equal to 0.");
+            require(self.depositBalance == 0, "To minus amount, the total balance must be equal to 0.");
             self.borrowBalance = self.borrowBalance.add(amount);
         }
     }
@@ -84,7 +84,7 @@ library TokenInfoLib {
         }
         // TODO _amount will always is greater than 0, then why?
         if (amount > 0) {
-            require(self.depositBalance.add(self.interest) == 0, "To add amount, the total balance must be equal to 0.");
+            require(self.borrowBalance == 0, "To add amount, the total balance must be equal to 0.");
             self.depositBalance = self.depositBalance.add(amount);
         }
     }

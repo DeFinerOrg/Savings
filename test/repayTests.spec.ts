@@ -209,13 +209,14 @@ contract("SavingAccount", async (accounts) => {
         context("with ETH", async () => {
             beforeEach(async () => {
                 // 1.1 Set up collateral.
-                await erc20USDC.transfer(user2, numOfToken);
-                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                const numOfUSDC = sixPrecision.mul(new BN(10));
+                await erc20USDC.transfer(user2, numOfUSDC);
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                     from: user1,
                     value: numOfToken
                 });
-                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
                 // 2. Start borrowing.
                 await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
             });

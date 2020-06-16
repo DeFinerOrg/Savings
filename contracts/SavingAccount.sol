@@ -168,44 +168,12 @@ contract SavingAccount {
         return (addresses, totalBalance, totalInterest, sign);
     }
 
-//    function getLiquidatableAccounts() public view returns(address[] memory) {
-//        address[] memory liquidatableAccounts;
-//        uint returnIdx;
-//        //TODO `activeAccounts` not getting removed from array.
-//        //TODO its always increasing. Call to this function needing
-//        //TODO more gas, however, it will not be charged in ETH.
-//        //TODO What could be the impact?
-//        for (uint i = 0; i < baseVariable.getActiveAccounts().length; i++) {
-//            address targetAddress = baseVariable.getActiveAccounts()[i];
-//            uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(targetAddress);
-//            uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(targetAddress);
-//            (uint usdValue, bool sign) = getAccountTotalUsdValue(targetAddress);
-//            if (
-//                sign
-//                &&
-//                baseVariable.totalBalance(targetAddress, symbols, false).mul(100)
-//                >
-//                usdValue.mul(liquidationThreshold)
-//                &&
-//                baseVariable.totalBalance(targetAddress, symbols, false)
-//                .mul(liquidationDiscountRatio)
-//                <=
-//                usdValue.mul(100)
-//
-//            ) {
-//                liquidatableAccounts[returnIdx++] = (targetAddress);
-//            }
-//        }
-//        return liquidatableAccounts;
-//    }
-
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
         uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
-        (uint256 totalUSDValue, bool sign) = getAccountTotalUsdValue(_borrower);
+        uint256 totalUSDValue = baseVariable.totalBalance(_borrower, symbols, true);
         if (
-            !sign &&
             totalBalance.mul(100) > totalUSDValue.mul(liquidationThreshold) &&
             totalBalance.mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
         ) {
@@ -252,8 +220,8 @@ contract SavingAccount {
         }
         uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
         .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
-        (uint usdValue, bool sign) = getAccountTotalUsdValue(msg.sender);
-        require(sign && totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+        uint usdValue = baseVariable.totalBalance(msg.sender, symbols, true);
+        require(totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
         send(msg.sender, _amount, _token);
     }
