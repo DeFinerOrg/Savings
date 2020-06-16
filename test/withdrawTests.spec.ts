@@ -692,21 +692,22 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when tokens are withdrawn with interest", async () => {
                 const depositAmount = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
 
                 // deposit tokens
-                await savingAccount.depositToken(erc20DAI.address, depositAmount);
-
-                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+                await savingAccount.deposit(erc20DAI.address, depositAmount, { from: owner });
 
                 //Increasing block time to 1 year
                 await time.increase(new BN(365).mul(new BN(24).mul(new BN(3600))));
 
                 //Withdrawing DAI
-                await savingAccount.withdrawAllToken(erc20DAI.address);
+                await savingAccount.withdrawAll(erc20DAI.address, { from: owner });
 
                 //Need to modify this logic
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+                let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(savingAccount.address);
                 expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
+                expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(new BN(0));
             });
         });
 
@@ -715,10 +716,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const withdraws = new BN(20);
 
                 //Try depositting unsupported Token to SavingContract
-                await expectRevert(
-                    savingAccount.withdraw(dummy, withdraws),
-                    "Unsupported token"
-                );
+                await expectRevert(savingAccount.withdraw(dummy, withdraws), "Unsupported token");
             });
 
             it("when amount is zero", async () => {
