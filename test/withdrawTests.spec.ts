@@ -569,69 +569,123 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when full tokens withdrawn", async () => {
                 const depositAmount = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20DAI.address, depositAmount);
 
                 //Withdrawing DAI
                 await savingAccount.withdrawAll(erc20DAI.address);
+                let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(owner);
+                let accountBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawDAI).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawDAI
+                );
+                expect(accountBalanceAfterWithdrawDAI).to.be.bignumber.equal(new BN(0));
             });
 
             //Full withdrawal of tokens with 6 decimals
             it("when full USDC withdrawn", async () => {
                 const depositAmount = new BN(1000);
                 await erc20USDC.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawUSDC = await erc20USDC.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20USDC.address, depositAmount);
 
                 //Withdrawing USDC
                 await savingAccount.withdrawAll(erc20USDC.address);
+                let userBalanceAfterWithdrawUSDC = await erc20USDC.balanceOf(owner);
+                let accountBalanceAfterWithdrawUSDC = await erc20USDC.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawUSDC).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawUSDC
+                );
+                expect(accountBalanceAfterWithdrawUSDC).to.be.bignumber.equal(new BN(0));
             });
 
             it("when full USDT withdrawn", async () => {
                 const depositAmount = new BN(1000);
                 await erc20USDT.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawUSDT = await erc20USDT.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20USDT.address, depositAmount);
 
                 //Withdrawing USDT
                 await savingAccount.withdrawAll(erc20USDT.address);
+                let userBalanceAfterWithdrawUSDT = await erc20USDT.balanceOf(owner);
+                let accountBalanceAfterWithdrawUSDT = await erc20USDT.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawUSDT).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawUSDT
+                );
+                expect(accountBalanceAfterWithdrawUSDT).to.be.bignumber.equal(new BN(0));
             });
 
             //Full withdrawal of tokens with 8 decimals
             it("when full WBTC withdrawn", async () => {
                 const depositAmount = new BN(1000);
                 await erc20WBTC.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawWBTC = await erc20WBTC.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20WBTC.address, depositAmount);
 
                 //Withdrawing WBTC
                 await savingAccount.withdrawAll(erc20WBTC.address);
+                let userBalanceAfterWithdrawWBTC = await erc20WBTC.balanceOf(owner);
+                let accountBalanceAfterWithdrawWBTC = await erc20WBTC.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawWBTC).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawWBTC
+                );
+                expect(accountBalanceAfterWithdrawWBTC).to.be.bignumber.equal(new BN(0));
             });
 
             it("when full TUSD withdrawn", async () => {
                 const depositAmount = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawTUSD = await erc20TUSD.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20TUSD.address, depositAmount);
 
                 //Withdrawing TUSD
                 await savingAccount.withdrawAll(erc20TUSD.address);
+                let userBalanceAfterWithdrawTUSD = await erc20TUSD.balanceOf(owner);
+                let accountBalanceAfterWithdrawTUSD = await erc20TUSD.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawTUSD).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawTUSD
+                );
+                expect(accountBalanceAfterWithdrawTUSD).to.be.bignumber.equal(new BN(0));
             });
 
             it("when full MKR withdrawn", async () => {
                 const depositAmount = new BN("1000");
                 await erc20MKR.approve(savingAccount.address, depositAmount);
+                let userBalanceBeforeWithdrawMKR = await erc20MKR.balanceOf(owner);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20MKR.address, depositAmount);
 
                 //Withdrawing MKR
                 await savingAccount.withdrawAll(erc20MKR.address);
+                let userBalanceAfterWithdrawMKR = await erc20MKR.balanceOf(owner);
+                let accountBalanceAfterWithdrawMKR = await erc20MKR.balanceOf(
+                    savingAccount.address
+                );
+                expect(userBalanceBeforeWithdrawMKR).to.be.bignumber.equal(
+                    userBalanceAfterWithdrawMKR
+                );
+                expect(accountBalanceAfterWithdrawMKR).to.be.bignumber.equal(new BN(0));
             });
 
             it("when partial ETH withdrawn", async () => {
