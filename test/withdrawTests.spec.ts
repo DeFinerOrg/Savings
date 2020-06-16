@@ -702,11 +702,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 //Withdrawing ETH
                 await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
 
-                /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
-                let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
+                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
+                    new BN(ETHbalanceAfterWithdraw)
+                );
 
                 // validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
+                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
             });
 
             it("when 1000 whole ETH withdrawn", async () => {
@@ -720,11 +722,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 //Withdrawing ETH
                 await savingAccount.withdraw(ETH_ADDRESS, web3.utils.toWei("1000", "ether"));
 
-                /* let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
-                let accountBalanceDiff = BN(ETHbalanceAfterWithdraw).sub(BN(ETHbalanceBeforeWithdraw));
+                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
+                    new BN(ETHbalanceAfterWithdraw)
+                );
 
                 // validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount); */
+                expect(accountBalanceDiff).to.be.bignumber.equal(web3.utils.toWei("1000", "ether"));
             });
 
             //TODO:
