@@ -46,13 +46,14 @@ library Base {
         uint128 borrowBitmap;
     }
 
-    //初始化
+    /**
+     * Initialize
+     */
     function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens) public {
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }
     }
-
 
     function getDepositBitmap(Account storage self) public view returns (uint128) {
         return self.depositBitmap;
@@ -125,6 +126,10 @@ library Base {
         // TODO Are all of these variables are in same token decimals?
     }
 
+    /**
+     * Get total amount of token in Compound protocal
+     * @param _token token address
+     */
     function getTotalCompoundNow(BaseVariable storage self, address _token) public {
         address cToken = self.cTokenAddress[_token];
         if(cToken != address(0)) {
@@ -132,6 +137,10 @@ library Base {
         }
     }
 
+    /**
+     * Get total amount of token lended
+     * @param _token token address
+     */
     function getTotalLoansNow(BaseVariable storage self, address _token) public {
         self.totalLoans[_token] = borrowInterest(self, _token);
     }
@@ -250,7 +259,10 @@ library Base {
     //        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
     //    }
 
-    //Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
+    /**
+     * Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
+     * @param _token token address
+     */
     function updateDepositRate(BaseVariable storage self, address _token) public {
         self.depositRateRecord[_token][block.number] = getNowDepositRate(self, _token);
     }
@@ -352,6 +364,9 @@ library Base {
         }
     }
 
+    /**
+     * Principal and interest
+     */
     function tokenBalanceOfAndInterestOf(
         BaseVariable storage self,
         address _token,
@@ -501,6 +516,12 @@ library Base {
         }
     }
 
+    /**
+     * Deposit the amount of token to the saving pool.
+     * @param _token the address of the deposited token
+     * @param _amount the mount of the deposited token
+     * @param _tokenIndex the index of the deposited token, which is spesified in TokenInfo struct.
+     */
     function deposit(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];

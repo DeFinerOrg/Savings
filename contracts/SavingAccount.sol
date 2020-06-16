@@ -272,6 +272,8 @@ contract SavingAccount {
 
     /**
      * Deposit the amount of token to the saving pool.
+     * @param _token the address of the deposited token
+     * @param _amount the mount of the deposited token
      */
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
@@ -281,8 +283,10 @@ contract SavingAccount {
     }
 
     /**
-     * Withdraw tokens from the saving pool. If the interest is not empty, the interest
-     * will be deducted first.
+     * Withdraw the amount of token from the saving pool.
+     * @param _token the address of the withdrawed token
+     * @param _amount the mount of the withdrawed token
+     * @dev If the token earned any interest from the pool, the interest will be withdrawed first.
      */
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
