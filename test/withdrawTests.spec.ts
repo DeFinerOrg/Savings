@@ -580,10 +580,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let accountBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(
                     savingAccount.address
                 );
+
+                // Verify user balance
                 expect(userBalanceBeforeWithdrawDAI).to.be.bignumber.equal(
                     userBalanceAfterWithdrawDAI
                 );
+                // Verify contract balance
                 expect(accountBalanceAfterWithdrawDAI).to.be.bignumber.equal(new BN(0));
+
+                // Verify Compound balance
+                const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
+                expect(new BN(0)).to.be.bignumber.equal(balCToken);
+
+                // Verify CToken balance
+                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
+                expect(new BN(0)).to.be.bignumber.equal(balCTokens);
             });
 
             //Full withdrawal of tokens with 6 decimals
@@ -605,6 +616,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     userBalanceAfterWithdrawUSDC
                 );
                 expect(accountBalanceAfterWithdrawUSDC).to.be.bignumber.equal(new BN(0));
+
+                // Verify Compound balance
+                const balCToken = await erc20USDC.balanceOf(addressCTokenForUSDC);
+                expect(new BN(0)).to.be.bignumber.equal(balCToken);
+
+                // Verify CToken balance
+                const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
+                expect(new BN(0)).to.be.bignumber.equal(balCTokens);
             });
 
             it("when full USDT withdrawn", async () => {
@@ -625,6 +644,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     userBalanceAfterWithdrawUSDT
                 );
                 expect(accountBalanceAfterWithdrawUSDT).to.be.bignumber.equal(new BN(0));
+
+                // Verify Compound balance
+                const balCToken = await erc20USDT.balanceOf(addressCTokenForUSDT);
+                expect(new BN(0)).to.be.bignumber.equal(balCToken);
+
+                // Verify CToken balance
+                const balCTokens = await cTokenUSDT.balanceOf(savingAccount.address);
+                expect(new BN(0)).to.be.bignumber.equal(balCTokens);
             });
 
             //Full withdrawal of tokens with 8 decimals
@@ -646,6 +673,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     userBalanceAfterWithdrawWBTC
                 );
                 expect(accountBalanceAfterWithdrawWBTC).to.be.bignumber.equal(new BN(0));
+
+                // Verify Compound balance
+                const balCToken = await erc20WBTC.balanceOf(addressCTokenForWBTC);
+                expect(new BN(0)).to.be.bignumber.equal(balCToken);
+
+                // Verify CToken balance
+                const balCTokens = await cTokenWBTC.balanceOf(savingAccount.address);
+                expect(new BN(0)).to.be.bignumber.equal(balCTokens);
             });
 
             it("when full TUSD withdrawn", async () => {
