@@ -10,7 +10,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.depositToken", async (accounts) => {
+contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
@@ -57,21 +57,21 @@ contract("SavingAccount.depositToken", async (accounts) => {
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
 
-    context("depositToken()", async () => {
+    context("deposit()", async () => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
                 const numOfToken = new BN(1000);
                 await expectRevert(
-                    savingAccount.depositToken(dummy, numOfToken),
+                    savingAccount.deposit(dummy, numOfToken),
                     "Unsupported token"
                 );
             });
 
             it("when amount is zero", async () => {
-                const depositTokens = new BN(0);
+                const deposits = new BN(0);
 
                 await expectRevert(
-                    savingAccount.depositToken(erc20DAI.address, depositTokens),
+                    savingAccount.deposit(erc20DAI.address, deposits),
                     "Amount is zero"
                 );
             });
@@ -84,7 +84,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20DAI.address, numOfToken);
+                await savingAccount.deposit(erc20DAI.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -118,7 +118,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20DAI.address, numOfToken);
+                await savingAccount.deposit(erc20DAI.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -150,7 +150,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20TUSD.address, numOfToken);
+                await savingAccount.deposit(erc20TUSD.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -171,7 +171,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20TUSD.address, numOfToken);
+                await savingAccount.deposit(erc20TUSD.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -190,7 +190,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20MKR.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20MKR.address, numOfToken);
+                await savingAccount.deposit(erc20MKR.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -211,7 +211,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20MKR.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20MKR.address, numOfToken);
+                await savingAccount.deposit(erc20MKR.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -232,7 +232,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, numOfToken);
 
                 // 2. Deposit Token to SavingContract
-                await savingAccount.depositToken(erc20USDC.address, numOfToken);
+                await savingAccount.deposit(erc20USDC.address, numOfToken);
 
                 // 3. Validate that the tokens are deposited to SavingAccount
                 // 3.1 SavingAccount contract must received tokens
@@ -262,7 +262,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
                 const depositAmount = new BN(10);
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
 
-                await savingAccount.depositToken(ETH_ADDRESS, depositAmount, {
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                     value: depositAmount
                 });
 
@@ -277,7 +277,7 @@ contract("SavingAccount.depositToken", async (accounts) => {
             it("when 1000 whole ETH are deposited", async () => {
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
 
-                await savingAccount.depositToken(ETH_ADDRESS, web3.utils.toWei("1000", "ether"), {
+                await savingAccount.deposit(ETH_ADDRESS, web3.utils.toWei("1000", "ether"), {
                     value: web3.utils.toWei("1000", "ether")
                 });
 
