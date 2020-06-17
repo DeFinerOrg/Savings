@@ -9,8 +9,7 @@ library TokenInfoLib {
     struct TokenInfo {
         uint256 depositBalance;
         uint256 borrowBalance;
-        uint256 depositInterest;
-        uint256 borrowInterest;
+        uint256 interest;
         uint256 rate;
         uint256 StartBlockNumber;
     }
