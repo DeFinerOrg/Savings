@@ -323,9 +323,9 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
-                /* // TODO:
+                // TODO:
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
-                const numOfUSDC = sixPrecision.mul(new BN(10)).pow(new BN(6));
+                const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(6)));
                 //const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
                 const borrowTokens = eighteenPrecision
                     .mul(new BN(6))
@@ -336,6 +336,8 @@ contract("Integration Tests", async (accounts) => {
 
                 // Transfer 1 million USDC tokens (18 decimals) to user2 ??
                 // TODO Is sending "18 decimal" tokens correct for USDC?
+
+                // Transfer 1 million USDC tokens (6 decimals) to user2
                 await erc20USDC.transfer(user2, numOfUSDC);
 
                 await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -347,7 +349,7 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
                 const user2Balance = await erc20DAI.balanceOf(user2);
-                expect(user2Balance).to.be.bignumber.equal(borrowTokens); */
+                expect(user2Balance).to.be.bignumber.equal(borrowTokens);
             });
 
             it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {

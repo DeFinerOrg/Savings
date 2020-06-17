@@ -41,7 +41,7 @@ export class TestEngine {
 
     public async deployMockERC20Tokens(): Promise<Array<string>> {
         const network = process.env.NETWORK;
-        const ONE_BILLION = new BN(10).pow(new BN(9));
+        const ONE_BILLION = new BN(10).pow(new BN(27));
         const tokensToMint = ONE_BILLION;
         var erc20TokenAddresses = new Array();
         let addr;
