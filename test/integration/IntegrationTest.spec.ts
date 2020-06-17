@@ -323,19 +323,14 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
-                // TODO:
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(6)));
-                //const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
                 const borrowTokens = eighteenPrecision
                     .mul(new BN(6))
                     .mul(new BN(10).pow(new BN(5)));
 
                 // Transfer 1 million DAI tokens (18 decimals) to user1
                 await erc20DAI.transfer(user1, numOfToken);
-
-                // Transfer 1 million USDC tokens (18 decimals) to user2 ??
-                // TODO Is sending "18 decimal" tokens correct for USDC?
 
                 // Transfer 1 million USDC tokens (6 decimals) to user2
                 await erc20USDC.transfer(user2, numOfUSDC);
