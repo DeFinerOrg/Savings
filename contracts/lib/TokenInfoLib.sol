@@ -17,9 +17,9 @@ library TokenInfoLib {
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?
 
-    function isDeposit(TokenInfo storage self) public view returns(bool) {
-        return self.depositBalance >= self.borrowBalance ? true : false;
-    }
+//    function isDeposit(TokenInfo storage self) public view returns(bool) {
+//        return self.depositBalance >= self.borrowBalance ? true : false;
+//    }
 
     // returns the principal
     // TODO: change the name from balance to principal
