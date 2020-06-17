@@ -323,7 +323,7 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
-                // WIP
+                /* // TODO:
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const numOfUSDC = sixPrecision.mul(new BN(10)).pow(new BN(6));
                 //const borrowTokens = sixPrecision.mul(new BN(6)).mul(new BN(10).pow(new BN(5)));
@@ -347,7 +347,7 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
                 const user2Balance = await erc20DAI.balanceOf(user2);
-                expect(user2Balance).to.be.bignumber.equal(borrowTokens);
+                expect(user2Balance).to.be.bignumber.equal(borrowTokens); */
             });
 
             it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {
@@ -688,6 +688,15 @@ contract("Integration Tests", async (accounts) => {
 
                 // 2. User 1 & 2 deposit DAI
                 await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                // Verify deposit
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+
                 await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
                 // 3. User 1 tries to borrow DAI
@@ -737,5 +746,3 @@ contract("Integration Tests", async (accounts) => {
         it("");
     });
 });
-
-// deposit, withdraw first and then borrow
