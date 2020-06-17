@@ -733,7 +733,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 });
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-
                 //Withdrawing ETH
                 await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
 
@@ -741,7 +740,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
                     new BN(ETHbalanceAfterWithdraw)
                 );
-
                 // validate savingAccount ETH balance
                 expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
             });
@@ -761,7 +759,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
                     new BN(ETHbalanceAfterWithdraw)
                 );
-
                 // validate savingAccount ETH balance
                 expect(accountBalanceDiff).to.be.bignumber.equal(web3.utils.toWei("1000", "ether"));
             });
@@ -844,7 +841,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     "Insufficient balance."
                 );
             });
-
             it("when user tries to withdraw tokens which are used as collateral by the user");
         });
     });
