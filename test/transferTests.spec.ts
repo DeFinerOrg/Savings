@@ -18,6 +18,7 @@ contract("SavingAccount.transfer", async (accounts) => {
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
+    const user3 = accounts[3];
     const dummy = accounts[9];
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
@@ -86,7 +87,34 @@ contract("SavingAccount.transfer", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("Transfer small amount balance");
+                it("Transfer small amount balance", async () => {
+                    const numOfToken = new BN(1000);
+                    // 1. Transfer DAI to user1 & user2.
+                    // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
+                    await erc20DAI.transfer(user1, numOfToken);
+                    await erc20DAI.transfer(user2, numOfToken);
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+
+                    let user1Balance = await erc20DAI.balanceOf(user1);
+                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+
+                    let user2Balance = await erc20DAI.balanceOf(user2);
+                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
+                    await savingAccount.transfer(user1, addressDAI, numOfToken.div(new BN(100)), {
+                        from: user2
+                    });
+
+                    let user1BalanceAfterTransfer = await erc20DAI.balanceOf(user2);
+                    // FIXME:
+                    /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
+                        numOfToken.add(new BN(10))
+                    ); */
+                });
                 // 1. Transfer DAI to user1 & user2.
                 // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
                 // withdraw of user2 and compound token deposit of user1.
@@ -102,9 +130,20 @@ contract("SavingAccount.transfer", async (accounts) => {
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("Not enough balance for transfer");
-                // 1. Transfer ETH to user1 & user2.
-                // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
+                it("Not enough balance for transfer", async () => {
+                    // 1. Transfer ETH to user1 & user2.
+                    // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
+                    const ETHtransferAmount = new BN(10000).mul(eighteenPrecision);
+                    let ETHbalanceOfUser2 = await web3.eth.getBalance(user2);
+                    expect(ETHbalanceOfUser2).to.be.bignumber.lessThan(ETHtransferAmount);
+
+                    await expectRevert(
+                        savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                            from: user2
+                        }),
+                        "Insufficient balance."
+                    );
+                });
 
                 it("Not enough collatral for borrowed asset if transfer");
                 // 1. Transfer ETH to user1 & user2.
