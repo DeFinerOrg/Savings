@@ -17,8 +17,12 @@ contract TokenInfoRegistry is Ownable {
      * @notice This struct will consume 5 storage locations
      */
     struct TokenInfo {
+        // Token index, can store upto 255
+        uint8 index;
         // ERC20 Token decimal
         uint8 decimals;
+        // If token is enabled / disabled
+        bool enabled;
         // Is ERC20 token charge transfer fee?
         bool isTransferFeeEnabled;
         // Is Token supported on Compound
@@ -36,15 +40,15 @@ contract TokenInfoRegistry is Ownable {
     }
 
     event TokenAdded(address indexed token);
-    event TokenRemoved(address indexed token);
     event TokenUpdated(address indexed token);
 
-    address internal ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    address internal constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    uint256 public constant MAX_TOKENS = 128;
 
     // TODO SCALE to represent 100%
     //uint256 public SCALE = 1e8;
 
-    uint256 public SCALE = 100;
+    uint256 public constant SCALE = 100;
 
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
@@ -88,9 +92,12 @@ contract TokenInfoRegistry is Ownable {
         require(_token != address(0), "Token address is zero");
         require(!isTokenExist(_token), "Token already exist");
         require(_chainLinkAggregator != address(0), "ChainLinkAggregator address is zero");
+        require(tokens.length <= MAX_TOKENS, "Max token limit reached");
 
         TokenInfo storage storageTokenInfo = tokenInfo[_token];
+        storageTokenInfo.index = uint8(tokens.length);
         storageTokenInfo.decimals = _decimals;
+        storageTokenInfo.enabled = true;
         storageTokenInfo.isTransferFeeEnabled = _isTransferFeeEnabled;
         storageTokenInfo.isSupportedOnCompound = _isSupportedOnCompound;
         storageTokenInfo.cToken = _cToken;
@@ -208,28 +215,21 @@ contract TokenInfoRegistry is Ownable {
     }
 
 
-    /**
-     * @dev Remove a token from the token registry
-     * @param _token Token address to remove
-     * @param _index Index location of the token in tokens array
-     */
-    function removeToken(address _token, uint8 _index) external onlyOwner {
-        require(isTokenExist(_token), "Token not exist");
-        require(tokens[_index] == _token, "Token address and index not matched");
+    function enableToken(address _token) external onlyOwner whenTokenExists(_token) {
+        require(tokenInfo[_token].enabled == false, "Token already enabled");
 
-        delete tokenInfo[_token];
+        tokenInfo[_token].enabled = true;
 
-        uint256 lastIndex = tokens.length.sub(1);
-        // When element to be removed is not the last element in array, then move the element first
-        // Otherwise, when its the last element, just do pop()
-        if(_index != lastIndex) {
-            tokens[_index] = tokens[lastIndex];
-        }
-        tokens.pop();
-
-        emit TokenRemoved(_token);
+        emit TokenUpdated(_token);
     }
 
+    function disableToken(address _token) external onlyOwner whenTokenExists(_token) {
+        require(tokenInfo[_token].enabled == true, "Token already disabled");
+
+        tokenInfo[_token].enabled = false;
+
+        emit TokenUpdated(_token);
+    }
 
     // =====================
     //      GETTERS
@@ -246,6 +246,14 @@ contract TokenInfoRegistry is Ownable {
 
     function getTokens() external view returns (address[] memory) {
         return tokens;
+    }
+
+    function getTokenIndex(address _token) external view returns (uint8) {
+        return tokenInfo[_token].index;
+    }
+
+    function isTokenEnabled(address _token) external view returns (bool) {
+        return tokenInfo[_token].enabled;
     }
 
     /**

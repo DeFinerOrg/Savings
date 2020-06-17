@@ -1,25 +1,365 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
 
-contract("Integration Tests", async (accounts) => {
-    beforeEach(async () => {});
+var chai = require("chai");
+var expect = chai.expect;
+var tokenData = require("../../test-helpers/tokenData.json");
 
-    beforeEach(async () => {});
+const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
+
+const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+
+contract("Integration Tests", async (accounts) => {
+    const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+    let testEngine: TestEngine;
+    let savingAccount: t.SavingAccountInstance;
+
+    const owner = accounts[0];
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const user3 = accounts[3];
+    const dummy = accounts[9];
+    const eighteenPrecision = new BN(10).pow(new BN(18));
+    const sixPrecision = new BN(10).pow(new BN(6));
+
+    let tokens: any;
+    let addressDAI: any;
+    let addressUSDC: any;
+    let addressUSDT: any;
+    let addressTUSD: any;
+    let addressMKR: any;
+    let addressBAT: any;
+    let addressZRX: any;
+    let addressREP: any;
+    let addressWBTC: any;
+    let addressCTokenForDAI: any;
+    let addressCTokenForUSDC: any;
+    let addressCTokenForUSDT: any;
+    let addressCTokenForWBTC: any;
+    let cTokenDAI: t.MockCTokenInstance;
+    let cTokenUSDC: t.MockCTokenInstance;
+    let cTokenUSDT: t.MockCTokenInstance;
+    let cTokenWBTC: t.MockCTokenInstance;
+    let erc20DAI: t.MockERC20Instance;
+    let erc20USDC: t.MockERC20Instance;
+    let erc20USDT: t.MockERC20Instance;
+    let erc20TUSD: t.MockERC20Instance;
+    let erc20MKR: t.MockERC20Instance;
+    let erc20BAT: t.MockERC20Instance;
+    let erc20ZRX: t.MockERC20Instance;
+    let erc20REP: t.MockERC20Instance;
+    let erc20WBTC: t.MockERC20Instance;
+
+    before(async () => {
+        // Things to initialize before all test
+        testEngine = new TestEngine();
+    });
+
+    beforeEach(async () => {
+        savingAccount = await testEngine.deploySavingAccount();
+        // 1. initialization.
+        tokens = await testEngine.erc20Tokens;
+        addressDAI = tokens[0];
+        addressUSDC = tokens[1];
+        addressUSDT = tokens[2];
+        addressTUSD = tokens[3];
+        addressMKR = tokens[4];
+        addressBAT = tokens[5];
+        addressZRX = tokens[6];
+        addressREP = tokens[7];
+        addressWBTC = tokens[8];
+        erc20DAI = await MockERC20.at(addressDAI);
+        erc20USDC = await MockERC20.at(addressUSDC);
+        erc20USDT = await MockERC20.at(addressUSDT);
+        erc20TUSD = await MockERC20.at(addressTUSD);
+        erc20MKR = await MockERC20.at(addressMKR);
+        erc20BAT = await MockERC20.at(addressBAT);
+        erc20ZRX = await MockERC20.at(addressZRX);
+        erc20REP = await MockERC20.at(addressREP);
+        erc20WBTC = await MockERC20.at(addressWBTC);
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
+        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
+        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+    });
 
     context("Deposit and Withdraw", async () => {
-        it("should deposit all tokens and withdraw all tokens");
+        /* it("should deposit all tokens and withdraw all tokens", async () => {
+            const numOfToken = new BN(1000);
 
-        it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)");
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
 
-        it("should deposit all and withdraw Compound supported tokens");
+            // use Promise - map (from TestEngine)
+            for (let u = 0; u < 3; u++) {
+                //userDeposit --> u
+                const userDepositIndex = u;
+                //Deposit 1000 tokens of each Address
+                for (let i = 0; i < 9; i++) {
+                    tempContractAddress = tokens[i];
+                    erc20contr = await MockERC20.at(tempContractAddress);
 
-        it("should deposit all and withdraw only token with less than 18 decimals");
+                    await erc20contr.transfer(accounts[u], numOfToken);
+                    await erc20contr.approve(savingAccount.address, numOfToken, {
+                        from: accounts[u]
+                    });
 
-        it("should deposit 1million of each token, wait for a week, withdraw all");
+                    const balSavingAccountBeforeDeposit = await erc20contr.balanceOf(
+                        savingAccount.address
+                    );
+                    console.log("user", u);
+                    console.log("token", tempContractAddress);
+                    console.log("balSavingAccountBeforeDeposit", BN(balSavingAccountBeforeDeposit));
+
+                    //await erc20contr.approve(savingAccount.address, numOfToken);
+                    await savingAccount.depositToken(erc20contr.address, numOfToken, {
+                        from: accounts[u]
+                    });
+
+                    const balSavingAccountAfterDeposit = await erc20contr.balanceOf(
+                        savingAccount.address
+                    );
+                    console.log("user", u);
+                    console.log("Token", tempContractAddress);
+                    console.log("balSavingAccountAfterDeposit", BN(balSavingAccountAfterDeposit));
+
+                    //Verify if deposit was successful
+
+                    //array that stores no. of tokens
+
+                    const expectedTokensAtSavingAccountContract = numOfToken
+                        .mul(new BN(u + 1))
+                        .mul(new BN(15))
+                        .div(new BN(100));
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccount
+                    );
+                }
+            }
+
+            for (let userWithdraw = 0; userWithdraw < 3; userWithdraw++) {
+                //Withdraw 1000 tokens of each Address
+                for (let j = 0; j < 9; j++) {
+                    tempContractAddress = tokens[j];
+                    erc20contr = await MockERC20.at(tempContractAddress);
+
+                    await savingAccount.withdrawAllToken(erc20contr.address);
+
+                    //Verify if withdrawAll was successful
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    //expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                }
+            }
+        }); */
+
+        it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
+            const numOfToken = new BN(1000);
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            //Withdraw TUSD & MKR
+            for (let i = 3; i <= 4; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                await savingAccount.withdrawAll(erc20contr.address);
+
+                //Verify if withdrawAll was successful
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+            }
+        });
+
+        it("should deposit all and withdraw Compound supported tokens", async () => {
+            const numOfToken = new BN(1000);
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            for (let i = 0; i < 9; i++) {
+                if (i != 3 && i != 4) {
+                    tempContractAddress = tokens[i];
+                    erc20contr = await MockERC20.at(tempContractAddress);
+                    await savingAccount.withdrawAll(erc20contr.address);
+
+                    //Verify if withdrawAll was successful
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                }
+            }
+        });
+
+        it("should deposit all and withdraw only token with less than 18 decimals", async () => {
+            const numOfToken = new BN(1000);
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            for (let i = 0; i < 9; i++) {
+                if (i == 1 || i == 2 || i == 8) {
+                    tempContractAddress = tokens[i];
+                    erc20contr = await MockERC20.at(tempContractAddress);
+                    await savingAccount.withdrawAll(erc20contr.address);
+
+                    //Verify if withdrawAll was successful
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                }
+            }
+        });
+
+        it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
+            const numOfToken = new BN(10).pow(new BN(6));
+
+            let tempContractAddress: any;
+            let erc20contr: t.MockERC20Instance;
+
+            /* await Promise.all(
+                tokens.map(async (token: string) => {
+                    erc20contr = await MockERC20.at(token);
+                    console.log("token", token);
+                    //console.log("erc20contr", erc20contr.address);
+                    await erc20contr.approve(savingAccount.address, numOfToken);
+                    await savingAccount.depositToken(erc20contr.address, numOfToken);
+
+                    //Verify if deposit was successful
+                    const expectedTokensAtSavingAccountContract = numOfToken
+                        .mul(new BN(15))
+                        .div(new BN(100));
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccount
+                    );
+                })
+            ); */
+
+            // Deposit all tokens
+            for (let i = 0; i < 9; i++) {
+                tempContractAddress = tokens[i];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                //await erc20contr.transfer(accounts[userDeposit], numOfToken);
+                await erc20contr.approve(savingAccount.address, numOfToken);
+                //await erc20contr.approve(savingAccount.address, numOfToken);
+                await savingAccount.deposit(erc20contr.address, numOfToken);
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContract = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                    balSavingAccount
+                );
+            }
+
+            await time.increase(new BN(7).mul(new BN(24).mul(new BN(3600))));
+
+            for (let j = 0; j < 9; j++) {
+                tempContractAddress = tokens[j];
+                erc20contr = await MockERC20.at(tempContractAddress);
+
+                await savingAccount.withdrawAll(erc20contr.address);
+
+                //Verify if withdrawAll was successful
+                const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+            }
+        });
+
+        it("should deposit and withdraw with interest");
     });
 
     context("Deposit and Borrow", async () => {
-        it("should deposit $1 million value and borrow 0.6 million");
+        it("should deposit $1 million value and borrow 0.6 million", async () => {
+            const numOfToken = new BN("1000000");
+            const borrowTokens = new BN("600000");
+
+            await erc20DAI.transfer(user1, numOfToken);
+            await erc20USDC.transfer(user2, numOfToken);
+            await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+            await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+            // 1. Deposit $1 million
+            await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+            await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+            // 2. Borrow $0.6 million
+            await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
+            // 3. Verify the amount borrowed
+            const user2Balance = await erc20DAI.balanceOf(user2);
+            expect(user2Balance).to.be.bignumber.equal(borrowTokens);
+        });
+
+        it("should allow borrow more than reserve if user has enough collateral");
+        //user1 deposits 1000 full tokens of DAI
+        //user2 deposits 1000 full of USDC
+        //user1 borrows 300 ful tokens of USDC --> should fail acc to current logic
     });
 
     context("Deposit, Borrow, Repay", async () => {
@@ -27,7 +367,30 @@ contract("Integration Tests", async (accounts) => {
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
-        it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw");
+        it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
+            const numOfDAI = eighteenPrecision.mul(new BN(10));
+            const numOfUSDC = sixPrecision.mul(new BN(10));
+            await erc20DAI.transfer(user1, numOfDAI);
+            await erc20USDC.transfer(user2, numOfUSDC);
+            await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+            await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+
+            //1. Deposit DAI
+            await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+            await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+            // 2. Borrow USDC
+            await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), { from: user1 });
+
+            // 3. Verify the loan amount
+            const user1Balance = await erc20USDC.balanceOf(user1);
+            expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
+
+            // 4. Withdraw remaining DAI
+            await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
+            const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
+            expect(balSavingAccountDAI).to.be.bignumber.equal(new BN(0));
+        });
 
         it("should get deposit interests when he deposits, wait for a week and withdraw");
     });
