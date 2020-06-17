@@ -57,62 +57,73 @@ contract("SavingAccount.transfer", async (accounts) => {
         context("with Token", async () => {
             context("should fail", async () => {
                 it("Not enough balance for transfer", async () => {
+                    const numOfToken = new BN(1000);
                     // 1. Transfer DAI to user1 & user2.
                     // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
+                    await erc20DAI.transfer(user1, numOfToken);
+                    await erc20DAI.transfer(user2, numOfToken);
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+
+                    let user1Balance = await erc20DAI.balanceOf(user1);
+                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+
+                    let user2Balance = await erc20DAI.balanceOf(user2);
+                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+
+                    await expectRevert(
+                        savingAccount.transfer(user1, addressDAI, numOfToken.mul(new BN(2)), {
+                            from: user2
+                        }),
+                        "Insufficient balance."
+                    );
                 });
 
-                it("Not enough collatral for borrowed asset if transfer", async () => {
-                    // 1. Transfer DAI to user1 & user2.
-                    // 2. User2 borrow USDC and use it's DAI as collateral
-                    // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
-                }); 
+                it("Not enough collatral for borrowed asset if transfer");
+                // 1. Transfer DAI to user1 & user2.
+                // 2. User2 borrow USDC and use it's DAI as collateral
+                // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
             });
 
             context("should succeed", async () => {
-                it("Transfer small amount balance", async () => {
-                    // 1. Transfer DAI to user1 & user2.
-                    // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token 
-                    // withdraw of user2 and compound token deposit of user1.
-                    // 3. Verity the new balance
-                });
+                it("Transfer small amount balance");
+                // 1. Transfer DAI to user1 & user2.
+                // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
+                // withdraw of user2 and compound token deposit of user1.
+                // 3. Verity the new balance
 
-                it("Transfer large amount of balance", async () => {
-                    // 1. Transfer DAI to user1 & user2.
-                    // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token 
-                    // withdraw of user2 and compound token deposit of user1.
-                    // 3. Verify the new balance
-                });
+                it("Transfer large amount of balance");
+                // 1. Transfer DAI to user1 & user2.
+                // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
+                // withdraw of user2 and compound token deposit of user1.
+                // 3. Verify the new balance
             });
         });
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("Not enough balance for transfer", async () => {
-                    // 1. Transfer ETH to user1 & user2.
-                    // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
-                });
+                it("Not enough balance for transfer");
+                // 1. Transfer ETH to user1 & user2.
+                // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
 
-                it("Not enough collatral for borrowed asset if transfer", async () => {
-                    // 1. Transfer ETH to user1 & user2.
-                    // 2. User2 borrow USDC and use it's ETH as collateral
-                    // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
-                }); 
+                it("Not enough collatral for borrowed asset if transfer");
+                // 1. Transfer ETH to user1 & user2.
+                // 2. User2 borrow USDC and use it's ETH as collateral
+                // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
             });
 
             context("should succeed", async () => {
-                it("Transfer small amount balance", async () => {
-                    // 1. Transfer ETH to user1 & user2.
-                    // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token 
-                    // withdraw of user2 and compound token deposit of user1.
-                    // 3. Verity the new balance
-                });
+                it("Transfer small amount balance");
+                // 1. Transfer ETH to user1 & user2.
+                // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
+                // withdraw of user2 and compound token deposit of user1.
+                // 3. Verity the new balance
 
-                it("Transfer large amount of balance", async () => {
-                    // 1. Transfer ETH to user1 & user2.
-                    // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token 
-                    // withdraw of user2 and compound token deposit of user1.
-                    // 3. Verify the new balance
-                });
+                it("Transfer large amount of balance");
+                // 1. Transfer ETH to user1 & user2.
+                // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
+                // withdraw of user2 and compound token deposit of user1.
+                // 3. Verify the new balance
             });
         });
     });
