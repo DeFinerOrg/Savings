@@ -11,10 +11,11 @@ library TokenInfoLib {
         uint256 borrowBalance;
         uint256 interest;
         uint256 rate;
-        uint256 StartBlockNumber;
+        uint256 StartBlockNumber;       // sichaoy: last updated block number?
     }
-    uint256 constant BASE = 10**18; // TODO: 12 vs 18?
+    uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
+    // sichaoy: This function should be removed
     function isDeposit(TokenInfo storage self) public view returns(bool) {
         return self.depositBalance >= self.borrowBalance ? true : false;
     }

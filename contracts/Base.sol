@@ -18,10 +18,10 @@ library Base {
     using SymbolsLib for SymbolsLib.Symbols;
 
     struct BaseVariable {
-        mapping(address => uint256) totalLoans;
-        mapping(address => uint256) totalReserve;
-        mapping(address => uint256) totalCompound;
-        mapping(address => address) cTokenAddress;
+        mapping(address => uint256) totalLoans;     // amount of lended tokens
+        mapping(address => uint256) totalReserve;   // amount of tokens in reservation
+        mapping(address => uint256) totalCompound;  // amount of tokens in compound
+        mapping(address => address) cTokenAddress;  // cToken addresses
         // Token => block-num => rate
         mapping(address => mapping(uint => uint)) depositRateRecord;
         // Token => block-num => rate
@@ -171,6 +171,7 @@ library Base {
 
     //Get Deposit Rate.  Deposit APR = (Borrow APR * Utilization Rate (U) +  Compound Supply Rate *
     //Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
+    // sichaoy: make sure the ratePerBlock is zero if both U and C are zero.
     function getDepositRatePerBlock(BaseVariable storage self, address _token) public view returns(uint depositAPR) {
         address cToken = self.cTokenAddress[_token];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, _token);
@@ -214,21 +215,26 @@ library Base {
     //        }
     //    }
 
-    //Get the deposit rate of the block interval.
+    /**
+     * Get the cummulative deposit rate in a block interval ending in current block
+     * @param _token token address
+     * @param _depositRateRecordStart the start block of the interval
+     */
     function getBlockIntervalDepositRateRecord(
         BaseVariable storage self,
         address _token,
         uint _depositRateRecordStart
     ) internal view returns (uint256) {
+        // sichaoy: What if the block number doesn't exist? return 0
         uint256 depositRate = self.depositRateRecord[_token][_depositRateRecordStart];
         if (
-            depositRate == 0 ||
-            depositRate == self.depositRateRecord[_token][block.number] ||
-            _depositRateRecordStart == block.number
+            depositRate == 0 ||                                  // assert here as the depositRate could be never zero
+            depositRate == self.depositRateRecord[_token][block.number] || // r = 0 in the interval
+            _depositRateRecordStart == block.number                        // current block is the start block
         ) {
-            return depositRate;
+            return depositRate;                                  // return 1?
         } else {
-            return self.depositRateRecord[_token][block.number]
+            return self.depositRateRecord[_token][block.number]  // index(current block)/index(start block)
             .mul(SafeDecimalMath.getUNIT())
             .div(depositRate);
         }
@@ -263,28 +269,36 @@ library Base {
      * Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
      * @param _token token address
      */
+    // sichaoy: rateIndex?
     function updateDepositRate(BaseVariable storage self, address _token) public {
         self.depositRateRecord[_token][block.number] = getNowDepositRate(self, _token);
     }
 
+    /**
+     * Calculate a token deposite rate of current block
+     * @param _token token address
+     */
+    // sichaoy: this function returns 1+r*block_delta, better to replace the name to index
     function getNowDepositRate(BaseVariable storage self, address _token) public view returns(uint) {
-        uint256 depositRatePerBlock = getDepositRatePerBlock(self, _token);
+        uint256 depositRatePerBlock = getDepositRatePerBlock(self, _token);     // returns r
         // "depositRateLMBN" => "DepositRateLastModifiedBlockNumber"
         uint256 depositRateLMBN = self.depositRateLastModifiedBlockNumber[_token];
         uint256 depositRateRecord = self.depositRateRecord[_token][depositRateLMBN];
         uint256 UNIT = SafeDecimalMath.getUNIT();
-        if(depositRatePerBlock == 0) {
+        if(depositRatePerBlock == 0) {                      // r = 0, this can also be merged with the last two cases?
             return UNIT;
-        } else if(depositRateLMBN == 0 || depositRateRecord == 0) {
-            return depositRatePerBlock.add(UNIT);
-        } else if(block.number == depositRateLMBN) {
+        } else if(depositRateLMBN == 0 || depositRateRecord == 0) { // The first deposit. If depositRateLMBN = 0, then depositRateRecord (r) = 0?
+            return depositRatePerBlock.add(UNIT);           // 1 + r????? Actually, returns 1
+        }
+        // sichaoy: else if / else has the same logic?
+        else if(block.number == depositRateLMBN) {          // in case of block_delta = 0
             return depositRateRecord;
-        } else {
+        } else {                                            // depositRateRecord*(1+r*block_delta)
             return depositRateRecord
             .mul(block.number.sub(depositRateLMBN)
             .mul(depositRatePerBlock).add(UNIT)
             )
-            .div(UNIT);
+            .div(UNIT); // sichaoy: why divided by UNIT?
         }
     }
 
@@ -528,13 +542,21 @@ library Base {
 
         require(tokenInfo.isDeposit(), "Token balance must be zero or positive.");
 
+        // Update the amount of tokens in compound and loans
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
+
+        // Add a new point on the index curve.
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
+
+        // Get the cumulative rate during a block interval
         uint rate = getBlockIntervalDepositRateRecord(self, _token, tokenInfo.getStartBlockNumber());
-        // Add principa + interest (on borrows/on deposits)
+
+        // Add principal + interest (on borrows/on deposits)
+        // sichaoy: update deposit principal and interest
         tokenInfo.addAmount(_amount, rate, block.number);
+
         // Total reserve of the token deposited to
         // TODO Why we need to maintain reserve?
         self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
