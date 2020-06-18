@@ -75,12 +75,12 @@ library TokenInfoLib {
     }
 
     function resetDepositInterest(TokenInfo storage self, uint accruedRate) public {
-        self.depositInterest = viewDepositInterest(self, accruedRate, self.depositBalance);
+        self.depositInterest = viewDepositInterest(self, accruedRate);
         self.StartBlockNumber = block.number;
     }
 
     function resetBorrowInterest(TokenInfo storage self, uint accruedRate) public {
-        self.borrowInterest = viewBorrowInterest(self, accruedRate, self.borrowBalance);
+        self.borrowInterest = viewBorrowInterest(self, accruedRate);
         self.StartBlockNumber = block.number;
     }
 
