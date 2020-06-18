@@ -83,10 +83,44 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("Not enough collatral for borrowed asset if transfer");
-                // 1. Transfer DAI to user1 & user2.
-                // 2. User2 borrow USDC and use it's DAI as collateral
-                // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
+                it("Not enough collatral for borrowed asset if transfer", async () => {
+                    // 1. Transfer DAI to user1 & user2.
+                    // 2. User2 borrow USDC and use it's DAI as collateral
+                    // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
+                    const numOfDAI = eighteenPrecision.mul(new BN(10));
+                    const numOfUSDC = sixPrecision.mul(new BN(10));
+                    const borrowAmount = numOfUSDC.div(new BN(10));
+                    await erc20DAI.transfer(user2, numOfDAI);
+                    await erc20USDC.transfer(user1, numOfUSDC);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
+                    await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
+
+                    //1. Deposit DAI
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+                    await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
+
+                    // 2. Borrow USDC
+                    await savingAccount.borrow(addressUSDC, borrowAmount, { from: user2 });
+
+                    // Amount that is locked as collateral
+                    const collateralLocked = borrowAmount
+                        .mul(await savingAccount.getCoinToUsdRate(1))
+                        .mul(new BN(100))
+                        .div(new BN(60))
+                        .div(await savingAccount.getCoinToUsdRate(0));
+
+                    // 3. Verify the loan amount
+                    const user1Balance = await erc20USDC.balanceOf(user2);
+                    expect(user1Balance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
+
+                    // Total remaining DAI after borrow
+                    const remainingDAI = numOfDAI.sub(collateralLocked);
+
+                    // FIXME:
+                    await savingAccount.transfer(user1, addressDAI, remainingDAI.add(new BN(100)), {
+                        from: user2
+                    });
+                });
             });
 
             context("should succeed", async () => {
@@ -188,10 +222,49 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("Not enough collatral for borrowed asset if transfer");
-                // 1. Transfer ETH to user1 & user2.
-                // 2. User2 borrow USDC and use it's ETH as collateral
-                // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
+                it("Not enough collatral for borrowed asset if transfer", async () => {
+                    // 1. Transfer ETH to user1 & user2.
+                    // 2. User2 borrow USDC and use it's ETH as collateral
+                    // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
+                    const depositAmount = new BN(1000);
+                    const ETHtransferAmount = new BN(900);
+                    const USDCBorrowAmount = new BN(600);
+
+                    // User 1 deposits USDC
+                    await erc20USDC.transfer(user1, depositAmount);
+                    await erc20USDC.approve(savingAccount.address, depositAmount, {
+                        from: user1
+                    });
+                    await savingAccount.deposit(addressUSDC, depositAmount, { from: user1 });
+
+                    // User 1 deposits ETH
+                    const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+                    const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
+
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user1
+                    });
+
+                    // User 2 deposits ETH
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user2
+                    });
+
+                    //FIXME:
+                    // User 2 borrowed USDC
+                    await savingAccount.borrow(addressUSDC, USDCBorrowAmount, { from: user2 });
+                    // Verify the loan amount.
+                    const user2BalanceUSDC = await erc20USDC.balanceOf(user2);
+                    expect(user2BalanceUSDC).to.be.bignumber.equal(new BN(600));
+
+                    /* await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                        from: user2
+                    }); */
+                });
             });
 
             context("should succeed", async () => {
