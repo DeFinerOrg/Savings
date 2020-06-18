@@ -548,12 +548,12 @@ library Base {
 
     function transfer1(BaseVariable storage self, address activeAccount, address tokenAddress, uint amount) public {
         TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
-        if(amount > 0 && activeTokenInfo.getCurrentTotalAmount() < 0) {
-            uint bRate = getBorrowAccruedRate(self, tokenAddress,activeTokenInfo.getStartBlockNumber());
-            uint256 amountBorrowed = activeTokenInfo.totalAmount(bRate);
+        if(amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
+            uint bAccruedRate = getBorrowAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
+            uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
             uint _amount = amount > amountBorrowed ? amountBorrowed : amount;
             require(self.totalReserve[tokenAddress].add(self.totalCompound[self.cTokenAddress[tokenAddress]]) >= amount, "Lack of liquidity.");
-            activeTokenInfo.addAmount(_amount, bRate, block.number);
+            activeTokenInfo.deposit(_amount, bAccruedRate);
             self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(_amount);
             self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
             self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_amount);
@@ -561,7 +561,7 @@ library Base {
             amount = amount > amountBorrowed ? amount.sub(amountBorrowed) : 0;
         }
 
-        if(amount > 0 && activeTokenInfo.getCurrentTotalAmount() >= 0) {
+        if(amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
             uint dAccruedRate = getDepositAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
             activeTokenInfo.deposit(amount, dAccruedRate);
         }
@@ -754,7 +754,7 @@ library Base {
         uint[] memory u
     ) public returns(uint) {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[addr[0]].tokenInfos[addr[2]];
-        if(tokenInfo.getCurrentTotalAmount() <= 0){
+        if(tokenInfo.getBorrowPrincipal() > 0){
             return u[2];
         }
         TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[addr[0]].tokenInfos[addr[1]];
@@ -766,7 +766,7 @@ library Base {
         updateBorrowRate(self, addr[1]);
         //清算者当前tokenRate
         uint msgTokenAccruedRate =
-        msgTokenInfo.getCurrentTotalAmount() < 0 ?
+        msgTokenInfo.getBorrowPrincipal() > 0 ?
         getBorrowAccruedRate(self, addr[2],msgTokenInfo.getStartBlockNumber())
         :
         getDepositAccruedRate(self, addr[2], msgTokenInfo.getStartBlockNumber());
@@ -776,7 +776,7 @@ library Base {
         uint tokenAccruedRate= getDepositAccruedRate(self, addr[2], tokenInfo.getStartBlockNumber());
         //被清算者目标tokenRate
         uint targetTokenAccruedRate = getBorrowAccruedRate(self, addr[1], targetTokenInfo.getStartBlockNumber());
-        uint coinValue = uint(tokenInfo.totalAmount(tokenAccruedRate)).mul(u[1]);
+        uint coinValue = tokenInfo.getDepositBalance(tokenAccruedRate).mul(u[1]);
         if(coinValue > u[2]) {
             coinValue = u[2];
             u[2] = 0;
@@ -785,10 +785,10 @@ library Base {
         }
         uint tokenAmount = coinValue.div(u[1]);
         uint targetTokenAmount = coinValue.mul(95).div(100).div(u[0]);
-        msgTargetTokenInfo.minusAmount(targetTokenAmount.mul(95).div(100), msgTargetTokenAccruedRate, block.number);
-        targetTokenInfo.addAmount(targetTokenAmount, targetTokenAccruedRate, block.number);
-        tokenInfo.minusAmount(tokenAmount, tokenAccruedRate, block.number);
-        msgTokenInfo.addAmount(tokenAmount, msgTokenAccruedRate, block.number);
+        msgTargetTokenInfo.withdraw(targetTokenAmount.mul(95).div(100), msgTargetTokenAccruedRate);
+        targetTokenInfo.deposit(targetTokenAmount, targetTokenAccruedRate);
+        tokenInfo.withdraw(tokenAmount, tokenAccruedRate);
+        msgTokenInfo.deposit(tokenAmount, msgTokenAccruedRate);
         return u[2];
     }
 

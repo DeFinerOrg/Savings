@@ -16,16 +16,7 @@ library TokenInfoLib {
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?
 
-//    function isDeposit(TokenInfo storage self) public view returns(bool) {
-//        return self.depositBalance >= self.borrowBalance ? true : false;
-//    }
-
     // returns the principal
-    // TODO: change the name from balance to principal
-//    function totalBalance(TokenInfo storage self) public view returns(uint256) {
-//        return self.depositBalance == 0 ? self.borrowBalance : self.depositBalance;
-//    }
-
     function getDepositPrincipal(TokenInfo storage self) public view returns(uint256) {
         return self.depositBalance;
     }
