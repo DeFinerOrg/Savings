@@ -727,7 +727,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdraw(erc20DAI.address, withdraws),
-                    "Insufficient balance."
+                    "Token depositPrincipal must be greater than 0"
                 );
             });
 

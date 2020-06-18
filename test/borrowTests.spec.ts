@@ -69,7 +69,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -88,7 +88,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -107,7 +107,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -458,7 +458,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -473,7 +473,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -492,7 +492,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -511,7 +511,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -638,7 +638,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(10), { from: user2 }),
-                        "Deposit is greater than or equal to zero, please use withdraw instead."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
