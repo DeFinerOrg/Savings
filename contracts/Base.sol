@@ -517,8 +517,8 @@ library Base {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
         uint divisor = INT_UNIT;
-        if(tokenAddress != ETH_ADDR) {
-            divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+        if(_token != ETH_ADDR) {
+            divisor = 10**uint256(IERC20Extended(_token).decimals());
         }
 
         uint totalBorrow = getBorrowUsd(self, _activeAccount, symbols);
