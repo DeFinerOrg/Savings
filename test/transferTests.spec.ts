@@ -217,24 +217,57 @@ contract("SavingAccount.transfer", async (accounts) => {
                         from: user2
                     });
 
+                    // validate savingAccount ETH balance
+                    const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
 
-                    const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     const ETHbalanceAfterDepositUser = await web3.eth.getBalance(user1);
-                    // validate savingAccount ETH balance
-                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
                     /* expect(ETHbalanceBeforeDepositUser).to.be.bignumber.equal(
                         ETHbalanceAfterDepositUser
                     ); */
                 });
 
-                it("Transfer large amount of balance");
-                // 1. Transfer ETH to user1 & user2.
-                // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
-                // withdraw of user2 and compound token deposit of user1.
-                // 3. Verify the new balance
+                it("Transfer large amount of balance", async () => {
+                    // 1. Transfer ETH to user1 & user2.
+                    // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
+                    // withdraw of user2 and compound token deposit of user1.
+                    // 3. Verify the new balance
+                    const depositAmount = new BN(1000);
+                    const ETHtransferAmount = new BN(500);
+
+                    const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+                    const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
+
+                    // deposit ETH
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user1
+                    });
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user2
+                    });
+
+                    // validate savingAccount ETH balance
+                    const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+
+                    // transfer ETH from user 2 to user 1
+                    await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                        from: user2
+                    });
+
+                    const ETHbalanceAfterDepositUser = await web3.eth.getBalance(user1);
+                    /* expect(ETHbalanceBeforeDepositUser).to.be.bignumber.equal(
+                        ETHbalanceAfterDepositUser
+                    ); */
+                });
             });
         });
     });
