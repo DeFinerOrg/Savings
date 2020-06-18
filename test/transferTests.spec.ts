@@ -72,8 +72,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2Balance = await erc20DAI.balanceOf(user2);
                     expect(user2Balance).to.be.bignumber.equal(numOfToken);
 
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
                     await expectRevert(
-                        savingAccount.transfer(user1, addressDAI, numOfToken.mul(new BN(2)), {
+                        savingAccount.transfer(user1, addressDAI, new BN(2000), {
                             from: user2
                         }),
                         "Insufficient balance."
@@ -90,7 +93,57 @@ contract("SavingAccount.transfer", async (accounts) => {
                 it("Transfer small amount balance", async () => {
                     const numOfToken = new BN(1000);
                     // 1. Transfer DAI to user1 & user2.
-                    // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
+                    // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
+                    // withdraw of user2 and compound token deposit of user1.
+                    // 3. Verity the new balance
+                    await erc20DAI.transfer(user1, numOfToken);
+                    await erc20DAI.transfer(user2, numOfToken);
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+
+                    let user1Balance = await erc20DAI.balanceOf(user1);
+                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+
+                    let user2Balance = await erc20DAI.balanceOf(user2);
+                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+
+                    /* let user1BalanceBeforeTransfer = await savingAccount.getAccountTotalUsdValue(
+                        user1
+                    );
+                    console.log(
+                        "user1BalanceBeforeTransfer",
+                        user1BalanceBeforeTransfer.toString()
+                    ); */
+
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
+                    /* let user1BalanceAfterDeposit = await savingAccount.getAccountTotalUsdValue(
+                        user1
+                    );
+                    console.log("user1BalanceAfterDeposit", user1BalanceAfterDeposit.toString()); */
+
+                    await savingAccount.transfer(user1, addressDAI, new BN(100), {
+                        from: user2
+                    });
+
+                    let user1BalanceAfterTransfer = await savingAccount.getAccountTotalUsdValue(
+                        user1
+                    );
+                    console.log("user1BalanceAfterTransfer", user1BalanceAfterTransfer.toString());
+
+                    // FIXME:
+                    /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
+                        numOfToken.add(new BN(10))
+                    ); */
+                });
+
+                it("Transfer large amount of balance", async () => {
+                    // 1. Transfer DAI to user1 & user2.
+                    // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
+                    // withdraw of user2 and compound token deposit of user1.
+                    // 3. Verify the new balance
+                    const numOfToken = new BN(1000);
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -105,26 +158,16 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
-                    await savingAccount.transfer(user1, addressDAI, numOfToken.div(new BN(100)), {
+                    // transfer more than reserve
+                    await savingAccount.transfer(user1, addressDAI, new BN(500), {
                         from: user2
                     });
 
-                    let user1BalanceAfterTransfer = await erc20DAI.balanceOf(user2);
                     // FIXME:
                     /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
                         numOfToken.add(new BN(10))
                     ); */
                 });
-                // 1. Transfer DAI to user1 & user2.
-                // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
-                // withdraw of user2 and compound token deposit of user1.
-                // 3. Verity the new balance
-
-                it("Transfer large amount of balance");
-                // 1. Transfer DAI to user1 & user2.
-                // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
-                // withdraw of user2 and compound token deposit of user1.
-                // 3. Verify the new balance
             });
         });
 
