@@ -12,7 +12,6 @@ library BitmapLib {
      * @return Returns the updated bitmap value
      */
     function setBit(uint128 _bitmap, uint8 _index) internal pure returns (uint128) {
-        require(_index < 128, "Index out of range for bit operation");
         // Suppose `_bitmap` is in bit value:
         // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set
 
@@ -42,7 +41,6 @@ library BitmapLib {
      * @return Returns the updated bitmap value
      */
     function unsetBit(uint128 _bitmap, uint8 _index) internal pure returns (uint128) {
-        require(_index < 128, "Index out of range for bit operation");
         // Suppose `_bitmap` is in bit value:
         // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set
 
@@ -76,6 +74,7 @@ library BitmapLib {
      * @return Returns true if bit is set, false otherwise
      */
     function isBitSet(uint128 _bitmap, uint8 _index) internal pure returns (bool) {
+        require(_index < 128, "Index out of range for bit operation");
         // Suppose `_bitmap` is in bit value:
         // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set
 
