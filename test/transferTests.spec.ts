@@ -195,11 +195,40 @@ contract("SavingAccount.transfer", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("Transfer small amount balance");
-                // 1. Transfer ETH to user1 & user2.
-                // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
-                // withdraw of user2 and compound token deposit of user1.
-                // 3. Verity the new balance
+                it("Transfer small amount balance", async () => {
+                    // 1. Transfer ETH to user1 & user2.
+                    // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
+                    // withdraw of user2 and compound token deposit of user1.
+                    // 3. Verity the new balance
+                    const depositAmount = new BN(1000);
+                    const ETHtransferAmount = new BN(50);
+
+                    const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+                    const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
+
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user1
+                    });
+                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                        value: depositAmount,
+                        from: user2
+                    });
+
+                    await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                        from: user2
+                    });
+
+                    const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                    const ETHbalanceAfterDepositUser = await web3.eth.getBalance(user1);
+                    // validate savingAccount ETH balance
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+                    /* expect(ETHbalanceBeforeDepositUser).to.be.bignumber.equal(
+                        ETHbalanceAfterDepositUser
+                    ); */
+                });
 
                 it("Transfer large amount of balance");
                 // 1. Transfer ETH to user1 & user2.
