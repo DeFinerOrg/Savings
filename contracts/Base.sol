@@ -6,6 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
+import "./lib/BitmapLib.sol";
 import "./lib/SafeDecimalMath.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
@@ -16,6 +17,7 @@ library Base {
     using SignedSafeMath for int256;
     using TokenInfoLib for TokenInfoLib.TokenInfo;
     using SymbolsLib for SymbolsLib.Symbols;
+    using BitmapLib for uint128;
 
     struct BaseVariable {
         mapping(address => int256) totalLoans;
@@ -70,24 +72,21 @@ library Base {
     }
 
     function setInDepositBitmap(Account storage account, uint8 _index) public {
-        // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) token is deposited
-        uint128 currDepositBitmap = account.depositBitmap;
-        // 0000 0100 = Left shift to create mask to find third bit status
-        uint128 mask = uint128(1) << _index;
-        // Example-1: 0001 0100 AND 0000 0100 => 0000 0100 (isDeposited > 0)
-        // Example-2: 0001 0000 AND 0000 0100 => 0000 0000 (isDeposited == 0)
-        uint128 isDeposited = currDepositBitmap & mask;
-        // Not deposited before, hence, set the bit in depositBitmap
-        if(isDeposited == 0) {
-            // Corrospending bit is set in depositBitmap
-            // Example-2: 0001 0000 OR 0000 0100 => 0001 0100 (depositBitmap)
-            account.depositBitmap = currDepositBitmap | mask;
-        }
+        account.depositBitmap = account.depositBitmap.setBit(_index);
     }
 
-    function unsetFromDepositBitmap(BaseVariable storage self, address _sender) public {
-        // TODO still working on
+    function unsetFromDepositBitmap(Account storage account, uint8 _index) public {
+        account.depositBitmap = account.depositBitmap.unsetBit(_index);
     }
+
+    function setInBorrowBitmap(Account storage account, uint8 _index) public {
+        account.borrowBitmap = account.borrowBitmap.setBit(_index);
+    }
+
+    function unsetFromBorrowBitmap(Account storage account, uint8 _index) public {
+        account.borrowBitmap = account.borrowBitmap.unsetBit(_index);
+    }
+
 
     function getDepositTokenIndexes(BaseVariable storage self, address _sender)
         public
