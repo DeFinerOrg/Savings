@@ -82,8 +82,8 @@ contract SavingAccount {
     function getAccountTotalUsdValue(address _accountAddr) public view returns (uint256 usdValue, bool sign) {
         usdValue = 0;
         sign = true;
-        uint256 borrowUsdValue = baseVariable.totalBalance(_accountAddr, symbols, false);
-        uint256 mortgageUsdValue = baseVariable.totalBalance(_accountAddr, symbols, true);
+        uint256 borrowUsdValue = baseVariable.getBorrowBalance(_accountAddr, symbols);
+        uint256 mortgageUsdValue = baseVariable.getDepositBalance(_accountAddr, symbols);
         if(borrowUsdValue > mortgageUsdValue) {
             sign = false;
             usdValue = borrowUsdValue.sub(mortgageUsdValue);
@@ -147,32 +147,31 @@ contract SavingAccount {
 	 */
     function getBalances() public view returns (
         address[] memory addresses,
-        uint256[] memory totalBalance,
-        uint256[] memory totalInterest,
-        bool[] memory sign
+        uint256[] memory depositBalance,
+        uint256[] memory borrowBalance
     )
     {
         uint coinsLen = getCoinLength();
 
         addresses = new address[](coinsLen);
-        totalBalance = new uint256[](coinsLen);
-        totalInterest = new uint256[](coinsLen);
-        sign = new bool[](coinsLen);
+        depositBalance = new uint256[](coinsLen);
+        borrowBalance = new uint256[](coinsLen);
 
         for (uint i = 0; i < coinsLen; i++) {
             address tokenAddress = symbols.addressFromIndex(i);
             addresses[i] = tokenAddress;
-            (totalBalance[i], totalInterest[i], sign[i]) = tokenBalanceOfAndInterestOf(tokenAddress);
+            depositBalance[i] = baseVariable.getDepositBalance(tokenAddress, msg.sender);
+            borrowBalance[i] = baseVariable.getBorrowBalance(tokenAddress, msg.sender);
         }
 
-        return (addresses, totalBalance, totalInterest, sign);
+        return (addresses, depositBalance, borrowBalance);
     }
 
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
-        uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols, false);
-        uint256 totalUSDValue = baseVariable.totalBalance(_borrower, symbols, true);
+        uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols);
+        uint256 totalUSDValue = baseVariable.getBorrowUsd(_borrower, symbols);
         if (
             totalBalance.mul(100) > totalUSDValue.mul(liquidationThreshold) &&
             totalBalance.mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
@@ -188,11 +187,10 @@ contract SavingAccount {
     }
 
     function tokenBalanceOfAndInterestOf(address _token) public view returns(
-        uint256 totalBalance,
-        uint256 totalInterest,
-        bool sign
+        uint256 depositBalance,
+        uint256 borrowBalance
     ) {
-        return baseVariable.tokenBalanceOfAndInterestOf(_token, msg.sender);
+        return (baseVariable.getDepositBalance(_token, msg.sender), baseVariable.getBorrowBalance(_token, msg.sender));
     }
 
     function getCoinAddress(uint256 _coinIndex) public view returns(address) {
@@ -218,9 +216,9 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        uint totalBorrow = baseVariable.totalBalance(msg.sender, symbols, false)
+        uint totalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols)
         .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
-        uint usdValue = baseVariable.totalBalance(msg.sender, symbols, true);
+        uint usdValue = baseVariable.getDepositUsd(msg.sender, symbols);
         require(totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
         send(msg.sender, _amount, _token);
@@ -282,19 +280,19 @@ contract SavingAccount {
     /**
      * Liquidate function
      */
-    function liquidate(address targetAccountAddr, address _token) public payable {
+    function liquidate(address targetAccountAddr, address _token) public {
         LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.totalBalance(targetAccountAddr, symbols, false);
-        vars.totalCollateral = baseVariable.totalBalance(targetAccountAddr, symbols, true);
-        vars.msgTotalBorrow = baseVariable.totalBalance(msg.sender, symbols, false);
-        vars.msgTotalCollateral = baseVariable.totalBalance(msg.sender, symbols, true);
+        vars.totalBorrow = baseVariable.getBorrowUsd(targetAccountAddr, symbols, false);
+        vars.totalCollateral = baseVariable.getDepositUsd(targetAccountAddr, symbols, true);
+        vars.msgTotalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols, false);
+        vars.msgTotalCollateral = baseVariable.getDepositUsd(msg.sender, symbols, true);
 
         vars.decimals = tokenRegistry.getTokenDecimals(_token);
         vars.borrowLTV = tokenRegistry.getBorrowLTV(_token);
         vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
 
-        (uint targetTokenBalance, bool sign) = baseVariable.tokenBalanceAdd(_token, msg.sender);
+        uint targetTokenBalance = baseVariable.getDepositBalance(_token, msg.sender);
         require(_token != address(0), "Token address is zero");
         require(tokenRegistry.isTokenExist(_token), "Unsupported token");
 
@@ -320,7 +318,7 @@ contract SavingAccount {
         );
 
         require(
-            sign && targetTokenBalance > 0,
+            targetTokenBalance > 0,
             "The account amount must be greater than zero."
         );
 
