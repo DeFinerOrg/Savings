@@ -540,7 +540,7 @@ library Base {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
 
-        require(tokenInfo.isDeposit(), "Token balance must be zero or positive.");
+        require(tokenInfo.getBorrowPrincipal() == 0, "Token borrowPrincipal must be zero.");
 
         // Update the amount of tokens in compound and loans
         getTotalCompoundNow(self, _token);
@@ -552,11 +552,8 @@ library Base {
 
         // Get the cumulative rate during a block interval
         uint rate = getBlockIntervalDepositRateRecord(self, _token, tokenInfo.getStartBlockNumber());
-
-        // Add principal + interest (on borrows/on deposits)
-        // sichaoy: update deposit principal and interest
-        tokenInfo.addAmount(_amount, rate, block.number);
-
+        // Add principa + interest (on borrows/on deposits)
+        tokenInfo.deposit(_amount, rate);
         // Total reserve of the token deposited to
         // TODO Why we need to maintain reserve?
         self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
@@ -581,15 +578,12 @@ library Base {
     function borrow(BaseVariable storage self, address _token, uint256 amount) public {
         require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-        require(
-            tokenInfo.getCurrentTotalAmount() == 0 || !tokenInfo.isDeposit(),
-            "Deposit is greater than or equal to zero, please use withdraw instead."
-        );
+        require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
         getTotalCompoundNow(self, _token);
         getTotalLoansNow(self, _token);
         updateBorrowRate(self, _token);
         uint rate = getBlockIntervalBorrowRateRecord(self, _token, tokenInfo.getStartBlockNumber());
-        tokenInfo.minusAmount(amount, rate, block.number);
+        tokenInfo.borrow(amount, rate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
         uint compoundAmount = self.totalCompound[self.cTokenAddress[_token]];
@@ -617,14 +611,13 @@ library Base {
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
         uint rate = getBlockIntervalBorrowRateRecord(self, _token,tokenInfo.getStartBlockNumber());
-        require(
-            !tokenInfo.isDeposit(),
-            "Balance of the token must be negative. To deposit balance, please use deposit button."
+        require(tokenInfo.getBorrowPrincipal() > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
 
-        uint256 amountOwedWithInterest = tokenInfo.totalAmount(rate);
+        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint _amount = amount > amountOwedWithInterest ? amountOwedWithInterest : amount;
-        tokenInfo.addAmount(_amount, rate, block.number);
+        tokenInfo.repay(_amount, rate);
         self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
         self.totalLoans[_token] = self.totalLoans[_token].sub(_amount);
         uint totalAmount = getTotalDepositsNow(self, _token);
@@ -654,9 +647,10 @@ library Base {
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
         uint rate = getBlockIntervalDepositRateRecord(self, _token, tokenInfo.getStartBlockNumber());
-        require(tokenInfo.isDeposit() && tokenInfo.totalAmount(rate) >= _amount, "Insufficient balance.");
-        uint interest = tokenInfo.viewInterest(rate);
-        tokenInfo.minusAmount(_amount, rate, block.number);
+        require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
+        require(tokenInfo.getDepositBalance(rate) >= _amount, "Insufficient balance.");
+        uint interest = tokenInfo.viewInterest(rate, tokenInfo.getDepositPrincipal());
+        tokenInfo.withdraw(_amount, rate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
         if(interest > 0) {
@@ -692,10 +686,10 @@ library Base {
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
         uint rate = getBlockIntervalDepositRateRecord(self, _token, tokenInfo.getStartBlockNumber());
-        require(tokenInfo.isDeposit(), "Insufficient balance.");
-        uint amount = tokenInfo.totalAmount(rate);
-        uint interest = tokenInfo.viewInterest(rate);
-        tokenInfo.minusAmount(amount, rate, block.number);
+        require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
+        uint amount = tokenInfo.getDepositBalance(rate);
+        uint interest = tokenInfo.viewInterest(rate, tokenInfo.getDepositPrincipal());
+        tokenInfo.withdraw(amount, rate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
         if(interest > 0) {
