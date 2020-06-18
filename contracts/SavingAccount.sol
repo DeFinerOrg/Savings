@@ -279,10 +279,10 @@ contract SavingAccount {
      */
     function liquidate(address targetAccountAddr, address _token) public {
         LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.getBorrowUsd(targetAccountAddr, symbols, false);
-        vars.totalCollateral = baseVariable.getDepositUsd(targetAccountAddr, symbols, true);
-        vars.msgTotalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols, false);
-        vars.msgTotalCollateral = baseVariable.getDepositUsd(msg.sender, symbols, true);
+        vars.totalBorrow = baseVariable.getBorrowUsd(targetAccountAddr, symbols);
+        vars.totalCollateral = baseVariable.getDepositUsd(targetAccountAddr, symbols);
+        vars.msgTotalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols);
+        vars.msgTotalCollateral = baseVariable.getDepositUsd(msg.sender, symbols);
 
         vars.decimals = tokenRegistry.getTokenDecimals(_token);
         vars.borrowLTV = tokenRegistry.getBorrowLTV(_token);
