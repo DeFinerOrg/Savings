@@ -79,18 +79,15 @@ contract SavingAccount {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address _accountAddr) public view returns (uint256 usdValue, bool sign) {
-        usdValue = 0;
-        sign = true;
-        uint256 borrowUsdValue = baseVariable.getBorrowBalance(_accountAddr, symbols);
-        uint256 mortgageUsdValue = baseVariable.getDepositBalance(_accountAddr, symbols);
+    function getAccountTotalUsdValue(address _accountAddr) public view returns (uint256 usdValue) {
+        uint256 borrowUsdValue = baseVariable.getBorrowUsd(_accountAddr, symbols);
+        uint256 mortgageUsdValue = baseVariable.getDepositUsd(_accountAddr, symbols);
         if(borrowUsdValue > mortgageUsdValue) {
-            sign = false;
             usdValue = borrowUsdValue.sub(mortgageUsdValue);
         } else {
             usdValue = mortgageUsdValue.sub(borrowUsdValue);
         }
-        return (usdValue, sign);
+        return usdValue;
     }
 
 	/**
@@ -170,7 +167,7 @@ contract SavingAccount {
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
-        uint256 totalBalance = baseVariable.totalBalance(_borrower, symbols);
+        uint256 totalBalance = baseVariable.getBorrowUsd(_borrower, symbols);
         uint256 totalUSDValue = baseVariable.getBorrowUsd(_borrower, symbols);
         if (
             totalBalance.mul(100) > totalUSDValue.mul(liquidationThreshold) &&
