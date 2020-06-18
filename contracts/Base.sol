@@ -331,44 +331,6 @@ library Base {
         }
     }
 
-//    function tokenBalanceOfAndInterestOf(
-//        BaseVariable storage self,
-//        address _token,
-//        address _accountAddr
-//    ) public view returns (uint256 totalBalance, uint256 totalInterest, bool sign) {
-//        // TODO Why need storage
-//        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
-//        uint rate;
-//        if(tokenInfo.getCurrentTotalAmount() == 0) {
-//            return (0, 0, true);
-//        } else {
-//            if(tokenInfo.isDeposit()) {
-//                if(
-//                    tokenInfo.getStartBlockNumber() == block.number
-//                ) {
-//                    rate = self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()];
-//                } else if(self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
-//                    rate = getNowDepositRate(self, _token);
-//                } else {
-//                    rate = getNowDepositRate(self, _token)
-//                    .mul(SafeDecimalMath.getUNIT())
-//                    .div(self.depositRateRecord[_token][tokenInfo.getStartBlockNumber()]);
-//                }
-//                sign = true;
-//            } else {
-//                if(self.borrowRateRecord[_token][tokenInfo.getStartBlockNumber()] == 0) {
-//                    rate = getNowBorrowRate(self, _token);
-//                } else {
-//                    rate = getNowBorrowRate(self, _token)
-//                    .mul(SafeDecimalMath.getUNIT())
-//                    .div(self.borrowRateRecord[_token][tokenInfo.getStartBlockNumber()]);
-//                }
-//                sign = false;
-//            }
-//            return (tokenInfo.totalBalance(), tokenInfo.viewInterest(rate), sign);
-//        }
-//    }
-
     function getDepositBalance(
         BaseVariable storage self,
         address _token,
@@ -414,64 +376,6 @@ library Base {
             return tokenInfo.getBorrowBalance(accruedRate);
         }
     }
-
-//    function tokenBalanceAdd(
-//        BaseVariable storage self,
-//        address _token,
-//        address _accountAddr
-//    ) public view returns(uint, bool) {
-//        (uint totalBalance, uint interest, bool sign) = tokenBalanceOfAndInterestOf(self, _token, _accountAddr);
-//        return (totalBalance + interest, sign);
-//    }
-
-    // Total = principal + interest
-    // TODO Sichao to explain the logic here
-//    function totalBalance(
-//        BaseVariable storage self,
-//        address _accountAddr,
-//        SymbolsLib.Symbols storage _symbols,
-//        bool _isPositive // true = deposits balance AND false = borrow balance
-//    ) public view returns (uint256 balance) {
-//        //TODO Why need to pass symbols ?
-//        for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-//            address tokenAddress = _symbols.addressFromIndex(i);
-//            TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[tokenAddress];
-//            uint256 startBlockNum = tokenInfo.getStartBlockNumber();
-//            uint rate;
-//            uint divisor = INT_UNIT;
-//            if(tokenAddress != ETH_ADDR) {
-//                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
-//            }
-//            if(_isPositive && tokenInfo.isDeposit()) {
-//                if(
-//                    startBlockNum == block.number
-//                ) {
-//                    rate = self.depositeRateIndex[tokenAddress][startBlockNum];
-//                } else if(self.depositeRateIndex[tokenAddress][startBlockNum] == 0) {
-//                    rate = getNowDepositRate(self, tokenAddress);
-//                } else {
-//                    rate = getNowDepositRate(self, tokenAddress)
-//                    .mul(SafeDecimalMath.getUNIT())
-//                    .div(self.depositeRateIndex[tokenAddress][startBlockNum]);
-//                }
-//                balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(_symbols.priceFromIndex(i)).div(divisor));
-//            } else if(!_isPositive && !tokenInfo.isDeposit()) {
-//                if(
-//                    startBlockNum == block.number
-//                ) {
-//                    rate = self.borrowRateIndex[tokenAddress][startBlockNum];
-//                }else if(self.borrowRateIndex[tokenAddress][startBlockNum] == 0) {
-//                    rate = getNowBorrowRate(self, tokenAddress);
-//                } else {
-//                    rate = getNowBorrowRate(self, tokenAddress)
-//                    .mul(SafeDecimalMath.getUNIT())
-//                    .div(self.borrowRateIndex[tokenAddress][startBlockNum]);
-//                }
-//                balance = balance.add(tokenInfo.totalBalance().add(tokenInfo.viewInterest(rate)).mul(_symbols.priceFromIndex(i)).div(divisor));
-//            }
-//        }
-//        return balance;
-//    }
 
     function getDepositUsd(
         BaseVariable storage self,
@@ -534,7 +438,7 @@ library Base {
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
-        uint interest = tokenInfo.viewInterest(accruedRate);
+        uint interest = tokenInfo.viewDepositInterest(accruedRate);
 
         tokenInfo.withdraw(_amount, accruedRate);
         if(interest > 0) {
@@ -675,7 +579,7 @@ library Base {
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         require(tokenInfo.getDepositBalance(accruedRate) >= _amount, "Insufficient balance.");
-        uint interest = tokenInfo.viewInterest(accruedRate, tokenInfo.getDepositPrincipal());
+        uint interest = tokenInfo.viewDepositInterest(accruedRate);
         tokenInfo.withdraw(_amount, accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
@@ -714,7 +618,7 @@ library Base {
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         uint amount = tokenInfo.getDepositBalance(accruedRate);
-        uint interest = tokenInfo.viewInterest(accruedRate, tokenInfo.getDepositPrincipal());
+        uint interest = tokenInfo.viewDepositInterest(accruedRate);
         tokenInfo.withdraw(amount, accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
