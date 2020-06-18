@@ -12,7 +12,6 @@ library TokenInfoLib {
 //        uint256 interest;
         uint256 depositInterest;
         uint256 borrowInterest;
-        uint256 rate;
         uint256 StartBlockNumber;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?
@@ -41,12 +40,12 @@ library TokenInfoLib {
 //        return (self.depositBalance == 0 ? self.borrowBalance : self.depositBalance).add(viewInterest(self, rate));
 //    }
 
-    function getDepositBalance(TokenInfo storage self, uint rate) public view returns(uint256) {
-        return self.depositBalance.add(viewInterest(self, rate, self.depositBalance));
+    function getDepositBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        return self.depositBalance.add(viewInterest(self, accruedRate, self.depositBalance));
     }
 
-    function getBorrowBalance(TokenInfo storage self, uint rate) public view returns(uint256) {
-        return self.borrowBalance.add(viewInterest(self, rate, self.borrowBalance));
+    function getBorrowBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        return self.borrowBalance.add(viewInterest(self, accruedRate, self.borrowBalance));
     }
 
 //    function getCurrentTotalAmount(TokenInfo storage self) public view returns(uint256) {
@@ -79,13 +78,13 @@ library TokenInfoLib {
 //            self.borrowBalance = self.borrowBalance.add(amount);
 //        }
 //    }
-    function borrow(TokenInfo storage self, uint256 amount, uint256 rate) public {
-        resetBorrowInterest(self, rate);
+    function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
+        resetBorrowInterest(self, accruedRate);
         self.borrowBalance = self.borrowBalance.add(amount);
     }
 
-    function withdraw(TokenInfo storage self, uint256 amount, uint256 rate) public {
-        resetDepositInterest(self, rate);
+    function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
+        resetDepositInterest(self, accruedRate);
         if (self.interest >= amount) {
             self.interest = self.interest.sub(amount);
         } else if (self.depositBalance.add(self.interest) >= amount) {
@@ -123,14 +122,14 @@ library TokenInfoLib {
 //            self.depositBalance = self.depositBalance.add(amount);
 //        }
 //    }
-    function deposit(TokenInfo storage self, uint256 amount, uint rate) public {
-        resetDepositInterest(self, rate);
+    function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
+        resetDepositInterest(self, accruedRate);
         self.depositBalance = self.depositBalance.add(amount);
     }
 
-    function repay(TokenInfo storage self, uint256 amount, uint rate) public {
+    function repay(TokenInfo storage self, uint256 amount, uint accruedRate) public {
         // updated rate (new index rate), applying the rate from startBlock(checkpoint) to currBlock
-        resetBorrowInterest(self, rate);
+        resetBorrowInterest(self, accruedRate);
         // user owes money, then he tries to repays
         if (self.interest > amount) {
             self.interest = self.interest.sub(amount);
@@ -150,22 +149,22 @@ library TokenInfoLib {
 //        self.StartBlockNumber = blockNumber;
 //    }
 
-    function resetDepositInterest(TokenInfo storage self, uint rate) public {
-        self.depositInterest = viewInterest(self, rate, self.depositBalance);
+    function resetDepositInterest(TokenInfo storage self, uint accruedRate) public {
+        self.depositInterest = viewInterest(self, accruedRate, self.depositBalance);
         self.StartBlockNumber = block.number;
     }
 
-    function resetBorrowInterest(TokenInfo storage self, uint rate) public {
-        self.borrowInterest = viewInterest(self, rate, self.borrowBalance);
+    function resetBorrowInterest(TokenInfo storage self, uint accruedRate) public {
+        self.borrowInterest = viewInterest(self, accruedRate, self.borrowBalance);
         self.StartBlockNumber = block.number;
     }
 
     // Calculating interest according to the new rate
-    function viewInterest(TokenInfo storage self, uint rate, uint256 _balance) public view returns(uint256) {
-        if(rate == 0 || _balance == 0 || BASE > rate) {
+    function viewInterest(TokenInfo storage self, uint accruedRate, uint256 _balance) public view returns(uint256) {
+        if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
             return self.interest;
         } else {
-            return _balance.add(self.interest).mul(rate).sub(_balance.mul(BASE)).div(BASE);
+            return _balance.add(self.interest).mul(accruedRate).sub(_balance.mul(BASE)).div(BASE);
         }
     }
 }
