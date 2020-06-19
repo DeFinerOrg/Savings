@@ -460,10 +460,10 @@ library Base {
             "Insufficient collateral."
         );
 
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         vars.interest = tokenInfo.viewDepositInterest(vars.accruedRate);
 
@@ -495,27 +495,6 @@ library Base {
         self.depositRateLastModifiedBlockNumber[_token] = block.number;
         self.borrowRateLastModifiedBlockNumber[_token] = block.number;
     }
-
-//    function transfer1(BaseVariable storage self, address activeAccount, address tokenAddress, uint amount) public {
-//        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
-//        if(amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
-//            uint bAccruedRate = getBorrowAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
-//            uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
-//            uint _amount = amount > amountBorrowed ? amountBorrowed : amount;
-//            require(self.totalReserve[tokenAddress].add(self.totalCompound[self.cTokenAddress[tokenAddress]]) >= amount, "Lack of liquidity.");
-//            activeTokenInfo.deposit(_amount, bAccruedRate);
-//            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(_amount);
-//            self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
-//            self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_amount);
-//            self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
-//            amount = amount > amountBorrowed ? amount.sub(amountBorrowed) : 0;
-//        }
-//
-//        if(amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
-//            uint dAccruedRate = getDepositAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
-//            activeTokenInfo.deposit(amount, dAccruedRate);
-//        }
-//    }
 
     /**
      * Deposit the amount of token to the saving pool.
