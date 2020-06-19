@@ -144,30 +144,34 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2Balance = await erc20DAI.balanceOf(user2);
                     expect(user2Balance).to.be.bignumber.equal(numOfToken);
 
-                    /* let user1BalanceBeforeTransfer = await savingAccount.getAccountTotalUsdValue(
-                        user1
+                    let user1TotalBalanceBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user1 }
                     );
-                    console.log(
-                        "user1BalanceBeforeTransfer",
-                        user1BalanceBeforeTransfer.toString()
-                    ); */
+                    console.log("user1TotalBalanceBefore", user1TotalBalanceBefore);
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
-                    /* let user1BalanceAfterDeposit = await savingAccount.getAccountTotalUsdValue(
-                        user1
+                    let user1BalanceAfterDeposit = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user1 }
                     );
-                    console.log("user1BalanceAfterDeposit", user1BalanceAfterDeposit.toString()); */
+                    console.log("user1BalanceAfterDeposit", user1BalanceAfterDeposit);
 
                     await savingAccount.transfer(user1, addressDAI, new BN(100), {
                         from: user2
                     });
 
-                    let user1BalanceAfterTransfer = await savingAccount.getAccountTotalUsdValue(
-                        user1
+                    let user1BalanceAfterTransfer = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user1 }
                     );
-                    console.log("user1BalanceAfterTransfer", user1BalanceAfterTransfer.toString());
+                    console.log("user1BalanceAfterTransfer", user1BalanceAfterTransfer[0]);
+
+                    expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
+                        new BN(1100)
+                    );
 
                     // FIXME:
                     /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
