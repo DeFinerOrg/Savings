@@ -183,7 +183,7 @@ library Base {
         } else {
             uint d1 = borrowRatePerBlock.mul(capitalUtilRate);
             uint d2 = getCompoundSupplyRatePerBlock(cToken).mul(getCapitalCompoundRate(self, _token));
-            return d1.add(d2).div(SafeDecimalMath.getUNIT()); // 要改
+            return d1.add(d2).div(SafeDecimalMath.getUNIT());
         }
     }
 
@@ -285,7 +285,6 @@ library Base {
     }
 
     //Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    //TODO:getBorrowRatePerBlock如果是0需要考虑
     function updateBorrowRate(BaseVariable storage self, address _token) public {
         self.borrowRateIndex[_token][block.number] = getNowBorrowRate(self, _token);
     }
