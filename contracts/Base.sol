@@ -129,10 +129,10 @@ library Base {
     }
 
     /**
-     * Get total amount of token in Compound protocal
+     * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function getTotalCompoundNow(BaseVariable storage self, address _token) public {
+    function updateTotalCompound(BaseVariable storage self, address _token) public {
         address cToken = self.cTokenAddress[_token];
         if(cToken != address(0)) {
             self.totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(this));
@@ -140,10 +140,10 @@ library Base {
     }
 
     /**
-     * Get total amount of token lended
+     * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function getTotalLoansNow(BaseVariable storage self, address _token) public {
+    function updateTotalLoan(BaseVariable storage self, address _token) public {
         self.totalLoans[_token] = borrowInterest(self, _token);
     }
 
@@ -237,6 +237,7 @@ library Base {
         }
     }
 
+    // sichaoy: actually the rate + 1
     function getBorrowAccruedRate(
         BaseVariable storage self,
         address _token,
@@ -262,7 +263,7 @@ library Base {
      * @param _token token address
      */
     // sichaoy: rateIndex?
-    function updateDepositRate(BaseVariable storage self, address _token) public {
+    function newDepositRateIndexCheckpoint(BaseVariable storage self, address _token) public {
         self.depositeRateIndex[_token][block.number] = getNowDepositRate(self, _token);
     }
 
@@ -285,7 +286,7 @@ library Base {
     }
 
     //Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateBorrowRate(BaseVariable storage self, address _token) public {
+    function newBorrowRateIndexCheckpoint(BaseVariable storage self, address _token) public {
         self.borrowRateIndex[_token][block.number] = getNowBorrowRate(self, _token);
     }
 
@@ -456,10 +457,10 @@ library Base {
             "Insufficient collateral."
         );
 
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         uint interest = tokenInfo.viewDepositInterest(accruedRate);
 
@@ -504,18 +505,23 @@ library Base {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
 
-        require(tokenInfo.getBorrowPrincipal() == 0, "Token borrowPrincipal must be zero.");
+        require(tokenInfo.getBorrowPrincipal() == 0,
+            "The user should repay the borrowed token before he or she can deposit.");
 
         // Update the amount of tokens in compound and loans
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
 
-        // Add a new point on the index curve.
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        // Add a new checkpoint on the index curve.
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
+
+        // sichaoy: change the name here
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
+
         // Add principa + interest (on borrows/on deposits)
         tokenInfo.deposit(_amount, accruedRate);
+
         // Total reserve of the token deposited to
         // TODO Why we need to maintain reserve?
         self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
@@ -529,6 +535,7 @@ library Base {
         ) {
             toCompound(self, _token, totalAmount, _token == ETH_ADDR);
         }
+
         // When deposit:
         // Change deposit Rate and borrow Rate
         self.depositRateLastModifiedBlockNumber[_token] = block.number;
@@ -541,9 +548,9 @@ library Base {
         require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         tokenInfo.borrow(amount, rate);
         address cToken = self.cTokenAddress[_token];
@@ -568,10 +575,10 @@ library Base {
 
     function repay(BaseVariable storage self, address _token, address activeAccount, uint256 amount) public returns(uint) {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[activeAccount].tokenInfos[_token];
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getStartBlockNumber());
         require(tokenInfo.getBorrowPrincipal() > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
@@ -604,10 +611,10 @@ library Base {
 
     function withdraw(BaseVariable storage self, address _token, uint256 _amount) public returns(uint){
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         require(tokenInfo.getDepositBalance(accruedRate) >= _amount, "Insufficient balance.");
@@ -643,10 +650,10 @@ library Base {
 
     function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-        getTotalCompoundNow(self, _token);
-        getTotalLoansNow(self, _token);
-        updateDepositRate(self, _token);
-        updateBorrowRate(self, _token);
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        newDepositRateIndexCheckpoint(self, _token);
+        newBorrowRateIndexCheckpoint(self, _token);
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         uint amount = tokenInfo.getDepositBalance(accruedRate);
@@ -696,10 +703,10 @@ library Base {
         TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[addr[0]].tokenInfos[addr[1]];
         TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[addr[2]];
         TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[addr[1]];
-        updateDepositRate(self, addr[2]);
-        updateDepositRate(self, addr[1]);
-        updateBorrowRate(self, addr[2]);
-        updateBorrowRate(self, addr[1]);
+        newDepositRateIndexCheckpoint(self, addr[2]);
+        newDepositRateIndexCheckpoint(self, addr[1]);
+        newBorrowRateIndexCheckpoint(self, addr[2]);
+        newBorrowRateIndexCheckpoint(self, addr[1]);
         //清算者当前tokenRate
         uint msgTokenAccruedRate =
         msgTokenInfo.getBorrowPrincipal() > 0 ?
@@ -743,6 +750,10 @@ library Base {
         return self.deFinerFund[_token];
     }
 
+    /**
+     * Borrow interest from the last check point
+     * sichaoy: Actually, returns new balance
+     */
     function borrowInterest(BaseVariable storage self, address _token) public view returns(uint256) {
         uint balance = self.totalLoans[_token];
         uint rate = getBorrowAccruedRate(self, _token, self.borrowRateLastModifiedBlockNumber[_token]);

@@ -253,7 +253,7 @@ contract("SavingAccount", async (accounts) => {
         //                 value: new BN(5)
         //             });
         //             // 4. Verify the repay amount.
-        //             const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(
+        //             const user2ETHValue = await savingAccount.tokenBalance(
         //                 ETH_ADDRESS,
         //                 {
         //                     from: user2
@@ -271,7 +271,7 @@ contract("SavingAccount", async (accounts) => {
         //                 value: new BN(20)
         //             });
         //             // 4. Verify the repay amount.
-        //             const user2ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(
+        //             const user2ETHValue = await savingAccount.tokenBalance(
         //                 ETH_ADDRESS,
         //                 {
         //                     from: user2
@@ -355,7 +355,7 @@ contract("SavingAccount", async (accounts) => {
                 //     await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                 //         from: user1
                 //     });
-                //     const user1ETHValueBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                //     const user1ETHValueBefore = await savingAccount.tokenBalance(
                 //         ETH_ADDRESS,
                 //         {
                 //             from: user1
@@ -366,7 +366,7 @@ contract("SavingAccount", async (accounts) => {
                 //         from: user1,
                 //         value: ETHNumOfToken.div(new BN(10))
                 //     });
-                //     const user1ETHValueAfter = await savingAccount.tokenBalanceOfAndInterestOf(
+                //     const user1ETHValueAfter = await savingAccount.tokenBalance(
                 //         ETH_ADDRESS,
                 //         {
                 //             from: user1

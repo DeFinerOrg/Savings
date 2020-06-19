@@ -375,7 +375,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     // 2. Start borrowing.
                 //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
                 //     // 3. Verify the loan amount.
-                //     const user1ETHValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, {
+                //     const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
                 //         from: user1
                 //     });
                 //     expect(
@@ -390,7 +390,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     // 2. Start borrowing.
                 //     await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
                 //     // 3. Verify the loan amount.
-                //     const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                //     const user1ETHBorrowValue = await savingAccount.tokenBalance(
                 //         ETH_ADDRESS,
                 //         {
                 //             from: user1
@@ -414,7 +414,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //         .div(await savingAccount.getCoinToUsdRate(0));
                 //     await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
                 //     // 3. Verify the loan amount.
-                //     const user2ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(ETH_ADDRESS, { from: user1})
+                //     const user2ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, { from: user1})
                 //     expect(new BN(user2ETHBorrowValue[0]).add(new BN(user2ETHBorrowValue[1]))).to.be.bignumber.equal(new BN(-1).mul(limitAmount));
                 // });
 
@@ -434,7 +434,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     // 2. Start borrowing.
                 //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
                 //     // 3. Verify the loan amount.
-                //     const user1ETHBorrowValue = await savingAccount.tokenBalanceOfAndInterestOf(
+                //     const user1ETHBorrowValue = await savingAccount.tokenBalance(
                 //         ETH_ADDRESS,
                 //         { from: user1 }
                 //     );

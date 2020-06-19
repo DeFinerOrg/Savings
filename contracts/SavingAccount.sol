@@ -72,8 +72,8 @@ contract SavingAccount {
     // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
     function updateDefinerRate(address _token) public {
-        baseVariable.updateBorrowRate(_token);
-        baseVariable.updateDepositRate(_token);
+        baseVariable.newBorrowRateIndexCheckpoint(_token);
+        baseVariable.newDepositRateIndexCheckpoint(_token);
     }
 
 	/**
@@ -178,12 +178,11 @@ contract SavingAccount {
         return false;
     }
 
-
     function getCoinLength() public view returns(uint256 length){
         return symbols.getCoinLength();
     }
 
-    function tokenBalanceOfAndInterestOf(address _token) public view returns(
+    function tokenBalance(address _token) public view returns(
         uint256 depositBalance,
         uint256 borrowBalance
     ) {
