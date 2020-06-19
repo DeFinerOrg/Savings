@@ -72,8 +72,29 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2Balance = await erc20DAI.balanceOf(user2);
                     expect(user2Balance).to.be.bignumber.equal(numOfToken);
 
+                    let user1TotalBalanceBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    let user2TotalBalanceBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user2 }
+                    );
+
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
+                    // Verify balances of user1 & user2 after deposit
+                    let user1BalanceAfterDeposit = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    let user2BalanceAfterDeposit = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user2 }
+                    );
+                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
 
                     await expectRevert(
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
