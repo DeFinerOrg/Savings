@@ -23,10 +23,8 @@ library Base {
         mapping(address => uint256) totalCompound;  // amount of tokens in compound
         mapping(address => address) cTokenAddress;  // cToken addresses
         // Token => block-num => rate
-//        mapping(address => mapping(uint => uint)) depositRateRecord;
         mapping(address => mapping(uint => uint)) depositeRateIndex;
         // Token => block-num => rate
-//        mapping(address => mapping(uint => uint)) borrowRateRecord;
         mapping(address => mapping(uint => uint)) borrowRateIndex;
         mapping(address => uint) depositRateLastModifiedBlockNumber;
         mapping(address => uint) borrowRateLastModifiedBlockNumber;
@@ -37,7 +35,6 @@ library Base {
     }
 
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
-    //    int256 public constant INT_UNIT = int256(10 ** uint256(18));
     uint256 public constant INT_UNIT = 10 ** uint256(18);
 
     struct Account {
@@ -253,10 +250,6 @@ library Base {
         }
     }
 
-    //    function getTotalUsdValue(address tokenAddress, int256 amount, uint price) public view returns(int) {
-    //        return amount.mul(int(price)).div(int(10**ERC20(tokenAddress).decimals()));
-    //    }
-
     /**
      * Update Deposit Rate. depositRate = 1 + blockChangeValue * rate
      * @param _token token address
@@ -434,6 +427,14 @@ library Base {
         return borrowUsd;
     }
 
+    struct TransferVars {
+        uint totalBorrow;
+        uint totalDeposit;
+        uint amountValue;
+        uint accruedRate;
+        uint interest;
+    }
+
     function transfer(
         BaseVariable storage self,
         address _activeAccount,
@@ -442,17 +443,19 @@ library Base {
         SymbolsLib.Symbols storage symbols
     ) public {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[_activeAccount].tokenInfos[_token];
+        TransferVars memory vars;
 
         uint divisor = INT_UNIT;
         if(_token != ETH_ADDR) {
             divisor = 10**uint256(IERC20Extended(_token).decimals());
         }
 
-        uint totalBorrow = getBorrowUsd(self, _activeAccount, symbols);
-        uint totalDeposit = getDepositUsd(self, _activeAccount, symbols);
-        uint amountValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
+        vars.totalBorrow = getBorrowUsd(self, _activeAccount, symbols);
+        vars.totalDeposit = getDepositUsd(self, _activeAccount, symbols);
+        vars.amountValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
         require(
-            totalBorrow.add(amountValue).mul(100) <= totalDeposit.mul(60),
+            vars.totalBorrow.add(vars.amountValue).mul(100) <= vars.totalDeposit.mul(60),
             "Insufficient collateral."
         );
 
@@ -460,39 +463,58 @@ library Base {
         getTotalLoansNow(self, _token);
         updateDepositRate(self, _token);
         updateBorrowRate(self, _token);
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
-        uint interest = tokenInfo.viewDepositInterest(accruedRate);
+        vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getStartBlockNumber());
+        vars.interest = tokenInfo.viewDepositInterest(vars.accruedRate);
 
-        tokenInfo.withdraw(_amount, accruedRate);
-        if(interest > 0) {
-            uint256 _money = interest <= _amount ? interest.div(10) : _amount.div(10);
+        tokenInfo.withdraw(_amount, vars.accruedRate);
+        if(vars.interest > 0) {
+            uint256 _money = vars.interest <= _amount ? vars.interest.div(10) : _amount.div(10);
             _amount = _amount.sub(_money);
             self.deFinerFund[_token] = self.deFinerFund[_token].add(_money);
         }
-        transfer1(self, _activeAccount, _token, _amount);
 
-    }
-
-    function transfer1(BaseVariable storage self, address activeAccount, address tokenAddress, uint amount) public {
-        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
-        if(amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
-            uint bAccruedRate = getBorrowAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
+        if(_amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
+            uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getStartBlockNumber());
             uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
-            uint _amount = amount > amountBorrowed ? amountBorrowed : amount;
-            require(self.totalReserve[tokenAddress].add(self.totalCompound[self.cTokenAddress[tokenAddress]]) >= amount, "Lack of liquidity.");
-            activeTokenInfo.deposit(_amount, bAccruedRate);
-            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(_amount);
-            self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
-            self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_amount);
-            self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
-            amount = amount > amountBorrowed ? amount.sub(amountBorrowed) : 0;
+            uint __amount = _amount > amountBorrowed ? amountBorrowed : _amount;
+            require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
+            activeTokenInfo.deposit(__amount, bAccruedRate);
+            self.totalLoans[_token] = self.totalLoans[_token].add(__amount);
+            self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+            self.totalReserve[_token] = self.totalReserve[_token].sub(__amount);
+            self.depositRateLastModifiedBlockNumber[_token] = block.number;
+            _amount = _amount > amountBorrowed ? _amount.sub(amountBorrowed) : 0;
         }
 
-        if(amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
-            uint dAccruedRate = getDepositAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
-            activeTokenInfo.deposit(amount, dAccruedRate);
+        if(_amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
+            uint dAccruedRate = getDepositAccruedRate(self, _token, activeTokenInfo.getStartBlockNumber());
+            activeTokenInfo.deposit(_amount, dAccruedRate);
         }
+
+        self.depositRateLastModifiedBlockNumber[_token] = block.number;
+        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
     }
+
+//    function transfer1(BaseVariable storage self, address activeAccount, address tokenAddress, uint amount) public {
+//        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[activeAccount].tokenInfos[tokenAddress];
+//        if(amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
+//            uint bAccruedRate = getBorrowAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
+//            uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
+//            uint _amount = amount > amountBorrowed ? amountBorrowed : amount;
+//            require(self.totalReserve[tokenAddress].add(self.totalCompound[self.cTokenAddress[tokenAddress]]) >= amount, "Lack of liquidity.");
+//            activeTokenInfo.deposit(_amount, bAccruedRate);
+//            self.totalLoans[tokenAddress] = self.totalLoans[tokenAddress].add(_amount);
+//            self.borrowRateLastModifiedBlockNumber[tokenAddress] = block.number;
+//            self.totalReserve[tokenAddress] = self.totalReserve[tokenAddress].sub(_amount);
+//            self.depositRateLastModifiedBlockNumber[tokenAddress] = block.number;
+//            amount = amount > amountBorrowed ? amount.sub(amountBorrowed) : 0;
+//        }
+//
+//        if(amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
+//            uint dAccruedRate = getDepositAccruedRate(self, tokenAddress, activeTokenInfo.getStartBlockNumber());
+//            activeTokenInfo.deposit(amount, dAccruedRate);
+//        }
+//    }
 
     /**
      * Deposit the amount of token to the saving pool.
