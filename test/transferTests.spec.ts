@@ -148,35 +148,46 @@ contract("SavingAccount.transfer", async (accounts) => {
                         addressDAI,
                         { from: user1 }
                     );
-                    console.log("user1TotalBalanceBefore", user1TotalBalanceBefore);
+                    let user2TotalBalanceBefore = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user2 }
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
+                    // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalanceOfAndInterestOf(
                         addressDAI,
                         { from: user1 }
                     );
-                    console.log("user1BalanceAfterDeposit", user1BalanceAfterDeposit);
+                    let user2BalanceAfterDeposit = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user2 }
+                    );
+                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
 
+                    // Transfer 100 tokens from user2 to user1
                     await savingAccount.transfer(user1, addressDAI, new BN(100), {
                         from: user2
                     });
 
+                    // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalanceOfAndInterestOf(
                         addressDAI,
                         { from: user1 }
                     );
-                    console.log("user1BalanceAfterTransfer", user1BalanceAfterTransfer[0]);
-
-                    expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
-                        new BN(1100)
+                    let user2BalanceAfterTransfer = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressDAI,
+                        { from: user2 }
                     );
-
-                    // FIXME:
-                    /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
-                        numOfToken.add(new BN(10))
-                    ); */
+                    expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
+                        new BN(user1BalanceAfterDeposit[0]).add(new BN(100))
+                    );
+                    expect(new BN(user2BalanceAfterTransfer[0])).to.be.bignumber.equal(
+                        new BN(user1BalanceAfterDeposit[0]).sub(new BN(100))
+                    );
                 });
 
                 it("Transfer large amount of balance", async () => {
