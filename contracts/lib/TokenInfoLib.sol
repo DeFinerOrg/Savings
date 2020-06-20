@@ -11,7 +11,7 @@ library TokenInfoLib {
         uint256 borrowPrincipal;
         uint256 depositInterest;
         uint256 borrowInterest;
-        uint256 StartBlockNumber; // sichaoy: change the name to lastCheckpointBlockNumber
+        uint256 lastCheckpoint;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
@@ -32,17 +32,17 @@ library TokenInfoLib {
         return self.borrowPrincipal.add(viewBorrowInterest(self, accruedRate));
     }
 
-    function getStartBlockNumber(TokenInfo storage self) public view returns(uint256) {
-        return self.StartBlockNumber;
+    function getLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+        return self.lastCheckpoint;
     }
 
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
-        resetBorrowInterest(self, accruedRate);
+        newBorrowCheckpoint(self, accruedRate);
         self.borrowPrincipal = self.borrowPrincipal.add(amount);
     }
 
     function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
-        resetDepositInterest(self, accruedRate);
+        newDepositCheckpoint(self, accruedRate);
         if (self.depositInterest >= amount) {
             self.depositInterest = self.depositInterest.sub(amount);
         } else if (self.depositPrincipal.add(self.depositInterest) >= amount) {
@@ -58,13 +58,13 @@ library TokenInfoLib {
      * Do the actually deposit and modify the token info.
      */
     function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
-        resetDepositInterest(self, accruedRate);
+        newDepositCheckpoint(self, accruedRate);
         self.depositPrincipal = self.depositPrincipal.add(amount);
     }
 
     function repay(TokenInfo storage self, uint256 amount, uint accruedRate) public {
         // updated rate (new index rate), applying the rate from startBlock(checkpoint) to currBlock
-        resetBorrowInterest(self, accruedRate);
+        newBorrowCheckpoint(self, accruedRate);
         // user owes money, then he tries to repays
         if (self.borrowInterest > amount) {
             self.borrowInterest = self.borrowInterest.sub(amount);
@@ -77,15 +77,14 @@ library TokenInfoLib {
         }
     }
 
-    // sichaoy: better to change the name to updateCheckpoint
-    function resetDepositInterest(TokenInfo storage self, uint accruedRate) public {
+    function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.depositInterest = viewDepositInterest(self, accruedRate);
-        self.StartBlockNumber = block.number;
+        self.lastCheckpoint = block.number;
     }
 
-    function resetBorrowInterest(TokenInfo storage self, uint accruedRate) public {
+    function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.borrowInterest = viewBorrowInterest(self, accruedRate);
-        self.StartBlockNumber = block.number;
+        self.lastCheckpoint = block.number;
     }
 
     // Calculating interest according to the new rate
