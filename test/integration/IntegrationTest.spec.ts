@@ -52,6 +52,10 @@ contract("Integration Tests", async (accounts) => {
     let erc20WBTC: t.MockERC20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
+    let tempContractAddress: any;
+    let cTokenTemp: any;
+    let addressCTokenTemp: any;
+    let erc20contr: t.MockERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -97,11 +101,6 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit all tokens and withdraw all tokens", async () => {
                 //TODO: Deposit & withdraw w/ multiple users once deposit bug is fixed
                 const numOfToken = new BN(1000);
-
-                let tempContractAddress: any;
-                let cTokenTemp: any;
-                let addressCTokenTemp: any;
-                let erc20contr: t.MockERC20Instance;
 
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
@@ -176,16 +175,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify CToken balance
                     const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
-                    console.log("balAcc", balCToken.toString());
                     expect(ZERO).to.be.bignumber.equal(balCTokens);
                 }
             });
 
             it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
                 const numOfToken = new BN(1000);
-
-                let tempContractAddress: any;
-                let erc20contr: t.MockERC20Instance;
 
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
@@ -223,9 +218,6 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit all and withdraw Compound supported tokens", async () => {
                 const numOfToken = new BN(1000);
 
-                let tempContractAddress: any;
-                let erc20contr: t.MockERC20Instance;
-
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
@@ -262,9 +254,6 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit all and withdraw only token with less than 18 decimals", async () => {
                 const numOfToken = new BN(1000);
 
-                let tempContractAddress: any;
-                let erc20contr: t.MockERC20Instance;
-
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
@@ -300,9 +289,6 @@ contract("Integration Tests", async (accounts) => {
 
             it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
                 const numOfToken = new BN(10).pow(new BN(6));
-
-                let tempContractAddress: any;
-                let erc20contr: t.MockERC20Instance;
 
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
