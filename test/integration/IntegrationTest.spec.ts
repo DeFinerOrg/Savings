@@ -348,6 +348,24 @@ contract("Integration Tests", async (accounts) => {
                 // 1. Deposit $1 million
                 await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContractDAI = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContractDAI).to.be.bignumber.equal(
+                    balSavingAccountDAI
+                );
+
+                const expectedTokensAtSavingAccountContractUSDC = numOfUSDC
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccountUSDC = await erc20USDC.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContractUSDC).to.be.bignumber.equal(
+                    balSavingAccountUSDC
+                );
+
                 // 2. Borrow $0.6 million
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
                 // 3. Verify the amount borrowed
