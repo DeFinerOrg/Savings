@@ -11,7 +11,8 @@ library TokenInfoLib {
         uint256 borrowPrincipal;
         uint256 depositInterest;
         uint256 borrowInterest;
-        uint256 lastCheckpoint;
+        uint256 depositLastCheckpoint;
+        uint256 borrowLastCheckpoint;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
@@ -32,8 +33,12 @@ library TokenInfoLib {
         return self.borrowPrincipal.add(viewBorrowInterest(self, accruedRate));
     }
 
-    function getLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
-        return self.lastCheckpoint;
+    function getDepositLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+        return self.depositLastCheckpoint;
+    }
+
+    function getBorrowLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+        return self.borrowLastCheckpoint;
     }
 
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
@@ -79,12 +84,12 @@ library TokenInfoLib {
 
     function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.depositInterest = viewDepositInterest(self, accruedRate);
-        self.lastCheckpoint = block.number;
+        self.depositLastCheckpoint = block.number;
     }
 
     function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.borrowInterest = viewBorrowInterest(self, accruedRate);
-        self.lastCheckpoint = block.number;
+        self.borrowLastCheckpoint = block.number;
     }
 
     // Calculating interest according to the new rate
