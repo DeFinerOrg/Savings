@@ -50,6 +50,8 @@ contract("Integration Tests", async (accounts) => {
     let erc20ZRX: t.MockERC20Instance;
     let erc20REP: t.MockERC20Instance;
     let erc20WBTC: t.MockERC20Instance;
+    let ZERO: any;
+    let ONE_WEEK: any;
 
     before(async () => {
         // Things to initialize before all test
@@ -78,6 +80,8 @@ contract("Integration Tests", async (accounts) => {
         erc20ZRX = await MockERC20.at(addressZRX);
         erc20REP = await MockERC20.at(addressREP);
         erc20WBTC = await MockERC20.at(addressWBTC);
+        ZERO = new BN(0);
+        ONE_WEEK = new BN(7).mul(new BN(24).mul(new BN(3600)));
         /* addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
@@ -95,11 +99,17 @@ contract("Integration Tests", async (accounts) => {
                 const numOfToken = new BN(1000);
 
                 let tempContractAddress: any;
+                let cTokenTemp: any;
+                let addressCTokenTemp: any;
                 let erc20contr: t.MockERC20Instance;
 
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await MockERC20.at(tempContractAddress);
+                    addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                        tempContractAddress
+                    );
+                    cTokenTemp = await MockCToken.at(addressCTokenTemp);
 
                     await erc20contr.transfer(user1, numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken, {
@@ -127,12 +137,30 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    // Verify balance on Compound
+                    const expectedTokensAtCTokenContract = numOfToken
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    const balCTokenContract = await erc20contr.balanceOf(addressCTokenTemp);
+                    expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
+
+                    // Verify balance for cTokens
+                    const expectedCTokensAtSavingAccount = numOfToken
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
+                    expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
                 }
 
-                //Withdraw 1000 tokens of each Address
+                //Withdraw all tokens of each Address
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
                     erc20contr = await MockERC20.at(tempContractAddress);
+                    addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                        tempContractAddress
+                    );
+                    cTokenTemp = await MockCToken.at(addressCTokenTemp);
 
                     await savingAccount.withdrawAll(erc20contr.address, {
                         from: user1
@@ -140,7 +168,16 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                    expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                    expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                    // Verify Compound balance
+                    const balCToken = await erc20contr.balanceOf(addressCTokenTemp);
+                    expect(ZERO).to.be.bignumber.equal(balCToken);
+
+                    // Verify CToken balance
+                    const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
+                    console.log("balAcc", balCToken.toString());
+                    expect(ZERO).to.be.bignumber.equal(balCTokens);
                 }
             });
 
@@ -179,7 +216,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                    expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                    expect(ZERO).to.be.bignumber.equal(balSavingAccount);
                 }
             });
 
@@ -217,7 +254,7 @@ contract("Integration Tests", async (accounts) => {
 
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                        expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                        expect(ZERO).to.be.bignumber.equal(balSavingAccount);
                     }
                 }
             });
@@ -256,7 +293,7 @@ contract("Integration Tests", async (accounts) => {
 
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                        expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                        expect(ZERO).to.be.bignumber.equal(balSavingAccount);
                     }
                 }
             });
@@ -287,7 +324,7 @@ contract("Integration Tests", async (accounts) => {
                     );
                 }
 
-                await time.increase(new BN(7).mul(new BN(24).mul(new BN(3600))));
+                await time.increase(ONE_WEEK);
 
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
@@ -297,7 +334,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                    expect(new BN("0")).to.be.bignumber.equal(balSavingAccount);
+                    expect(ZERO).to.be.bignumber.equal(balSavingAccount);
                 }
             });
 
@@ -554,7 +591,7 @@ contract("Integration Tests", async (accounts) => {
                     from: userNumber
                 });
 
-                await time.increase(new BN(7).mul(new BN(24).mul(new BN(3600))));
+                await time.increase(ONE_WEEK);
                 await savingAccount.repay(addressUSDC, borrowAmount, {
                     from: userNumber
                 });
@@ -597,7 +634,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    await time.increase(new BN(7).mul(new BN(24).mul(new BN(3600))));
+                    await time.increase(ONE_WEEK);
                     await savingAccount.repay(addressUSDC, borrowAmount, {
                         from: userNumber
                     });
