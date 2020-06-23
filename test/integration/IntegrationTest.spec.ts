@@ -100,6 +100,7 @@ contract("Integration Tests", async (accounts) => {
         context("should succeed", async () => {
             it("should deposit all tokens and withdraw all tokens", async () => {
                 //TODO: Deposit & withdraw w/ multiple users once deposit bug is fixed
+                // Error: multiplication overflow
                 const numOfToken = new BN(1000);
 
                 for (let i = 0; i < 9; i++) {
