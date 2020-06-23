@@ -49,6 +49,10 @@ library TokenInfoLib {
         self.borrowPrincipal = self.borrowPrincipal.add(amount);
     }
 
+    /**
+     * Update token info for withdraw. The interest will be withdrawn with higher priority.
+     * sichaoy: should return the exact amount that withdrawn?
+     */
     function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
         newDepositCheckpoint(self, accruedRate);
         if (self.depositInterest >= amount) {
@@ -63,7 +67,7 @@ library TokenInfoLib {
     }
 
     /**
-     * Do the actually deposit and modify the token info.
+     * Update token info for deposit
      */
     function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
         newDepositCheckpoint(self, accruedRate);

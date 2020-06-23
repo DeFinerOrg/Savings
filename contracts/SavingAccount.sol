@@ -377,6 +377,12 @@ contract SavingAccount {
         return baseVariable.getDeFinerCommunityFund(_token);
     }
 
+    /**
+     * Receive the amount of token from msg.sender
+     * @param _from from address
+     * @param _amount amount of token
+     * @param _token token address
+     */
     function receive(address _from, uint256 _amount, address _token) private {
         if (_isETH(_token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
