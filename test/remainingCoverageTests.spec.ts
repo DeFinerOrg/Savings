@@ -44,4 +44,104 @@ contract("SavingAccount", async (accounts) => {
             it("when all conditions are satisfied");
         });
     });
+
+    context("updateDefinerRate", async () => {
+        context("should fail", async () => {
+            it("when unsupported token address is passed");
+        });
+
+        context("should succeed", async () => {
+            it("when supported token address is passed");
+
+            it("when borrowRateLMBN is zero");
+
+            it("when borrowRateLMBN is equal to block number");
+
+            it("when cToken address is zero");
+        });
+    });
+
+    context("getTotalUsdValue", async () => {
+        context("should succeed", async () => {
+            it("when ETH address is passed");
+        });
+    });
+
+    context("getMarketState", async () => {
+        //TODO:
+        context("should succeed", async () => {
+            it("when all conditions are satisfied");
+        });
+    });
+
+    context("getTokenState", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when all conditions are satisfied");
+        });
+    });
+
+    context("getBalances", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    //TODO:
+    context("isAccountLiquidatable", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    //TODO:
+    context("getCoinLength", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    //TODO:
+    context("recycleCommunityFund", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    //TODO:
+    context("setDeFinerCommunityFund", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    //TODO:
+    context("getDeFinerCommunityFund", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when sender's address is valid");
+        });
+    });
+
+    context("emergencyWithdraw", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when supported address is passed");
+
+            it("when ETH address is passed");
+        });
+    });
 });
