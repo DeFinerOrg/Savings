@@ -727,7 +727,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdraw(erc20DAI.address, withdraws),
-                    "Token depositPrincipal must be greater than 0"
+                    "Not enough tokens in the pool."
                 );
             });
 
@@ -742,7 +742,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdraw(ETH_ADDRESS, withdraws),
-                    "Insufficient balance."
+                    "Not enough tokens in the pool."
                 );
             });
 

@@ -3,15 +3,19 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
+// This is for per user
 library TokenInfoLib {
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     struct TokenInfo {
+        // Deposit info
         uint256 depositPrincipal;
-        uint256 borrowPrincipal;
         uint256 depositInterest;
+        uint256 lastDepositBlock;
+        // Borrow info
+        uint256 borrowPrincipal;
         uint256 borrowInterest;
-        uint256 lastCheckpoint;
+        uint256 lastBorrowBlock;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
@@ -32,8 +36,12 @@ library TokenInfoLib {
         return self.borrowPrincipal.add(viewBorrowInterest(self, accruedRate));
     }
 
-    function getLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
-        return self.lastCheckpoint;
+    function getLastDepositBlock(TokenInfo storage self) public view returns(uint256) {
+        return self.lastDepositBlock;
+    }
+
+    function getLastBorrowBlock(TokenInfo storage self) public view returns(uint256) {
+        return self.lastBorrowBlock;
     }
 
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
@@ -79,12 +87,12 @@ library TokenInfoLib {
 
     function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.depositInterest = viewDepositInterest(self, accruedRate);
-        self.lastCheckpoint = block.number;
+        self.lastDepositBlock = block.number;
     }
 
     function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.borrowInterest = viewBorrowInterest(self, accruedRate);
-        self.lastCheckpoint = block.number;
+        self.lastBorrowBlock = block.number;
     }
 
     // Calculating interest according to the new rate
