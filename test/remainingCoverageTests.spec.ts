@@ -95,25 +95,33 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when borrower's collateral value drops");
+            // should return "True"
+            // LTV > 60% ?
+
+            it("when user has borrowed but his LTV doesn't change");
+            // should return "False"
         });
     });
 
-    //TODO:
     context("getCoinLength", async () => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when function is called");
+            // returns length
         });
     });
 
     //TODO:
     context("recycleCommunityFund", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => {
+            it("when user's address is not same as definerCommunityFund");
+        });
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when valid token address is passed");
+            // verify deFinerFund == 0, transfer()
         });
     });
 
@@ -122,16 +130,18 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when deFinerCommunityFund's address is passed");
+            // verify if self.deFinerCommunityFund has been updated with the new address
         });
     });
 
     //TODO:
     context("getDeFinerCommunityFund", async () => {
         context("should fail", async () => {});
+        // invalid token address?
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when valid token address is passed");
         });
     });
 
