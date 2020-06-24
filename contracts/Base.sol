@@ -429,39 +429,6 @@ library Base {
         cToken.redeemUnderlying(_amount);
     }
 
-    function toCompound(BaseVariable storage self, address _token, uint totalAmount, bool isEth) public {
-        uint _amount = totalAmount.mul(15).div(100);
-        address cToken = self.cTokenAddress[_token];
-        uint256 toCompoundAmount = self.totalReserve[_token].sub(_amount);
-        if (isEth) {
-            // TODO Why we need to put gas here?
-            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
-            ICETH(cToken).mint.value(toCompoundAmount).gas(250000)();
-        } else {
-            ICToken(cToken).mint(toCompoundAmount);
-        }
-        self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
-        self.totalReserve[_token] = _amount;
-    }
-
-    function fromCompound(BaseVariable storage self, address _token, uint compoundAmount, uint amount) public {
-        ICToken cToken = ICToken(self.cTokenAddress[_token]);
-        uint256 totalReserve = self.totalReserve[_token];
-        uint _amount1 = compoundAmount.add(self.totalLoans[_token].add(totalReserve)).sub(amount);
-        uint _amount2 = _amount1.mul(15).div(100).add(amount).sub(totalReserve);
-
-        uint256 totalCompound = self.totalCompound[address(cToken)];
-        if(_amount2 >= compoundAmount) {
-            cToken.redeem(cToken.balanceOf(address(this)));
-            self.totalReserve[_token] = totalReserve.add(totalCompound);
-            self.totalCompound[address(cToken)] = 0;
-        } else {
-            cToken.redeemUnderlying(_amount2);
-            self.totalCompound[address(cToken)] = totalCompound.sub(_amount2);
-            self.totalReserve[_token] = totalReserve.add(_amount2);
-        }
-    }
-
     function getDepositBalance(
         BaseVariable storage self,
         address _token,
@@ -738,6 +705,10 @@ library Base {
         return _amount;
     }
 
+    /**
+	 * Withdraw all tokens from saving pool.
+     * @param _token token address
+	 */
     function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
 
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
