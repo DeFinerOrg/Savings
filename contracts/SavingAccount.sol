@@ -226,7 +226,7 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        uint money = uint(baseVariable.repay(_token, msg.sender, _amount));
+        uint money = uint(baseVariable.repay(_token, _amount));
         if(money != 0) {
             send(msg.sender, money, _token);
         }

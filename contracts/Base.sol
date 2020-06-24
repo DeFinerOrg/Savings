@@ -642,87 +642,61 @@ library Base {
     /**
      * Borrow the amount of token from the saving pool.
      * @param _token the address of the borrowed token
-     * @param amount the mount of the borrowed token
+     * @param _amount the mount of the borrowed token
      */
-    function borrow(BaseVariable storage self, address _token, uint256 amount) public {
+    function borrow(BaseVariable storage self, address _token, uint256 _amount) public {
         require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
 
-        // Add a new checkpoint on the index curve. The borrow rate should be calculated first
-        // as the deposite rate is infered from the borrow rate.
-        newBorrowRateIndexCheckpoint(self, _token);
-        newDepositRateIndexCheckpoint(self, _token);
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(self, _token);
+
+        // Sanity check
+        // sichaoy: Sanity check should be the first step in a function
+        address cToken = self.cTokenAddress[_token];
+        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+
+        // Update tokenInfo
+        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getLastBorrowBlock());
+        tokenInfo.borrow(_amount, rate);
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
-
-        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.borrow(amount, rate);
-        address cToken = self.cTokenAddress[_token];
-        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
-        uint compoundAmount = self.totalCompound[self.cTokenAddress[_token]];
-        uint totalAmount = compoundAmount.add(self.totalLoans[_token]).add(self.totalReserve[_token]);
-        if(
-            self.totalReserve[_token] <= amount
-            ||
-            self.totalReserve[_token].sub(amount).mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount.sub(amount))
-            <
-            10 * 10**16
-            &&
-            cToken != address(0)
-        ) {
-            fromCompound(self, _token, compoundAmount, amount);
-        }
-        self.totalReserve[_token] = self.totalReserve[_token].sub(amount);
-        self.totalLoans[_token] = self.totalLoans[_token].add(amount);
-        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+        updateTotalReserve(self, _token, _amount, false); // Last parameter false means borrow token
     }
 
     /**
      * Repay the amount of token to the saving pool.
      * @param _token the address of the repaid token
-     * @param amount the mount of the repaid token
+     * @param _amount the mount of the repaid token
      */
-    function repay(BaseVariable storage self, address _token, address activeAccount, uint256 amount) public returns(uint) {
+    function repay(BaseVariable storage self, address _token, uint256 _amount) public returns(uint) {
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[activeAccount].tokenInfos[_token];
+        // Sanity check
+        require(tokenInfo.getBorrowPrincipal() > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
 
-        // Add a new checkpoint on the index curve. The borrow rate should be calculated first
-        // as the deposite rate is infered from the borrow rate.
-        newBorrowRateIndexCheckpoint(self, _token);
-        newDepositRateIndexCheckpoint(self, _token);
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(self, _token);
+
+        // Update tokenInfo
+        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getLastBorrowBlock());
+        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
+        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
+        tokenInfo.repay(amount, rate);
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
+        updateTotalReserve(self, _token, amount, true); // Last parameter true means repay token
 
-        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getLastBorrowBlock());
-        require(tokenInfo.getBorrowPrincipal() > 0,
-            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
-        );
-
-        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
-        uint _amount = amount > amountOwedWithInterest ? amountOwedWithInterest : amount;
-        tokenInfo.repay(_amount, rate);
-        self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
-        self.totalLoans[_token] = self.totalLoans[_token].sub(_amount);
-        uint totalAmount = getTotalDepositsNow(self, _token);
-        if(
-            self.totalReserve[_token].mul(SafeDecimalMath.getUINT_UNIT()).div(totalAmount)
-            >
-            20 * 10**16
-            &&
-            self.cTokenAddress[_token] != address(0)
-        ) {
-            toCompound(self, _token, totalAmount, _token == ETH_ADDR);
-        }
-        self.depositRateLastModifiedBlockNumber[_token] = block.number;
-        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
-        return amount > amountOwedWithInterest ? amount.sub(amountOwedWithInterest) : 0;
+        return _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0; // Return the remainders
     }
 
     /**
@@ -773,17 +747,14 @@ library Base {
         // sichaoy: move sanity check to the begining
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
-        address cToken = self.cTokenAddress[_token];
-        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
 
         uint amount = tokenInfo.getDepositBalance(accruedRate);
+        address cToken = self.cTokenAddress[_token];
+        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
         tokenInfo.withdraw(amount, accruedRate);
 
-        updateTotalCompound(self, _token);
-        updateTotalLoan(self, _token);
-
         // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = tokenInfo.depositInterest.div(10)；
+        uint256 commission = tokenInfo.depositInterest.div(10);
         self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
         amount = amount.sub(commission);
 
@@ -794,7 +765,8 @@ library Base {
         updateTotalLoan(self, _token);
         updateTotalReserve(self, _token, amount, false); // Last parameter false means withdraw token
 
-        return amount;
+        // return amount;
+        return 0;
     }
 
     /**
