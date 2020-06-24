@@ -461,6 +461,12 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
+                    let userTotalBalanceBeforeBorrow = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressUSDC,
+                        { from: userNumber }
+                    );
+                    console.log("userTotalBalanceBeforeBorrow", userTotalBalanceBeforeBorrow[0]);
+
                     /* const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                     const expectedTokensAtSavingAccountContract = depositAmountCollateral
                         .mul(new BN(15))
@@ -477,11 +483,24 @@ contract("Integration Tests", async (accounts) => {
                     await savingAccount.borrow(addressUSDC, borrowAmount, {
                         from: userNumber
                     });
+
+                    let userTotalBalanceAfterBorrow = await savingAccount.tokenBalanceOfAndInterestOf(
+                        addressUSDC,
+                        { from: userNumber }
+                    );
+                    console.log("userTotalBalanceAfterBorrow", userTotalBalanceAfterBorrow[0]);
+
                     const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
                         new BN(userBalanceBeforeBorrow)
                     );
+
+                    // new BN(userTotalBalanceAfterBorrow[0]) is negative but amount is same as borrowAmount
+                    const userTotalBalanceDiff = new BN(userTotalBalanceBeforeBorrow[0]).sub(
+                        new BN(userTotalBalanceAfterBorrow[0])
+                    );
                     // Verify if borrow was successful
+                    expect(borrowAmount).to.be.bignumber.equal(userTotalBalanceDiff);
                     expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
                 }
             });
