@@ -52,6 +52,7 @@ contract("Integration Tests", async (accounts) => {
     let erc20WBTC: t.MockERC20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
+    let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: any;
     let addressCTokenTemp: any;
@@ -86,6 +87,7 @@ contract("Integration Tests", async (accounts) => {
         erc20WBTC = await MockERC20.at(addressWBTC);
         ZERO = new BN(0);
         ONE_WEEK = new BN(7).mul(new BN(24).mul(new BN(3600)));
+        ONE_MONTH = new BN(30).mul(new BN(24).mul(new BN(3600)));
         /* addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
@@ -433,7 +435,7 @@ contract("Integration Tests", async (accounts) => {
                 );
             });
 
-            it("should deposit DAI and 3 different users should borrow USDC", async () => {
+            it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async () => {
                 // 1. User 1 deposits 100,000 USDC
                 const numOfUSDC = new BN(100000);
                 const numOfToken = new BN(1000);
@@ -446,7 +448,7 @@ contract("Integration Tests", async (accounts) => {
                 for (let u = 2; u <= 4; u++) {
                     const userBorrowIndex = new BN(u);
                     // Amount to be borrowed based upon the userBorrowIndex
-                    const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1))); // 1000, 2000, 3000
+                    const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1)));
                     const depositAmountCollateral = eighteenPrecision.div(new BN(100));
                     const userNumber = accounts[userBorrowIndex];
 
@@ -466,6 +468,9 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     ); */
+
+                    // Increase block time to 1 month
+                    await time.increase(ONE_MONTH);
 
                     // Start borrowing
                     const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
