@@ -52,8 +52,10 @@ contract("SavingAccount", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported token address is passed");
+            // check for updated borrow rate
 
             it("when borrowRateLMBN is zero");
+            // cases of `getNowDepositRate`, line 261 Base.sol
 
             it("when borrowRateLMBN is equal to block number");
 
@@ -75,6 +77,7 @@ contract("SavingAccount", async (accounts) => {
     });
 
     context("getTokenState", async () => {
+        // Also being called by getMarketState
         context("should fail", async () => {});
 
         context("should succeed", async () => {
@@ -98,6 +101,7 @@ contract("SavingAccount", async (accounts) => {
             it("when borrower's collateral value drops");
             // should return "True"
             // LTV > 60% ?
+            // line 163 savingAccount
 
             it("when user has borrowed but his LTV doesn't change");
             // should return "False"
@@ -117,6 +121,7 @@ contract("SavingAccount", async (accounts) => {
     context("recycleCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund");
+            // definerCommunityFund?
         });
 
         context("should succeed", async () => {
