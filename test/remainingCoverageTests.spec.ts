@@ -38,6 +38,7 @@ contract("SavingAccount", async (accounts) => {
             it("when unsupported token address is passed");
 
             it("when cToken address is zero");
+            // Tokens not supported on Compound?
         });
 
         context("should succeed", async () => {
@@ -107,7 +108,9 @@ contract("SavingAccount", async (accounts) => {
         context("should succeed", async () => {
             it("when supported address is passed");
 
-            it("when ETH address is passed");
+            it("when ETH address is passed", async () => {
+                await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
+            });
         });
     });
 
