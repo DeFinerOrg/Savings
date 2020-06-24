@@ -201,7 +201,6 @@ contract SavingAccount {
         baseVariable.transfer(_activeAccount, _token, _amount, symbols);
     }
 
-
     /**
      * Borrow the amount of token to the saving pool.
      */

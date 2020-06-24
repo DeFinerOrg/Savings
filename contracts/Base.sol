@@ -206,7 +206,8 @@ library Base {
 
             // Trigger fromCompound if the new reservation ratio is less than 10%
             if(self.cTokenAddress[_token] != address(0) &&
-                totalReserveBeforeAdjust < totalAmount.mul(10).div(100)) {
+                (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(10).div(100))) {
+
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(15).div(100)){
                     // Withdraw all the tokens from Compound
@@ -765,8 +766,7 @@ library Base {
         updateTotalLoan(self, _token);
         updateTotalReserve(self, _token, amount, false); // Last parameter false means withdraw token
 
-        // return amount;
-        return 0;
+        return amount;
     }
 
     /**
