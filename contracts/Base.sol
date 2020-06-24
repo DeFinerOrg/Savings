@@ -458,7 +458,7 @@ library Base {
         updateTotalLoan(self, _token);
         newRateIndexCheckpoint(self, _token);
         vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
-        vars.interest = tokenInfo.viewDepositInterest(vars.accruedRate);
+        vars.interest = tokenInfo.calculateDepositInterest(vars.accruedRate);
 
         tokenInfo.withdraw(_amount, vars.accruedRate);
         if(vars.interest > 0) {
@@ -604,7 +604,7 @@ library Base {
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         require(tokenInfo.getDepositBalance(accruedRate) >= _amount, "Insufficient balance.");
-        uint interest = tokenInfo.viewDepositInterest(accruedRate);
+        uint interest = tokenInfo.calculateDepositInterest(accruedRate);
         tokenInfo.withdraw(_amount, accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
@@ -641,7 +641,7 @@ library Base {
         uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
         uint amount = tokenInfo.getDepositBalance(accruedRate);
-        uint interest = tokenInfo.viewDepositInterest(accruedRate);
+        uint interest = tokenInfo.calculateDepositInterest(accruedRate);
         tokenInfo.withdraw(amount, accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
