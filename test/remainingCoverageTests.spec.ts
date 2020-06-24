@@ -100,7 +100,7 @@ contract("SavingAccount", async (accounts) => {
         context("should succeed", async () => {
             it("when borrower's collateral value drops");
             // should return "True"
-            // LTV > 60% ?
+            // LTV > 85%
             // line 163 savingAccount
 
             it("when user has borrowed but his LTV doesn't change");
