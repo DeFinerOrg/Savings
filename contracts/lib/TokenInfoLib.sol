@@ -30,7 +30,7 @@ library TokenInfoLib {
     }
 
     function getBorrowBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
-        return self.borrowPrincipal.add(viewBorrowInterest(self, accruedRate));
+        return self.borrowPrincipal.add(calculateBorrowInterest(self, accruedRate));
     }
 
     function getDepositLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
@@ -88,7 +88,7 @@ library TokenInfoLib {
     }
 
     function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
-        self.borrowInterest = viewBorrowInterest(self, accruedRate);
+        self.borrowInterest = calculateBorrowInterest(self, accruedRate);
         self.borrowLastCheckpoint = block.number;
     }
 
@@ -102,7 +102,7 @@ library TokenInfoLib {
         }
     }
 
-    function viewBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+    function calculateBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
         uint256 _balance = self.borrowPrincipal;
         if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
             return self.borrowInterest;
