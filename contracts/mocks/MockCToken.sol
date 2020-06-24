@@ -51,7 +51,7 @@ contract MockCToken is ERC20Mintable, ERC20Burnable {
     }
 
     function getInterest() internal view returns (uint) {
-        // TODO need to calculate interest according to blocktime
+        // TODO need to calculate interest according to block number
         return 1;
     }
 
