@@ -7,12 +7,12 @@ library TokenInfoLib {
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     struct TokenInfo {
-        uint256 depositPrincipal;
-        uint256 borrowPrincipal;
-        uint256 depositInterest;
-        uint256 borrowInterest;
-        uint256 depositLastCheckpoint;
-        uint256 borrowLastCheckpoint;
+        uint256 depositPrincipal; // deposit principal
+        uint256 borrowPrincipal; // borrow principal
+        uint256 depositInterest; // deposit interest
+        uint256 borrowInterest; // borrow interest
+        uint256 depositLastCheckpoint; // deposit last checkpoint
+        uint256 borrowLastCheckpoint; // borrow last checkpoint
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
