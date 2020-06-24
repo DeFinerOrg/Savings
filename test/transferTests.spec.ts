@@ -290,6 +290,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let ETHbalanceOfUser2 = await web3.eth.getBalance(user2);
                     expect(ETHbalanceOfUser2).to.be.bignumber.lessThan(ETHtransferAmount);
 
+                    await savingAccount.deposit(ETH_ADDRESS, ETHtransferAmount.div(new BN(100)), {
+                        value: ETHtransferAmount.div(new BN(100)),
+                        from: user1
+                    });
+
                     await expectRevert(
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                             from: user2
