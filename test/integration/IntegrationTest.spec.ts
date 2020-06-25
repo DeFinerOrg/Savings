@@ -448,7 +448,7 @@ contract("Integration Tests", async (accounts) => {
                 for (let u = 2; u <= 4; u++) {
                     const userBorrowIndex = new BN(u);
                     // Amount to be borrowed based upon the userBorrowIndex
-                    const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1)));
+                    const borrowAmount = numOfToken.mul(userBorrowIndex.sub(new BN(1))); // 1000, 2000, 3000
                     const depositAmountCollateral = eighteenPrecision.div(new BN(100));
                     const userNumber = accounts[userBorrowIndex];
 
@@ -484,11 +484,12 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
+                    //TODO:
                     let userTotalBalanceAfterBorrow = await savingAccount.tokenBalanceOfAndInterestOf(
                         addressUSDC,
                         { from: userNumber }
                     );
-                    console.log("userTotalBalanceAfterBorrow", userTotalBalanceAfterBorrow[0]);
+                    console.log("userTotalBalanceAfterBorrow", userTotalBalanceAfterBorrow[0]); // -1000, -2000, -3000
 
                     const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
