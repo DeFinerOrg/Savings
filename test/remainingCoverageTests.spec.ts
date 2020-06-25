@@ -1,3 +1,4 @@
+import { BaseContract, BaseInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
 import { TestEngine } from "../test-helpers/TestEngine";
 
@@ -19,6 +20,7 @@ contract("SavingAccount", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
+    let base: t.BaseInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -51,6 +53,7 @@ contract("SavingAccount", async (accounts) => {
                 for (let i = 0; i < ERC20TokenAddresses.length; i++) {
                     //console.log("tokens", ERC20TokenAddresses[i]);
                     await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    // Verification for approve?
                 }
             });
         });
@@ -62,15 +65,19 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("when supported token address is passed");
-            // check for updated borrow rate
+            it("when supported token address is passed", async () => {
+                const ERC20TokenAddresses = testEngine.erc20Tokens;
+                // Update the rate of the first token
+                await savingAccount.updateDefinerRate(ERC20TokenAddresses[0]);
+
+                // Deposit & borrow Rate for verification, getBlockIntervalDepositRateRecord, getBlockIntervalBorrowRateRecord?
+                //const borrowRateAfter = await base.getBlockIntervalBorrowRateRecord;
+            });
 
             it("when borrowRateLMBN is zero");
             // cases of `getNowDepositRate`, line 261 Base.sol
 
             it("when borrowRateLMBN is equal to block number");
-
-            it("when cToken address is zero");
         });
     });
 
@@ -124,7 +131,7 @@ contract("SavingAccount", async (accounts) => {
         });
     });
 
-    // Not high priority as of now...
+    //------------Not high priority as of now-----------
 
     context("getTotalUsdValue", async () => {
         context("should succeed", async () => {
