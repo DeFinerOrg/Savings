@@ -15,6 +15,7 @@ const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
+    public aggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
 
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
@@ -81,11 +82,11 @@ export class TestEngine {
                 } else if (network == "mainnet" || network == "mainnet-fork") {
                     addr = token.mainnet.aggregatorAddress;
                 }
-                aggregators.push(addr);
+                this.aggregators.push(addr);
             })
         );
 
-        return aggregators;
+        return this.aggregators;
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountInstance> {

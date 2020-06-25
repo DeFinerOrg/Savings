@@ -1,5 +1,6 @@
 import { BaseContract, BaseInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
+import { MockChainLinkAggregatorInstance } from "./../types/truffle-contracts/index.d";
 import { TestEngine } from "../test-helpers/TestEngine";
 
 var chai = require("chai");
@@ -12,6 +13,9 @@ const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount"
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -20,6 +24,7 @@ contract("SavingAccount", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
+    let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let base: t.BaseInstance;
 
     const owner = accounts[0];
@@ -92,6 +97,7 @@ contract("SavingAccount", async (accounts) => {
             // line 163 savingAccount
 
             it("when user has borrowed but his LTV doesn't change", async () => {
+                //FIXME:
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -115,12 +121,31 @@ contract("SavingAccount", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
+                let mockChainlinkAggregatorforDAIAddress: string = testEngine.aggregators[0];
+                let mockChainlinkAggregatorforUSDCAddress: string = testEngine.aggregators[1];
+
+                const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
+                    mockChainlinkAggregatorforDAIAddress
+                );
+                const mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
+                    mockChainlinkAggregatorforUSDCAddress
+                );
+
+                let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                console.log(DAIprice);
+                console.log("DAI price", DAIprice.toString());
+
+                // update price of DAI to 70% of it's value
+                let updatedPrice = new BN(DAIprice).mul(new BN(7)).div(new BN(10));
+
+                await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+
                 let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(
                     user2,
                     addressDAI
                 );
-                expect(isAccountLiquidatableStr).equal(false);
-                // should return "False"
+                //expect(isAccountLiquidatableStr).equal(false);
+                // should return "True"
             });
         });
     });
