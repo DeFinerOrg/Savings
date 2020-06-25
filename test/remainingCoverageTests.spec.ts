@@ -34,6 +34,7 @@ contract("SavingAccount", async (accounts) => {
     });
 
     context("approveAll", async () => {
+        // Is being covered in Base.sol but not in savingsAccounts
         context("should fail", async () => {
             it("when unsupported token address is passed");
 
@@ -42,7 +43,7 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("when all conditions are satisfied");
+            it("when all conditions are satisfied", async () => {});
         });
     });
 
