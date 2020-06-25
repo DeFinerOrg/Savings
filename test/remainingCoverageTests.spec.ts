@@ -46,7 +46,12 @@ contract("SavingAccount", async (accounts) => {
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
-                // from testEngine?
+                const ERC20TokenAddresses = testEngine.erc20Tokens;
+                // Approve all ERC20 tokens
+                for (let i = 0; i < ERC20TokenAddresses.length; i++) {
+                    //console.log("tokens", ERC20TokenAddresses[i]);
+                    await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                }
             });
         });
     });
