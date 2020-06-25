@@ -14,6 +14,7 @@ const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkO
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
+    const tempToken: string = "0x7B175474E89094C44Da98b954EedeAC495271d0F";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -38,12 +39,15 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {
             it("when unsupported token address is passed");
 
-            it("when cToken address is zero");
-            // Tokens not supported on Compound?
+            it("when cToken address is zero", async () => {
+                await expectRevert(savingAccount.approveAll(dummy), "cToken address is zero");
+            });
         });
 
         context("should succeed", async () => {
-            it("when all conditions are satisfied", async () => {});
+            it("when all conditions are satisfied", async () => {
+                // from testEngine?
+            });
         });
     });
 
@@ -110,7 +114,7 @@ contract("SavingAccount", async (accounts) => {
             it("when supported address is passed");
 
             it("when ETH address is passed", async () => {
-                await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
+                //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
             });
         });
     });
