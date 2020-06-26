@@ -323,6 +323,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     //FIXME:
                     // User 2 borrowed USDC
                     await savingAccount.borrow(addressUSDC, USDCBorrowAmount, { from: user2 });
+                    // Error: -- Reason given: Insufficient collateral..
+
                     // Verify the loan amount.
                     /* const user2BalanceUSDC = await erc20USDC.balanceOf(user2);
                     expect(user2BalanceUSDC).to.be.bignumber.equal(new BN(600));
@@ -381,10 +383,12 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
 
+                    //FIXME:
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
+                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
@@ -441,10 +445,12 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
 
+                    //FIXME:
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
+                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
