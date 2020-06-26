@@ -461,7 +461,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    let userTotalBalanceBeforeBorrow = await savingAccount.tokenBalanceOfAndInterestOf(
+                    let userTotalBalanceBeforeBorrow = await savingAccount.tokenBalance(
                         addressUSDC,
                         { from: userNumber }
                     );
@@ -485,11 +485,11 @@ contract("Integration Tests", async (accounts) => {
                     });
 
                     //TODO:
-                    let userTotalBalanceAfterBorrow = await savingAccount.tokenBalanceOfAndInterestOf(
+                    let userTotalBalanceAfterBorrow = await savingAccount.tokenBalance(
                         addressUSDC,
                         { from: userNumber }
                     );
-                    console.log("userTotalBalanceAfterBorrow", userTotalBalanceAfterBorrow[0]); // -1000, -2000, -3000
+                    console.log("userTotalBalanceAfterBorrow", userTotalBalanceAfterBorrow[1]); // -1000, -2000, -3000
 
                     const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
@@ -497,8 +497,8 @@ contract("Integration Tests", async (accounts) => {
                     );
 
                     // new BN(userTotalBalanceAfterBorrow[0]) is negative but amount is same as borrowAmount
-                    const userTotalBalanceDiff = new BN(userTotalBalanceBeforeBorrow[0]).sub(
-                        new BN(userTotalBalanceAfterBorrow[0])
+                    const userTotalBalanceDiff = new BN(userTotalBalanceAfterBorrow[1]).sub(
+                        new BN(userTotalBalanceBeforeBorrow[0])
                     );
                     // Verify if borrow was successful
                     expect(borrowAmount).to.be.bignumber.equal(userTotalBalanceDiff);
@@ -753,7 +753,7 @@ contract("Integration Tests", async (accounts) => {
                     savingAccount.borrow(addressDAI, numOfToken.div(new BN(10)), {
                         from: user1
                     }),
-                    "Deposit is greater than or equal to zero, please use withdraw instead."
+                    "Token depositPrincipal must be zero"
                 );
 
                 // 4. User 1 withdraws all DAI
