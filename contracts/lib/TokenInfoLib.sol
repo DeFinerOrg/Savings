@@ -7,112 +7,107 @@ library TokenInfoLib {
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     struct TokenInfo {
-        int256 balance;
-        int256 interest;
-        uint256 rate;
-        uint256 StartBlockNumber;
+        uint256 depositPrincipal; // deposit principal
+        uint256 borrowPrincipal; // borrow principal
+        uint256 depositInterest; // deposit interest
+        uint256 borrowInterest; // borrow interest
+        uint256 depositLastCheckpoint; // deposit last checkpoint
+        uint256 borrowLastCheckpoint; // borrow last checkpoint
     }
-    uint256 constant BASE = 10**18; // TODO: 12 vs 18?
-    int256 constant POSITIVE = 1;
-    int256 constant NEGATIVE = -1;
+    uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
     // returns the principal
-    // TODO: change the name from balance to principal
-    function totalBalance(TokenInfo storage self) public view returns(int256) {
-        return self.balance;
+    function getDepositPrincipal(TokenInfo storage self) public view returns(uint256) {
+        return self.depositPrincipal;
     }
 
-    // returns the sum of balance, interest posted to the account, and any additional intereset accrued up to the given timestamp
-    // TODO: change the name from amount to balance
-    function totalAmount(TokenInfo storage self, uint rate) public view returns(int256) {
-        return self.balance.add(viewInterest(self, rate));
+    function getBorrowPrincipal(TokenInfo storage self) public view returns(uint256) {
+        return self.borrowPrincipal;
     }
 
-    // returns the sum of balance and interest posted to the account
-    function getCurrentTotalAmount(TokenInfo storage self) public view returns(int256) {
-        return self.balance.add(self.interest);
+    function getDepositBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        return self.depositPrincipal.add(calculateDepositInterest(self, accruedRate));
     }
 
-    function getStartBlockNumber(TokenInfo storage self) public view returns(uint256){
-        return self.StartBlockNumber;
+    function getBorrowBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        return self.borrowPrincipal.add(calculateBorrowInterest(self, accruedRate));
     }
 
-    function minusAmount(TokenInfo storage self, uint256 amount, uint256 rate, uint256 blockNumber) public {
-        resetInterest(self, blockNumber, rate);
-        int256 _amount = int256(amount);
-        if (self.balance + self.interest > 0) {
-            if (self.interest >= _amount) {
-                self.interest = self.interest.sub(_amount);
-                _amount = 0;
-            } else if (self.balance.add(self.interest) >= _amount) {
-                self.balance = self.balance.sub(_amount.sub(self.interest));
-                self.interest = 0;
-                _amount = 0;
-            } else {
-                _amount = _amount.sub(self.balance.add(self.interest));
-                self.balance = 0;
-                self.interest = 0;
-            }
+    function getDepositLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+        return self.depositLastCheckpoint;
+    }
+
+    function getBorrowLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+        return self.borrowLastCheckpoint;
+    }
+
+    function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
+        newBorrowCheckpoint(self, accruedRate);
+        self.borrowPrincipal = self.borrowPrincipal.add(amount);
+    }
+
+    function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
+        newDepositCheckpoint(self, accruedRate);
+        if (self.depositInterest >= amount) {
+            self.depositInterest = self.depositInterest.sub(amount);
+        } else if (self.depositPrincipal.add(self.depositInterest) >= amount) {
+            self.depositPrincipal = self.depositPrincipal.sub(amount.sub(self.depositInterest));
+            self.depositInterest = 0;
+        } else {
+            self.depositPrincipal = 0;
+            self.depositInterest = 0;
         }
-        if (_amount > 0) {
-            require(self.balance.add(self.interest) <= 0, "To minus amount, the total balance must be smaller than 0.");
-            self.balance = self.balance.sub(_amount);
-        }
     }
 
-    // TODO Principal + interest
-    // `balance` should be called `principal`
-    function addAmount(TokenInfo storage self, uint256 amount, uint rate, uint256 blockNumber) public returns(int256) {
+    /**
+     * Do the actually deposit and modify the token info.
+     */
+    function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
+        newDepositCheckpoint(self, accruedRate);
+        self.depositPrincipal = self.depositPrincipal.add(amount);
+    }
+
+    function repay(TokenInfo storage self, uint256 amount, uint accruedRate) public {
         // updated rate (new index rate), applying the rate from startBlock(checkpoint) to currBlock
-        resetInterest(self, blockNumber, rate);
-        int256 _amount = int256(amount);
+        newBorrowCheckpoint(self, accruedRate);
         // user owes money, then he tries to repays
-        if (self.balance.add(self.interest) < 0) {
-            if (self.interest.add(_amount) <= 0) {
-                self.interest = self.interest.add(_amount);
-                _amount = 0;
-            } else if (self.balance.add(self.interest).add(_amount) <= 0) {
-                self.balance = self.balance.add(_amount.add(self.interest));
-                self.interest = 0;
-                _amount = 0;
-            } else {
-                _amount = _amount.add(self.balance.add(self.interest));
-                self.balance = 0;
-                self.interest = 0;
-            }
+        if (self.borrowInterest > amount) {
+            self.borrowInterest = self.borrowInterest.sub(amount);
+        } else if (self.borrowPrincipal.add(self.borrowInterest) > amount) {
+            self.borrowPrincipal = self.borrowPrincipal.sub(amount.sub(self.borrowInterest));
+            self.borrowInterest = 0;
+        } else {
+            self.borrowPrincipal = 0;
+            self.borrowInterest = 0;
         }
-        // TODO _amount will always is greater than 0, then why?
-        if (_amount > 0) {
-            require(self.balance.add(self.interest) >= 0, "To add amount, the total balance must be larger than 0.");
-            self.balance = self.balance.add(_amount);
-        }
-        return self.balance;
     }
 
-    // 1. Calculate interest from startBlockNum(checkpoint) to CurrentBlockNum
-    // 2. Reset the startBlockNum of the user to the latest blockNum(new checkpoint)
-    function resetInterest(TokenInfo storage self, uint256 blockNumber, uint rate) public {
-        self.interest = viewInterest(self, rate);
-        self.StartBlockNumber = blockNumber;
+    function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
+        self.depositInterest = calculateDepositInterest(self, accruedRate);
+        self.depositLastCheckpoint = block.number;
+    }
+
+    function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
+        self.borrowInterest = calculateBorrowInterest(self, accruedRate);
+        self.borrowLastCheckpoint = block.number;
     }
 
     // Calculating interest according to the new rate
-    function viewInterest(TokenInfo storage self, uint rate) public view returns(int256) {
-        // owes money (on borrows) or add money(on deposits)
-        int256 _sign = self.balance < 0 ? NEGATIVE : POSITIVE;
-        // TODO uint256(-amount) ???
-        uint256 _balance = self.balance >= 0 ? uint256(self.balance) : uint256(-self.balance);
-        //uint256 _interest = self.interest >= 0 ? uint256(self.interest) : uint256(-self.interest);
-        if(rate == 0 || _balance == 0) {
-            return self.interest;
-        } else if(BASE > rate) {
-            return 0;
+    function calculateDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        uint256 _balance = self.depositPrincipal;
+        if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
+            return self.depositInterest;
         } else {
-            return int256(_balance.mul(rate).sub(_balance.mul(BASE)).div(BASE)).mul(_sign);
+            return _balance.add(self.depositInterest).mul(accruedRate).sub(_balance.mul(BASE)).div(BASE);
         }
     }
 
-    function updateInterest(TokenInfo storage self, int256 money) public {
-        self.interest = self.interest.sub(money);
+    function calculateBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+        uint256 _balance = self.borrowPrincipal;
+        if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
+            return self.borrowInterest;
+        } else {
+            return _balance.add(self.borrowInterest).mul(accruedRate).sub(_balance.mul(BASE)).div(BASE);
+        }
     }
 }

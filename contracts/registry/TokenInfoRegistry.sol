@@ -288,18 +288,15 @@ contract TokenInfoRegistry is Ownable {
         return tokenInfo[_token].chainLinkAggregator;
     }
 
-    function getBorrowLTV(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].borrowLTV);
+    function getBorrowLTV(address _token) external view returns (uint256) {
+        return tokenInfo[_token].borrowLTV;
     }
 
-    function getLiquidationThreshold(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].liquidationThreshold);
+    function getLiquidationThreshold(address _token) external view returns (uint256) {
+        return tokenInfo[_token].liquidationThreshold;
     }
 
-    function getLiquidationDiscountRatio(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].liquidationDiscountRatio);
+    function getLiquidationDiscountRatio(address _token) external view returns (uint256) {
+        return tokenInfo[_token].liquidationDiscountRatio;
     }
 }
