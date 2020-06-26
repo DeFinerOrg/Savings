@@ -29,11 +29,11 @@ library TokenInfoLib {
     }
 
     function getDepositBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
-        return self.depositPrincipal.add(viewDepositInterest(self, accruedRate));
+        return self.depositPrincipal.add(calculateDepositInterest(self, accruedRate));
     }
 
     function getBorrowBalance(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
-        return self.borrowPrincipal.add(viewBorrowInterest(self, accruedRate));
+        return self.borrowPrincipal.add(calculateBorrowInterest(self, accruedRate));
     }
 
     function getLastDepositBlock(TokenInfo storage self) public view returns(uint256) {
@@ -90,17 +90,17 @@ library TokenInfoLib {
     }
 
     function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
-        self.depositInterest = viewDepositInterest(self, accruedRate);
+        self.depositInterest = calculateDepositInterest(self, accruedRate);
         self.lastDepositBlock = block.number;
     }
 
     function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
-        self.borrowInterest = viewBorrowInterest(self, accruedRate);
+        self.borrowInterest = calculateBorrowInterest(self, accruedRate);
         self.lastBorrowBlock = block.number;
     }
 
     // Calculating interest according to the new rate
-    function viewDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+    function calculateDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
         uint256 _balance = self.depositPrincipal;
         if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
             return self.depositInterest;
@@ -109,7 +109,7 @@ library TokenInfoLib {
         }
     }
 
-    function viewBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
+    function calculateBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
         uint256 _balance = self.borrowPrincipal;
         if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
             return self.borrowInterest;

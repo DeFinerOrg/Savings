@@ -72,8 +72,7 @@ contract SavingAccount {
     // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
     function updateDefinerRate(address _token) public {
-        baseVariable.newBorrowRateIndexCheckpoint(_token);
-        baseVariable.newDepositRateIndexCheckpoint(_token);
+        baseVariable.newRateIndexCheckpoint(_token);
     }
 
 	/**
@@ -200,6 +199,7 @@ contract SavingAccount {
     function transfer(address _activeAccount, address _token, uint _amount) public {
         baseVariable.transfer(_activeAccount, _token, _amount, symbols);
     }
+
 
     /**
      * Borrow the amount of token to the saving pool.

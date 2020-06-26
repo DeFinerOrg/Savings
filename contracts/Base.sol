@@ -543,10 +543,9 @@ library Base {
 
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
-        newDepositRateIndexCheckpoint(self, _token);
-        newBorrowRateIndexCheckpoint(self, _token);
+        newRateIndexCheckpoint(self, _token);
         vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
-        vars.interest = tokenInfo.viewDepositInterest(vars.accruedRate);
+        vars.interest = tokenInfo.calculateDepositInterest(vars.accruedRate);
 
         tokenInfo.withdraw(_amount, vars.accruedRate);
         if(vars.interest > 0) {
@@ -558,13 +557,11 @@ library Base {
         if(_amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
             uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getLastBorrowBlock());
             uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
-            uint __amount = _amount > amountBorrowed ? amountBorrowed : _amount;
+            uint repayAmount = _amount > amountBorrowed ? amountBorrowed : _amount;
             require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
-            activeTokenInfo.deposit(__amount, bAccruedRate);
-            self.totalLoans[_token] = self.totalLoans[_token].add(__amount);
-            self.borrowRateLastModifiedBlockNumber[_token] = block.number;
-            self.totalReserve[_token] = self.totalReserve[_token].sub(__amount);
-            self.depositRateLastModifiedBlockNumber[_token] = block.number;
+            activeTokenInfo.repay(repayAmount, bAccruedRate);
+            self.totalLoans[_token] = self.totalLoans[_token].add(repayAmount);
+            self.totalReserve[_token] = self.totalReserve[_token].sub(repayAmount);
             _amount = _amount > amountBorrowed ? _amount.sub(amountBorrowed) : 0;
         }
 
@@ -573,8 +570,7 @@ library Base {
             activeTokenInfo.deposit(_amount, dAccruedRate);
         }
 
-        self.depositRateLastModifiedBlockNumber[_token] = block.number;
-        self.borrowRateLastModifiedBlockNumber[_token] = block.number;
+        self.lastCheckpoint[_token] = block.number;
     }
 
     /**
@@ -756,10 +752,8 @@ library Base {
         TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[addr[0]].tokenInfos[addr[1]];
         TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[addr[2]];
         TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[addr[1]];
-        newDepositRateIndexCheckpoint(self, addr[2]);
-        newDepositRateIndexCheckpoint(self, addr[1]);
-        newBorrowRateIndexCheckpoint(self, addr[2]);
-        newBorrowRateIndexCheckpoint(self, addr[1]);
+        newRateIndexCheckpoint(self, addr[2]);
+        newRateIndexCheckpoint(self, addr[1]);
         //清算者当前tokenRate
         uint msgTokenAccruedRate =
         msgTokenInfo.getBorrowPrincipal() > 0 ?
