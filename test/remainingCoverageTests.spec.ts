@@ -86,18 +86,15 @@ contract("SavingAccount", async (accounts) => {
         });
     });
 
-    //TODO:
     context("isAccountLiquidatable", async () => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when borrower's collateral value drops");
-            // should return "True"
-            // LTV > 85%
-            // line 163 savingAccount
-
-            it("when user has borrowed but his LTV doesn't change", async () => {
+            it("when borrower's collateral value drops", async () => {
                 //FIXME:
+                // should return "True"
+                // LTV > 85%
+                // line 163 savingAccount
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -146,6 +143,38 @@ contract("SavingAccount", async (accounts) => {
                 );
                 //expect(isAccountLiquidatableStr).equal(false);
                 // should return "True"
+            });
+
+            it("when user has borrowed but his LTV doesn't change", async () => {
+                const tokens = testEngine.erc20Tokens;
+                const addressDAI = tokens[0];
+                const addressUSDC = tokens[1];
+                //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
+
+                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
+                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+
+                // 2. Approve 1000 tokens
+                const numOfToken = new BN(1000);
+                const borrowAmt = new BN(600);
+
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                // 3. Verify the loan amount
+                const user2Balance = await erc20DAI.balanceOf(user2);
+
+                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(
+                    user2,
+                    addressDAI
+                );
+                // should return "false"
+                expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
