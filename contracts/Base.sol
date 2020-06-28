@@ -88,21 +88,6 @@ library Base {
     }
 
 
-    function getDepositTokenIndexes(BaseVariable storage self, address _sender)
-        public
-        view
-        returns (uint8[] memory)
-    {
-        uint128 currDepositBitmap = self.accounts[_sender].depositBitmap;
-        for(uint8 i = 0; i < 256; i++) {
-            uint128 mask = uint128(1) << i;
-            uint128 isSet = currDepositBitmap & mask;
-            if(isSet > 0) {
-                // TODO Still working on
-            }
-        }
-    }
-
     function approveAll(BaseVariable storage self, address _token) public {
         address cToken = self.cTokenAddress[_token];
         require(cToken != address(0x0), "cToken address is zero");
