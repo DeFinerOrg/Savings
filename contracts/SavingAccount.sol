@@ -212,9 +212,9 @@ contract SavingAccount {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
         uint totalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols)
-        .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
+        .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor));
         uint usdValue = baseVariable.getDepositUsd(msg.sender, symbols);
-        require(totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+        require(totalBorrow.mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
         send(msg.sender, _amount, _token);
     }
@@ -225,7 +225,7 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        uint money = uint(baseVariable.repay(_token, msg.sender, _amount));
+        uint money = baseVariable.repay(_token, msg.sender, _amount);
         if(money != 0) {
             send(msg.sender, money, _token);
         }
@@ -328,14 +328,14 @@ contract SavingAccount {
 
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         uint liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(vars.borrowLTV)
+            vars.totalCollateral.mul(vars.borrowLTV).div(100)
         ).div(vars.liquidationDiscountRatio - vars.borrowLTV);
         //清算者需要付的钱 (Liquidators need to pay)
 
         uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(_token)).div(divisor);
 
-        if(paymentOfLiquidationAmount > vars.msgTotalCollateral.sub(vars.msgTotalBorrow)) {
-            paymentOfLiquidationAmount = vars.msgTotalCollateral.sub(vars.msgTotalBorrow);
+        if(paymentOfLiquidationAmount > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)) {
+            paymentOfLiquidationAmount = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
         }
 
         if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(vars.liquidationDiscountRatio)) {
