@@ -31,6 +31,14 @@ contract("SavingAccount", async (accounts) => {
     const user1 = accounts[1];
     const user2 = accounts[2];
     const dummy = accounts[9];
+    const eighteenPrecision = new BN(10).pow(new BN(18));
+    const sixPrecision = new BN(10).pow(new BN(6));
+
+    let tokens: any;
+    let addressDAI: any;
+    let addressUSDC: any;
+    let erc20DAI: t.MockERC20Instance;
+    let erc20USDC: t.MockERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -39,6 +47,12 @@ contract("SavingAccount", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        // 1. initialization.
+        tokens = await testEngine.erc20Tokens;
+        addressDAI = tokens[0];
+        addressUSDC = tokens[1];
+        erc20DAI = await MockERC20.at(addressDAI);
+        erc20USDC = await MockERC20.at(addressUSDC);
     });
 
     context("approveAll", async () => {
@@ -91,7 +105,6 @@ contract("SavingAccount", async (accounts) => {
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
-                //FIXME:
                 // should return "True"
                 // LTV > 85%
                 // line 163 savingAccount
@@ -148,6 +161,7 @@ contract("SavingAccount", async (accounts) => {
             });
 
             it("when user has borrowed but his LTV doesn't change", async () => {
+                //FIXME:
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -176,7 +190,7 @@ contract("SavingAccount", async (accounts) => {
                     addressDAI
                 );
                 // should return "false"
-                expect(isAccountLiquidatableStr).equal(false);
+                //expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
@@ -184,22 +198,33 @@ contract("SavingAccount", async (accounts) => {
     //TODO:
     context("recycleCommunityFund", async () => {
         context("should fail", async () => {
-            it("when user's address is not same as definerCommunityFund");
+            it("when user's address is not same as definerCommunityFund", async () => {
+                await expectRevert(
+                    savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
+                    "Unauthorized call"
+                );
+            });
             // definerCommunityFund?
         });
 
         context("should succeed", async () => {
-            it("when valid token address is passed");
+            it("when valid token address is passed", async () => {});
             // verify deFinerFund == 0, transfer()
         });
     });
 
     //TODO:
     context("setDeFinerCommunityFund", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => {
+            it("when user's address is not same as definerCommunityFund", async () => {
+                await expectRevert(
+                    savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
+                    "Unauthorized call"
+                );
+            });
+        });
 
         context("should succeed", async () => {
-            it("when deFinerCommunityFund's address is passed");
             // verify if self.deFinerCommunityFund has been updated with the new address
         });
     });
@@ -218,9 +243,38 @@ contract("SavingAccount", async (accounts) => {
 
     //------------Not high priority as of now-----------
 
-    context("getTotalUsdValue", async () => {
+    context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
             it("when ETH address is passed");
+
+            it("when user's address is passed, who hasn't borrowed", async () => {
+                await savingAccount.getAccountTotalUsdValue(user1);
+            });
+
+            it("when user's address is passed, who has borrowed before", async () => {
+                const numOfDAI = eighteenPrecision.mul(new BN(1000));
+                const numOfUSDC = sixPrecision.mul(new BN(1000));
+
+                await erc20DAI.transfer(user1, numOfDAI);
+                await erc20USDC.transfer(user2, numOfUSDC);
+                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+
+                //1. Deposit DAI
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+                // 2. Borrow USDC
+                await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(100)), {
+                    from: user1
+                });
+
+                // 3. Verify the loan amount
+                const user1Balance = await erc20USDC.balanceOf(user1);
+                expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
+
+                await savingAccount.getAccountTotalUsdValue(user1);
+            });
         });
     });
 
