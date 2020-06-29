@@ -256,11 +256,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     expect(new BN(user2BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).sub(new BN(500))
                     );
-
-                    // FIXME:
-                    /* expect(user1BalanceAfterTransfer).to.be.bignumber.equal(
-                        numOfToken.add(new BN(10))
-                    ); */
                 });
             });
         });
@@ -322,7 +317,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     //FIXME:
                     // User 2 borrowed USDC
-                    /* await savingAccount.borrow(addressUSDC, USDCBorrowAmount, { from: user2 });
+                    await savingAccount.borrow(addressUSDC, USDCBorrowAmount, { from: user2 });
                     // Error: -- Reason given: Insufficient collateral..
 
                     // Verify the loan amount.
@@ -331,7 +326,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
-                    }); */
+                    });
                 });
             });
 
@@ -385,7 +380,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     //FIXME:
                     // transfer ETH from user2 to user1
-                    /* await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                    await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
                     // Error: -- Reason given: Insufficient collateral..
@@ -402,7 +397,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     expect(new BN(user2BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).sub(ETHtransferAmount)
-                    ); */
+                    );
                 });
 
                 it("Transfer large amount of balance", async () => {
@@ -447,7 +442,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     //FIXME:
                     // transfer ETH from user 2 to user 1
-                    /* await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
+                    await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
                     // Error: -- Reason given: Insufficient collateral..
@@ -464,7 +459,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     expect(new BN(user2BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).sub(ETHtransferAmount)
-                    ); */
+                    );
                 });
             });
         });
