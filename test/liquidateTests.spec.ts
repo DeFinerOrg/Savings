@@ -340,7 +340,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(5));
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(5)));
                     await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
                         from: user2,
                         value: ONE_ETH
