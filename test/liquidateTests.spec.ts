@@ -82,8 +82,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
         context("with Token", async () => {
             context("should fail", async () => {
                 it("when unsupported token address is passed", async () => {
-                    console.log((await savingAccount.getLTV(ETH_ADDRESS)).toString())
-                    console.log((await mockChainlinkAggregatorforETH.latestAnswer()).toString());
                     //Try depositting unsupported Token to SavingContract
                     await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
                 });
@@ -284,8 +282,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .mul(ONE_ETH)
                         .div(new BN(await savingAccount.getCoinToUsdRate(9)));
-                    console.log(borrowAmt.toString());
-                    console.log((await savingAccount.getCoinToUsdRate(9)).toString());
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
@@ -330,7 +326,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
             context("should succeed", async () => {
                 it("When user tries to liquidate partially", async () => {
-                    console.log((await mockChainlinkAggregatorforETH.latestAnswer()).toString());
                     const borrowAmt = (new BN(await savingAccount.getCoinToUsdRate(0)))
                         .mul(new BN(60))
                         .div(new BN(100))
