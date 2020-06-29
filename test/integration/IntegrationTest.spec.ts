@@ -257,6 +257,7 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit all and withdraw only token with less than 18 decimals", async () => {
                 const numOfToken = new BN(1000);
 
+
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
@@ -488,12 +489,10 @@ contract("Integration Tests", async (accounts) => {
                         addressUSDC,
                         { from: userNumber }
                     );
-
                     const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
                         new BN(userBalanceBeforeBorrow)
                     );
-
                     const userTotalBalanceDiff = new BN(userTotalBalanceAfterBorrow[1]).sub(
                         new BN(userTotalBalanceBeforeBorrow[0])
                     );
@@ -685,9 +684,11 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
             it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
+
                 const numOfDAI = eighteenPrecision.mul(new BN(10)); // 10 DAI
                 const numOfUSDC = sixPrecision.mul(new BN(10)); // 10 USDC
                 const borrowAmount = numOfUSDC.div(new BN(10)); // 1 USDC
+
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
@@ -707,6 +708,7 @@ contract("Integration Tests", async (accounts) => {
                     savingAccount.address
                 );
                 console.log("balSavingAccountDAIAfterBorr", balSavingAccountDAIAfterBorr);
+
 
                 // Amount that is locked as collateral
                 const collateralLocked = borrowAmount
