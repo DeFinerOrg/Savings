@@ -225,7 +225,7 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        uint money = uint(baseVariable.repay(_token, msg.sender, _amount));
+        uint money = uint(baseVariable.repay(_token, _amount));
         if(money != 0) {
             send(msg.sender, money, _token);
         }
@@ -376,6 +376,12 @@ contract SavingAccount {
         return baseVariable.getDeFinerCommunityFund(_token);
     }
 
+    /**
+     * Receive the amount of token from msg.sender
+     * @param _from from address
+     * @param _amount amount of token
+     * @param _token token address
+     */
     function receive(address _from, uint256 _amount, address _token) private {
         if (_isETH(_token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
