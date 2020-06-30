@@ -37,8 +37,10 @@ contract("RemainingCoverage", async (accounts) => {
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
+    let tempContractAddress: any;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
+    let erc20contr: t.MockERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -144,8 +146,6 @@ contract("RemainingCoverage", async (accounts) => {
                 );
 
                 let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                console.log(DAIprice);
-                console.log("DAI price", DAIprice.toString());
 
                 // update price of DAI to 70% of it's value
                 let updatedPrice = new BN(DAIprice).mul(new BN(7)).div(new BN(10));
@@ -214,7 +214,6 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    //TODO:
     context("setDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
@@ -225,6 +224,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
 
+        //TODO:
         context("should succeed", async () => {
             // verify if self.deFinerCommunityFund has been updated with the new address
         });
@@ -287,6 +287,16 @@ contract("RemainingCoverage", async (accounts) => {
         //TODO:
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
+                const numOfToken = new BN(1000);
+
+                // Deposit tokens
+                await erc20DAI.transfer(user1, numOfToken);
+                await erc20USDC.transfer(user2, numOfToken);
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+
                 let marktST = await savingAccount.getMarketState();
                 console.log("marktST", marktST);
             });
@@ -322,24 +332,14 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    /* context("getCoinLength", async () => {
-        // Being called by getBalances
-        context("should fail", async () => {});
-
-        context("should succeed", async () => {
-            it("when function is called", async () => {
-                await savingAccount.getCoinLength;
-            });
-            // returns length
-        });
-    }); */
-
     context("getCoinAddress", async () => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when function is called", async () => {
-                await savingAccount.getCoinAddress(0);
+                for (let i = 0; i < 9; i++) {
+                    await savingAccount.getCoinAddress(i);
+                }
             });
         });
     });
