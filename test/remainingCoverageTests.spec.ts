@@ -189,6 +189,7 @@ contract("SavingAccount", async (accounts) => {
                     user2,
                     addressDAI
                 );
+                // TODO:
                 // should return "false"
                 //expect(isAccountLiquidatableStr).equal(false);
             });
@@ -306,18 +307,34 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when function is called");
+            it("when function is called", async () => {
+                await savingAccount.getCoinLength;
+            });
             // returns length
+        });
+    });
+
+    context("getCoinAddress", async () => {
+        context("should fail", async () => {});
+
+        context("should succeed", async () => {
+            it("when function is called", async () => {
+                await savingAccount.getCoinAddress(1);
+            });
         });
     });
 
     //TODO:
     context("getDeFinerCommunityFund", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => {
+            //await savingAccount.getDeFinerCommunityFund(dummy);
+        });
         // invalid token address?
 
         context("should succeed", async () => {
-            it("when valid token address is passed");
+            it("when valid token address is passed", async () => {
+                await savingAccount.getDeFinerCommunityFund(addressDAI);
+            });
         });
     });
 });
