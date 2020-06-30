@@ -17,7 +17,7 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.req
     "MockChainLinkAggregator"
 );
 
-contract("SavingAccount", async (accounts) => {
+contract("RemainingCoverage", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const tempToken: string = "0x7B175474E89094C44Da98b954EedeAC495271d0F";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -231,11 +231,14 @@ contract("SavingAccount", async (accounts) => {
     });
 
     context("emergencyWithdraw", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => {
+            //await savingAccount.emergencyWithdraw(addressDAI, { from: user1 });
+        });
 
         context("should succeed", async () => {
             it("when supported address is passed");
 
+            //TODO
             it("when ETH address is passed", async () => {
                 //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
             });
@@ -246,6 +249,7 @@ contract("SavingAccount", async (accounts) => {
 
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
+            //TODO
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -282,7 +286,10 @@ contract("SavingAccount", async (accounts) => {
     context("getMarketState", async () => {
         //TODO:
         context("should succeed", async () => {
-            it("when all conditions are satisfied");
+            it("when all conditions are satisfied", async () => {
+                let marktST = await savingAccount.getMarketState();
+                console.log("marktST", marktST);
+            });
         });
     });
 
@@ -291,7 +298,10 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when all conditions are satisfied");
+            it("when all conditions are satisfied", async () => {
+                let tokenST = await savingAccount.getTokenState(addressDAI);
+                console.log("marktST", tokenST);
+            });
         });
     });
 
@@ -299,11 +309,21 @@ contract("SavingAccount", async (accounts) => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
-            it("when sender's address is valid");
+            it("when sender's address is valid", async () => {
+                const numOfDAI = new BN(1000);
+                const numOfUSDC = new BN(1000);
+
+                await erc20DAI.transfer(user1, numOfDAI);
+                await erc20USDC.transfer(user2, numOfUSDC);
+
+                let balances = await savingAccount.getBalances({ from: user1 });
+                console.log("balances", balances);
+            });
         });
     });
 
-    context("getCoinLength", async () => {
+    /* context("getCoinLength", async () => {
+        // Being called by getBalances
         context("should fail", async () => {});
 
         context("should succeed", async () => {
@@ -312,14 +332,14 @@ contract("SavingAccount", async (accounts) => {
             });
             // returns length
         });
-    });
+    }); */
 
     context("getCoinAddress", async () => {
         context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when function is called", async () => {
-                await savingAccount.getCoinAddress(1);
+                await savingAccount.getCoinAddress(0);
             });
         });
     });
