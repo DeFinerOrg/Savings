@@ -122,10 +122,10 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Amount that is locked as collateral
                     const collateralLocked = borrowAmount
-                        .mul(await savingAccount.getCoinToUsdRate(1))
+                        .mul(await savingAccount.getCoinToETHRate(1))
                         .mul(new BN(100))
                         .div(new BN(60))
-                        .div(await savingAccount.getCoinToUsdRate(0));
+                        .div(await savingAccount.getCoinToETHRate(0));
 
                     // 3. Verify the loan amount
                     const user2USDCBalance = await erc20USDC.balanceOf(user2);
