@@ -459,11 +459,11 @@ library Base {
         }
     }
 
-    function getDepositUsd(
+    function getDepositETH(
         BaseVariable storage self,
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
-    ) public view returns (uint256 depositUsd) {
+    ) public view returns (uint256 depositETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             address tokenAddress = _symbols.addressFromIndex(i);
@@ -471,16 +471,16 @@ library Base {
             if(tokenAddress != ETH_ADDR) {
                 divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
             }
-            depositUsd = depositUsd.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+            depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
-        return depositUsd;
+        return depositETH;
     }
 
-    function getBorrowUsd(
+    function getBorrowETH(
         BaseVariable storage self,
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
-    ) public view returns (uint256 borrowUsd) {
+    ) public view returns (uint256 borrowETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             address tokenAddress = _symbols.addressFromIndex(i);
@@ -488,9 +488,9 @@ library Base {
             if(tokenAddress != ETH_ADDR) {
                 divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
             }
-            borrowUsd = borrowUsd.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+            borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
-        return borrowUsd;
+        return borrowETH;
     }
 
     struct TransferVars {
@@ -517,8 +517,8 @@ library Base {
             divisor = 10**uint256(IERC20Extended(_token).decimals());
         }
 
-        vars.totalBorrow = getBorrowUsd(self, _activeAccount, symbols);
-        vars.totalDeposit = getDepositUsd(self, _activeAccount, symbols);
+        vars.totalBorrow = getBorrowETH(self, _activeAccount, symbols);
+        vars.totalDeposit = getDepositETH(self, _activeAccount, symbols);
         vars.amountValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
         require(
             vars.totalBorrow.add(vars.amountValue).mul(100) <= vars.totalDeposit.mul(60),
