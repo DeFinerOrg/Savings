@@ -334,7 +334,6 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
             it("should deposit $1 million value and borrow 0.6 million", async () => {
-                //TODO
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(7)));
                 const borrowTokens = eighteenPrecision
@@ -725,7 +724,6 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.withdraw(erc20DAI.address, remainingDAI, { from: user1 });
                 const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
 
-                //TODO
                 expect(balSavingAccountDAI).to.be.bignumber.equal(
                     collateralLocked.mul(new BN(15)).div(new BN(100))
                 );
