@@ -714,7 +714,7 @@ library Base {
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         vars.liquidationDebtValue = vars.totalBorrow.sub(
             vars.totalCollateral.mul(borrowLTV).div(100)
-        ).div(liquidationDiscountRatio - borrowLTV);
+        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
 
         //清算者需要付的钱 (Liquidators need to pay)
         vars.targetTokenPrice = symbols.priceFromAddress(_targetToken);
@@ -735,8 +735,8 @@ library Base {
         //被清算者目标tokenRate
         vars.targetTokenAccruedRate = getBorrowAccruedRate(self, _targetToken, targetTokenInfo.getBorrowLastCheckpoint());
 
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice);
-        msgTargetTokenInfo.withdraw(vars.targetTokenAmount.mul(liquidationDiscountRatio).div(100), vars.msgTargetTokenAccruedRate);
+        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
         targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
 
         // The collaterals are liquidate in the order of their market liquidity
@@ -748,7 +748,7 @@ library Base {
 
             TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
 
-            if(tokenInfo.getBorrowPrincipal() == 0){
+            if(tokenInfo.getBorrowPrincipal() == 0) {
                 TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
                 newRateIndexCheckpoint(self, vars.token);
 
@@ -773,6 +773,7 @@ library Base {
                 tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
                 msgTokenInfo.deposit(vars.tokenAmount, msgTokenAccruedRate);
             }
+
             if(vars.liquidationDebtValue == 0){
                 break;
             }
