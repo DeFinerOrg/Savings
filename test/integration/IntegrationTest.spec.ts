@@ -685,9 +685,9 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
             it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
-                const numOfDAI = eighteenPrecision.mul(new BN(10)); // 10 DAI
-                const numOfUSDC = sixPrecision.mul(new BN(10)); // 10 USDC
-                const borrowAmount = numOfUSDC.div(new BN(10)); // 1 USDC
+                const numOfDAI = eighteenPrecision.mul(new BN(10));
+                const numOfUSDC = sixPrecision.mul(new BN(10));
+                const borrowAmount = numOfUSDC.div(new BN(10));
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
@@ -715,25 +715,22 @@ contract("Integration Tests", async (accounts) => {
                     .div(new BN(60))
                     .div(await savingAccount.getCoinToUsdRate(0));
 
-                console.log("collateralLocked", collateralLocked.toString);
-
                 // 3. Verify the loan amount
                 const user1BalanceAfterBorrow = await erc20USDC.balanceOf(user1);
                 expect(user1BalanceAfterBorrow).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
 
                 // Total remaining DAI after borrow
                 const remainingDAI = numOfDAI.sub(new BN(collateralLocked));
-                console.log("remainingDAI", remainingDAI);
 
                 // 4. Withdraw remaining DAI
                 //await savingAccount.withdrawAllToken(erc20DAI.address, { from: user1 });
                 await savingAccount.withdraw(erc20DAI.address, remainingDAI, { from: user1 });
                 const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
 
-                console.log("balSavingAccountDAI", balSavingAccountDAI);
-
                 //TODO
-                expect(balSavingAccountDAI).to.be.bignumber.equal(collateralLocked);
+                expect(balSavingAccountDAI).to.be.bignumber.equal(
+                    collateralLocked.mul(new BN(15)).div(new BN(100))
+                );
             });
 
             it("should deposit DAI and borrow DAI only after withdrawing first", async () => {
