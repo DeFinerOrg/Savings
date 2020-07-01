@@ -488,12 +488,10 @@ contract("Integration Tests", async (accounts) => {
                         addressUSDC,
                         { from: userNumber }
                     );
-
                     const userBalanceAfterBorrow = await erc20USDC.balanceOf(userNumber);
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
                         new BN(userBalanceBeforeBorrow)
                     );
-
                     const userTotalBalanceDiff = new BN(userTotalBalanceAfterBorrow[1]).sub(
                         new BN(userTotalBalanceBeforeBorrow[0])
                     );
