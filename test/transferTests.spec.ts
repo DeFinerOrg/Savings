@@ -287,7 +287,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. User2 borrow USDC and use it's ETH as collateral
                     // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
                     const depositAmount = new BN(10000);
-                    const ETHtransferAmount = new BN(900);
+                    const ETHtransferAmount = new BN(1100);
                     const USDCBorrowAmount = new BN(600);
 
                     // User 1 deposits USDC
@@ -297,22 +297,36 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
                     await savingAccount.deposit(addressUSDC, depositAmount, { from: user1 });
 
+                    const expectedTokensAtSavingAccountContractUSDC = depositAmount
+                        .mul(new BN(15))
+                        .div(new BN(100));
+                    const balSavingAccountUSDC = await erc20USDC.balanceOf(savingAccount.address);
+                    expect(expectedTokensAtSavingAccountContractUSDC).to.be.bignumber.equal(
+                        balSavingAccountUSDC
+                    );
+
                     // User 1 deposits ETH
                     const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                         savingAccount.address
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
-                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                        value: depositAmount,
+                    await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
+                        value: eighteenPrecision,
                         from: user1
                     });
 
                     // User 2 deposits ETH
-                    await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                        value: depositAmount,
+                    await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
+                        value: eighteenPrecision,
                         from: user2
                     });
+
+                    // verify deposit
+                    const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                    expect(new BN(ETHbalanceAfterDeposit)).to.be.bignumber.equal(
+                        new BN(eighteenPrecision).mul(new BN(2))
+                    );
 
                     //FIXME:
                     // User 2 borrowed USDC
