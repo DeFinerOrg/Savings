@@ -101,9 +101,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                 });
 
                 it("Not enough collatral for borrowed asset if transfer", async () => {
-                    // TODO:
                     // 1. Transfer DAI to user1 & user2.
-                    // 2. User2 borrow USDC and use it's DAI as collateral
+                    // 2. User2 borrow USDC and uses it's DAI as collateral
                     // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
                     const numOfDAI = eighteenPrecision.mul(new BN(10));
                     const numOfUSDC = sixPrecision.mul(new BN(10));
@@ -134,12 +133,12 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // Total remaining DAI after borrow
                     const remainingDAI = numOfDAI.sub(collateralLocked);
 
-                    // FIXME:
-                    /* await expectRevert.unspecified(
+                    await expectRevert(
                         savingAccount.transfer(user1, addressDAI, remainingDAI.add(new BN(100)), {
                             from: user2
-                        })
-                    ); */
+                        }),
+                        "Insufficient collateral."
+                    );
                 });
             });
 
