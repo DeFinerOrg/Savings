@@ -331,7 +331,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
-                    }); */
+                    }); */ //Insufficient collateral.
                 });
             });
 
