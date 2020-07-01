@@ -90,7 +90,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     //Try depositting zero address
                     await expectRevert(
                         savingAccount.liquidate(owner, addressZero),
-                        "Token address is zero"
+                        "Unsupported token"
                     );
                 });
 
