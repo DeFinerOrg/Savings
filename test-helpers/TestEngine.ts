@@ -132,6 +132,5 @@ export class TestEngine {
                 );
             })
         );
-        //await tokenInfoRegistry.addToken(ETH_ADDR);
     }
 }
