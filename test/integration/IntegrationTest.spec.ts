@@ -466,6 +466,10 @@ contract("Integration Tests", async (accounts) => {
                         { from: userNumber }
                     );
 
+                    let userTotalBalanceBeforeDAI = await savingAccount.tokenBalance(addressDAI, {
+                        from: userNumber
+                    });
+
                     /* const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                     const expectedTokensAtSavingAccountContract = depositAmountCollateral
                         .mul(new BN(15))
@@ -479,12 +483,21 @@ contract("Integration Tests", async (accounts) => {
                     let block = await web3.eth.getBlock("latest");
                     console.log("block_number", block.number);
 
-                    let targetBlock = new BN(block.number).add(new BN(90));
+                    let targetBlock = new BN(block.number).add(new BN(150));
 
                     await time.advanceBlockTo(targetBlock);
 
                     let blockAfter = await web3.eth.getBlock("latest");
                     console.log("block_number_After", blockAfter.number);
+
+                    // check for interest rate
+                    let userTotalBalanceAfterDAI = await savingAccount.tokenBalance(addressDAI, {
+                        from: userNumber
+                    });
+
+                    expect(new BN(userTotalBalanceBeforeDAI[0])).to.be.bignumber.equal(
+                        new BN(userTotalBalanceAfterDAI[0])
+                    );
 
                     // Start borrowing
                     const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
