@@ -253,7 +253,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
-                await savingAccount.getAccountTotalUsdValue(user1);
+                await savingAccount.getAccountTotalETHValue(user1);
             });
 
             it("when user's address is passed, who has borrowed before", async () => {
@@ -278,7 +278,7 @@ contract("RemainingCoverage", async (accounts) => {
                 const user1Balance = await erc20USDC.balanceOf(user1);
                 expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
 
-                await savingAccount.getAccountTotalUsdValue(user1);
+                await savingAccount.getAccountTotalETHValue(user1);
             });
         });
     });
