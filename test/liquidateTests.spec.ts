@@ -156,7 +156,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(10000)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
@@ -173,7 +173,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI
                     );
 
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(5)));
                     await savingAccount.liquidate(user2, addressDAI);
                     const liquidateAfter = await savingAccount.isAccountLiquidatable(
                         user2,
@@ -238,7 +237,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, ONE_USDC);
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC.div(new BN(1000)));
+                    await savingAccount.deposit(addressUSDC, ONE_USDC.div(new BN(100)));
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
                     // 3. Change the price.
