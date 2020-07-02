@@ -475,7 +475,16 @@ contract("Integration Tests", async (accounts) => {
                     ); */
 
                     // Increase block time to 1 month
-                    await time.increase(ONE_MONTH);
+                    //await time.increase(ONE_MONTH);
+                    let block = await web3.eth.getBlock("latest");
+                    console.log("block_number", block.number);
+
+                    let targetBlock = new BN(block.number).add(new BN(90));
+
+                    await time.advanceBlockTo(targetBlock);
+
+                    let blockAfter = await web3.eth.getBlock("latest");
+                    console.log("block_number_After", blockAfter.number);
 
                     // Start borrowing
                     const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
