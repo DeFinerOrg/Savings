@@ -345,10 +345,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let updatedPrice = new BN(1);
-                    await mockChainlinkAggregatorforETH.updateAnswer(updatedPrice);
+                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
                     await expectRevert(
-                        savingAccount.liquidate(user1, addressDAI),
+                        savingAccount.liquidate(user1, ETH_ADDRESS),
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
@@ -365,7 +365,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(5)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
                     await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
                         from: user2,
                         value: ONE_ETH
@@ -383,13 +383,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     // 4. Start liquidation.
                     const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
+                        user1,
+                        ETH_ADDRESS
                     );
-                    await savingAccount.liquidate(user2, addressDAI);
+                    await savingAccount.liquidate(user1, ETH_ADDRESS);
                     const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
+                        user1,
+                        ETH_ADDRESS
                     );
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
@@ -398,6 +398,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 it("When user tries to liquidate fully", async () => {
                     // 2. Approve 1000 tokens
                     const borrowAmt = new BN(await savingAccount.getCoinToUsdRate(0))
+                        .mul(new BN(100))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
@@ -412,7 +413,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH
                     });
                     // 2. Start borrowing.
-                    await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user2 });
+                    await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let ETHprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     // update price of DAI to 70% of it's value
@@ -424,13 +425,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     // 4. Start liquidation.
                     const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
+                        user1,
+                        ETH_ADDRESS
                     );
-                    await savingAccount.liquidate(user2, addressDAI);
+                    await savingAccount.liquidate(user1, ETH_ADDRESS);
                     const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
+                        user1,
+                        ETH_ADDRESS
                     );
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
