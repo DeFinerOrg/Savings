@@ -3,16 +3,19 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
+// This is for per user
 library TokenInfoLib {
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     struct TokenInfo {
-        uint256 depositPrincipal; // deposit principal
-        uint256 borrowPrincipal; // borrow principal
-        uint256 depositInterest; // deposit interest
-        uint256 borrowInterest; // borrow interest
-        uint256 depositLastCheckpoint; // deposit last checkpoint
-        uint256 borrowLastCheckpoint; // borrow last checkpoint
+        // Deposit info
+        uint256 depositPrincipal;
+        uint256 depositInterest;
+        uint256 lastDepositBlock;
+        // Borrow info
+        uint256 borrowPrincipal;
+        uint256 borrowInterest;
+        uint256 lastBorrowBlock;
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
@@ -33,12 +36,12 @@ library TokenInfoLib {
         return self.borrowPrincipal.add(calculateBorrowInterest(self, accruedRate));
     }
 
-    function getDepositLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
-        return self.depositLastCheckpoint;
+    function getLastDepositBlock(TokenInfo storage self) public view returns(uint256) {
+        return self.lastDepositBlock;
     }
 
-    function getBorrowLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
-        return self.borrowLastCheckpoint;
+    function getLastBorrowBlock(TokenInfo storage self) public view returns(uint256) {
+        return self.lastBorrowBlock;
     }
 
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
@@ -46,6 +49,10 @@ library TokenInfoLib {
         self.borrowPrincipal = self.borrowPrincipal.add(amount);
     }
 
+    /**
+     * Update token info for withdraw. The interest will be withdrawn with higher priority.
+     * sichaoy: should return the exact amount that withdrawn?
+     */
     function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
         newDepositCheckpoint(self, accruedRate);
         if (self.depositInterest >= amount) {
@@ -60,7 +67,7 @@ library TokenInfoLib {
     }
 
     /**
-     * Do the actually deposit and modify the token info.
+     * Update token info for deposit
      */
     function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
         newDepositCheckpoint(self, accruedRate);
@@ -84,12 +91,12 @@ library TokenInfoLib {
 
     function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.depositInterest = calculateDepositInterest(self, accruedRate);
-        self.depositLastCheckpoint = block.number;
+        self.lastDepositBlock = block.number;
     }
 
     function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
         self.borrowInterest = calculateBorrowInterest(self, accruedRate);
-        self.borrowLastCheckpoint = block.number;
+        self.lastBorrowBlock = block.number;
     }
 
     // Calculating interest according to the new rate
