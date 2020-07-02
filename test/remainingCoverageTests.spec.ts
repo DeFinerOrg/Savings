@@ -145,12 +145,12 @@ contract("RemainingCoverage", async (accounts) => {
                     mockChainlinkAggregatorforUSDCAddress
                 );
 
-                let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
 
-                // update price of DAI to 70% of it's value
-                let updatedPrice = new BN(DAIprice).mul(new BN(7)).div(new BN(10));
+                // update price of USDC to 70% of it's value
+                let updatedPrice = new BN(USDCprice).mul(new BN(7)).div(new BN(10));
 
-                await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+                await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
                 let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(
                     user2,

@@ -365,11 +365,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
                     await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
                         from: user2,
                         value: ONE_ETH
                     });
+                    await savingAccount.deposit(addressDAI, ONE_ETH.div(new BN(100)));
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
 
@@ -398,7 +398,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 it("When user tries to liquidate fully", async () => {
                     // 2. Approve 1000 tokens
                     const borrowAmt = new BN(await savingAccount.getCoinToUsdRate(0))
-                        .mul(new BN(100))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
