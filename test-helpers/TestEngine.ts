@@ -137,7 +137,6 @@ export class TestEngine {
                 );
             })
         );
-<<<<<<< HEAD
         await this.tokenInfoRegistry.addToken(
             ETH_ADDR,
             18,
@@ -146,7 +145,5 @@ export class TestEngine {
             cTokens[9],
             aggregators[9]
         );
-=======
->>>>>>> master
     }
 }
