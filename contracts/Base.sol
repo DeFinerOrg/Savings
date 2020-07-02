@@ -783,52 +783,6 @@ library Base {
         }
     }
 
-    /**
-    * addr[] = [targetAccountAddr, targetTokenAddress, symbols.addressFromIndex(i)]
-    * u[] = [symbols.priceFromAddress(targetTokenAddress), symbols.priceFromIndex(i), liquidationDebtValue]
-    */
-//    function liquidate(
-//        BaseVariable storage self,
-//        address[] memory addr,
-//        uint[] memory u
-//    ) public returns(uint) {
-//        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[addr[0]].tokenInfos[addr[2]];
-//        if(tokenInfo.getBorrowPrincipal() > 0){
-//            return u[2];
-//        }
-//        TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[addr[0]].tokenInfos[addr[1]];
-//        TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[addr[2]];
-//        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[addr[1]];
-//        newRateIndexCheckpoint(self, addr[2]);
-//        newRateIndexCheckpoint(self, addr[1]);
-//        //清算者当前tokenRate
-//        uint msgTokenAccruedRate =
-//        msgTokenInfo.getBorrowPrincipal() > 0 ?
-//        getBorrowAccruedRate(self, addr[2],msgTokenInfo.getBorrowLastCheckpoint())
-//        :
-//        getDepositAccruedRate(self, addr[2], msgTokenInfo.getDepositLastCheckpoint());
-//        //清算者目标tokenRate
-//        uint msgTargetTokenAccruedRate = getDepositAccruedRate(self, addr[1], msgTargetTokenInfo.getDepositLastCheckpoint());
-//        //被清算者当前tokenRate
-//        uint tokenAccruedRate= getDepositAccruedRate(self, addr[2], tokenInfo.getDepositLastCheckpoint());
-//        //被清算者目标tokenRate
-//        uint targetTokenAccruedRate = getBorrowAccruedRate(self, addr[1], targetTokenInfo.getBorrowLastCheckpoint());
-//        uint coinValue = tokenInfo.getDepositBalance(tokenAccruedRate).mul(u[1]);
-//        if(coinValue > u[2]) {
-//            coinValue = u[2];
-//            u[2] = 0;
-//        } else {
-//            u[2] = u[2].sub(coinValue);
-//        }
-//        uint tokenAmount = coinValue.div(u[1]);
-//        uint targetTokenAmount = coinValue.mul(95).div(100).div(u[0]);
-//        msgTargetTokenInfo.withdraw(targetTokenAmount.mul(95).div(100), msgTargetTokenAccruedRate);
-//        targetTokenInfo.deposit(targetTokenAmount, targetTokenAccruedRate);
-//        tokenInfo.withdraw(tokenAmount, tokenAccruedRate);
-//        msgTokenInfo.deposit(tokenAmount, msgTokenAccruedRate);
-//        return u[2];
-//    }
-
     function recycleCommunityFund(BaseVariable storage self, address _token) public {
         require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
         self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[_token]));
