@@ -233,7 +233,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -253,7 +253,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -272,7 +272,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
