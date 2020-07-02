@@ -369,7 +369,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         from: user2,
                         value: ONE_ETH
                     });
-                    await savingAccount.deposit(addressDAI, ONE_ETH.div(new BN(100)));
+                    await savingAccount.deposit(ETH_ADDRESS, ONE_ETH.div(new BN(100)), {
+                        value: ONE_ETH.div(new BN(100))
+                    });
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
 
