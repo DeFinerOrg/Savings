@@ -167,7 +167,7 @@ contract SavingAccount {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
-        uint256 totalETHValue = baseVariable.getBorrowETH(_borrower, symbols);
+        uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
             totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
             totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
