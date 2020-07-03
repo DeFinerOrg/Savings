@@ -299,6 +299,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
+            // When tokens with less than 18 decimals are passed
             it("when 1000 whole USDC tokens are deposited", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
 
