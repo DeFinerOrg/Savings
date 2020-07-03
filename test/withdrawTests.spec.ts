@@ -85,8 +85,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const numOfTokens = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfTokens);
 
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+
                 // deposit tokens
                 await savingAccount.deposit(erc20DAI.address, numOfTokens);
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
 
                 //Number of tokens to withdraw
                 const withdraws = new BN(20);
@@ -96,7 +109,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     savingAccount.address
                 );
                 expect(withdraws).to.be.bignumber.lessThan(balSavingAccountBeforeWithdraw);
-
                 let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
 
                 // 3. Withdraw Token from SavingContract
@@ -108,6 +120,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     BN(userBalanceBeforeWithdraw)
                 );
                 expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
+
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalancAfterWithdraw[0])
+                );
+                expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
+                console.log("totalDefinerBalancAfterWithdraw", totalDefinerBalancDifference);
 
                 // 4. Validate Withdraw
 
