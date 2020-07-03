@@ -490,9 +490,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // 1. Approve 1000 tokens
                 const numOfTokens = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, numOfTokens);
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
 
                 // deposit tokens
                 await savingAccount.deposit(erc20TUSD.address, numOfTokens);
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
 
                 //Number of tokens to withdraw
                 const withdraws = new BN(20);
@@ -526,6 +538,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
                 );
+
+                // 4.2 Validate DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
+                const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalancAfterWithdraw[0])
+                );
+                expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
             });
 
             /**
@@ -579,9 +600,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // 1. Approve 1000 tokens
                 const numOfTokens = new BN(1000);
                 await erc20MKR.approve(savingAccount.address, numOfTokens);
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
 
                 // deposit tokens
                 await savingAccount.deposit(erc20MKR.address, numOfTokens);
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
 
                 //Number of tokens to withdraw
                 const withdraws = new BN(20);
@@ -615,6 +648,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
                 );
+
+                // 4.2 Validate DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
+                const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalancAfterWithdraw[0])
+                );
+                expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
             });
 
             /**
