@@ -167,6 +167,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
+            // When Compound unsupported tokens are passed
             it("when TUSD address is passed", async () => {
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -324,6 +325,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                     balSavingAccount
                 );
 
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20USDC.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
+
                 // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
 
@@ -336,15 +346,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
-
-                // Validate the total balance on DeFiner
-                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                    erc20USDC.address
-                );
-                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
-                    new BN(totalDefinerBalanceBeforeDeposit[0])
-                );
-                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when ETH address is passed", async () => {
