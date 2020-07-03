@@ -728,6 +728,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // Verify contract balance
                 expect(accountBalanceAfterWithdrawDAI).to.be.bignumber.equal(ZERO);
 
+                // Verify DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+
                 // Verify Compound balance
                 const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(ZERO).to.be.bignumber.equal(balCToken);
