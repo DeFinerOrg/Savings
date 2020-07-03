@@ -78,15 +78,15 @@ contract SavingAccount {
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
-    function getAccountTotalUsdValue(address _accountAddr) public view returns (uint256 usdValue) {
-        uint256 borrowUsdValue = baseVariable.getBorrowUsd(_accountAddr, symbols);
-        uint256 mortgageUsdValue = baseVariable.getDepositUsd(_accountAddr, symbols);
-        if(borrowUsdValue > mortgageUsdValue) {
-            usdValue = borrowUsdValue.sub(mortgageUsdValue);
+    function getAccountTotalETHValue(address _accountAddr) public view returns (uint256 ETHValue) {
+        uint256 borrowETHValue = baseVariable.getBorrowETH(_accountAddr, symbols);
+        uint256 mortgageETHValue = baseVariable.getDepositETH(_accountAddr, symbols);
+        if(borrowETHValue > mortgageETHValue) {
+            ETHValue = borrowETHValue.sub(mortgageETHValue);
         } else {
-            usdValue = mortgageUsdValue.sub(borrowUsdValue);
+            ETHValue = mortgageETHValue.sub(borrowETHValue);
         }
-        return usdValue;
+        return ETHValue;
     }
 
 	/**
@@ -166,11 +166,11 @@ contract SavingAccount {
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
-        uint256 totalBalance = baseVariable.getBorrowUsd(_borrower, symbols);
-        uint256 totalUSDValue = baseVariable.getBorrowUsd(_borrower, symbols);
+        uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
+        uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
-            totalBalance.mul(100) > totalUSDValue.mul(liquidationThreshold) &&
-            totalBalance.mul(liquidationDiscountRatio) <= totalUSDValue.mul(100)
+            totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
+            totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
         ) {
             return true;
         }
@@ -192,7 +192,7 @@ contract SavingAccount {
         return symbols.addressFromIndex(_coinIndex);
     }
 
-    function getCoinToUsdRate(uint256 _coinIndex) public view returns(uint256) {
+    function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
         return symbols.priceFromIndex(_coinIndex);
     }
 
@@ -211,10 +211,10 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        uint totalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols)
+        uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols)
         .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
-        uint usdValue = baseVariable.getDepositUsd(msg.sender, symbols);
-        require(totalBorrow <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+        uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
+        require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
         send(msg.sender, _amount, _token);
     }
@@ -225,7 +225,7 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        uint money = uint(baseVariable.repay(_token, _amount));
+        uint money = baseVariable.repay(_token, _amount);
         if(money != 0) {
             send(msg.sender, money, _token);
         }
@@ -264,103 +264,15 @@ contract SavingAccount {
         send(msg.sender, amount, _token);
     }
 
-    struct LiquidationVars {
-        uint256 totalBorrow;
-        uint256 totalCollateral;
-        uint256 msgTotalBorrow;
-        uint256 msgTotalCollateral;
-
-        uint256 borrowLTV;
-        uint256 liquidationThreshold;
-        uint256 liquidationDiscountRatio;
-        uint8 decimals;
-    }
-
     /**
      * Liquidate function
      */
-    function liquidate(address targetAccountAddr, address _token) public {
-        LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.getBorrowUsd(targetAccountAddr, symbols);
-        vars.totalCollateral = baseVariable.getDepositUsd(targetAccountAddr, symbols);
-        vars.msgTotalBorrow = baseVariable.getBorrowUsd(msg.sender, symbols);
-        vars.msgTotalCollateral = baseVariable.getDepositUsd(msg.sender, symbols);
-
-        vars.decimals = tokenRegistry.getTokenDecimals(_token);
-        vars.borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        vars.liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
-        vars.liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
-
-        uint targetTokenBalance = baseVariable.getDepositBalance(_token, msg.sender);
-        require(_token != address(0), "Token address is zero");
-        require(tokenRegistry.isTokenExist(_token), "Unsupported token");
-
-        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(vars.liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-        );
-
-        // The value of discounted collateral should be never less than the borrow amount.
-        // We assume this will never happen as the market will not drop extreamly fast so that
-        // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(vars.liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
-
-        require(
-            vars.msgTotalBorrow.mul(100)
-            <
-            vars.msgTotalCollateral.mul(vars.borrowLTV),
-            "No extra funds are used for liquidation."
-        );
-
-        require(
-            targetTokenBalance > 0,
-            "The account amount must be greater than zero."
-        );
-
-        uint divisor = UINT_UNIT;
-        if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(vars.decimals);
-        }
-
-        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
-        uint liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(vars.borrowLTV)
-        ).div(vars.liquidationDiscountRatio - vars.borrowLTV);
-        //清算者需要付的钱 (Liquidators need to pay)
-
-        uint paymentOfLiquidationAmount = targetTokenBalance.mul(symbols.priceFromAddress(_token)).div(divisor);
-
-        if(paymentOfLiquidationAmount > vars.msgTotalCollateral.sub(vars.msgTotalBorrow)) {
-            paymentOfLiquidationAmount = vars.msgTotalCollateral.sub(vars.msgTotalBorrow);
-        }
-
-        if(paymentOfLiquidationAmount.mul(100) < liquidationDebtValue.mul(vars.liquidationDiscountRatio)) {
-            liquidationDebtValue = paymentOfLiquidationAmount.mul(100).div(vars.liquidationDiscountRatio);
-        }
-
-        // The collaterals are liquidate in the order of their market liquidity
-        for(uint i = 0; i < getCoinLength(); i++) {
-            address[] memory addr;
-            uint[] memory u;
-            addr[0] = targetAccountAddr;
-            addr[1] = _token;
-            addr[2] = symbols.addressFromIndex(i);
-            u[0] = symbols.priceFromAddress(_token);
-            u[1] = symbols.priceFromIndex(i);
-            u[2] = liquidationDebtValue;
-            (uint _liquidationDebtValue) = baseVariable.liquidate(
-                addr, u
-            );
-            if(_liquidationDebtValue == 0){
-                break;
-            } else {
-                liquidationDebtValue = _liquidationDebtValue;
-            }
-        }
+    function liquidate(address targetAccountAddr, address _targetToken) public {
+        require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
+        uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
+        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold(_targetToken);
+        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_targetToken);
+        baseVariable.liquidate(targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, symbols);
     }
 
     function recycleCommunityFund(address _token) public {

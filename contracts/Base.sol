@@ -148,7 +148,7 @@ library Base {
             balance == 0 ||
             SafeDecimalMath.getUNIT() > rate
         ) {
-            self.totalLoans[_token]  = balance;
+            self.totalLoans[_token] = balance;
         } else {
             self.totalLoans[_token] = balance.mul(rate).div(SafeDecimalMath.getUNIT());
         }
@@ -180,8 +180,10 @@ library Base {
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
             }
         } else {
-            require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount,
-                "Not enough tokens in the pool.");
+            require(
+                self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount,
+                "Not enough tokens in the pool."
+                );
 
             // Total amount of token after deposit or repay
             uint totalAmount = getTotalDepositsNow(self, _token).sub(_amount);
@@ -425,12 +427,12 @@ library Base {
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(self.depositeRateIndex[_token][tokenInfo.getLastDepositBlock()] == 0) {
+            if(self.depositeRateIndex[_token][tokenInfo.getDepositLastCheckpoint()] == 0) {
                 accruedRate = UNIT;
             } else {
                 accruedRate = getNowDepositRate(self, _token)
                 .mul(UNIT)
-                .div(self.depositeRateIndex[_token][tokenInfo.getLastDepositBlock()]);
+                .div(self.depositeRateIndex[_token][tokenInfo.getDepositLastCheckpoint()]);
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -448,22 +450,22 @@ library Base {
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
         } else {
-            if(self.borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()] == 0) {
+            if(self.borrowRateIndex[_token][tokenInfo.getBorrowLastCheckpoint()] == 0) {
                 accruedRate = UNIT;
             } else {
                 accruedRate = getNowBorrowRate(self, _token)
                 .mul(UNIT)
-                .div(self.borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()]);
+                .div(self.borrowRateIndex[_token][tokenInfo.getBorrowLastCheckpoint()]);
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
     }
 
-    function getDepositUsd(
+    function getDepositETH(
         BaseVariable storage self,
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
-    ) public view returns (uint256 depositUsd) {
+    ) public view returns (uint256 depositETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             address tokenAddress = _symbols.addressFromIndex(i);
@@ -471,16 +473,16 @@ library Base {
             if(tokenAddress != ETH_ADDR) {
                 divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
             }
-            depositUsd = depositUsd.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+            depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
-        return depositUsd;
+        return depositETH;
     }
 
-    function getBorrowUsd(
+    function getBorrowETH(
         BaseVariable storage self,
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
-    ) public view returns (uint256 borrowUsd) {
+    ) public view returns (uint256 borrowETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             address tokenAddress = _symbols.addressFromIndex(i);
@@ -488,9 +490,9 @@ library Base {
             if(tokenAddress != ETH_ADDR) {
                 divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
             }
-            borrowUsd = borrowUsd.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+            borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
-        return borrowUsd;
+        return borrowETH;
     }
 
     struct TransferVars {
@@ -517,8 +519,8 @@ library Base {
             divisor = 10**uint256(IERC20Extended(_token).decimals());
         }
 
-        vars.totalBorrow = getBorrowUsd(self, _activeAccount, symbols);
-        vars.totalDeposit = getDepositUsd(self, _activeAccount, symbols);
+        vars.totalBorrow = getBorrowETH(self, _activeAccount, symbols);
+        vars.totalDeposit = getDepositETH(self, _activeAccount, symbols);
         vars.amountValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
         // if borroBitMap > 0, then only check for this conditon , otherwise dont chack
         // self.accounts.borrowBitmap > 0
@@ -531,7 +533,7 @@ library Base {
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
         newRateIndexCheckpoint(self, _token);
-        vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
+        vars.accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         vars.interest = tokenInfo.calculateDepositInterest(vars.accruedRate);
 
         tokenInfo.withdraw(_amount, vars.accruedRate);
@@ -542,7 +544,7 @@ library Base {
         }
 
         if(_amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
-            uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getLastBorrowBlock());
+            uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getBorrowLastCheckpoint());
             uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
             uint repayAmount = _amount > amountBorrowed ? amountBorrowed : _amount;
             require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
@@ -553,7 +555,7 @@ library Base {
         }
 
         if(_amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
-            uint dAccruedRate = getDepositAccruedRate(self, _token, activeTokenInfo.getLastDepositBlock());
+            uint dAccruedRate = getDepositAccruedRate(self, _token, activeTokenInfo.getDepositLastCheckpoint());
             activeTokenInfo.deposit(_amount, dAccruedRate);
         }
 
@@ -570,14 +572,15 @@ library Base {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
 
-        require(tokenInfo.getBorrowPrincipal() == 0,
+        require(
+            tokenInfo.getBorrowPrincipal() == 0,
             "The user should repay the borrowed token before he or she can deposit.");
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(self, _token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         tokenInfo.deposit(_amount, accruedRate);
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -606,10 +609,11 @@ library Base {
         // Sanity check
         // sichaoy: Sanity check should be the first step in a function
         address cToken = self.cTokenAddress[_token];
+
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo
-        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getLastBorrowBlock());
+        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getBorrowLastCheckpoint());
         tokenInfo.borrow(_amount, rate);
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -636,8 +640,9 @@ library Base {
         newRateIndexCheckpoint(self, _token);
 
         // Update tokenInfo
-        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getLastBorrowBlock());
+        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getBorrowLastCheckpoint());
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
+
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         tokenInfo.repay(amount, rate);
 
@@ -665,10 +670,11 @@ library Base {
         newRateIndexCheckpoint(self, _token);
 
         // sichaoy: all the sanity checks should be before the operations
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         require(tokenInfo.getDepositBalance(accruedRate) >= _amount, "Insufficient balance.");
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+
 
         // Update tokenInfo for the user
         tokenInfo.withdraw(_amount, accruedRate);
@@ -700,12 +706,13 @@ library Base {
         newRateIndexCheckpoint(self, _token);
 
         // sichaoy: move sanity check to the begining
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getDepositLastCheckpoint());
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
 
         uint amount = tokenInfo.getDepositBalance(accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
+
         tokenInfo.withdraw(amount, accruedRate);
 
         // DeFiner takes 10% commission on the interest a user earn
@@ -723,50 +730,146 @@ library Base {
         return amount;
     }
 
-    /**
-    * addr[] = [targetAccountAddr, targetTokenAddress, symbols.addressFromIndex(i)]
-    * u[] = [symbols.priceFromAddress(targetTokenAddress), symbols.priceFromIndex(i), liquidationDebtValue]
-    */
+    struct LiquidationVars {
+        uint256 totalBorrow;
+        uint256 totalCollateral;
+        uint256 msgTotalBorrow;
+        uint256 msgTotalCollateral;
+
+        uint256 targetTokenBalance;
+        uint256 liquidationDebtValue;
+        uint256 targetTokenPrice;
+        uint256 paymentOfLiquidationValue;
+        uint256 msgTargetTokenAccruedRate;
+        uint256 targetTokenAccruedRate;
+        address token;
+        uint256 tokenPrice;
+        uint256 tokenAccruedRate;
+        uint256 coinValue;
+        uint256 targetTokenAmount;
+        uint256 tokenAmount;
+        uint256 tokenDivisor;
+    }
+
     function liquidate(
         BaseVariable storage self,
-        address[] memory addr,
-        uint[] memory u
-    ) public returns(uint) {
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[addr[0]].tokenInfos[addr[2]];
-        if(tokenInfo.getBorrowPrincipal() > 0){
-            return u[2];
+        address targetAccountAddr,
+        address _targetToken,
+        uint borrowLTV,
+        uint liquidationThreshold,
+        uint liquidationDiscountRatio,
+        SymbolsLib.Symbols storage symbols
+    ) public {
+        LiquidationVars memory vars;
+        vars.totalBorrow = getBorrowETH(self, targetAccountAddr, symbols);
+        vars.totalCollateral = getDepositETH(self, targetAccountAddr, symbols);
+
+        vars.msgTotalBorrow = getBorrowETH(self, msg.sender, symbols);
+        vars.msgTotalCollateral = getDepositETH(self, msg.sender, symbols);
+
+        vars.targetTokenBalance = getDepositBalance(self, _targetToken, msg.sender);
+
+        require(_targetToken != address(0), "Token address is zero");
+
+        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+        require(
+            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
+            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+        );
+
+        // The value of discounted collateral should be never less than the borrow amount.
+        // We assume this will never happen as the market will not drop extreamly fast so that
+        // the LTV changes from 85% to 95%, an 10% drop within one block.
+        require(
+            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
+            "Collateral is not sufficient to be liquidated."
+        );
+
+        require(
+            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
+            "No extra funds are used for liquidation."
+        );
+
+        require(
+            vars.targetTokenBalance > 0,
+            "The account amount must be greater than zero."
+        );
+
+        uint divisor = INT_UNIT;
+        if(_targetToken != ETH_ADDR) {
+            divisor = 10**uint256(IERC20Extended(_targetToken).decimals());
         }
-        TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[addr[0]].tokenInfos[addr[1]];
-        TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[addr[2]];
-        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[addr[1]];
-        newRateIndexCheckpoint(self, addr[2]);
-        newRateIndexCheckpoint(self, addr[1]);
-        //清算者当前tokenRate
-        uint msgTokenAccruedRate =
-        msgTokenInfo.getBorrowPrincipal() > 0 ?
-        getBorrowAccruedRate(self, addr[2],msgTokenInfo.getLastBorrowBlock())
-        :
-        getDepositAccruedRate(self, addr[2], msgTokenInfo.getLastDepositBlock());
+
+        //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
+        vars.liquidationDebtValue = vars.totalBorrow.sub(
+            vars.totalCollateral.mul(borrowLTV).div(100)
+        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
+
+        //清算者需要付的钱 (Liquidators need to pay)
+        vars.targetTokenPrice = symbols.priceFromAddress(_targetToken);
+        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
+
+        if(
+            vars.msgTotalBorrow != 0 &&
+            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow)
+         ) {
+            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow);
+        }
+
+        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
+            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+        }
+
+        TokenInfoLib.TokenInfo storage targetTokenInfo = self.accounts[targetAccountAddr].tokenInfos[_targetToken];
+        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = self.accounts[msg.sender].tokenInfos[_targetToken];
         //清算者目标tokenRate
-        uint msgTargetTokenAccruedRate = getDepositAccruedRate(self, addr[1], msgTargetTokenInfo.getLastDepositBlock());
-        //被清算者当前tokenRate
-        uint tokenAccruedRate= getDepositAccruedRate(self, addr[2], tokenInfo.getLastDepositBlock());
+        vars.msgTargetTokenAccruedRate = getDepositAccruedRate(self, _targetToken, msgTargetTokenInfo.getDepositLastCheckpoint());
         //被清算者目标tokenRate
-        uint targetTokenAccruedRate = getBorrowAccruedRate(self, addr[1], targetTokenInfo.getLastBorrowBlock());
-        uint coinValue = tokenInfo.getDepositBalance(tokenAccruedRate).mul(u[1]);
-        if(coinValue > u[2]) {
-            coinValue = u[2];
-            u[2] = 0;
-        } else {
-            u[2] = u[2].sub(coinValue);
+        vars.targetTokenAccruedRate = getBorrowAccruedRate(self, _targetToken, targetTokenInfo.getBorrowLastCheckpoint());
+
+        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
+        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
+
+        // The collaterals are liquidate in the order of their market liquidity
+        for(uint i = 0; i < symbols.getCoinLength(); i++) {
+            vars.token = symbols.addressFromIndex(i);
+            vars.tokenPrice = symbols.priceFromIndex(i);
+
+            vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+
+            TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
+
+            if(tokenInfo.getBorrowPrincipal() == 0) {
+                TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
+                newRateIndexCheckpoint(self, vars.token);
+
+                //清算者当前tokenRate
+                uint msgTokenAccruedRate =
+                msgTokenInfo.getBorrowPrincipal() > 0 ?
+                getBorrowAccruedRate(self, vars.token, msgTokenInfo.getBorrowLastCheckpoint())
+                :
+                getDepositAccruedRate(self, vars.token, msgTokenInfo.getDepositLastCheckpoint());
+
+
+                //被清算者当前tokenRate
+                vars.tokenAccruedRate = getDepositAccruedRate(self, vars.token, tokenInfo.getDepositLastCheckpoint());
+                vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                if(vars.coinValue > vars.liquidationDebtValue) {
+                    vars.coinValue = vars.liquidationDebtValue;
+                    vars.liquidationDebtValue = 0;
+                } else {
+                    vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+                }
+                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+                msgTokenInfo.deposit(vars.tokenAmount, msgTokenAccruedRate);
+            }
+
+            if(vars.liquidationDebtValue == 0){
+                break;
+            }
         }
-        uint tokenAmount = coinValue.div(u[1]);
-        uint targetTokenAmount = coinValue.mul(95).div(100).div(u[0]);
-        msgTargetTokenInfo.withdraw(targetTokenAmount.mul(95).div(100), msgTargetTokenAccruedRate);
-        targetTokenInfo.deposit(targetTokenAmount, targetTokenAccruedRate);
-        tokenInfo.withdraw(tokenAmount, tokenAccruedRate);
-        msgTokenInfo.deposit(tokenAmount, msgTokenAccruedRate);
-        return u[2];
     }
 
     function recycleCommunityFund(BaseVariable storage self, address _token) public {
