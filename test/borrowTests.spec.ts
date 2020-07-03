@@ -575,7 +575,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
-                        "Insufficient collateral."
+                        "Lack of liquidity."
                     );
                 });
 
