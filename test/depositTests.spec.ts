@@ -61,10 +61,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         context("should fail", async () => {
             it("when unsupported token address is passed", async () => {
                 const numOfToken = new BN(1000);
-                await expectRevert(
-                    savingAccount.deposit(dummy, numOfToken),
-                    "Unsupported token"
-                );
+                await expectRevert(savingAccount.deposit(dummy, numOfToken), "Unsupported token");
             });
 
             it("when amount is zero", async () => {
@@ -83,6 +80,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const numOfToken = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20DAI.address, numOfToken);
 
@@ -95,6 +96,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                 // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
@@ -117,6 +127,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const numOfToken = new BN("1000").mul(ONE_DAI);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20DAI.address, numOfToken);
 
@@ -129,6 +143,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                 // 3.2 SavingAccount variables are changed
                 // TODO Need to improve the code design to verify these variables
