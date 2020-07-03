@@ -522,6 +522,9 @@ library Base {
         vars.totalBorrow = getBorrowETH(self, _activeAccount, symbols);
         vars.totalDeposit = getDepositETH(self, _activeAccount, symbols);
         vars.amountValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
+        // if borroBitMap > 0, then only check for this conditon , otherwise dont chack
+        // self.accounts.borrowBitmap > 0
+        // make sure borrowBitmap is updating as well as deposit at appropriate places
         require(
             vars.totalBorrow.add(vars.amountValue).mul(100) <= vars.totalDeposit.mul(60),
             "Insufficient collateral."
