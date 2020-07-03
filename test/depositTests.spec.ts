@@ -172,6 +172,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const numOfToken = new BN(1000);
                 await erc20TUSD.approve(savingAccount.address, numOfToken);
 
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20TUSD.address, numOfToken);
 
@@ -184,10 +188,23 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when 1000 whole TUSD tokens are deposited", async () => {
                 const ONE_TUSD = new BN(10).pow(new BN(18));
+
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
 
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000").mul(ONE_TUSD);
@@ -205,12 +222,25 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20TUSD.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when MKR address is passed", async () => {
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN(1000);
                 await erc20MKR.approve(savingAccount.address, numOfToken);
+
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
 
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20MKR.address, numOfToken);
@@ -224,6 +254,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when 1000 whole MKR tokens are deposited", async () => {
@@ -233,6 +272,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const numOfToken = new BN("1000").mul(ONE_MKR);
                 await erc20MKR.approve(savingAccount.address, numOfToken);
 
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20MKR.address, numOfToken);
 
@@ -245,6 +288,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                     balSavingAccount
                 );
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20MKR.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when 1000 whole USDC tokens are deposited", async () => {
@@ -253,6 +305,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 // 1. Approve 1000 tokens
                 const numOfToken = new BN("1000").mul(ONE_USDC);
                 await erc20USDC.approve(savingAccount.address, numOfToken);
+
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20USDC.address
+                );
 
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20USDC.address, numOfToken);
@@ -279,6 +335,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+
+                // Validate the total balance on DeFiner
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20USDC.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
             });
 
             it("when ETH address is passed", async () => {
