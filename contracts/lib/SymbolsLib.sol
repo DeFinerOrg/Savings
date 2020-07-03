@@ -45,6 +45,7 @@ library SymbolsLib {
         self.indexToSymbol[self.count] = "ETH";
         self.addressToSymbol[ETH_ADDR] = "ETH";
         self.symbolToAddress["ETH"] = ETH_ADDR;
+        self.count = self.count + 1;
     }
 
     function getCoinLength(Symbols storage self) public view returns (uint length) {
