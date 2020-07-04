@@ -21,7 +21,6 @@ export class TestEngine {
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
-
         await Promise.all(
             erc20Tokens.map(async (tokenAddr: any) => {
                 let addr;
@@ -36,7 +35,8 @@ export class TestEngine {
                 cTokens.push(addr);
             })
         );
-
+        let addr = (await MockCToken.new(ETH_ADDR)).address;
+        cTokens.push(addr)
         return cTokens;
     }
 
@@ -61,7 +61,6 @@ export class TestEngine {
                 erc20TokenAddresses.push(addr);
             })
         );
-
         return erc20TokenAddresses;
     }
 
@@ -86,7 +85,13 @@ export class TestEngine {
                 this.mockChainlinkAggregators.push(addr);
             })
         );
-
+        let addr = (
+            await MockChainLinkAggregator.new(
+                tokenData.ETH.decimals,
+                new BN(tokenData.ETH.latestAnswer)
+            )
+        ).address;
+        this.mockChainlinkAggregators.push(addr);
         return this.mockChainlinkAggregators;
     }
 
@@ -131,6 +136,14 @@ export class TestEngine {
                     chainLinkAggregator
                 );
             })
+        );
+        await this.tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            18,
+            false,
+            true,
+            cTokens[9],
+            aggregators[9]
         );
     }
 }
