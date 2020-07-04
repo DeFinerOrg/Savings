@@ -9,13 +9,13 @@ library TokenInfoLib {
     using SignedSafeMath for int256;
     struct TokenInfo {
         // Deposit info
-        uint256 depositPrincipal;
-        uint256 depositInterest;
-        uint256 lastDepositBlock;
+        uint256 depositPrincipal;   // total deposit principal of ther user
+        uint256 depositInterest;    // total deposit interest of the user
+        uint256 lastDepositBlock;   // the block number of user's last deposit
         // Borrow info
-        uint256 borrowPrincipal;
-        uint256 borrowInterest;
-        uint256 lastBorrowBlock;
+        uint256 borrowPrincipal;    // total borrow principal of ther user
+        uint256 borrowInterest;     // total borrow interest of ther user
+        uint256 lastBorrowBlock;    // the block number of user's last borrow
     }
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
@@ -36,11 +36,11 @@ library TokenInfoLib {
         return self.borrowPrincipal.add(calculateBorrowInterest(self, accruedRate));
     }
 
-    function getDepositLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+    function getLastDepositBlock(TokenInfo storage self) public view returns(uint256) {
         return self.lastDepositBlock;
     }
 
-    function getBorrowLastCheckpoint(TokenInfo storage self) public view returns(uint256) {
+    function getLastBorrowBlock(TokenInfo storage self) public view returns(uint256) {
         return self.lastBorrowBlock;
     }
 

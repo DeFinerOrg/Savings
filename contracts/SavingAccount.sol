@@ -14,6 +14,7 @@ contract SavingAccount {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
+    using TokenInfoLib for TokenInfoLib.TokenInfo;
 
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
@@ -196,13 +197,23 @@ contract SavingAccount {
         return symbols.priceFromIndex(_coinIndex);
     }
 
-    function transfer(address _activeAccount, address _token, uint _amount) public {
-        baseVariable.transfer(_activeAccount, _token, _amount, symbols);
+    /**
+     * Transfer the token between users inside DeFiner
+     * @param _to the address that the token be transfered to
+     * @param _token token address
+     * @param _amount amout of tokens transfer
+     */
+    function transfer(address _to, address _token, uint _amount) public {
+        // sichaoy: what if withdraw fails?
+        // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
+        withdraw(msg.sender, _token, _amount);
+        baseVariable.deposit(_to, _token, _amount, tokenRegistry.getTokenIndex(_token));
     }
 
-
     /**
-     * Borrow the amount of token to the saving pool.
+     * Borrow the amount of token from the saving pool.
+     * @param _token token address
+     * @param _amount amout of tokens to borrow
      */
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
@@ -221,6 +232,9 @@ contract SavingAccount {
 
     /**
      * Repay the amount of token back to the saving pool.
+     * @param _token token address
+     * @param _amount amout of tokens to borrow
+     * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
@@ -239,25 +253,65 @@ contract SavingAccount {
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        baseVariable.deposit(_token, _amount, tokenRegistry.getTokenIndex(_token));
-        // Update depositBitmap
+        baseVariable.deposit(msg.sender, _token, _amount, tokenRegistry.getTokenIndex(_token));
     }
 
-    /**
-     * Withdraw the amount of token from the saving pool.
-     * @param _token the address of the withdrawed token
-     * @param _amount the mount of the withdrawed token
-     * @dev If the token earned any interest from the pool, the interest will be withdrawed first.
-     */
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
-        //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
-        uint amount = baseVariable.withdraw(_token, _amount);
-        send(msg.sender, amount, _token);
+        // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
+        withdraw(msg.sender, _token, _amount);
+        send(msg.sender, _amount, _token);
+    }
+
+    function withdraw(address _from, address _token, uint256 _amount) public returns(uint) {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        baseVariable.newRateIndexCheckpoint(_token);
+
+        // Check if there are enough collaterals after withdraw
+        // sichaoy: How to derive tokenRegistry in Base?
+        uint256 borrowLTV = 60;
+        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        if(_token != ETH_ADDR) {
+            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
+        }
+        uint totalBorrow = baseVariable.getBorrowETH(_from, symbols);
+        uint totalDeposit = baseVariable.getDepositETH(_from, symbols);
+        uint256 price = symbols.priceFromAddress(_token);
+        uint withdrawValue = _amount.mul(price).div(divisor);
+        uint usdValue = totalDeposit.sub(withdrawValue);
+        require(totalBorrow.mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+
+        // sichaoy: all the sanity checks should be before the operations???
+        address cToken = baseVariable.cTokenAddress[_token];
+        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+
+        // Update tokenInfo for the user
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.withdraw(_amount, accruedRate);
+
+        // DeFiner takes 10% commission on the interest a user earn
+        // sichaoy: 10 percent is a constant?
+        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+        _amount = _amount.sub(commission);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalReserve(_token, _amount, false); // Last parameter false means withdraw token
+
+        // return _amount;
     }
 
     /**
      * Withdraw all tokens from the saving pool.
+     * @param _token the address of the withdrawn token
      */
     function withdrawAll(address _token) public onlySupported(_token) {
         uint amount = baseVariable.withdrawAll(_token);
@@ -282,7 +336,6 @@ contract SavingAccount {
     function setDeFinerCommunityFund(address payable _deFinerCommunityFund) public {
         baseVariable.setDeFinerCommunityFund(_deFinerCommunityFund);
     }
-
 
     function getDeFinerCommunityFund(address _token) public view returns(uint256) {
         return baseVariable.getDeFinerCommunityFund(_token);
@@ -317,7 +370,6 @@ contract SavingAccount {
     function _isETH(address _token) internal pure returns (bool) {
         return ETH_ADDR == _token;
     }
-
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
