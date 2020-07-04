@@ -263,7 +263,7 @@ contract SavingAccount {
         send(msg.sender, _amount, _token);
     }
 
-    function withdraw(address _from, address _token, uint256 _amount) public returns(uint) {
+    function withdraw1(address _token, uint256 _amount) public returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 
@@ -277,19 +277,19 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        uint totalBorrow = baseVariable.getBorrowETH(_from, symbols);
-        uint totalDeposit = baseVariable.getDepositETH(_from, symbols);
+        // uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
+        // uint totalDeposit = baseVariable.getDepositETH(msg.sender, symbols);
         uint256 price = symbols.priceFromAddress(_token);
         uint withdrawValue = _amount.mul(price).div(divisor);
-        uint usdValue = totalDeposit.sub(withdrawValue);
-        require(totalBorrow.mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+        uint usdValue = baseVariable.getDepositETH(msg.sender, symbols).sub(withdrawValue);
+        require(baseVariable.getBorrowETH(msg.sender, symbols).mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         address cToken = baseVariable.cTokenAddress[_token];
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate);
 
