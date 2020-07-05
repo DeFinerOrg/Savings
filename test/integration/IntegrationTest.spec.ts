@@ -708,10 +708,12 @@ contract("Integration Tests", async (accounts) => {
 
                 // Amount that is locked as collateral
                 const collateralLocked = borrowAmount
+                    .mul(eighteenPrecision)
                     .mul(await savingAccount.getCoinToETHRate(1))
                     .mul(new BN(100))
                     .div(new BN(60))
-                    .div(await savingAccount.getCoinToETHRate(0));
+                    .div(await savingAccount.getCoinToETHRate(0))
+                    .div(sixPrecision);
 
                 // 3. Verify the loan amount
                 const user1BalanceAfterBorrow = await erc20USDC.balanceOf(user1);

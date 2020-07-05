@@ -74,9 +74,15 @@ library Base {
         return self.borrowBitmap > 0;
     }
 
+    function setInDepositBitmap(Account storage self, uint8 _index) public {
+        self.depositBitmap = self.depositBitmap.setBit(_index);
+    }
+
+    /*
     function setInDepositBitmap(Account storage account, uint8 _index) public {
         account.depositBitmap = account.depositBitmap.setBit(_index);
     }
+    */
 
     function unsetFromDepositBitmap(Account storage account, uint8 _index) public {
         account.depositBitmap = account.depositBitmap.unsetBit(_index);
@@ -430,6 +436,7 @@ library Base {
      * Get current deposit balance of a token
      * @param _token token address
      */
+     // sichaoy: maybe I should switch the order of the parameters
     function getDepositBalance(
         BaseVariable storage self,
         address _token,
@@ -528,71 +535,6 @@ library Base {
     }
 
     /**
-     * Transfer the token between users inside DeFiner
-     * @param _toAddress the address that the token be transfered to
-     * @param _token token address
-     * @param _amount amout of tokens transfer
-     */
-     /*
-    function transfer(
-        BaseVariable storage self,
-        address _toAddress,
-        address _token,
-        uint _amount,
-        uint8 _tokenIndex,
-        SymbolsLib.Symbols storage symbols
-    ) public {
-        uint amount = withdraw(self, _token, _amount);
-        if (amount != 0)
-            deposit(self, _toAddress, _token, _amount, _tokenIndex);
-        // sichaoy: if deposit fails, should we revert the whole function?
-    }
-    */
-
-    /**
-     * Deposit the amount of token to the saving pool.
-     * @param _token the address of the deposited token
-     * @param _amount the mount of the deposited token
-     * @param _tokenIndex the index of the deposited token, which is spesified in TokenInfo struct.
-     */
-    function deposit(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
-        deposit(self, msg.sender, _token, _amount, _tokenIndex);
-    }
-
-    /**
-     * Deposit the amount of token to the saving pool.
-     * @param _to the account that the token deposit to.
-     * @param _token the address of the deposited token
-     * @param _amount the mount of the deposited token
-     * @param _tokenIndex the index of the deposited token, which is spesified in TokenInfo struct.
-     */
-     // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(BaseVariable storage self, address _to, address _token, uint256 _amount, uint8 _tokenIndex) public {
-        Account storage account = self.accounts[_to];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
-
-        require(
-            tokenInfo.getBorrowPrincipal() == 0,
-            "The user should repay the borrowed token before he or she can deposit.");
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(self, _token);
-
-        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
-        tokenInfo.deposit(_amount, accruedRate);
-
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        updateTotalCompound(self, _token);
-        updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, _amount, true); // Last parameter false means deposit token
-
-        // Set the deposit bitmap
-        setInDepositBitmap(account, _tokenIndex);
-    }
-
-    /**
      * Borrow the amount of token from the saving pool.
      * @param _token the address of the borrowed token
      * @param _amount the mount of the borrowed token
@@ -654,59 +596,6 @@ library Base {
         return _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0; // Return the remainders
     }
 
-    /**
-	 * Withdraw tokens from saving pool. If the interest is not empty, the interest
-	 * will be deducted first.
-     * @param _token token address
-     * @param _amount amount of token to withdraw
-     * @return amount of token actually withdrew
-	 */
-     /*
-    function withdraw(BaseVariable storage self, address _from, address _token, uint256 _amount, SymbolsLib.Symbols storage _symbols) public returns(uint) {
-
-        require(_amount != 0, "Amount is zero");
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(self, _token);
-
-        // Check if there are enough collaterals after withdraw
-        // sichaoy: How to derive tokenRegistry in Base?
-        uint256 borrowLTV = 60;
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
-        if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
-        }
-        uint totalBorrow = getBorrowUsd(self, _from, _symbols);
-        uint totalDeposit = getDepositUsd(self, _from, _symbols);
-        uint withdrawValue = _amount.mul(_symbols.priceFromAddress(_token)).div(divisor);
-        uint usdValue = totalDeposit.sub(withdrawValue);
-        require(totalBorrow.mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
-
-        // sichaoy: all the sanity checks should be before the operations???
-        address cToken = self.cTokenAddress[_token];
-        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
-
-        // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_from].tokenInfos[_token];
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate);
-
-        // DeFiner takes 10% commission on the interest a user earn
-        // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-        self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
-        _amount = _amount.sub(commission);
-
-        // Update pool balance
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        updateTotalCompound(self, _token);
-        updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, _amount, false); // Last parameter false means withdraw token
-
-        return _amount;
-    }
-    */
     /**
 	 * Withdraw all tokens from saving pool.
      * @param _token token address

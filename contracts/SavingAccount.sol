@@ -11,10 +11,12 @@ import "./registry/TokenInfoRegistry.sol";
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
+    using Base for Base.Account;
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     using TokenInfoLib for TokenInfoLib.TokenInfo;
+    using BitmapLib for uint128;
 
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
@@ -207,7 +209,7 @@ contract SavingAccount {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
-        baseVariable.deposit(_to, _token, _amount, tokenRegistry.getTokenIndex(_token));
+        deposit(_to, _token, _amount);
     }
 
     /**
@@ -253,43 +255,74 @@ contract SavingAccount {
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        baseVariable.deposit(msg.sender, _token, _amount, tokenRegistry.getTokenIndex(_token));
+        deposit(msg.sender, _token, _amount);
+    }
+
+    /**
+     * Deposit the amount of token to the saving pool.
+     * @param _to the account that the token deposit to.
+     * @param _token the address of the deposited token
+     * @param _amount the mount of the deposited token
+     */
+     // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
+    function deposit(address _to, address _token, uint256 _amount) internal {
+
+        require(_amount != 0, "Amount is zero");
+        Base.Account storage account = baseVariable.accounts[_to];
+        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+
+        // Add a new checkpoint on the index curve.
+        baseVariable.newRateIndexCheckpoint(_token);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.deposit(_amount, accruedRate);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalReserve(_token, _amount, true); // Last parameter false means deposit token
+
+        // Set the deposit bitmap
+        account.setInDepositBitmap(tokenRegistry.getTokenIndex(_token));
     }
 
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
-        // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        withdraw(msg.sender, _token, _amount);
-        send(msg.sender, _amount, _token);
+        uint256 amount = withdraw(msg.sender, _token, _amount);
+        send(msg.sender, amount, _token);
     }
 
-    function withdraw1(address _token, uint256 _amount) public returns(uint) {
+    function withdraw(address _from, address _token, uint256 _amount) internal returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
 
+        // Check if withdraw amount is less than user's balance
+        require(_amount < baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
+
         // Check if there are enough collaterals after withdraw
-        // sichaoy: How to derive tokenRegistry in Base?
-        uint256 borrowLTV = 60;
+        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint divisor = SafeDecimalMath.getUINT_UNIT();
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        // uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
-        // uint totalDeposit = baseVariable.getDepositETH(msg.sender, symbols);
-        uint256 price = symbols.priceFromAddress(_token);
-        uint withdrawValue = _amount.mul(price).div(divisor);
-        uint usdValue = baseVariable.getDepositETH(msg.sender, symbols).sub(withdrawValue);
-        require(baseVariable.getBorrowETH(msg.sender, symbols).mul(100) <= usdValue.mul(borrowLTV), "Insufficient collateral.");
+
+        uint totalDeposit = baseVariable.getDepositETH(_from, symbols);
+        uint withdrawValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
+        uint remainingDeposit = totalDeposit.sub(withdrawValue);
+        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= remainingDeposit.mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
+        // Check if there are enough tokens in the pool.
         address cToken = baseVariable.cTokenAddress[_token];
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate);
 
@@ -306,7 +339,7 @@ contract SavingAccount {
         baseVariable.updateTotalLoan(_token);
         baseVariable.updateTotalReserve(_token, _amount, false); // Last parameter false means withdraw token
 
-        // return _amount;
+        return _amount;
     }
 
     /**
