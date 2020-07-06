@@ -222,6 +222,10 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
@@ -232,6 +236,16 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
                 //Withdraw TUSD & MKR
@@ -244,6 +258,12 @@ contract("Integration Tests", async (accounts) => {
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                    // Verify DeFiner balance
+                    const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+                    expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                 }
             });
 
@@ -258,6 +278,11 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
+
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
@@ -268,6 +293,16 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
                 for (let i = 0; i < 9; i++) {
@@ -279,6 +314,12 @@ contract("Integration Tests", async (accounts) => {
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                         expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                        // Verify DeFiner balance
+                        const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                            erc20contr.address
+                        );
+                        expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                     }
                 }
             });
@@ -294,6 +335,10 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
@@ -304,6 +349,16 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
                 for (let i = 0; i < 9; i++) {
@@ -315,6 +370,12 @@ contract("Integration Tests", async (accounts) => {
                         //Verify if withdrawAll was successful
                         const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                         expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                        // Verify DeFiner balance
+                        const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                            erc20contr.address
+                        );
+                        expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                     }
                 }
             });
@@ -330,6 +391,10 @@ contract("Integration Tests", async (accounts) => {
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
@@ -340,6 +405,16 @@ contract("Integration Tests", async (accounts) => {
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
                 await time.increase(ONE_WEEK);
@@ -353,6 +428,12 @@ contract("Integration Tests", async (accounts) => {
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                    // Verify DeFiner balance
+                    const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+                    expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                 }
             });
 
