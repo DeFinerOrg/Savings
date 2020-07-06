@@ -44,6 +44,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let erc20MKR: t.MockERC20Instance;
     let ZERO: any;
     let ONE_YEAR: any;
+    let BLOCKS_MINED_WEEKLY: any;
 
     before(async () => {
         // Things to initialize before all test
@@ -76,6 +77,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
+        BLOCKS_MINED_WEEKLY = new BN(30).mul(new BN(6)).mul(new BN(24));
     });
 
     context("withdraw()", async () => {
@@ -1056,7 +1058,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdrawAmount);
             });
 
-            //TODO:
             it("when full ETH withdrawn", async () => {
                 const depositAmount = web3.utils.toWei("100", "ether");
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
@@ -1098,17 +1099,31 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const depositAmount = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, depositAmount);
                 let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
 
                 // deposit tokens
                 await savingAccount.deposit(erc20DAI.address, depositAmount, { from: owner });
 
-                //Increasing block time to 1 year
-                await time.increase(ONE_YEAR);
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    erc20DAI.address
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                // Advancing blocks by 150
+                let latestBlock = await web3.eth.getBlock("latest");
+                let targetBlock = new BN(latestBlock.number).add(new BN(150));
+                await time.advanceBlockTo(targetBlock);
 
                 //Withdrawing DAI
                 await savingAccount.withdrawAll(erc20DAI.address, { from: owner });
 
-                //Need to modify this logic
+                // TODO: Need to write DeFiner balance once the interest function is implemented
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
                 let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(savingAccount.address);
                 expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
