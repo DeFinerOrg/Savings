@@ -415,10 +415,10 @@ contract("Integration Tests", async (accounts) => {
 
                 // 2. Start borrowing.
                 const borrowAmount = numOfDAI
-                    .mul(await savingAccount.getCoinToUsdRate(0))
+                    .mul(await savingAccount.getCoinToETHRate(0))
                     .mul(new BN(60))
                     .div(new BN(100))
-                    .div(await savingAccount.getCoinToUsdRate(1));
+                    .div(await savingAccount.getCoinToETHRate(1));
                 //converting borrowAmount to six precision
                 await savingAccount.borrow(
                     addressUSDC,
@@ -729,10 +729,10 @@ contract("Integration Tests", async (accounts) => {
 
                 // Amount that is locked as collateral
                 const collateralLocked = borrowAmount
-                    .mul(await savingAccount.getCoinToUsdRate(1))
+                    .mul(await savingAccount.getCoinToETHRate(1))
                     .mul(new BN(100))
                     .div(new BN(60))
-                    .div(await savingAccount.getCoinToUsdRate(0));
+                    .div(await savingAccount.getCoinToETHRate(0));
 
                 // 3. Verify the loan amount
                 const user1BalanceAfterBorrow = await erc20USDC.balanceOf(user1);
@@ -793,10 +793,10 @@ contract("Integration Tests", async (accounts) => {
                 // 5. Deposit USDC and borrow DAI
                 await savingAccount.deposit(addressUSDC, numOfToken, { from: user1 });
                 const limitAmount = numOfToken
-                    .mul(await savingAccount.getCoinToUsdRate(1))
+                    .mul(await savingAccount.getCoinToETHRate(1))
                     .mul(new BN(50))
                     .div(new BN(100))
-                    .div(await savingAccount.getCoinToUsdRate(0));
+                    .div(await savingAccount.getCoinToETHRate(0));
                 await savingAccount.borrow(addressDAI, limitAmount, { from: user1 });
                 let userBalanceAfterBorrow = await erc20DAI.balanceOf(user1);
                 let expectedBalanceAfterBorrow = new BN(userBalanceAfterWithdraw).add(limitAmount);

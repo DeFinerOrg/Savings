@@ -188,10 +188,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToUsdRate(1))
+                        .mul(await savingAccount.getCoinToETHRate(1))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToUsdRate(0));
+                        .div(await savingAccount.getCoinToETHRate(0));
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
@@ -233,7 +233,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -253,7 +253,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -272,7 +272,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "Token depositPrincipal must be zero."
                     );
                 });
 
@@ -330,10 +330,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //         value: numOfToken
                 //     });
                 //     const balance = numOfToken
-                //         .mul(await savingAccount.getCoinToUsdRate(1))
+                //         .mul(await savingAccount.getCoinToETHRate(1))
                 //         .mul(new BN(85))
                 //         .div(new BN(100))
-                //         .div(await savingAccount.getCoinToUsdRate(0));
+                //         .div(await savingAccount.getCoinToETHRate(0));
                 //     // 2. Start borrowing.
                 //     await expectRevert(
                 //         savingAccount.borrow(ETH_ADDRESS, balance, { from: user1 }),
@@ -408,10 +408,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                 // it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
                 //     // 2. Start borrowing.
                 //     const limitAmount = numOfToken
-                //         .mul(await savingAccount.getCoinToUsdRate(1))
+                //         .mul(await savingAccount.getCoinToETHRate(1))
                 //         .mul(new BN(60))
                 //         .div(new BN(100))
-                //         .div(await savingAccount.getCoinToUsdRate(0));
+                //         .div(await savingAccount.getCoinToETHRate(0));
                 //     await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
                 //     // 3. Verify the loan amount.
                 //     const user2ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, { from: user1})
@@ -709,10 +709,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToUsdRate(0))
+                        .mul(await savingAccount.getCoinToETHRate(0))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToUsdRate(1));
+                        .div(await savingAccount.getCoinToETHRate(1));
                     await savingAccount.borrow(addressUSDC, limitAmount, { from: user1 });
                     // 3. Verify the loan amount.
                     const user1Balance = await erc20USDC.balanceOf(user1);
@@ -747,10 +747,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToUsdRate(1))
+                        .mul(await savingAccount.getCoinToETHRate(1))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToUsdRate(0));
+                        .div(await savingAccount.getCoinToETHRate(0));
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
