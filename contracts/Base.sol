@@ -486,7 +486,7 @@ library Base {
     ) public view returns (uint256 depositETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            if(isUserHasDeposits(self, _accountAddr, i + 1)) {
+            if(isUserHasDeposits(self, _accountAddr, uint8(i)+1)) {
                 address tokenAddress = _symbols.addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
@@ -505,7 +505,7 @@ library Base {
     ) public view returns (uint256 borrowETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            if(isUserHasBorrows(self, _accountAddr, i + 1)) {
+            if(isUserHasBorrows(self, _accountAddr, uint8(i)+1)) {
                 address tokenAddress = _symbols.addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
