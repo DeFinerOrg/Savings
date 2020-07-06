@@ -58,10 +58,10 @@ library Base {
         }
     }
 
-    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-        Account storage account = self.accounts[_account];
-        return account.depositBitmap;
-    }
+//    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
+//        Account storage account = self.accounts[_account];
+//        return account.depositBitmap;
+//    }
 
     function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
         Account storage account = self.accounts[_account];
@@ -73,10 +73,10 @@ library Base {
         return account.depositBitmap.isBitSet(_index);
     }
 
-    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-        Account storage account = self.accounts[_account];
-        return account.borrowBitmap;
-    }
+//    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
+//        Account storage account = self.accounts[_account];
+//        return account.borrowBitmap;
+//    }
 
     function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
         Account storage account = self.accounts[_account];
