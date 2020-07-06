@@ -716,27 +716,29 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
-                const balSavingAccountDAIAfterDep = await erc20DAI.balanceOf(savingAccount.address);
-                console.log("balSavingAccountDAIAfterDep", balSavingAccountDAIAfterDep);
+                const balSavingAccountDAIAfterDeposit = await erc20DAI.balanceOf(
+                    savingAccount.address
+                );
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
 
-                const balSavingAccountDAIAfterBorr = await erc20DAI.balanceOf(
+                const balSavingAccountDAIAfterBorrow = await erc20DAI.balanceOf(
                     savingAccount.address
                 );
-                console.log("balSavingAccountDAIAfterBorr", balSavingAccountDAIAfterBorr);
 
                 // Amount that is locked as collateral
                 const collateralLocked = borrowAmount
+                    .mul(sixPrecision)
                     .mul(await savingAccount.getCoinToETHRate(1))
                     .mul(new BN(100))
                     .div(new BN(60))
-                    .div(await savingAccount.getCoinToETHRate(0));
+                    .div(await savingAccount.getCoinToETHRate(0))
+                    .div(eighteenPrecision);
 
                 // 3. Verify the loan amount
                 const user1BalanceAfterBorrow = await erc20USDC.balanceOf(user1);
-                expect(user1BalanceAfterBorrow).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
+                expect(user1BalanceAfterBorrow).to.be.bignumber.equal(borrowAmount);
 
                 // Total remaining DAI after borrow
                 const remainingDAI = numOfDAI.sub(new BN(collateralLocked));
