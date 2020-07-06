@@ -1159,13 +1159,24 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
             it("when user tries to withdraw more than his balance", async () => {
                 const numOfTokens = new BN(10);
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
 
                 await savingAccount.deposit(ETH_ADDRESS, numOfTokens, {
                     value: numOfTokens
                 });
 
-                const withdraws = new BN(20);
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
 
+                const withdraws = new BN(20);
                 await expectRevert(
                     savingAccount.withdraw(ETH_ADDRESS, withdraws),
                     "Insufficient balance."
