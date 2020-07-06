@@ -1014,39 +1014,85 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when 1000 whole ETH withdrawn", async () => {
-                //Depositting ETH Token to SavingContract
-                await savingAccount.deposit(ETH_ADDRESS, web3.utils.toWei("2000", "ether"), {
-                    value: web3.utils.toWei("2000", "ether")
-                });
-
-                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-
-                //Withdrawing ETH
-                await savingAccount.withdraw(ETH_ADDRESS, web3.utils.toWei("1000", "ether"));
-
-                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
-                let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
-                    new BN(ETHbalanceAfterWithdraw)
+                const depositAmount = web3.utils.toWei("2000", "ether");
+                const withdrawAmount = web3.utils.toWei("1000", "ether");
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
                 );
-                // validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(web3.utils.toWei("1000", "ether"));
-            });
-
-            //TODO:
-            /* it("when full ETH withdrawn", async () => {
-                const depositAmount = new BN("1000000000000000000");
 
                 //Depositting ETH Token to SavingContract
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                     value: depositAmount
                 });
 
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+
+                //Withdrawing ETH
+                await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
+
+                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
+                    new BN(ETHbalanceAfterWithdraw)
+                );
+                // validate savingAccount ETH balance
+                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+
+                // Validate DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalancAfterWithdraw[0])
+                );
+                expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdrawAmount);
+            });
+
+            //TODO:
+            it("when full ETH withdrawn", async () => {
+                const depositAmount = web3.utils.toWei("100", "ether");
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+
+                // Depositting ETH Token to SavingContract
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                });
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount);
 
-                //Withdrawing ETH
+                // Withdrawing ETH
                 await savingAccount.withdrawAll(ETH_ADDRESS);
-            }); */
+
+                // Validate savingAccount ETH balance
+                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                expect(ETHbalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
+
+                // Validate DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                expect(new BN(totalDefinerBalancAfterWithdraw[0])).to.be.bignumber.equal(ZERO);
+            });
 
             it("when tokens are withdrawn with interest", async () => {
                 const depositAmount = new BN(1000);
