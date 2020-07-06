@@ -122,6 +122,13 @@ contract("Integration Tests", async (accounts) => {
                         savingAccount.address
                     );
 
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address,
+                        {
+                            from: user1
+                        }
+                    );
+
                     //await erc20contr.approve(savingAccount.address, numOfToken);
                     await savingAccount.deposit(erc20contr.address, numOfToken, {
                         from: user1
@@ -130,6 +137,19 @@ contract("Integration Tests", async (accounts) => {
                     const balSavingAccountAfterDeposit = await erc20contr.balanceOf(
                         savingAccount.address
                     );
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address,
+                        {
+                            from: user1
+                        }
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract = numOfToken
@@ -179,6 +199,15 @@ contract("Integration Tests", async (accounts) => {
                     // Verify CToken balance
                     const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
                     expect(ZERO).to.be.bignumber.equal(balCTokens);
+
+                    // Verify DeFiner balance
+                    const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                        erc20contr.address,
+                        {
+                            from: user1
+                        }
+                    );
+                    expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                 }
             });
 
