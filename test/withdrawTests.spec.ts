@@ -974,11 +974,23 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when partial ETH withdrawn", async () => {
                 const depositAmount = new BN(100);
                 const withdrawAmount = new BN(20);
+                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
 
                 //Depositting ETH Token to SavingContract
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                     value: depositAmount
                 });
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalanceBeforeDeposit[0])
+                );
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 //Withdrawing ETH
@@ -988,8 +1000,17 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
                     new BN(ETHbalanceAfterWithdraw)
                 );
-                // validate savingAccount ETH balance
+                // Validate savingAccount ETH balance
                 expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+
+                // Validate DeFiner balance
+                const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                    ETH_ADDRESS
+                );
+                const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
+                    new BN(totalDefinerBalancAfterWithdraw[0])
+                );
+                expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdrawAmount);
             });
 
             it("when 1000 whole ETH withdrawn", async () => {
