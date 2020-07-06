@@ -486,12 +486,14 @@ library Base {
     ) public view returns (uint256 depositETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            address tokenAddress = _symbols.addressFromIndex(i);
-            uint divisor = INT_UNIT;
-            if(tokenAddress != ETH_ADDR) {
-                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+            if(isUserHasDeposits(self. _accountAddr, i + 1)) {
+                address tokenAddress = _symbols.addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
+                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                }
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
             }
-            depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
         return depositETH;
     }
@@ -503,12 +505,14 @@ library Base {
     ) public view returns (uint256 borrowETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            address tokenAddress = _symbols.addressFromIndex(i);
-            uint divisor = INT_UNIT;
-            if(tokenAddress != ETH_ADDR) {
-                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+            if(isUserHasBorrows(self. _accountAddr, i + 1)) {
+                address tokenAddress = _symbols.addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
+                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                }
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
             }
-            borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
         return borrowETH;
     }
