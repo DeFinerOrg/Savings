@@ -157,7 +157,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(1001), { from: user2 }),
-                        "Insufficient collateral."
+                        "Lack of liquidity."
                     );
                 });
             });
@@ -209,7 +209,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(10)), {
-                        from: user2,
+                        from: user2
                     });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
@@ -224,11 +224,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -243,11 +243,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
@@ -262,12 +262,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -282,7 +282,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -297,7 +297,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -309,7 +309,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 it("when user tries to borrow ETH, but he has not deposited any token before", async () => {
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -347,7 +347,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     // 2. Start borrowing.
                     await expectRevert(
@@ -363,7 +363,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user2,
-                        value: numOfToken,
+                        value: numOfToken
                     });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 });
@@ -575,7 +575,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
-                        "Lack of liquidity."
+                        "Insufficient collateral."
                     );
                 });
 
@@ -730,7 +730,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), {
-                        from: user1,
+                        from: user1
                     });
                     // 3. Verify the loan amount.
                     const user1Balance = await erc20USDC.balanceOf(user1);
