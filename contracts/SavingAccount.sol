@@ -212,7 +212,7 @@ contract SavingAccount {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
         uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols)
-        .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
+        .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(100);
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
         require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount, tokenRegistry.getTokenIndex(_token));
