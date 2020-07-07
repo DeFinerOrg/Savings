@@ -164,8 +164,8 @@ contract SavingAccount {
     }
 
     function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
-        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
-        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
+        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold();
+        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
         uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
@@ -270,8 +270,8 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address _targetToken) public {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold(_targetToken);
-        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_targetToken);
+        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
+        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         baseVariable.liquidate(targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, symbols);
     }
 
