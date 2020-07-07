@@ -884,43 +884,45 @@ library Base {
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
             vars.token = symbols.addressFromIndex(i);
-            vars.tokenPrice = symbols.priceFromIndex(i);
+            if(isUserHasDeposits(self, vars.token, uint8(i))) {
+                vars.tokenPrice = symbols.priceFromIndex(i);
 
-            vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+                vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
 
-            TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
+                TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
 
-            if(tokenInfo.getBorrowPrincipal() == 0) {
-                TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
-                newRateIndexCheckpoint(self, vars.token);
+                if(tokenInfo.getBorrowPrincipal() == 0) {
+                    TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
+                    newRateIndexCheckpoint(self, vars.token);
 
-                //清算者当前tokenRate
-                vars.msgTokenAccruedRate =
-                msgTokenInfo.getBorrowPrincipal() > 0 ?
-                getBorrowAccruedRate(self, vars.token, msgTokenInfo.getBorrowLastCheckpoint())
-                :
-                getDepositAccruedRate(self, vars.token, msgTokenInfo.getDepositLastCheckpoint());
+                    //清算者当前tokenRate
+                    vars.msgTokenAccruedRate =
+                    msgTokenInfo.getBorrowPrincipal() > 0 ?
+                    getBorrowAccruedRate(self, vars.token, msgTokenInfo.getBorrowLastCheckpoint())
+                    :
+                    getDepositAccruedRate(self, vars.token, msgTokenInfo.getDepositLastCheckpoint());
 
 
                 //被清算者当前tokenRate
-                vars.tokenAccruedRate = getDepositAccruedRate(self, vars.token, tokenInfo.getDepositLastCheckpoint());
-                vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
-                if(vars.coinValue > vars.liquidationDebtValue) {
-                    vars.coinValue = vars.liquidationDebtValue;
-                    vars.liquidationDebtValue = 0;
-                } else {
-                    vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
-                }
-                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
-                if(tokenInfo.getDepositPrincipal() == 0) {
-                    unsetFromDepositBitmap(self, targetAccountAddr, _tokenIndex);
-                }
+                    vars.tokenAccruedRate = getDepositAccruedRate(self, vars.token, tokenInfo.getDepositLastCheckpoint());
+                    vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                    if(vars.coinValue > vars.liquidationDebtValue) {
+                        vars.coinValue = vars.liquidationDebtValue;
+                        vars.liquidationDebtValue = 0;
+                    } else {
+                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+                    }
+                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+                    if(tokenInfo.getDepositPrincipal() == 0) {
+                        unsetFromDepositBitmap(self, targetAccountAddr, _tokenIndex);
+                    }
 
-                if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
-                    setInDepositBitmap(self, msg.sender, _tokenIndex);
+                    if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
+                        setInDepositBitmap(self, msg.sender, _tokenIndex);
+                    }
+                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
                 }
-                msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
             }
 
             if(vars.liquidationDebtValue == 0) {

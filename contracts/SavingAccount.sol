@@ -177,7 +177,7 @@ contract SavingAccount {
         return false;
     }
 
-    function getCoinLength() public view returns(uint256 length){
+    function getCoinLength() public view returns(uint256 length) {
         return symbols.getCoinLength();
     }
 
