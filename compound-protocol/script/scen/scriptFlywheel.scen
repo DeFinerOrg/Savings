@@ -16,9 +16,11 @@ Comptroller LiquidationIncentive 1.1
 NewCToken ZRX cZRX
 NewCToken BAT cBAT
 NewCToken ETH cETH
+NewCToken DAI cDAI
 Support cZRX collateralFactor:0.5
 Support cBAT collateralFactor:0.5
 Support cETH collateralFactor:0.5
+Support cDAI collateralFactor:0.5
 -- final
 ComptrollerImpl Deploy Scenario ComptrollerScen
 Unitroller SetPendingImpl ComptrollerScen
@@ -28,6 +30,9 @@ Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
 
 Prep Geoff 100e18 ETH cETH
 Mint Geoff 50e18 cETH--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 DAI cDAI
+Mint Geoff 50e18 cDAI--tokenbalance = 50e18 / 2e9 = 2.5e10
 
 Prep Fourth Some BAT cBAT
 Mint Fourth 6e18 cBAT
