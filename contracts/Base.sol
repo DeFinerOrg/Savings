@@ -861,9 +861,6 @@ library Base {
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
-        if() {
-
-        }
         targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
 
         // The collaterals are liquidate in the order of their market liquidity
