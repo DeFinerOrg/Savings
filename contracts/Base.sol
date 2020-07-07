@@ -615,7 +615,7 @@ library Base {
      * @param _amount the mount of the borrowed token
      */
     function borrow(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
-        require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
+        require(isUserHasAnyDeposits(self, msg.sender), "User not have any deposits");
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
         require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
