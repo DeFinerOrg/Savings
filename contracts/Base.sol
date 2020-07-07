@@ -884,7 +884,7 @@ library Base {
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
             vars.token = symbols.addressFromIndex(i);
-            if(isUserHasDeposits(self, vars.token, uint8(i))) {
+            if(isUserHasDeposits(self, targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = symbols.priceFromIndex(i);
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
