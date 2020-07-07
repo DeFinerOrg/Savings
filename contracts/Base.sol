@@ -505,6 +505,8 @@ library Base {
         uint amountValue;
         uint accruedRate;
         uint interest;
+        uint bAccruedRate;
+        uint amountBorrowed;
     }
 
     function transfer(
@@ -554,17 +556,17 @@ library Base {
         }
 
         if(_amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
-            uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getBorrowLastCheckpoint());
-            uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
-            uint repayAmount = _amount > amountBorrowed ? amountBorrowed : _amount;
+            vars.bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getBorrowLastCheckpoint());
+            vars.amountBorrowed = activeTokenInfo.getBorrowBalance(vars.bAccruedRate);
+            uint repayAmount = _amount > vars.amountBorrowed ? vars.amountBorrowed : _amount;
             require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
-            activeTokenInfo.repay(repayAmount, bAccruedRate);
+            activeTokenInfo.repay(repayAmount, vars.bAccruedRate);
             if(activeTokenInfo.getBorrowPrincipal() == 0) {
                 unsetFromBorrowBitmap(activeAccount, _tokenIndex);
             }
             self.totalLoans[_token] = self.totalLoans[_token].add(repayAmount);
             self.totalReserve[_token] = self.totalReserve[_token].sub(repayAmount);
-            _amount = _amount > amountBorrowed ? _amount.sub(amountBorrowed) : 0;
+            _amount = _amount > vars.amountBorrowed ? _amount.sub(vars.amountBorrowed) : 0;
         }
 
         if(_amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
