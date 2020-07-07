@@ -197,7 +197,7 @@ contract SavingAccount {
     }
 
     function transfer(address _activeAccount, address _token, uint _amount) public {
-        baseVariable.transfer(_activeAccount, _token, _amount, symbols);
+        baseVariable.transfer(_activeAccount, _token, _amount, tokenRegistry.getTokenIndex(_token), symbols);
     }
 
 
