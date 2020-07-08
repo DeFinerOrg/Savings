@@ -513,12 +513,17 @@ contract("Integration Tests", async (accounts) => {
                 const user2Balance = await erc20DAI.balanceOf(user2);
                 expect(user2Balance).to.be.bignumber.equal(borrowTokens);
 
-                // TODO: AssertionError: expected '1000000000000000000000000' to equal '600000000000000000000000'
-                /* const totalDefinerBalanceAfterBorrowtDAI = await savingAccount.tokenBalance(
+                const totalDefinerBalanceAfterBorrowtDAIUser1 = await savingAccount.tokenBalance(
                     erc20DAI.address,
                     { from: user1 }
                 );
-                expect(totalDefinerBalanceAfterBorrowtDAI[0]).to.be.bignumber.equal(borrowTokens); */
+                expect(totalDefinerBalanceAfterBorrowtDAIUser1[0]).to.be.bignumber.equal(numOfToken);
+
+                const totalDefinerBalanceAfterBorrowtDAIUser2 = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user2 }
+                );
+                expect(totalDefinerBalanceAfterBorrowtDAIUser2[1]).to.be.bignumber.equal(borrowTokens);
             });
 
             it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {
