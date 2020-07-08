@@ -58,24 +58,20 @@ library Base {
         }
     }
 
-    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-        Account storage account = self.accounts[_account];
-        return account.depositBitmap;
+    function getDepositBitmap(Account storage self) public view returns (uint128) {
+        return self.depositBitmap;
     }
 
-    function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
-        Account storage account = self.accounts[_account];
-        return account.depositBitmap > 0;
+    function isUserHasAnyDeposits(Account storage self) public view returns (bool) {
+        return self.depositBitmap > 0;
     }
 
-    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-        Account storage account = self.accounts[_account];
-        return account.borrowBitmap;
+    function getBorrowBitmap(Account storage self) public view returns (uint128) {
+        return self.borrowBitmap;
     }
 
-    function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-        Account storage account = self.accounts[_account];
-        return account.borrowBitmap > 0;
+    function isUserHasAnyBorrows(Account storage self) public view returns (bool) {
+        return self.borrowBitmap > 0;
     }
 
     function setInDepositBitmap(Account storage account, uint8 _index) public {
@@ -505,9 +501,6 @@ library Base {
         uint amountValue;
         uint accruedRate;
         uint interest;
-        uint bAccruedRate;
-        uint amountBorrowed;
-        uint repayAmount;
     }
 
     function transfer(
@@ -515,13 +508,10 @@ library Base {
         address _activeAccount,
         address _token,
         uint _amount,
-        uint8 _tokenIndex,
         SymbolsLib.Symbols storage symbols
     ) public {
-        Account storage account = self.accounts[msg.sender];
-        Account storage activeAccount = self.accounts[_activeAccount];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
-        TokenInfoLib.TokenInfo storage activeTokenInfo = activeAccount.tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage activeTokenInfo = self.accounts[_activeAccount].tokenInfos[_token];
         TransferVars memory vars;
 
         uint divisor = INT_UNIT;
@@ -547,9 +537,6 @@ library Base {
         vars.interest = tokenInfo.calculateDepositInterest(vars.accruedRate);
 
         tokenInfo.withdraw(_amount, vars.accruedRate);
-        if(tokenInfo.getDepositPrincipal() == 0) {
-            unsetFromDepositBitmap(account, _tokenIndex);
-        }
         if(vars.interest > 0) {
             uint256 _money = vars.interest <= _amount ? vars.interest.div(10) : _amount.div(10);
             _amount = _amount.sub(_money);
@@ -557,23 +544,17 @@ library Base {
         }
 
         if(_amount > 0 && activeTokenInfo.getBorrowPrincipal() > 0) {
-            vars.bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getBorrowLastCheckpoint());
-            vars.amountBorrowed = activeTokenInfo.getBorrowBalance(vars.bAccruedRate);
-            vars.repayAmount = _amount > vars.amountBorrowed ? vars.amountBorrowed : _amount;
+            uint bAccruedRate = getBorrowAccruedRate(self, _token, activeTokenInfo.getBorrowLastCheckpoint());
+            uint256 amountBorrowed = activeTokenInfo.getBorrowBalance(bAccruedRate);
+            uint repayAmount = _amount > amountBorrowed ? amountBorrowed : _amount;
             require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
-            activeTokenInfo.repay(vars.repayAmount, vars.bAccruedRate);
-            if(activeTokenInfo.getBorrowPrincipal() == 0) {
-                unsetFromBorrowBitmap(activeAccount, _tokenIndex);
-            }
-            self.totalLoans[_token] = self.totalLoans[_token].add(vars.repayAmount);
-            self.totalReserve[_token] = self.totalReserve[_token].sub(vars.repayAmount);
-            _amount = _amount > vars.amountBorrowed ? _amount.sub(vars.amountBorrowed) : 0;
+            activeTokenInfo.repay(repayAmount, bAccruedRate);
+            self.totalLoans[_token] = self.totalLoans[_token].add(repayAmount);
+            self.totalReserve[_token] = self.totalReserve[_token].sub(repayAmount);
+            _amount = _amount > amountBorrowed ? _amount.sub(amountBorrowed) : 0;
         }
 
         if(_amount > 0 && activeTokenInfo.getDepositPrincipal() >= 0) {
-            if(activeTokenInfo.getDepositPrincipal() == 0) {
-                setInDepositBitmap(activeAccount, _tokenIndex);
-            }
             uint dAccruedRate = getDepositAccruedRate(self, _token, activeTokenInfo.getDepositLastCheckpoint());
             activeTokenInfo.deposit(_amount, dAccruedRate);
         }
@@ -617,10 +598,9 @@ library Base {
      * @param _token the address of the borrowed token
      * @param _amount the mount of the borrowed token
      */
-    function borrow(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
-        require(isUserHasAnyDeposits(self, msg.sender), "User not have any deposits");
-        Account storage account = self.accounts[msg.sender];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+    function borrow(BaseVariable storage self, address _token, uint256 _amount) public {
+        require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
         require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
 
         // Add a new checkpoint on the index curve.
@@ -641,8 +621,6 @@ library Base {
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
         updateTotalReserve(self, _token, _amount, false); // Last parameter false means borrow token
-
-        setInBorrowBitmap(account, _tokenIndex);
     }
 
     /**
@@ -650,9 +628,8 @@ library Base {
      * @param _token the address of the repaid token
      * @param _amount the mount of the repaid token
      */
-    function repay(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public returns(uint) {
-        Account storage account = self.accounts[msg.sender];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+    function repay(BaseVariable storage self, address _token, uint256 _amount) public returns(uint) {
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0,
@@ -668,10 +645,6 @@ library Base {
 
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         tokenInfo.repay(amount, rate);
-
-        if(tokenInfo.getBorrowPrincipal() == 0) {
-            unsetFromBorrowBitmap(account, _tokenIndex);
-        }
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -689,9 +662,9 @@ library Base {
      * @param _amount amount of token to withdraw
      * @return amount of token actually withdrew
 	 */
-    function withdraw(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public returns(uint) {
-        Account storage account = self.accounts[msg.sender];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+    function withdraw(BaseVariable storage self, address _token, uint256 _amount) public returns(uint) {
+
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(self, _token);
@@ -705,10 +678,6 @@ library Base {
 
         // Update tokenInfo for the user
         tokenInfo.withdraw(_amount, accruedRate);
-
-        if(tokenInfo.getBorrowPrincipal() == 0) {
-            unsetFromDepositBitmap(account, _tokenIndex);
-        }
 
         // DeFiner takes 10% commission on the interest a user earn
         uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
@@ -729,9 +698,9 @@ library Base {
 	 * Withdraw all tokens from saving pool.
      * @param _token token address
 	 */
-    function withdrawAll(BaseVariable storage self, address _token, uint8 _tokenIndex) public returns(uint){
-        Account storage account = self.accounts[msg.sender];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+    function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
+
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(self, _token);
@@ -745,10 +714,6 @@ library Base {
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
 
         tokenInfo.withdraw(amount, accruedRate);
-
-        if(tokenInfo.getBorrowPrincipal() == 0) {
-            unsetFromDepositBitmap(account, _tokenIndex);
-        }
 
         // DeFiner takes 10% commission on the interest a user earn
         uint256 commission = tokenInfo.depositInterest.div(10);
