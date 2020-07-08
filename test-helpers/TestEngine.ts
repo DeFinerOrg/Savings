@@ -10,6 +10,9 @@ const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenI
 
 var tokenData = require("../test-helpers/tokenData.json");
 
+var compoundTokens = require("../compound-protocol/networks/development.json");
+console.log("compoundTokens",compoundTokens.Contracts);
+
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngine {
@@ -17,7 +20,7 @@ export class TestEngine {
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
-
+    
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
