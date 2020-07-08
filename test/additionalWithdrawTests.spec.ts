@@ -114,13 +114,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenDAI.balanceOfUnderlying(savingAccount.address);
-                    const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
+                    const balCToken = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const totalSavingAccount = (new BN(newbalSavingAccount)).add(new BN(balCToken));
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.
                     expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
                     // Verify 3.
-                    expect(balCToken).to.be.bignumber.equal(new BN(723));
+                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
                 });
                 it("Use USDC, 6 decimals", async () => {
                     /*
@@ -151,13 +151,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenUSDC.balanceOfUnderlying(savingAccount.address);
+                    const balCToken = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
                     const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.
                     expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
                     // Verify 3.
-                    expect(balCToken).to.be.bignumber.equal(new BN(723));
+                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
                 });
                 it("Use WBTC, 8 decimals", async () => {
                     /*
@@ -188,13 +188,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20WBTC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenWBTC.balanceOfUnderlying(savingAccount.address);
+                    const balCToken = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
                     const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.
                     expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
                     // Verify 3.
-                    expect(balCToken).to.be.bignumber.equal(new BN(723));
+                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
                 });
 
                 // TODO: Compound unsupported tokens issues are not fixed yet.
@@ -378,6 +378,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         //         });
         //     });
         // });
+        // from here comments
         context("Deposit and withdraw with multiple kinds of tokens.", async () => {
             context("Should succeed", async () => {
                 it("Deposit DAI and USDC, withdraw partially", async () => {
