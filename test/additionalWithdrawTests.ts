@@ -114,7 +114,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenDAI.balanceOf(savingAccount.address);
+                    const balCToken = await cTokenDAI.balanceOfUnderlying(savingAccount.address);
                     const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.
@@ -151,7 +151,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenUSDC.balanceOf(savingAccount.address);
+                    const balCToken = await cTokenUSDC.balanceOfUnderlying(savingAccount.address);
                     const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.
@@ -188,7 +188,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
                     const newbalSavingAccount = await erc20WBTC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenWBTC.balanceOf(savingAccount.address);
+                    const balCToken = await cTokenWBTC.balanceOfUnderlying(savingAccount.address);
                     const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
                     const totalDeposit = BN(numOfTokens.sub(withdraws));
                     // Verify 2.

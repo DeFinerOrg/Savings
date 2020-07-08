@@ -11,3 +11,7 @@ deploy
 ./contracts/config/Config.sol
 ./contracts/config/ConfigRinkebynet.sol
 types
+
+# coverage related
+coverage.json
+coverage/
