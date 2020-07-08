@@ -601,13 +601,41 @@ contract("Integration Tests", async (accounts) => {
             it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async () => {
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
-                const numOfToken = sixPrecision.mul(new BN(1000));
+                const numOfUSDC = sixPrecision.mul(new BN(1000));
+                const totalDefinerBalanceBeforeDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceBeforeDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+
                 await erc20DAI.transfer(user1, numOfDAI);
-                await erc20USDC.transfer(user2, numOfToken);
+                await erc20USDC.transfer(user2, numOfUSDC);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceChangeDAI = new BN(
+                    totalDefinerBalanceAfterDepositDAI[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositDAI[0]));
+                expect(totalDefinerBalanceChangeDAI).to.be.bignumber.equal(numOfDAI);
+
+                const totalDefinerBalanceAfterDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+                const totalDefinerBalanceChangeUSDC = new BN(
+                    totalDefinerBalanceAfterDepositUSDC[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC[0]));
+                expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
                 // 2. Start borrowing.
                 const borrowAmount = numOfDAI
@@ -625,6 +653,14 @@ contract("Integration Tests", async (accounts) => {
                 // 3. Verify the loan amount.
                 const user1Balance = await erc20USDC.balanceOf(user1);
                 expect(user1Balance).to.be.bignumber.equal(borrowAmount);
+
+                const totalDefinerBalanceAfterBorrowUSDCUser1 = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user1 }
+                );
+                expect(totalDefinerBalanceAfterBorrowUSDCUser1[1]).to.be.bignumber.equal(
+                    borrowAmount
+                );
             });
 
             it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async () => {
