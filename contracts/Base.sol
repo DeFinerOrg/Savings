@@ -572,10 +572,6 @@ library Base {
         Account storage account = self.accounts[msg.sender];
         TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
 
-        require(
-            tokenInfo.getBorrowPrincipal() == 0,
-            "The user should repay the borrowed token before he or she can deposit.");
-
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(self, _token);
 
@@ -601,7 +597,6 @@ library Base {
     function borrow(BaseVariable storage self, address _token, uint256 _amount) public {
         require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-        require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(self, _token);
@@ -640,7 +635,7 @@ library Base {
         newRateIndexCheckpoint(self, _token);
 
         // Update tokenInfo
-        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getBorrowLastCheckpoint());
+        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getBorrowLastCheckpoint());
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
 
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -698,7 +693,7 @@ library Base {
 	 * Withdraw all tokens from saving pool.
      * @param _token token address
 	 */
-    function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
+    function withdrawAll(BaseVariable storage self, address _token) public returns(uint) {
 
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 
