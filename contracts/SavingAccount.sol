@@ -163,7 +163,7 @@ contract SavingAccount {
         return (addresses, depositBalance, borrowBalance);
     }
 
-    function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
+    function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold();
         uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
