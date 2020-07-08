@@ -12,6 +12,7 @@ contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
+    using Base for Base.ActionChoices;
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
@@ -282,7 +283,7 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
         baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, true); // Last parameter false means deposit token
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
 
         // Set the deposit bitmap
         account.setInDepositBitmap(tokenRegistry.getTokenIndex(_token));
@@ -337,7 +338,7 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
         baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, false); // Last parameter false means withdraw token
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
         return _amount;
     }

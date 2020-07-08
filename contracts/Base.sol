@@ -49,6 +49,8 @@ library Base {
         uint128 borrowBitmap;
     }
 
+    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
+
     /**
      * Initialize
      */
@@ -163,14 +165,18 @@ library Base {
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
      * by calling updateTotalCompound. Otherwise, self.totalCompound may not equal to the exact amount of the
      * token in Compound.
-     * @param _isPositive True if the function is called in deposit or repay. Otherwise, it is false.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, bool _isPositive) public {
+    function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
         address cToken = self.cTokenAddress[_token];
-        if (_isPositive) {
+        if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
-            uint totalAmount = getTotalDepositsNow(self, _token).add(_amount);
+            uint totalAmount = getTotalDepositsNow(self, _token);
+            if (_action == ActionChoices.Deposit)
+                totalAmount = totalAmount.add(_amount);
+            else
+                self.totalLoans[_token] = self.totalLoans[_token].sub(_amount);
+
             // Expected total amount of token in reservation after deposit or repay
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
@@ -190,8 +196,12 @@ library Base {
                 "Not enough tokens in the pool."
                 );
 
-            // Total amount of token after deposit or repay
-            uint totalAmount = getTotalDepositsNow(self, _token).sub(_amount);
+            // Total amount of token after withdraw or borrow
+            uint totalAmount = getTotalDepositsNow(self, _token);
+            if (_action == ActionChoices.Withdraw)
+                totalAmount = totalAmount.sub(_amount);
+            else
+                self.totalLoans[_token] = self.totalLoans[_token].add(_amount);
             // Expected total amount of token in reservation after deposit or repay
             uint totalReserveBeforeAdjust = self.totalReserve[_token] > _amount ? self.totalReserve[_token].sub(_amount) : 0;
 
@@ -326,6 +336,8 @@ library Base {
      * @param _borrowRateRecordStart the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
+    // sichaoy: actually the rate + 1, add a require statement here to make sure
+    // the checkpoint for current block exists.
     function getBorrowAccruedRate(
         BaseVariable storage self,
         address _token,
@@ -464,6 +476,7 @@ library Base {
      * Get current borrow balance of a token
      * @param _token token address
      */
+    // sichaoy: What's the diff of getBorrowBalance with getBorrowAcruedRate?
     function getBorrowBalance(
         BaseVariable storage self,
         address _token,
@@ -561,13 +574,14 @@ library Base {
         // of C (Compound Ratio) and U (Utilization Ratio).
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, _amount, false); // Last parameter false means borrow token
+        updateTotalReserve(self, _token, _amount, ActionChoices.Borrow); // Last parameter false means borrow token
     }
 
     /**
      * Repay the amount of token to the saving pool.
      * @param _token the address of the repaid token
      * @param _amount the mount of the repaid token
+     * @return the remainders of the token after repay
      */
     function repay(BaseVariable storage self, address _token, uint256 _amount) public returns(uint) {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
@@ -591,7 +605,7 @@ library Base {
         // of C (Compound Ratio) and U (Utilization Ratio).
         updateTotalCompound(self, _token);
         updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, amount, true); // Last parameter true means repay token
+        updateTotalReserve(self, _token, amount, ActionChoices.Repay); // Last parameter true means repay token
 
         return _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0; // Return the remainders
     }
@@ -625,9 +639,12 @@ library Base {
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
+        // sichaoy: change this function name to accumulateCompoundInterest()
         updateTotalCompound(self, _token);
+        // sichaoy: change this function name to accumulateBorrowInterest()
         updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, amount, false); // Last parameter false means withdraw token
+        // sichaoy: change this function to updateTotalPool(), and call the above two functions inside
+        updateTotalReserve(self, _token, amount, ActionChoices.Withdraw); // Last parameter false means withdraw token
 
         return amount;
     }
