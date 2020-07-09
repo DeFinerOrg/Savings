@@ -661,9 +661,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDT, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -702,9 +702,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -745,9 +745,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                      */
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -788,9 +788,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                      */
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -829,9 +829,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -870,9 +870,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -911,9 +911,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -952,9 +952,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, ETH_ADDRESS);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -998,9 +998,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1, addressUSDT);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(addressUSDT, 90);
-                    const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1, addressUSDT);
+                    const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
+                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(90);
+                    const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
                     await expectRevert(
@@ -1047,13 +1047,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let updatedPrice = BN(DAIprice).mul(new BN(80)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1, addressUSDT);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(addressUSDT, 70);
-                    const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1, addressUSDT);
+                    const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
+                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(70);
+                    const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;
                     await savingAccount.liquidate(user1, addressUSDT, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1, addressUSDT);
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateAfter).to.be.false;
                 });
             });
