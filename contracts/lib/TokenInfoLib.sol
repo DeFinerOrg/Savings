@@ -17,6 +17,7 @@ library TokenInfoLib {
         uint256 borrowInterest;     // total borrow interest of ther user
         uint256 lastBorrowBlock;    // the block number of user's last borrow
     }
+
     uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
 
     // returns the principal

@@ -96,7 +96,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
 
             it("when borrowRateLMBN is zero");
-            // cases of `getNowDepositRate`, line 261 Base.sol
+            // cases of `depositRateIndexNow`, line 261 Base.sol
 
             it("when borrowRateLMBN is equal to block number");
         });
