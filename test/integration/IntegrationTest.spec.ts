@@ -689,7 +689,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    let userTotalBalanceBeforeBorrow = await savingAccount.tokenBalance(
+                    let userDefinerBalanceBeforeBorrow = await savingAccount.tokenBalance(
                         addressUSDC,
                         { from: userNumber }
                     );
@@ -698,15 +698,15 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    /* const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                    const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
                     const expectedTokensAtSavingAccountContract = depositAmountCollateral
                         .mul(new BN(15))
                         .div(new BN(100));
-                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                        balSavingAccount
-                    ); */
+                    expect(
+                        expectedTokensAtSavingAccountContract.mul(userBorrowIndex.sub(new BN(1)))
+                    ).to.be.bignumber.equal(balSavingAccount);
 
-                    // Increase block time to 1 month
+                    // Advance blocks by 150
                     //await time.increase(ONE_MONTH);
                     let block = await web3.eth.getBlock("latest");
                     console.log("block_number", block.number);
@@ -733,7 +733,7 @@ contract("Integration Tests", async (accounts) => {
                         from: userNumber
                     });
 
-                    let userTotalBalanceAfterBorrow = await savingAccount.tokenBalance(
+                    let userDefinerBalanceAfterBorrow = await savingAccount.tokenBalance(
                         addressUSDC,
                         { from: userNumber }
                     );
@@ -741,11 +741,11 @@ contract("Integration Tests", async (accounts) => {
                     const userBalanceDiff = new BN(userBalanceAfterBorrow).sub(
                         new BN(userBalanceBeforeBorrow)
                     );
-                    const userTotalBalanceDiff = new BN(userTotalBalanceAfterBorrow[1]).sub(
-                        new BN(userTotalBalanceBeforeBorrow[0])
+                    const userDefinerBalanceDiff = new BN(userDefinerBalanceAfterBorrow[1]).sub(
+                        new BN(userDefinerBalanceBeforeBorrow[0])
                     );
                     // Verify if borrow was successful
-                    expect(borrowAmount).to.be.bignumber.equal(userTotalBalanceDiff);
+                    expect(borrowAmount).to.be.bignumber.equal(userDefinerBalanceDiff);
                     expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
                 }
             });
@@ -1116,17 +1116,6 @@ contract("Integration Tests", async (accounts) => {
                 // 2. User 1 & 2 deposit DAI
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
-
-                // Verify deposit
-                /* const expectedTokensAtSavingAccountContract = numOfDAI
-                    .mul(new BN(15))
-                    .div(new BN(100));
-                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                    balSavingAccount
-                );
-
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 }); */
 
                 // Verify deposit
                 const expectedTokensAtSavingAccountContract = numOfDAI
