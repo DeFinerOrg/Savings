@@ -141,11 +141,11 @@ contract("Integration Tests", async (accounts) => {
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
+                // Advance blocks by 1 week
                 let block = await web3.eth.getBlock("latest");
                 console.log("block_number", block.number);
 
                 let targetBlock = new BN(block.number).add(BLOCKS_MINED_WEEKLY);
-
                 await time.advanceBlockTo(targetBlock);
 
                 let blockAfter = await web3.eth.getBlock("latest");
@@ -167,6 +167,107 @@ contract("Integration Tests", async (accounts) => {
                     );
                     expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
                 }
+            });
+        });
+    });
+
+    context("Deposit and Borrow", async () => {
+        context("should succeed", async () => {
+            it("should deposit $1 million value and borrow 0.6 million after 1 week", async () => {
+                const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
+                const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(7)));
+                const borrowTokens = eighteenPrecision
+                    .mul(new BN(6))
+                    .mul(new BN(10).pow(new BN(5)));
+
+                // Transfer 1 million DAI tokens (18 decimals) to user1
+                await erc20DAI.transfer(user1, numOfToken);
+
+                // Transfer 1 million USDC tokens (6 decimals) to user2
+                await erc20USDC.transfer(user2, numOfUSDC);
+
+                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                const totalDefinerBalanceBeforeDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceBeforeDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+
+                // 1. Deposit $1 million
+                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+                //Verify if deposit was successful
+                const expectedTokensAtSavingAccountContractDAI = numOfToken
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccountDAI = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContractDAI).to.be.bignumber.equal(
+                    balSavingAccountDAI
+                );
+
+                const expectedTokensAtSavingAccountContractUSDC = numOfUSDC
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccountUSDC = await erc20USDC.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContractUSDC).to.be.bignumber.equal(
+                    balSavingAccountUSDC
+                );
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceChangeDAI = new BN(
+                    totalDefinerBalanceAfterDepositDAI[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositDAI[0]));
+                expect(totalDefinerBalanceChangeDAI).to.be.bignumber.equal(numOfToken);
+
+                const totalDefinerBalanceAfterDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+                const totalDefinerBalanceChangeUSDC = new BN(
+                    totalDefinerBalanceAfterDepositUSDC[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC[0]));
+                expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
+
+                // Advance blocks by 1 week
+                let block = await web3.eth.getBlock("latest");
+                console.log("block_number", block.number);
+
+                let targetBlock = new BN(block.number).add(BLOCKS_MINED_WEEKLY);
+                await time.advanceBlockTo(targetBlock);
+
+                let blockAfter = await web3.eth.getBlock("latest");
+                console.log("block_number", blockAfter.number);
+
+                // 2. Borrow $0.6 million
+                await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
+                // 3. Verify the amount borrowed
+                const user2Balance = await erc20DAI.balanceOf(user2);
+                expect(user2Balance).to.be.bignumber.equal(borrowTokens);
+
+                const totalDefinerBalanceAfterBorrowtDAIUser1 = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                expect(totalDefinerBalanceAfterBorrowtDAIUser1[0]).to.be.bignumber.equal(
+                    numOfToken
+                );
+
+                const totalDefinerBalanceAfterBorrowtDAIUser2 = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user2 }
+                );
+                expect(totalDefinerBalanceAfterBorrowtDAIUser2[1]).to.be.bignumber.equal(
+                    borrowTokens
+                );
             });
         });
     });
@@ -225,11 +326,11 @@ contract("Integration Tests", async (accounts) => {
                     new BN(100)
                 );
 
+                // Advance blocks by 1 month
                 let block = await web3.eth.getBlock("latest");
                 console.log("block_number", block.number);
 
                 let targetBlock = new BN(block.number).add(BLOCKS_MINED_MONTHLY);
-
                 await time.advanceBlockTo(targetBlock);
 
                 let blockAfter = await web3.eth.getBlock("latest");
@@ -329,11 +430,11 @@ contract("Integration Tests", async (accounts) => {
                 // Total remaining DAI after borrow
                 const remainingDAI = numOfDAI.sub(new BN(collateralLocked));
 
+                // Advance blocks by 1 week
                 let block = await web3.eth.getBlock("latest");
                 console.log("block_number", block.number);
 
                 let targetBlock = new BN(block.number).add(BLOCKS_MINED_WEEKLY);
-
                 await time.advanceBlockTo(targetBlock);
 
                 let blockAfter = await web3.eth.getBlock("latest");
