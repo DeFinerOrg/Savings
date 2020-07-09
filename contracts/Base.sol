@@ -378,31 +378,38 @@ library Base {
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
-        address cToken = self.cTokenAddress[_token];
-        uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
 
         // If it is the first check point, initialize the rate index
         if (self.lastCheckpoint[_token] == 0) {
             self.borrowRateIndex[_token][block.number] = UNIT;
             self.depositeRateIndex[_token][block.number] = UNIT;
         } else {
+            address cToken = self.cTokenAddress[_token];
             if(cToken == address(0)) {
                 self.compoundPool[_token].supported = false;
+
+                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = block.number;
             } else {
                 self.compoundPool[_token].supported = true;
+                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound
                 self.compoundPool[_token].capitalRatio = getCapitalCompoundRatio(self, _token);
                 self.compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 self.compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(self.lastCTokenExchangeRate[cToken])
                     .sub(UNIT).div(block.number.sub(self.lastCheckpoint[_token]));
-            }
-            self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
-            self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
-        }
 
-        // Update the last checkpoint
-        self.lastCheckpoint[_token] = block.number;
-        self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = block.number;
+                self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+            }
+        }
     }
 
     /**
