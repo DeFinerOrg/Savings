@@ -1115,8 +1115,10 @@ contract("Integration Tests", async (accounts) => {
 
                 // 2. User 1 & 2 deposit DAI
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+
                 // Verify deposit
-                const expectedTokensAtSavingAccountContract = numOfDAI
+                /* const expectedTokensAtSavingAccountContract = numOfDAI
                     .mul(new BN(15))
                     .div(new BN(100));
                 const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
@@ -1124,7 +1126,16 @@ contract("Integration Tests", async (accounts) => {
                     balSavingAccount
                 );
 
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 }); */
+
+                // Verify deposit
+                const expectedTokensAtSavingAccountContract = numOfDAI
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                expect(expectedTokensAtSavingAccountContract.mul(new BN(2))).to.be.bignumber.equal(
+                    balSavingAccount
+                );
 
                 // 3. User 1 tries to borrow DAI
                 await expectRevert(
@@ -1156,6 +1167,14 @@ contract("Integration Tests", async (accounts) => {
 
                 // Verify that borrow was successful
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow);
+
+                const totalDefinerBalanceAfterBorrowDAIUser1 = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                expect(totalDefinerBalanceAfterBorrowDAIUser1[1]).to.be.bignumber.equal(
+                    limitAmount
+                );
             });
 
             it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
