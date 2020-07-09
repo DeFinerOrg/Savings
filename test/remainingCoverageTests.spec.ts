@@ -157,10 +157,7 @@ contract("RemainingCoverage", async (accounts) => {
 
                 await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(
-                    user2,
-                    addressDAI
-                );
+                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
                 expect(isAccountLiquidatableStr).equal(true);
                 // should return "True"
             });
@@ -190,10 +187,7 @@ contract("RemainingCoverage", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
-                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(
-                    user2,
-                    addressDAI
-                );
+                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
                 // TODO:
                 // should return "false"
                 //expect(isAccountLiquidatableStr).equal(false);

@@ -265,14 +265,9 @@ contract("SavingAccount.transfer", async (accounts) => {
                 it("Not enough balance for transfer", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
-                    const ETHtransferAmount = new BN(10000).mul(eighteenPrecision);
+                    const ETHtransferAmount = eighteenPrecision.mul(eighteenPrecision);
                     let ETHbalanceOfUser2 = await web3.eth.getBalance(user2);
                     expect(ETHbalanceOfUser2).to.be.bignumber.lessThan(ETHtransferAmount);
-
-                    await savingAccount.deposit(ETH_ADDRESS, ETHtransferAmount.div(new BN(100)), {
-                        value: ETHtransferAmount.div(new BN(100)),
-                        from: user1
-                    });
 
                     await expectRevert(
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {

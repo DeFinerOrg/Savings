@@ -15,7 +15,7 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
       - image: trufflesuite/ganache-cli
-        command: ganache-cli -p 8546 -l 10000000 -e 10000
+        command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
 
     working_directory: ~/repo
 
