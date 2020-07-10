@@ -33,6 +33,7 @@
     "openzeppelin-solidity": "^2.4.0",
     "solc": "0.5.14",
     "solidity-coverage": "^0.7.0-beta.3",
+    "surya": "^0.4.0",
     "truffle": "^5.1.24",
     "truffle-typings": "^1.0.7",
     "ts-generator": "^0.0.8",
