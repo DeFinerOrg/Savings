@@ -650,45 +650,6 @@ library Base {
         return _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0; // Return the remainders
     }
 
-    /**
-	 * Withdraw all tokens from saving pool.
-     * @param _token token address
-	 */
-    function withdrawAll(BaseVariable storage self, address _token) public returns(uint){
-
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(self, _token);
-
-        // sichaoy: move sanity check to the begining
-        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
-        require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
-
-        uint amount = tokenInfo.getDepositBalance(accruedRate);
-        address cToken = self.cTokenAddress[_token];
-        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
-
-        tokenInfo.withdraw(amount, accruedRate);
-
-        // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = tokenInfo.depositInterest.div(10);
-        self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
-        amount = amount.sub(commission);
-
-        // Update pool balance
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        // sichaoy: change this function name to accumulateCompoundInterest()
-        updateTotalCompound(self, _token);
-        // sichaoy: change this function name to accumulateBorrowInterest()
-        updateTotalLoan(self, _token);
-        // sichaoy: change this function to updateTotalPool(), and call the above two functions inside
-        updateTotalReserve(self, _token, amount, ActionChoices.Withdraw); // Last parameter false means withdraw token
-
-        return amount;
-    }
-
     struct LiquidationVars {
         uint256 totalBorrow;
         uint256 totalCollateral;

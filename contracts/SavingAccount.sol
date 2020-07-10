@@ -303,7 +303,7 @@ contract SavingAccount {
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
-        require(_amount < baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
+        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
@@ -348,7 +348,19 @@ contract SavingAccount {
      * @param _token the address of the withdrawn token
      */
     function withdrawAll(address _token) public onlySupported(_token) {
-        uint amount = baseVariable.withdrawAll(_token);
+
+        // Add a new checkpoint on the index curve.
+        baseVariable.newRateIndexCheckpoint(_token);
+
+        // Sanity check
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
+
+        // Get the total amount of token for the account
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint amount = tokenInfo.getDepositBalance(accruedRate);
+
+        withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
     }
 
