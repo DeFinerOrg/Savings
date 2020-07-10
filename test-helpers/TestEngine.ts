@@ -11,7 +11,6 @@ const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenI
 var tokenData = require("../test-helpers/tokenData.json");
 
 var compoundTokens = require("../compound-protocol/networks/development.json");
-console.log("compoundTokens", compoundTokens.Contracts.DAI);
 
 const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
@@ -25,7 +24,7 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
-    public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
+    /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
         await Promise.all(
@@ -45,7 +44,7 @@ export class TestEngine {
         let addr = (await MockCToken.new(ETH_ADDR)).address;
         cTokens.push(addr);
         return cTokens;
-    }
+    } */
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
@@ -60,7 +59,7 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
         erc20TokensFromCompound.push(compoundTokens.Contracts.ETH);
-        console.log("erc20", this.erc20TokensFromCompound);
+        console.log("erc20", erc20TokensFromCompound);
 
         return erc20TokensFromCompound;
     }
@@ -78,12 +77,12 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-        console.log("cTokens", this.cTokensCompound);
+        console.log("cTokens", cTokensCompound);
 
         return cTokensCompound;
     }
 
-    public async deployMockERC20Tokens(): Promise<Array<string>> {
+    /* public async deployMockERC20Tokens(): Promise<Array<string>> {
         const network = process.env.NETWORK;
         const ONE_BILLION = new BN(10).pow(new BN(9));
         const tokensToMint = ONE_BILLION;
@@ -105,7 +104,7 @@ export class TestEngine {
             })
         );
         return erc20TokenAddresses;
-    }
+    } */
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         //var aggregators = new Array();
@@ -139,10 +138,11 @@ export class TestEngine {
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
-        this.erc20Tokens = await this.deployMockERC20Tokens();
-        this.erc20TokensFromCompound = await this.getERC20AddressesFromCompound();
-        this.cTokensCompound = await this.getCompoundAddresses();
-        const cTokens: Array<string> = await this.deployMockCTokens(this.erc20Tokens);
+        //this.erc20Tokens = await this.deployMockERC20Tokens();
+        this.erc20Tokens = await this.getERC20AddressesFromCompound();
+        //this.cTokensCompound = await this.getCompoundAddresses();
+        //const cTokens: Array<string> = await this.deployMockCTokens(this.erc20Tokens);
+        const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
