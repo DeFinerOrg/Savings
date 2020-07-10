@@ -25,6 +25,7 @@
     "@chainlink/contracts": "0.0.3",
     "@codechecks/client": "^0.1.10",
     "@openzeppelin/test-helpers": "^0.5.5",
+    "@openzeppelin/upgrades": "^2.8.0",
     "@typechain/truffle-v5": "^0.9.0",
     "eth-gas-reporter": "^0.2.17",
     "ethlint": "^1.2.5",
