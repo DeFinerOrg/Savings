@@ -252,10 +252,11 @@ contract SavingAccount {
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         //require(amount <= (address(this).balance) / (10**18), "Requested withdraw amount is more than available balance");
+        uint borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint divisor = _token == ETH_ADDR ? UINT_UNIT : 10 ** uint256(IERC20Extended(_token).decimals());
         uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols)
-        .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor));
+        .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor));
         require(totalBorrow.mul(100) <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
         uint amount = baseVariable.withdraw(_token, _amount);
         send(msg.sender, amount, _token);
@@ -265,6 +266,7 @@ contract SavingAccount {
      * Withdraw all tokens from the saving pool.
      */
     function withdrawAll(address _token) public onlySupported(_token) {
+        uint borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint amount = baseVariable.withdrawAll(_token);
         send(msg.sender, amount, _token);
     }

@@ -707,11 +707,6 @@ library Base {
         uint amount = tokenInfo.getDepositBalance(accruedRate);
         address cToken = self.cTokenAddress[_token];
         require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= amount, "Lack of liquidity.");
-        uint divisor = _token == ETH_ADDR ? UINT_UNIT : 10 ** uint256(IERC20Extended(_token).decimals());
-        uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
-        uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols)
-        .add(uint256(amount.mul(symbols.priceFromAddress(_token))).div(divisor));
-        require(totalBorrow.mul(100) <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
 
         tokenInfo.withdraw(amount, accruedRate);
 
