@@ -11,8 +11,9 @@ const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenI
 var tokenData = require("../test-helpers/tokenData.json");
 
 var compoundTokens = require("../compound-protocol/networks/development.json");
-console.log("compoundTokens", compoundTokens.Contracts);
+console.log("compoundTokens", compoundTokens.Contracts.DAI);
 
+const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngine {
@@ -20,6 +21,9 @@ export class TestEngine {
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
+
+    public erc20TokensFromCompound: Array<string> = new Array();
+    public cTokensCompound: Array<string> = new Array();
 
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
@@ -43,24 +47,42 @@ export class TestEngine {
         return cTokens;
     }
 
-    /*    public async compoundAddresses(): Promise<Array<string>> {
+    public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
-        var newCompoundTokens = new Array();
-        await Promise.all(
-            compoundTokens.Contracts.map(async (tokeni: any) => {
-                let addr;
+        var erc20TokensFromCompound = new Array();
+        erc20TokensFromCompound.push(compoundTokens.Contracts.DAI);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.USDC);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.USDT);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.TUSD);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.MKR);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.BAT);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.ETH);
+        console.log("erc20", this.erc20TokensFromCompound);
 
-                // Create MockCToken for given ERC20 token address
-                addr = compoundTokens.Contracts[tokeni];
-                console.log("addre", addr);
-
-                newCompoundTokens.push(addr);
-                console.log("newCompoundTokens", newCompoundTokens);
-            })
-        );
-        return newCompoundTokens;
+        return erc20TokensFromCompound;
     }
- */
+
+    public async getCompoundAddresses(): Promise<Array<string>> {
+        const network = process.env.NETWORK;
+        var cTokensCompound = new Array();
+        cTokensCompound.push(compoundTokens.Contracts.cDAI);
+        cTokensCompound.push(compoundTokens.Contracts.cUSDC);
+        cTokensCompound.push(compoundTokens.Contracts.cUSDT);
+        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(compoundTokens.Contracts.cZRX);
+        cTokensCompound.push(compoundTokens.Contracts.cREP);
+        cTokensCompound.push(compoundTokens.Contracts.cWBTC);
+        cTokensCompound.push(compoundTokens.Contracts.cETH);
+        console.log("cTokens", this.cTokensCompound);
+
+        return cTokensCompound;
+    }
+
     public async deployMockERC20Tokens(): Promise<Array<string>> {
         const network = process.env.NETWORK;
         const ONE_BILLION = new BN(10).pow(new BN(9));
@@ -118,6 +140,8 @@ export class TestEngine {
 
     public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
         this.erc20Tokens = await this.deployMockERC20Tokens();
+        this.erc20TokensFromCompound = await this.getERC20AddressesFromCompound();
+        this.cTokensCompound = await this.getCompoundAddresses();
         const cTokens: Array<string> = await this.deployMockCTokens(this.erc20Tokens);
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
