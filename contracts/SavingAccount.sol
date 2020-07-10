@@ -163,9 +163,9 @@ contract SavingAccount {
         return (addresses, depositBalance, borrowBalance);
     }
 
-    function isAccountLiquidatable(address _borrower, address _token) public view returns (bool) {
-        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold(_token);
-        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_token);
+    function isAccountLiquidatable(address _borrower) public view returns (bool) {
+        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold();
+        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
         uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
@@ -212,7 +212,7 @@ contract SavingAccount {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
         uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols)
-        .add(uint256(_amount.mul(symbols.priceFromAddress(_token))).div(divisor)).mul(100);
+        .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(100);
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
         require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount);
@@ -270,8 +270,8 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address _targetToken) public {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold(_targetToken);
-        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio(_targetToken);
+        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
+        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         baseVariable.liquidate(targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, symbols);
     }
 
