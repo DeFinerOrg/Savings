@@ -636,6 +636,46 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // Verify 2.
                 expect(BN(userTotalBalance[1])).to.be.bignumber.equal(new BN(10));
             });
+            it("Deposit DAI, borrows USDC and wants to withdraw", async () => {
+                /*
+                 * Step 1
+                 * Account 0 deposits 1000 tokens into DeFiner
+                 * DeFiner should have 850 tokens for cTokenDAI and 150 tokens for DAI
+                 */
+                const numOfDAI = eighteenPrecision.mul(new BN(2));
+                const numOfUSDC = sixPrecision;
+                await erc20DAI.transfer(user1, numOfDAI);
+                await erc20USDC.transfer(user2, numOfUSDC);
+                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                /*
+                 * Step 2
+                 * Account 0 borrows 150 tokens from DeFiner
+                 * Then tries to withdraw partially
+                 * Should fail, beacuse user has to repay all the outstandings before withdrawing.
+                 */
+                const borrows = new BN(10);
+                savingAccount.borrow(addressUSDC, borrows, { from: user1 });
+                // await expectRevert(
+                savingAccount.withdraw(erc20DAI.address, new BN(100), { from: user1 });
+                //     "Insufficient collateral."
+                // );
+                const TokenLeft = new BN(await erc20DAI.balanceOf(savingAccount.address));
+                const UserTokenLeft = new BN(await erc20DAI.balanceOf(user1));
+
+                const CTokenLeft = new BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
+                expect(CTokenLeft).to.be.bignumber.equal(new BN(0));
+                expect(TokenLeft).to.be.bignumber.equal(new BN(0));
+                expect(UserTokenLeft).to.be.bignumber.equal(numOfDAI);
+                const userTotalBalance = await savingAccount.tokenBalance(
+                    addressUSDC,
+                    { from: user1 }
+                );
+                // Verify 2.
+                expect(BN(userTotalBalance[1])).to.be.bignumber.equal(new BN(10));
+            });
         });
         context("Withdraw partially multiple times", async () => {
             context("Should succeed", async () => {
