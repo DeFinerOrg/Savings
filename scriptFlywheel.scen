@@ -1,0 +1,104 @@
+#!/usr/bin/env yarn run repl -s
+-- Deploys basic ComptrollerG3
+
+Unitroller Deploy
+PriceOracle Deploy Fixed 1.0
+PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+----g2
+ComptrollerImpl Deploy ScenarioG2 ComptrollerScenG2
+Unitroller SetPendingImpl ComptrollerScenG2
+ComptrollerImpl ComptrollerScenG2 BecomeG2
+--list some tokens
+Comptroller SetPriceOracle (PriceOracleProxy Address)
+Comptroller SetMaxAssets 20
+Comptroller SetCloseFactor 0.5
+Comptroller LiquidationIncentive 1.1
+NewEtherToken cETH
+NewCToken ZRX cZRX
+NewCToken BAT cBAT
+NewCToken DAI cDAI
+NewCToken SAI cSAI
+NewCToken USDC cUSDC
+NewCToken USDT cUSDT
+NewCToken TUSD cTUSD
+NewCToken MKR cMKR
+NewCToken REP cREP
+NewCToken WBTC cWBTC
+Support cZRX collateralFactor:0.5
+Support cBAT collateralFactor:0.5
+Support cDAI collateralFactor:0.5
+Support cSAI collateralFactor:0.5
+Support cUSDC collateralFactor:0.5
+Support cUSDT collateralFactor:0.5
+Support cTUSD collateralFactor:0.5
+Support cMKR collateralFactor:0.5
+Support cREP collateralFactor:0.5
+Support cWBTC collateralFactor:0.5
+-- final
+ComptrollerImpl Deploy Scenario ComptrollerScen
+Unitroller SetPendingImpl ComptrollerScen
+
+Comptroller SupportMarket cETH
+
+Prep Geoff 100e18 ZRX cZRX
+Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 DAI cDAI
+Mint Geoff 50e18 cDAI--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 SAI cSAI
+Mint Geoff 50e18 cSAI--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 USDC cUSDC
+Mint Geoff 50e18 cUSDC--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 USDT cUSDT
+Mint Geoff 50e18 cUSDT--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 TUSD cTUSD
+Mint Geoff 50e18 cTUSD--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 MKR cMKR
+Mint Geoff 50e18 cMKR--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 REP cREP
+Mint Geoff 50e18 cREP--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+Prep Geoff 100e18 WBTC cWBTC
+Mint Geoff 50e18 cWBTC--tokenbalance = 50e18 / 2e9 = 2.5e10
+
+PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI) (Address cUSDT)
+
+Prep Fourth Some BAT cBAT
+Mint Fourth 6e18 cBAT
+EnterMarkets Fourth cBAT
+Borrow Fourth 1e18 cZRX
+
+Prep Fifth Some BAT cBAT
+Mint Fifth 6e18 cBAT
+EnterMarkets Fifth cBAT
+Borrow Fifth 1e18 cZRX
+
+Prep Sixth Some BAT cBAT
+Mint Sixth 6e18 cBAT
+EnterMarkets Sixth cBAT
+Borrow Sixth 1e18 cZRX
+
+Prep Seventh Some BAT cBAT
+Mint Seventh 6e18 cBAT
+EnterMarkets Seventh cBAT
+Borrow Seventh 1e18 cZRX
+
+ComptrollerImpl ComptrollerScen Become 1e18 [cZRX cBAT]
+Erc20 Deploy Standard COMP "COMP Token" 18
+Give (Address Comptroller) 5000000e18 COMP
+Comptroller Send "setCompAddress(address)" (Address COMP)
+
+Comptroller RefreshCompSpeeds
+
+FastForward 300000 Blocks
+Read (Comptroller Address)
+Read (Address Fourth)
+Read (Address Fifth)
+Read (Address Sixth)
+Read (Address Seventh)
