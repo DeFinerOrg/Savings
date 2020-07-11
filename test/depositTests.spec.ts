@@ -57,8 +57,8 @@ contract("SavingAccount.deposit", async (accounts) => {
         erc20MKR = await MockERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+        //cTokenDAI = await MockCToken.at(addressCTokenForDAI);
+        //cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
 
     context("deposit()", async () => {
