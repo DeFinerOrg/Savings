@@ -587,39 +587,6 @@ library Base {
         return borrowETH;
     }
 
-    /**
-     * Repay the amount of token to the saving pool.
-     * @param _token the address of the repaid token
-     * @param _amount the mount of the repaid token
-     * @return the remainders of the token after repay
-     */
-    function repay(BaseVariable storage self, address _token, uint256 _amount) public returns(uint) {
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-
-        // Sanity check
-        require(tokenInfo.getBorrowPrincipal() > 0,
-            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
-        );
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(self, _token);
-
-        // Update tokenInfo
-        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getLastBorrowBlock());
-        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
-
-        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        tokenInfo.repay(amount, rate);
-
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        updateTotalCompound(self, _token);
-        updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, amount, ActionChoices.Repay); // Last parameter true means repay token
-
-        return _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0; // Return the remainders
-    }
-
     struct LiquidationVars {
         uint256 totalBorrow;
         uint256 totalCollateral;
