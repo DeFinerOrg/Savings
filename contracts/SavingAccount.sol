@@ -219,17 +219,41 @@ contract SavingAccount {
      * @param _amount amout of tokens to borrow
      */
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
+
         require(_amount != 0, "Amount is zero");
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        // sichaoy: will be removed later
+        require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
+
+        // Add a new checkpoint on the index curve.
+        baseVariable.newRateIndexCheckpoint(_token);
+
+        // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        uint divisor = UINT_UNIT;
+        uint divisor = SafeDecimalMath.getUINT_UNIT();
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols)
-        .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(100);
-        uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
-        require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
-        baseVariable.borrow(_token, _amount);
+        require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
+            <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+
+        // sichaoy: all the sanity checks should be before the operations???
+        // Check if there are enough tokens in the pool.
+        address cToken = baseVariable.cTokenAddress[_token];
+        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+
+        // Update tokenInfo for the user
+        // TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.borrow(_amount, accruedRate);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
+
         send(msg.sender, _amount, _token);
     }
 
@@ -289,12 +313,16 @@ contract SavingAccount {
         account.setInDepositBitmap(tokenRegistry.getTokenIndex(_token));
     }
 
+
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
     }
 
+    /**
+     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
+     */
     function withdraw(address _from, address _token, uint256 _amount) internal returns(uint) {
 
         require(_amount != 0, "Amount is zero");
@@ -311,11 +339,8 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-
-        uint totalDeposit = baseVariable.getDepositETH(_from, symbols);
-        uint withdrawValue = _amount.mul(symbols.priceFromAddress(_token)).div(divisor);
-        uint remainingDeposit = totalDeposit.sub(withdrawValue);
-        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= remainingDeposit.mul(borrowLTV), "Insufficient collateral.");
+        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
+            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.

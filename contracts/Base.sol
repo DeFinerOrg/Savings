@@ -588,36 +588,6 @@ library Base {
     }
 
     /**
-     * Borrow the amount of token from the saving pool.
-     * @param _token the address of the borrowed token
-     * @param _amount the mount of the borrowed token
-     */
-    function borrow(BaseVariable storage self, address _token, uint256 _amount) public {
-        require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
-        require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(self, _token);
-
-        // Sanity check
-        // sichaoy: Sanity check should be the first step in a function
-        address cToken = self.cTokenAddress[_token];
-
-        require(self.totalReserve[_token].add(self.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
-
-        // Update tokenInfo
-        uint rate = getBorrowAccruedRate(self, _token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.borrow(_amount, rate);
-
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        updateTotalCompound(self, _token);
-        updateTotalLoan(self, _token);
-        updateTotalReserve(self, _token, _amount, ActionChoices.Borrow); // Last parameter false means borrow token
-    }
-
-    /**
      * Repay the amount of token to the saving pool.
      * @param _token the address of the repaid token
      * @param _amount the mount of the repaid token
