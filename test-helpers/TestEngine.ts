@@ -12,7 +12,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 var compoundTokens = require("../compound-protocol/networks/development.json");
 
-const addressZero: string = "0x0000000000000000000000000000000000000000";
+const addressZero: string = "0x0000000000000000000000000000000000000001";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngine {
@@ -58,7 +58,6 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.ETH);
         console.log("erc20", erc20TokensFromCompound);
 
         return erc20TokensFromCompound;
@@ -71,8 +70,8 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cUSDC);
         cTokensCompound.push(compoundTokens.Contracts.cUSDT);
         cTokensCompound.push(compoundTokens.Contracts.cTUSD);
-        cTokensCompound.push(addressZero);
-        cTokensCompound.push(addressZero);
+        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
+        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
