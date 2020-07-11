@@ -222,8 +222,6 @@ contract SavingAccount {
 
         require(_amount != 0, "Amount is zero");
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        // sichaoy: will be removed later
-        require(tokenInfo.getDepositPrincipal() == 0, "Token depositPrincipal must be zero.");
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
