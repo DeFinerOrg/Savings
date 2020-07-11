@@ -40,6 +40,7 @@ Unitroller SetPendingImpl ComptrollerScen
 
 Comptroller SupportMarket cETH
 
+-- replace these with `first`
 Prep Geoff 100e18 ZRX cZRX
 Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
 
