@@ -41,32 +41,32 @@ Unitroller SetPendingImpl ComptrollerScen
 Comptroller SupportMarket cETH
 
 -- replace these with `first`
-Prep Geoff 100e18 ZRX cZRX
-Mint Geoff 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 ZRX cZRX
+Mint first 50e18 cZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 DAI cDAI
-Mint Geoff 50e18 cDAI--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 DAI cDAI
+Mint first 50e18 cDAI--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 SAI cSAI
-Mint Geoff 50e18 cSAI--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 SAI cSAI
+Mint first 50e18 cSAI--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 USDC cUSDC
-Mint Geoff 50e18 cUSDC--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 USDC cUSDC
+Mint first 50e18 cUSDC--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 USDT cUSDT
-Mint Geoff 50e18 cUSDT--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 USDT cUSDT
+Mint first 50e18 cUSDT--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 TUSD cTUSD
-Mint Geoff 50e18 cTUSD--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 TUSD cTUSD
+Mint first 50e18 cTUSD--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 MKR cMKR
-Mint Geoff 50e18 cMKR--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 MKR cMKR
+Mint first 50e18 cMKR--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 REP cREP
-Mint Geoff 50e18 cREP--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 REP cREP
+Mint first 50e18 cREP--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Geoff 100e18 WBTC cWBTC
-Mint Geoff 50e18 cWBTC--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep first 100e18 WBTC cWBTC
+Mint first 50e18 cWBTC--tokenbalance = 50e18 / 2e9 = 2.5e10
 
 PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI) (Address cUSDT)
 
