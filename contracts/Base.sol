@@ -70,41 +70,53 @@ library Base {
         }
     }
 
-    function getDepositBitmap(Account storage self) public view returns (uint128) {
-        return self.depositBitmap;
+//    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
+//        Account storage account = self.accounts[_account];
+//        return account.depositBitmap;
+//    }
+
+    function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
+        Account storage account = self.accounts[_account];
+        return account.depositBitmap > 0;
     }
 
-    function isUserHasAnyDeposits(Account storage self) public view returns (bool) {
-        return self.depositBitmap > 0;
+    function isUserHasDeposits(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
+        Account storage account = self.accounts[_account];
+        return account.depositBitmap.isBitSet(_index);
     }
 
-    function getBorrowBitmap(Account storage self) public view returns (uint128) {
-        return self.borrowBitmap;
+//    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
+//        Account storage account = self.accounts[_account];
+//        return account.borrowBitmap;
+//    }
+
+    function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
+        Account storage account = self.accounts[_account];
+        return account.borrowBitmap > 0;
     }
 
-    function isUserHasAnyBorrows(Account storage self) public view returns (bool) {
-        return self.borrowBitmap > 0;
+    function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
+        Account storage account = self.accounts[_account];
+        return account.borrowBitmap.isBitSet(_index);
     }
 
-    function setInDepositBitmap(Account storage self, uint8 _index) public {
-        self.depositBitmap = self.depositBitmap.setBit(_index);
-    }
-
-    /*
-    function setInDepositBitmap(Account storage account, uint8 _index) public {
+    function setInDepositBitmap(BaseVariable storage self, address _account, uint8 _index) public {
+        Account storage account = self.accounts[_account];
         account.depositBitmap = account.depositBitmap.setBit(_index);
     }
-    */
 
-    function unsetFromDepositBitmap(Account storage account, uint8 _index) public {
+    function unsetFromDepositBitmap(BaseVariable storage self, address _account, uint8 _index) public {
+        Account storage account = self.accounts[_account];
         account.depositBitmap = account.depositBitmap.unsetBit(_index);
     }
 
-    function setInBorrowBitmap(Account storage account, uint8 _index) public {
+    function setInBorrowBitmap(BaseVariable storage self, address _account, uint8 _index) public {
+        Account storage account = self.accounts[_account];
         account.borrowBitmap = account.borrowBitmap.setBit(_index);
     }
 
-    function unsetFromBorrowBitmap(Account storage account, uint8 _index) public {
+    function unsetFromBorrowBitmap(BaseVariable storage self, address _account, uint8 _index) public {
+        Account storage account = self.accounts[_account];
         account.borrowBitmap = account.borrowBitmap.unsetBit(_index);
     }
 
@@ -556,12 +568,14 @@ library Base {
     ) public view returns (uint256 depositETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            address tokenAddress = _symbols.addressFromIndex(i);
-            uint divisor = INT_UNIT;
-            if(tokenAddress != ETH_ADDR) {
-                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+            if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
+                address tokenAddress = _symbols.addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
+                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                }
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
             }
-            depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
         return depositETH;
     }
@@ -577,12 +591,14 @@ library Base {
     ) public view returns (uint256 borrowETH) {
         //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
-            address tokenAddress = _symbols.addressFromIndex(i);
-            uint divisor = INT_UNIT;
-            if(tokenAddress != ETH_ADDR) {
-                divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+            if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
+                address tokenAddress = _symbols.addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
+                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                }
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
             }
-            borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
         }
         return borrowETH;
     }
@@ -606,6 +622,7 @@ library Base {
         uint256 targetTokenAmount;
         uint256 tokenAmount;
         uint256 tokenDivisor;
+        uint256 msgTokenAccruedRate;
     }
 
     function liquidate(
@@ -615,6 +632,7 @@ library Base {
         uint borrowLTV,
         uint liquidationThreshold,
         uint liquidationDiscountRatio,
+        uint8 _tokenIndex,
         SymbolsLib.Symbols storage symbols
     ) public {
         LiquidationVars memory vars;
@@ -652,10 +670,7 @@ library Base {
             "The account amount must be greater than zero."
         );
 
-        uint divisor = INT_UNIT;
-        if(_targetToken != ETH_ADDR) {
-            divisor = 10**uint256(IERC20Extended(_targetToken).decimals());
-        }
+        uint divisor = _targetToken == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(_targetToken).decimals());
 
         //被清算者需要清算掉的资产  (Liquidated assets that need to be liquidated)
         vars.liquidationDebtValue = vars.totalBorrow.sub(
@@ -686,44 +701,59 @@ library Base {
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
+        if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
+            unsetFromDepositBitmap(self, msg.sender, _tokenIndex);
+        }
+
         targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
+        if(targetTokenInfo.getBorrowPrincipal() == 0) {
+            unsetFromBorrowBitmap(self, targetAccountAddr, _tokenIndex);
+        }
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
             vars.token = symbols.addressFromIndex(i);
-            vars.tokenPrice = symbols.priceFromIndex(i);
+            if(isUserHasDeposits(self, targetAccountAddr, uint8(i))) {
+                vars.tokenPrice = symbols.priceFromIndex(i);
 
-            vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+                vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
 
-            TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
+                TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[targetAccountAddr].tokenInfos[vars.token];
 
-            if(tokenInfo.getBorrowPrincipal() == 0) {
-                TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
-                newRateIndexCheckpoint(self, vars.token);
+                if(tokenInfo.getBorrowPrincipal() == 0) {
+                    TokenInfoLib.TokenInfo storage msgTokenInfo = self.accounts[msg.sender].tokenInfos[vars.token];
+                    newRateIndexCheckpoint(self, vars.token);
 
-                //清算者当前tokenRate
-                uint msgTokenAccruedRate =
-                msgTokenInfo.getBorrowPrincipal() > 0 ?
-                getBorrowAccruedRate(self, vars.token, msgTokenInfo.getLastBorrowBlock())
-                :
-                getDepositAccruedRate(self, vars.token, msgTokenInfo.getLastDepositBlock());
+                    //清算者当前tokenRate
+                    vars.msgTokenAccruedRate =
+                    msgTokenInfo.getBorrowPrincipal() > 0 ?
+                    getBorrowAccruedRate(self, vars.token, msgTokenInfo.getLastBorrowBlock())
+                    :
+                    getDepositAccruedRate(self, vars.token, msgTokenInfo.getLastDepositBlock());
 
+                    //被清算者当前tokenRate
+                    vars.tokenAccruedRate = getDepositAccruedRate(self, vars.token, tokenInfo.getLastDepositBlock());
+                    vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                    if(vars.coinValue > vars.liquidationDebtValue) {
+                        vars.coinValue = vars.liquidationDebtValue;
+                        vars.liquidationDebtValue = 0;
+                    } else {
+                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+                    }
+                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+                    if(tokenInfo.getDepositPrincipal() == 0) {
+                        unsetFromDepositBitmap(self, targetAccountAddr, _tokenIndex);
+                    }
 
-                //被清算者当前tokenRate
-                vars.tokenAccruedRate = getDepositAccruedRate(self, vars.token, tokenInfo.getLastDepositBlock());
-                vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
-                if(vars.coinValue > vars.liquidationDebtValue) {
-                    vars.coinValue = vars.liquidationDebtValue;
-                    vars.liquidationDebtValue = 0;
-                } else {
-                    vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+                    if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
+                        setInDepositBitmap(self, msg.sender, _tokenIndex);
+                    }
+                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
                 }
-                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
-                msgTokenInfo.deposit(vars.tokenAmount, msgTokenAccruedRate);
             }
 
-            if(vars.liquidationDebtValue == 0){
+            if(vars.liquidationDebtValue == 0) {
                 break;
             }
         }

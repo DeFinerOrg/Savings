@@ -181,7 +181,7 @@ contract SavingAccount {
         return false;
     }
 
-    function getCoinLength() public view returns(uint256 length){
+    function getCoinLength() public view returns(uint256 length) {
         return symbols.getCoinLength();
     }
 
@@ -221,7 +221,7 @@ contract SavingAccount {
     function borrow(address _token, uint256 _amount) public onlySupported(_token) {
 
         require(_amount != 0, "Amount is zero");
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -241,9 +241,12 @@ contract SavingAccount {
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        // TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
         uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.borrow(_amount, accruedRate);
+
+        // Set the borrow bitmap
+        baseVariable.setInBorrowBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -252,6 +255,7 @@ contract SavingAccount {
         baseVariable.updateTotalLoan(_token);
         baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
 
+        // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
     }
 
@@ -280,6 +284,10 @@ contract SavingAccount {
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         tokenInfo.repay(amount, rate);
+
+        // Unset borrow bitmap if the balance is fully repaid
+        if(tokenInfo.getBorrowPrincipal() == 0)
+            baseVariable.unsetFromBorrowBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -315,8 +323,7 @@ contract SavingAccount {
     function deposit(address _to, address _token, uint256 _amount) internal {
 
         require(_amount != 0, "Amount is zero");
-        Base.Account storage account = baseVariable.accounts[_to];
-        TokenInfoLib.TokenInfo storage tokenInfo = account.tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_to].tokenInfos[_token];
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -325,14 +332,14 @@ contract SavingAccount {
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.deposit(_amount, accruedRate);
 
+        // Set the deposit bitmap
+        baseVariable.setInDepositBitmap(_to, tokenRegistry.getTokenIndex(_token));
+
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
         baseVariable.updateTotalLoan(_token);
         baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
-
-        // Set the deposit bitmap
-        account.setInDepositBitmap(tokenRegistry.getTokenIndex(_token));
     }
 
 
@@ -373,6 +380,10 @@ contract SavingAccount {
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate);
+
+        // Unset deposit bitmap if the deposit is fully withdrawn
+        if(tokenInfo.getBorrowPrincipal() == 0)
+            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
@@ -419,7 +430,9 @@ contract SavingAccount {
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
         uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
         uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
-        baseVariable.liquidate(targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, symbols);
+        baseVariable.liquidate(
+            targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_targetToken), symbols
+        );
     }
 
     function recycleCommunityFund(address _token) public {
