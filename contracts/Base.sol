@@ -543,6 +543,7 @@ library Base {
         address _activeAccount,
         address _token,
         uint _amount,
+        uint8 _tokenIndex,
         SymbolsLib.Symbols storage symbols
     ) public {
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
@@ -639,7 +640,7 @@ library Base {
      * @param _amount the mount of the borrowed token
      */
 
-    function borrow(BaseVariable storage self, address _token, uint256 _amount) public {
+    function borrow(BaseVariable storage self, address _token, uint256 _amount, uint8 _tokenIndex) public {
         require(isUserHasAnyDeposits(self.accounts[msg.sender]), "User not have any deposits");
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
 

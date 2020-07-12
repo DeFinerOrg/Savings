@@ -215,7 +215,7 @@ contract SavingAccount {
         .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(100);
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
         require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
-        baseVariable.borrow(_token, _amount);
+        baseVariable.borrow(_token, _amount, tokenRegistry.getTokenIndex(_token));
         send(msg.sender, _amount, _token);
     }
 
@@ -225,7 +225,7 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        uint money = baseVariable.repay(_token, _amount);
+        uint money = baseVariable.repay(_token, _amount, tokenRegistry.getTokenIndex(_token));
         if(money != 0) {
             send(msg.sender, money, _token);
         }
@@ -258,7 +258,7 @@ contract SavingAccount {
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols)
         .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor));
         require(totalBorrow.mul(100) <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
-        uint amount = baseVariable.withdraw(_token, _amount);
+        uint amount = baseVariable.withdraw(_token, _amount, tokenRegistry.getTokenIndex(_token));
         send(msg.sender, amount, _token);
     }
 
@@ -267,7 +267,7 @@ contract SavingAccount {
      */
     function withdrawAll(address _token) public onlySupported(_token) {
         uint borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        uint amount = baseVariable.withdrawAll(_token);
+        uint amount = baseVariable.withdrawAll(_token, tokenRegistry.getTokenIndex(_token));
         send(msg.sender, amount, _token);
     }
 
@@ -279,7 +279,9 @@ contract SavingAccount {
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
         uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
         uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
-        baseVariable.liquidate(targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, symbols);
+        baseVariable.liquidate(
+            targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_token), symbols
+        );
     }
 
     function recycleCommunityFund(address _token) public {
