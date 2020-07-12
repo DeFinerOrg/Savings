@@ -15,7 +15,7 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.req
     "MockChainLinkAggregator"
 );
 
-contract("SavingAccount.liquidate", async (accounts) => {
+contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -126,10 +126,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
         // Set DAI, USDC, USDT, TUSD to the same price for convenience
-        let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-        await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
-        await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
-        await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+        // let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+        // await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
+        // await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
+        // await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
     });
 
     // extra tests by Yichun
