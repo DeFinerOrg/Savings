@@ -280,7 +280,7 @@ contract SavingAccount {
         uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
         uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
         baseVariable.liquidate(
-            targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_token), symbols
+            targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_targetToken), symbols
         );
     }
 
