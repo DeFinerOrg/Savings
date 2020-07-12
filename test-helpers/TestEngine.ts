@@ -58,7 +58,7 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
-        console.log("erc20", erc20TokensFromCompound);
+        //console.log("erc20", erc20TokensFromCompound);
 
         return erc20TokensFromCompound;
     }
@@ -76,7 +76,7 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-        console.log("cTokens", cTokensCompound);
+        //console.log("cTokens", cTokensCompound);
 
         return cTokensCompound;
     }
