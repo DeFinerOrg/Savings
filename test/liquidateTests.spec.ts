@@ -168,16 +168,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
-                    );
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
 
                     await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
-                    );
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
                 });
@@ -210,15 +204,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
                     // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
-                    );
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
                     await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user2,
-                        addressDAI
-                    );
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                 });
@@ -249,15 +237,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user1,
-                        addressUSDC
-                    );
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user1,
-                        addressUSDC
-                    );
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
                 });
@@ -289,15 +271,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
                     // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                        user1,
-                        addressUSDC
-                    );
+                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                        user1,
-                        addressUSDC
-                    );
+                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                 });
@@ -382,15 +358,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     //     .div(new BN(10));
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // // 4. Start liquidation.
-                    // const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                    //     user1,
-                    //     ETH_ADDRESS
-                    // );
+                    // const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     // await savingAccount.liquidate(user1, ETH_ADDRESS);
-                    // const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                    //     user1,
-                    //     ETH_ADDRESS
-                    // );
+                    // const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     // expect(liquidateBefore).to.equal(true);
                     // expect(liquidateAfter).to.equal(true);
                 });
@@ -421,15 +391,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     //     .div(new BN(10));
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // // 4. Start liquidation.
-                    // const liquidateBefore = await savingAccount.isAccountLiquidatable(
-                    //     user1,
-                    //     ETH_ADDRESS
-                    // );
+                    // const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
                     // await savingAccount.liquidate(user1, ETH_ADDRESS);
-                    // const liquidateAfter = await savingAccount.isAccountLiquidatable(
-                    //     user1,
-                    //     ETH_ADDRESS
-                    // );
+                    // const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     // expect(liquidateBefore).to.equal(true);
                     // expect(liquidateAfter).to.equal(false);
                 });
