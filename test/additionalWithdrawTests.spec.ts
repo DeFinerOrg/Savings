@@ -231,153 +231,153 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // });
             });
         });
-        1.3 Feature in DeFiner is not implemented yet.
-            context("When withdrawing an amount of value that is larger than the total tokens DeFiner has", async () => {
-                context("should succeed", async () => {
-                    // TODO: Failed test
-                    it("Uses DAI, 18 decimals", async () => {
-                        const numOfDAIs = new BN(1).mul(eighteenPrecision);
-                        const numOfUSDCs = new BN(1).mul(sixPrecision);
-                        /*
-                         * Step 1
-                         * Assign 10^18 DAI to user1 and Assign 10^6 USDC to user2
-                         * Then deposit all these tokens to DeFiner
-                         */
-                        await erc20DAI.transfer(user1, numOfDAIs);
-                        await erc20USDC.transfer(user2, numOfUSDCs);
-                        await erc20DAI.approve(savingAccount.address, numOfDAIs, { from: user1 });
-                        await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
-                        await savingAccount.deposit(addressDAI, numOfDAIs, { from: user1 });
-                        await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
-                        /*
-                         * Step 2
-                         * User2 borrows 5x10^17 DAI from DeFiner
-                         * Now Definer only has 5x10^17 DAI tokens in total
-                         * User1 tries to withdraw all the tokens from DeFiner
-                         */
-                        savingAccount.borrow(addressDAI, numOfDAIs.div(new BN(2)), { from: user2 });
-                        /*
-                         * Step 3
-                         * User1 withdraw all the 10^18 DAI tokens from DeFiner
-                         * To verify:
-                         * 1. The DAI tokens in user 1 raised by 10^18
-                         */
-                        let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
-                        await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
-                        let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
-                        const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                            BN(userBalanceBeforeWithdraw)
-                        );
-                        // Verify 1.
-                        expect(numOfDAIs).to.be.bignumber.equal(userBalanceDiff);
-                    });
-                    it("Uses USDC, 6 decimals", async () => {
-                        const numOfDAIs = new BN(1).mul(eighteenPrecision);
-                        const numOfUSDCs = new BN(1).mul(sixPrecision);
-                        /*
-                         * Step 1
-                         * Assign 10^18 DAI to user2 and Assign 10^6 USDC to user1
-                         * Then deposit all these tokens to DeFiner
-                         */
-                        await erc20DAI.transfer(user2, numOfDAIs);
-                        await erc20USDC.transfer(user1, numOfUSDCs);
-                        await erc20DAI.approve(savingAccount.address, numOfDAIs, { from: user2 });
-                        await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user1 });
-                        await savingAccount.deposit(addressDAI, numOfDAIs, { from: user2 });
-                        await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user1 });
-                        /*
-                         * Step 2
-                         * User2 borrows 5x10^5 USDC from DeFiner
-                         * Now Definer only has 5x10^5 USDC tokens in total
-                         * User1 tries to withdraw all the tokens from DeFiner
-                         */
-                        savingAccount.borrow(addressUSDC, numOfUSDCs.div(new BN(2)), { from: user2 });
-                        /*
-                         * Step 3
-                         * User1 withdraw all the 10^6 USDC tokens from DeFiner
-                         * To verify:
-                         * 1. The USDC tokens in user 1 raised by 10^18
-                         */
-                        let userBalanceBeforeWithdraw = await erc20USDC.balanceOf(owner);
-                        await savingAccount.withdrawAll(erc20USDC.address, { from: user1 });
-                        let userBalanceAfterWithdraw = await erc20USDC.balanceOf(owner);
-                        const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                            BN(userBalanceBeforeWithdraw)
-                        );
-                        // Verify 1.
-                        expect(numOfUSDCs).to.be.bignumber.equal(userBalanceDiff);
-                    });
-                    it("Uses WBTC, 8 decimals", async () => {
-                        const numOfWBTCs = new BN(1).mul(eightPrecision);
-                        const numOfUSDCs = new BN(1).mul(sixPrecision);
-                        /*
-                         * Step 1
-                         * Assign 10^8 WBTC to user1 and Assign 10^6 USDC to user2
-                         * Then deposit all these tokens to DeFiner
-                         */
-                        await erc20WBTC.transfer(user1, numOfWBTCs);
-                        await erc20USDC.transfer(user2, numOfUSDCs);
-                        await erc20WBTC.approve(savingAccount.address, numOfWBTCs, { from: user1 });
-                        await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
-                        await savingAccount.deposit(addressWBTC, numOfWBTCs, { from: user1 });
-                        await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
-                        /*
-                         * Step 2
-                         * User2 borrows 10^4 WBTC from DeFiner
-                         * Now Definer only has 10^8 - 10^4 tokens in total
-                         * User1 tries to withdraw all the tokens from DeFiner
-                         */
-                        savingAccount.borrow(addressWBTC, new BN(1000), { from: user2 });
-                        /*
-                         * Step 3
-                         * User1 withdraw all the 10^8 WBTC tokens from DeFiner
-                         * To verify:
-                         * 1. The WBTC tokens in user 1 raised by 10^8
-                         */
-                        let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
-                        await savingAccount.withdrawAll(erc20WBTC.address, { from: user1 });
-                        let userBalanceAfterWithdraw = await erc20WBTC.balanceOf(owner);
-                        const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                            BN(userBalanceBeforeWithdraw)
-                        );
-                        // Verify 1.
-                        expect(numOfWBTCs).to.be.bignumber.equal(userBalanceDiff);
-                    });
-                });
-                context("should fail", async () => {
-                    it("use TUSD, so DeFiner can't borrow it from Compound since it's not uspported by Compound", async () => {
-                        const numOfTUSDs = new BN(1).mul(eighteenPrecision);
-                        const numOfUSDCs = new BN(1).mul(sixPrecision);
-                        /*
-                         * Step 1
-                         * Assign 10^18 TUSD to user1 and Assign 10^6 USDC to user2
-                         * Then deposit all these tokens to DeFiner
-                         */
-                        await erc20TUSD.transfer(user1, numOfTUSDs);
-                        await erc20USDC.transfer(user2, numOfUSDCs);
-                        await erc20TUSD.approve(savingAccount.address, numOfTUSDs, { from: user1 });
-                        await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
-                        await savingAccount.deposit(addressTUSD, numOfTUSDs, { from: user1 });
-                        await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
-                        /*
-                         * Step 2
-                         * User2 borrows 5x10^17 TUSD from DeFiner
-                         * Now Definer only has 5x10^17 TUSD tokens in total
-                         * User1 tries to withdraw all the tokens from DeFiner
-                         */
-                        savingAccount.borrow(addressTUSD, numOfTUSDs.div(new BN(2)), { from: user2 });
-                        /*
-                         * Step 3
-                         * User1 withdraw all the 10^18 TUSD tokens from DeFiner
-                         * It should fail.
-                         */
-                        await expectRevert(
-                            savingAccount.withdrawAll(erc20TUSD.address, { from: user1 }),
-                            "Lack of liquidity."
-                        );
-                    });
-                });
-            });
+        // 1.3 Feature in DeFiner is not implemented yet.
+        // context("When withdrawing an amount of value that is larger than the total tokens DeFiner has", async () => {
+        //     context("should succeed", async () => {
+        //         // TODO: Failed test
+        //         it("Uses DAI, 18 decimals", async () => {
+        //             const numOfDAIs = new BN(1).mul(eighteenPrecision);
+        //             const numOfUSDCs = new BN(1).mul(sixPrecision);
+        //             /*
+        //              * Step 1
+        //              * Assign 10^18 DAI to user1 and Assign 10^6 USDC to user2
+        //              * Then deposit all these tokens to DeFiner
+        //              */
+        //             await erc20DAI.transfer(user1, numOfDAIs);
+        //             await erc20USDC.transfer(user2, numOfUSDCs);
+        //             await erc20DAI.approve(savingAccount.address, numOfDAIs, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
+        //             await savingAccount.deposit(addressDAI, numOfDAIs, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
+        //             /*
+        //              * Step 2
+        //              * User2 borrows 5x10^17 DAI from DeFiner
+        //              * Now Definer only has 5x10^17 DAI tokens in total
+        //              * User1 tries to withdraw all the tokens from DeFiner
+        //              */
+        //             savingAccount.borrow(addressDAI, numOfDAIs.div(new BN(2)), { from: user2 });
+        //             /*
+        //              * Step 3
+        //              * User1 withdraw all the 10^18 DAI tokens from DeFiner
+        //              * To verify:
+        //              * 1. The DAI tokens in user 1 raised by 10^18
+        //              */
+        //             let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+        //             await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
+        //             let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(numOfDAIs).to.be.bignumber.equal(userBalanceDiff);
+        //         });
+        //         it("Uses USDC, 6 decimals", async () => {
+        //             const numOfDAIs = new BN(1).mul(eighteenPrecision);
+        //             const numOfUSDCs = new BN(1).mul(sixPrecision);
+        //             /*
+        //              * Step 1
+        //              * Assign 10^18 DAI to user2 and Assign 10^6 USDC to user1
+        //              * Then deposit all these tokens to DeFiner
+        //              */
+        //             await erc20DAI.transfer(user2, numOfDAIs);
+        //             await erc20USDC.transfer(user1, numOfUSDCs);
+        //             await erc20DAI.approve(savingAccount.address, numOfDAIs, { from: user2 });
+        //             await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user1 });
+        //             await savingAccount.deposit(addressDAI, numOfDAIs, { from: user2 });
+        //             await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user1 });
+        //             /*
+        //              * Step 2
+        //              * User2 borrows 5x10^5 USDC from DeFiner
+        //              * Now Definer only has 5x10^5 USDC tokens in total
+        //              * User1 tries to withdraw all the tokens from DeFiner
+        //              */
+        //             savingAccount.borrow(addressUSDC, numOfUSDCs.div(new BN(2)), { from: user2 });
+        //             /*
+        //              * Step 3
+        //              * User1 withdraw all the 10^6 USDC tokens from DeFiner
+        //              * To verify:
+        //              * 1. The USDC tokens in user 1 raised by 10^18
+        //              */
+        //             let userBalanceBeforeWithdraw = await erc20USDC.balanceOf(owner);
+        //             await savingAccount.withdrawAll(erc20USDC.address, { from: user1 });
+        //             let userBalanceAfterWithdraw = await erc20USDC.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(numOfUSDCs).to.be.bignumber.equal(userBalanceDiff);
+        //         });
+        //         it("Uses WBTC, 8 decimals", async () => {
+        //             const numOfWBTCs = new BN(1).mul(eightPrecision);
+        //             const numOfUSDCs = new BN(1).mul(sixPrecision);
+        //             /*
+        //              * Step 1
+        //              * Assign 10^8 WBTC to user1 and Assign 10^6 USDC to user2
+        //              * Then deposit all these tokens to DeFiner
+        //              */
+        //             await erc20WBTC.transfer(user1, numOfWBTCs);
+        //             await erc20USDC.transfer(user2, numOfUSDCs);
+        //             await erc20WBTC.approve(savingAccount.address, numOfWBTCs, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
+        //             await savingAccount.deposit(addressWBTC, numOfWBTCs, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
+        //             /*
+        //              * Step 2
+        //              * User2 borrows 10^4 WBTC from DeFiner
+        //              * Now Definer only has 10^8 - 10^4 tokens in total
+        //              * User1 tries to withdraw all the tokens from DeFiner
+        //              */
+        //             savingAccount.borrow(addressWBTC, new BN(1000), { from: user2 });
+        //             /*
+        //              * Step 3
+        //              * User1 withdraw all the 10^8 WBTC tokens from DeFiner
+        //              * To verify:
+        //              * 1. The WBTC tokens in user 1 raised by 10^8
+        //              */
+        //             let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
+        //             await savingAccount.withdrawAll(erc20WBTC.address, { from: user1 });
+        //             let userBalanceAfterWithdraw = await erc20WBTC.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(numOfWBTCs).to.be.bignumber.equal(userBalanceDiff);
+        //         });
+        //     });
+        //     context("should fail", async () => {
+        //         it("use TUSD, so DeFiner can't borrow it from Compound since it's not uspported by Compound", async () => {
+        //             const numOfTUSDs = new BN(1).mul(eighteenPrecision);
+        //             const numOfUSDCs = new BN(1).mul(sixPrecision);
+        //             /*
+        //              * Step 1
+        //              * Assign 10^18 TUSD to user1 and Assign 10^6 USDC to user2
+        //              * Then deposit all these tokens to DeFiner
+        //              */
+        //             await erc20TUSD.transfer(user1, numOfTUSDs);
+        //             await erc20USDC.transfer(user2, numOfUSDCs);
+        //             await erc20TUSD.approve(savingAccount.address, numOfTUSDs, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, numOfUSDCs, { from: user2 });
+        //             await savingAccount.deposit(addressTUSD, numOfTUSDs, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user2 });
+        //             /*
+        //              * Step 2
+        //              * User2 borrows 5x10^17 TUSD from DeFiner
+        //              * Now Definer only has 5x10^17 TUSD tokens in total
+        //              * User1 tries to withdraw all the tokens from DeFiner
+        //              */
+        //             savingAccount.borrow(addressTUSD, numOfTUSDs.div(new BN(2)), { from: user2 });
+        //             /*
+        //              * Step 3
+        //              * User1 withdraw all the 10^18 TUSD tokens from DeFiner
+        //              * It should fail.
+        //              */
+        //             await expectRevert(
+        //                 savingAccount.withdrawAll(erc20TUSD.address, { from: user1 }),
+        //                 "Lack of liquidity."
+        //             );
+        //         });
+        //     });
+        // });
 
         context("Deposit and withdraw with multiple kinds of tokens.", async () => {
             context("Should succeed", async () => {
