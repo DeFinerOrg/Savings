@@ -31,6 +31,7 @@ library Base {
         // Store per account info
         mapping(address => Account) accounts;
         address payable deFinerCommunityFund;
+        address globalConfigAddress;
         mapping(address => int) deFinerFund;
     }
 
@@ -46,7 +47,8 @@ library Base {
     }
 
     //初始化
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens) public {
+    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress) public {
+        self.globalConfigAddress = _globalConfigAddress;
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }

@@ -44,7 +44,8 @@ contract SavingAccount {
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
         address _chainlinkAddress,
-        TokenInfoRegistry _tokenRegistry
+        TokenInfoRegistry _tokenRegistry,
+        address globalConfigAddress
     )
         public
     {
@@ -53,7 +54,7 @@ contract SavingAccount {
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses);
+        baseVariable.initialize(tokenAddresses, cTokenAddresses, globalConfigAddress);
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(tokenAddresses[i]);
