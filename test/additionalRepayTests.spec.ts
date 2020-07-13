@@ -107,7 +107,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * CToken for USDC left in saving account
                  * USDC token left in saving account
                  */
-                savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
+                await savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
                 const CTokenLeft = new BN(await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address));
                 const TokenLeft = new BN(await erc20USDC.balanceOf(savingAccount.address));
                 expect(CTokenLeft).to.be.bignumber.equal(ZERO);
