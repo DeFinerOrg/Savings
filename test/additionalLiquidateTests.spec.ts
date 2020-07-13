@@ -1365,7 +1365,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     /* 
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
-                     * Account2: deposits small amount of MKR
+                     * Account2: deposits small amount of wBTC
                      * Account3: deposits 20 USDC and 20 USDT
                      */
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(2)));
@@ -1379,7 +1379,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressWBTC, new BN(10), { from: user2 });
+                    await savingAccount.deposit(addressWBTC, new BN(1), { from: user2 });
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
                     await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
                     /* 
