@@ -7,6 +7,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
 import "./lib/SafeDecimalMath.sol";
+import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 

@@ -6,6 +6,8 @@ contract GlobalConfig is Ownable {
     uint256 public communityFundRatio = 10;
     uint256 public minReserveRatio = 10;
     uint256 public maxReserveRatio = 20;
+    uint256 public liquidationThreshold = 85;
+    uint256 public liquidationDiscountRatio = 95
 
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
         require(_communityFundRatio != 0, "Community fund is zero");
@@ -22,6 +24,16 @@ contract GlobalConfig is Ownable {
         require(_maxReserveRatio != 0, "Max Reserve Ratio is zero");
         require(_maxReserveRatio > minReserveRatio, "Max reserve less than or equal to Min reserve");
         maxReserveRatio = _maxReserveRatio;
+    }
+
+    function updateLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
+        require(_liquidationThreshold != 0, "Max Reserve Ratio is zero");
+        liquidationThreshold = _liquidationThreshold;
+    }
+
+    function updateLiquidationDiscountRatio(uint256 _liquidationDiscountRatio) external onlyOwner {
+        require(_liquidationDiscountRatio != 0, "Max Reserve Ratio is zero");
+        liquidationDiscountRatio = _liquidationDiscountRatio;
     }
 
 }
