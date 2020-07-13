@@ -231,7 +231,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // });
             });
         });
-        // 1.3 Feature in DeFiner is not implemented yet.
+        // // TODO 1.3 Feature in DeFiner is not implemented yet.
         // context("When withdrawing an amount of value that is larger than the total tokens DeFiner has", async () => {
         //     context("should succeed", async () => {
         //         // TODO: Failed test
@@ -644,8 +644,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * Should fail, beacuse user has to repay all the outstandings before withdrawing.
                  */
                 const borrows = new BN(10);
-                savingAccount.borrow(addressUSDC, borrows, { from: user1 });
-                savingAccount.withdraw(erc20DAI.address, new BN(100), { from: user1 });
+                await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
+                await savingAccount.withdraw(erc20DAI.address, new BN(100), { from: user1 });
 
                 const TokenLeft = new BN(await erc20DAI.balanceOf(savingAccount.address));
                 const UserTokenLeft = new BN(await erc20DAI.balanceOf(user1));
