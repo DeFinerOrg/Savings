@@ -46,7 +46,11 @@ contract MockCToken is ERC20Mintable, ERC20Burnable {
         return 1;
     }
 
-    function exchangeRateStored() external view returns (uint) {
+    function exchangeRateStore() external view returns (uint) {
+        return 1;
+    }
+
+    function exchangeRateCurrent() external returns (uint) {
         return 1;
     }
 
