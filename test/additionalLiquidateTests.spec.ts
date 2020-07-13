@@ -1010,7 +1010,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(90);
+                    await testEngine.tokenInfoRegistry.updateLiquidationThreshold(90);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
@@ -1059,7 +1059,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(80)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(70);
+                    await testEngine.tokenInfoRegistry.updateLiquidationThreshold(70);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;
@@ -1110,7 +1110,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBefore = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
                     const liquidatableAfter = await savingAccount.isAccountLiquidatable(user1);
 
@@ -1156,7 +1156,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBefore = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
                     const liquidatableAfter = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
@@ -1201,7 +1201,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBefore = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
                     const liquidatableAfter = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
@@ -1246,7 +1246,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBefore = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
                     const liquidatableAfter = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
@@ -1292,7 +1292,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressDAI, { from: user2 });
+                    await savingAccount.liquidate(user1, addressDAI, { from: user2 });
                     const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable(user1);
                     /* 
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
@@ -1301,7 +1301,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                      * 1. Liquidatable after first liquidataion, but unliquidatable after the second time.
                      */
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user2 });
-                    savingAccount.liquidate(user1, addressDAI, { from: user2 });
+                    await savingAccount.liquidate(user1, addressDAI, { from: user2 });
                     const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBeforeFirst).to.be.true;
@@ -1309,11 +1309,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableAfterSecond).to.be.false;
 
                 });
-                it("With 6 decimals, liquidate partially the first time then liquidate fully", async () => {
+
+                it("With 6 decimals USDC, liquidate partially the first time then liquidate fully", async () => {
                     /* 
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
-                     * Account2: deposits 0.01 USDC
+                     * Account2: deposits small amount of USDC
                      * Account3: deposits 20 USDC and 20 USDT
                      */
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(2)));
@@ -1344,7 +1345,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
                     const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable(user1);
                     /* 
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
@@ -1352,8 +1353,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                      * To verify:
                      * 1. Liquidatable after first liquidataion, but unliquidatable after the second time.
                      */
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user2 });
-                    savingAccount.liquidate(user1, addressUSDC, { from: user2 });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(5)), { from: user2 });
+                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
                     const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBeforeFirst).to.be.true;
@@ -1361,58 +1362,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableAfterSecond).to.be.false;
 
                 });
-                // it("With 8 decimals wbtc, liquidate partially the first time then liquidate fully", async () => {
-                //     /* 
-                //      * Step 1. Assign tokens to each user and deposit them to DeFiner
-                //      * Account1: deposits 2 DAI
-                //      * Account2: deposits small amount of wBTC
-                //      * Account3: deposits 20 USDC and 20 USDT
-                //      */
-                //     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(2)));
-                //     await erc20WBTC.transfer(user2, eightPrecision.mul(new BN(10)));
-                //     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
-                //     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
-
-                //     await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                //     await erc20WBTC.approve(savingAccount.address, eightPrecision.mul(new BN(10)), { from: user2 });
-                //     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-                //     await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-
-                //     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                //     await savingAccount.deposit(addressWBTC, new BN(1), { from: user2 });
-                //     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                //     await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
-                //     /* 
-                //      * Step 2. User1 borrows from DeFiner
-                //      * Account1: borrows 1.2 USDC
-                //      */
-                //     await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(120)).div(new BN(100)), { from: user1 });
-                //     /* 
-                //      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using USDT
-                //      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 liquidatable
-                //      * Account2: Tries to liquidate user1, can only partially liquidate due to the limited amount
-                //      */
-                //     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                //     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
-                //     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                //     const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable(user1);
-                //     savingAccount.liquidate(user1, addressWBTC, { from: user2 });
-                //     const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable(user1);
-                //     /* 
-                //      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
-                //      * Account2: Can fully liquidate user1 this time.
-                //      * To verify:
-                //      * 1. Liquidatable after first liquidataion, but unliquidatable after the second time.
-                //      */
-                //     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(5)), { from: user2 });
-                //     savingAccount.liquidate(user1, addressWBTC, { from: user2 });
-                //     const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable(user1);
-                //     // verify 1.
-                //     expect(liquidatableBeforeFirst).to.be.true;
-                //     expect(liquidatableAfterFirst).to.be.true;
-                //     expect(liquidatableAfterSecond).to.be.false;
-
-                // });
                 it("With 18 decimals, liquidate partially the first time then liquidate fully", async () => {
                     /* 
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -1448,7 +1397,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable(user1);
-                    savingAccount.liquidate(user1, addressTUSD, { from: user2 });
+                    await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
                     const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable(user1);
                     /* 
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
@@ -1457,7 +1406,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                      * 1. Liquidatable after first liquidataion, but unliquidatable after the second time.
                      */
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user2 });
-                    savingAccount.liquidate(user1, addressTUSD, { from: user2 });
+                    await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
                     const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBeforeFirst).to.be.true;
