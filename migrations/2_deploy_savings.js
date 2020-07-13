@@ -9,6 +9,7 @@ const Base = artifacts.require("Base");
 const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
+const GlobalConfig = artifacts.require("GlobalConfig");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -59,16 +60,20 @@ module.exports = async function(deployer, network) {
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
 
+    const globalConfig = await deployer.deploy(GlobalConfig);
+
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(
         SavingAccount,
         erc20Tokens,
         cTokens,
         chainLinkOracle.address,
-        tokenInfoRegistry.address
+        tokenInfoRegistry.address,
+        globalConfig.address
     );
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
+    console.log("GlobalConfig:", globalConfig.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccount.address);
 };
