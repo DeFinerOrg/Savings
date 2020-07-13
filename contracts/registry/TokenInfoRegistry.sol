@@ -53,6 +53,8 @@ contract TokenInfoRegistry is Ownable {
     uint256 liquidationThreshold = 85; //85e6; // 85%
     uint256 liquidationDiscountRatio = 95; // 95%
 
+    uint256 public maxBorrowLTV = 60;
+
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
     // TokenAddress array

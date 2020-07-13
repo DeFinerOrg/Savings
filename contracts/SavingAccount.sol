@@ -6,6 +6,7 @@ import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
+import "./config/GlobalConfig.sol";
 
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
@@ -21,6 +22,7 @@ contract SavingAccount {
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     TokenInfoRegistry public tokenRegistry;
+    GlobalConfig public globalConfig;
 
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
@@ -45,16 +47,17 @@ contract SavingAccount {
         address[] memory cTokenAddresses,
         address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
-        address globalConfigAddress
+        GlobalConfig _globalConfig
     )
         public
     {
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
+        globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses, globalConfigAddress);
+        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig));
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(tokenAddresses[i]);
@@ -161,8 +164,8 @@ contract SavingAccount {
     }
 
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
-        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold();
-        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
+        uint256 liquidationThreshold = globalConfig.liquidationThreshold();
+        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
         uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
@@ -274,8 +277,8 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address _targetToken) public {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
-        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
+        uint liquidationThreshold = globalConfig.liquidationThreshold();
+        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         baseVariable.liquidate(
             targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_targetToken), symbols
         );
