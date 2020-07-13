@@ -1,13 +1,14 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../registry/TokenInfoRegistry.sol";
 
 contract GlobalConfig is Ownable {
     uint256 public communityFundRatio = 10;
     uint256 public minReserveRatio = 10;
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
-    uint256 public liquidationDiscountRatio = 95
+    uint256 public liquidationDiscountRatio = 95;
 
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
         require(_communityFundRatio != 0, "Community fund is zero");

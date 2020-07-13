@@ -15,12 +15,12 @@ const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
+    public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
 
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
-
         await Promise.all(
             erc20Tokens.map(async (tokenAddr: any) => {
                 let addr;
@@ -35,13 +35,15 @@ export class TestEngine {
                 cTokens.push(addr);
             })
         );
-
+        let addr = (await MockCToken.new(ETH_ADDR)).address;
+        cTokens.push(addr)
         return cTokens;
     }
 
     public async deployMockERC20Tokens(): Promise<Array<string>> {
         const network = process.env.NETWORK;
-        const tokensToMint = new BN(10000);
+        const ONE_BILLION = new BN(10).pow(new BN(9));
+        const tokensToMint = ONE_BILLION;
         var erc20TokenAddresses = new Array();
         let addr;
         await Promise.all(
@@ -59,12 +61,11 @@ export class TestEngine {
                 erc20TokenAddresses.push(addr);
             })
         );
-
         return erc20TokenAddresses;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
-        var aggregators = new Array();
+        //var aggregators = new Array();
         const network = process.env.NETWORK;
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
@@ -81,11 +82,17 @@ export class TestEngine {
                 } else if (network == "mainnet" || network == "mainnet-fork") {
                     addr = token.mainnet.aggregatorAddress;
                 }
-                aggregators.push(addr);
+                this.mockChainlinkAggregators.push(addr);
             })
         );
-
-        return aggregators;
+        let addr = (
+            await MockChainLinkAggregator.new(
+                tokenData.ETH.decimals,
+                new BN(tokenData.ETH.latestAnswer)
+            )
+        ).address;
+        this.mockChainlinkAggregators.push(addr);
+        return this.mockChainlinkAggregators;
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
@@ -130,6 +137,13 @@ export class TestEngine {
                 );
             })
         );
-        //await tokenInfoRegistry.addToken(ETH_ADDR);
+        await this.tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            18,
+            false,
+            true,
+            cTokens[9],
+            aggregators[9]
+        );
     }
 }

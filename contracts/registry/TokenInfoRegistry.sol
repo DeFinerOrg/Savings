@@ -34,9 +34,9 @@ contract TokenInfoRegistry is Ownable {
         // Borrow LTV, by default 60%
         uint256 borrowLTV;
         // Liquidation threshold, by default 85%
-        uint256 liquidationThreshold;
+        // uint256 liquidationThreshold;
         // Liquidation discount ratio, by default 95%
-        uint256 liquidationDiscountRatio;
+        // uint256 liquidationDiscountRatio;
     }
 
     event TokenAdded(address indexed token);
@@ -49,6 +49,9 @@ contract TokenInfoRegistry is Ownable {
     //uint256 public SCALE = 1e8;
 
     uint256 public constant SCALE = 100;
+
+    uint256 liquidationThreshold = 85; //85e6; // 85%
+    uint256 liquidationDiscountRatio = 95; // 95%
 
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
@@ -104,8 +107,8 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
         // Default values
         storageTokenInfo.borrowLTV = 60; //6e7; // 60%
-        storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
-        storageTokenInfo.liquidationDiscountRatio = 95; // 95%
+        // storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
+        // storageTokenInfo.liquidationDiscountRatio = 95; // 95%
 
         tokens.push(_token);
         emit TokenAdded(_token);
@@ -121,39 +124,35 @@ contract TokenInfoRegistry is Ownable {
     {
         require(_borrowLTV != 0, "Borrow LTV is zero");
         require(_borrowLTV < SCALE, "Borrow LTV must be less than Scale");
-        require(tokenInfo[_token].liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
+        require(liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
 
         tokenInfo[_token].borrowLTV = _borrowLTV;
         emit TokenUpdated(_token);
     }
 
     function updateLiquidationThreshold(
-        address _token,
         uint256 _liquidationThreshold
     )
         external
         onlyOwner
-        whenTokenExists(_token)
     {
         require(_liquidationThreshold != 0, "Liquidation threshold is zero");
         require(_liquidationThreshold < SCALE, "Liquidation threshold must be less than Scale");
-        require(_liquidationThreshold > tokenInfo[_token].borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
 
-        tokenInfo[_token].liquidationThreshold = _liquidationThreshold;
-        emit TokenUpdated(_token);
+        liquidationThreshold = _liquidationThreshold;
     }
 
 
     function updateLiquidationDiscountRatio(
-        address _token,
         uint256 _liquidationDiscountRatio
     )
         external
         onlyOwner
-        whenTokenExists(_token)
     {
-        tokenInfo[_token].liquidationDiscountRatio = _liquidationDiscountRatio;
-        emit TokenUpdated(_token);
+        require(_liquidationDiscountRatio != 0, "Liquidation discount ratio is zero");
+        require(_liquidationDiscountRatio < SCALE, "Liquidation discount ratio must be less than Scale");
+
+        liquidationDiscountRatio = _liquidationDiscountRatio;
     }
 
     /**
@@ -288,18 +287,15 @@ contract TokenInfoRegistry is Ownable {
         return tokenInfo[_token].chainLinkAggregator;
     }
 
-    function getBorrowLTV(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].borrowLTV);
+    function getBorrowLTV(address _token) external view returns (uint256) {
+        return tokenInfo[_token].borrowLTV;
     }
 
-    function getLiquidationThreshold(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].liquidationThreshold);
+    function getLiquidationThreshold() external view returns (uint256) {
+        return liquidationThreshold;
     }
 
-    function getLiquidationDiscountRatio(address _token) external view returns (int256) {
-        // TODO Use uint256
-        return int256(tokenInfo[_token].liquidationDiscountRatio);
+    function getLiquidationDiscountRatio() external view returns (uint256) {
+        return liquidationDiscountRatio;
     }
 }

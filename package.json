@@ -8,7 +8,7 @@
     "test": "yarn prepare && truffle test",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
-    "coverage": "truffle run coverage --file='test/*.ts'"
+    "coverage": "truffle run coverage --file='test/*.ts' --network development"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "@openzeppelin/test-helpers": "^0.5.5",
     "@typechain/truffle-v5": "^0.9.0",
     "eth-gas-reporter": "^0.2.17",
+    "husky": "^4.2.5",
     "openzeppelin-solidity": "^2.4.0",
     "solc": "0.5.14",
     "solidity-coverage": "^0.7.0-beta.3",
