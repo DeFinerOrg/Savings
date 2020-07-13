@@ -231,7 +231,7 @@ library Base {
                     // Withdraw all the tokens from Compound
                     fromCompound(self, _token, self.totalCompound[cToken]);
                     self.totalCompound[cToken] = 0;
-                    self.totalReserve[_token] = totalAvailable.sub(_amount);
+                    self.totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable - totalAmount.mul(15).div(100);
