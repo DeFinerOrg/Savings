@@ -41,31 +41,31 @@ Unitroller SetPendingImpl ComptrollerScen
 Comptroller SupportMarket cETH
 
 Prep first 100e26 ZRX cZRX
-Mint first 50e26 cZRX--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cZRX--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 DAI cDAI
-Mint first 50e26 cDAI--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cDAI--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 SAI cSAI
-Mint first 50e26 cSAI--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cSAI--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 USDC cUSDC
-Mint first 50e26 cUSDC--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cUSDC--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 USDT cUSDT
-Mint first 50e26 cUSDT--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cUSDT--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 TUSD cTUSD
-Mint first 50e26 cTUSD--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cTUSD--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 MKR cMKR
-Mint first 50e26 cMKR--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cMKR--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 REP cREP
-Mint first 50e26 cREP--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cREP--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 Prep first 100e26 WBTC cWBTC
-Mint first 50e26 cWBTC--tokenbalance = 50e26 / 2e9 = 2.5e10
+Mint first 50e26 cWBTC--tokenbalance = 50e26 / 2e9 = 2.5e18
 
 PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI) (Address cUSDT)
 
