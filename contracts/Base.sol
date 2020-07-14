@@ -196,8 +196,8 @@ library Base {
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
             if (self.cTokenAddress[_token] != address(0) &&
-                totalReserveBeforeAdjust > totalAmount.mul(20).div(100)) { // sichaoy: 20 and 15 should be defined as constants
-                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(15).div(100);
+                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
+                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                 toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount.sub(toCompoundAmount));
@@ -222,17 +222,17 @@ library Base {
 
             // Trigger fromCompound if the new reservation ratio is less than 10%
             if(self.cTokenAddress[_token] != address(0) &&
-                (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(10).div(100))) {
+                (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(GlobalConfig(self.globalConfigAddress).minReserveRatio()).div(100))) {
 
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
-                if (totalAvailable < totalAmount.mul(15).div(100)){
+                if (totalAvailable < totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
                     fromCompound(self, _token, self.totalCompound[cToken]);
                     self.totalCompound[cToken] = 0;
                     self.totalReserve[_token] = totalAvailable.sub(_amount);
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(15).div(100);
+                    uint totalInCompound = totalAvailable - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                     fromCompound(self, _token, self.totalCompound[cToken]-totalInCompound);
                     self.totalCompound[cToken] = totalInCompound;
                     self.totalReserve[_token] = totalAvailable.sub(totalInCompound);
@@ -734,7 +734,10 @@ library Base {
         }
 
         // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        uint256 commission = tokenInfo.depositInterest <=
+        _amount ?
+        tokenInfo.depositInterest.div(GlobalConfig(self.globalConfigAddress).communityFundRatio()) :
+        _amount.div(GlobalConfig(self.globalConfigAddress).communityFundRatio());
         self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
         _amount = _amount.sub(commission);
 
@@ -773,7 +776,7 @@ library Base {
         }
 
         // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = tokenInfo.depositInterest.div(10);
+        uint256 commission = tokenInfo.depositInterest.div(GlobalConfig(self.globalConfigAddress).communityFundRatio());
         self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
         amount = amount.sub(commission);
 
@@ -817,8 +820,6 @@ library Base {
         address targetAccountAddr,
         address _targetToken,
         uint borrowLTV,
-        uint liquidationThreshold,
-        uint liquidationDiscountRatio,
         uint8 _tokenIndex,
         SymbolsLib.Symbols storage symbols
     ) public {
@@ -830,6 +831,9 @@ library Base {
         vars.msgTotalCollateral = getDepositETH(self, msg.sender, symbols);
 
         vars.targetTokenBalance = getDepositBalance(self, _targetToken, msg.sender);
+
+        uint liquidationThreshold = GlobalConfig(self.globalConfigAddress).liquidationThreshold();
+        uint liquidationDiscountRatio = GlobalConfig(self.globalConfigAddress).liquidationDiscountRatio();
 
         require(_targetToken != address(0), "Token address is zero");
 

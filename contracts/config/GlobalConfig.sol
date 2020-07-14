@@ -28,13 +28,17 @@ contract GlobalConfig is Ownable {
     }
 
     function updateLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
-        require(_liquidationThreshold != 0, "Max Reserve Ratio is zero");
+        require(_liquidationThreshold != 0, "LiquidationThreshold is zero");
         liquidationThreshold = _liquidationThreshold;
     }
 
     function updateLiquidationDiscountRatio(uint256 _liquidationDiscountRatio) external onlyOwner {
-        require(_liquidationDiscountRatio != 0, "Max Reserve Ratio is zero");
+        require(_liquidationDiscountRatio != 0, "LiquidationDiscountRatio is zero");
         liquidationDiscountRatio = _liquidationDiscountRatio;
+    }
+
+    function midReserveRatio() public view returns(uint256){
+        return (minReserveRatio + maxReserveRatio) / 2;
     }
 
 }

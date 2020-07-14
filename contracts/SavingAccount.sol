@@ -277,10 +277,8 @@ contract SavingAccount {
     function liquidate(address targetAccountAddr, address _targetToken) public {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-        uint liquidationThreshold = globalConfig.liquidationThreshold();
-        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         baseVariable.liquidate(
-            targetAccountAddr, _targetToken, borrowLTV, liquidationThreshold, liquidationDiscountRatio, tokenRegistry.getTokenIndex(_targetToken), symbols
+            targetAccountAddr, _targetToken, borrowLTV, tokenRegistry.getTokenIndex(_targetToken), symbols
         );
     }
 
