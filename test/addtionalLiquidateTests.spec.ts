@@ -999,7 +999,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(90);
+                    testEngine.globalConfig.updateLiquidationThreshold(90);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
@@ -1048,7 +1048,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(80)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    testEngine.tokenInfoRegistry.updateLiquidationThreshold(70);
+                    testEngine.globalConfig.updateLiquidationThreshold(70);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;
