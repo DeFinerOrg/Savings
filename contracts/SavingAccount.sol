@@ -214,7 +214,7 @@ contract SavingAccount {
         uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols)
         .add(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(100);
         uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
-        require(totalBorrow <= ETHValue.mul(borrowLTV), "Insufficient collateral.");
+        require(totalBorrow <= ETHValue.mul(60), "Insufficient collateral.");
         baseVariable.borrow(_token, _amount, tokenRegistry.getTokenIndex(_token));
         send(msg.sender, _amount, _token);
     }

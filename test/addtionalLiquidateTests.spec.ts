@@ -29,6 +29,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     const sixPrecision = new BN(10).pow(new BN(6));
 
     let tokens: any;
+    let tokens: any;
     let mockChainlinkAggregators: any;
     let addressDAI: any;
     let addressUSDC: any;
@@ -65,6 +66,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+        globalConfig = await testEngine.globalConfig;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
