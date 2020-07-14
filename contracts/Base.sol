@@ -82,10 +82,10 @@ library Base {
 //        return account.borrowBitmap;
 //    }
 
-    function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-        Account storage account = self.accounts[_account];
-        return account.borrowBitmap > 0;
-    }
+    // function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
+    //     Account storage account = self.accounts[_account];
+    //     return account.borrowBitmap > 0;
+    // }
 
     function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
@@ -141,11 +141,11 @@ library Base {
     /**
      * Total amount of available tokens for withdraw and borrow
      */
-    function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = self.cTokenAddress[_token];
-        uint256 totalReserve = self.totalReserve[_token];
-        return self.totalCompound[cToken].add(totalReserve);
-    }
+    // function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
+    //     address cToken = self.cTokenAddress[_token];
+    //     uint256 totalReserve = self.totalReserve[_token];
+    //     return self.totalCompound[cToken].add(totalReserve);
+    // }
 
     /**
      * Update total amount of token in Compound as the cToken price changed
@@ -365,9 +365,9 @@ library Base {
      * @param _token token address
      */
     // sichaoy: rateIndex?
-    function newDepositRateIndexCheckpoint(BaseVariable storage self, address _token) public {
-        self.depositeRateIndex[_token][block.number] = getNowDepositRate(self, _token);
-    }
+    // function newDepositRateIndexCheckpoint(BaseVariable storage self, address _token) public {
+    //     self.depositeRateIndex[_token][block.number] = getNowDepositRate(self, _token);
+    // }
 
     function newRateIndexCheckpoint(BaseVariable storage self, address _token) public {
         self.borrowRateIndex[_token][block.number] = getNowBorrowRate(self, _token);
@@ -394,9 +394,9 @@ library Base {
     }
 
     //Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function newBorrowRateIndexCheckpoint(BaseVariable storage self, address _token) public {
-        self.borrowRateIndex[_token][block.number] = getNowBorrowRate(self, _token);
-    }
+    // function newBorrowRateIndexCheckpoint(BaseVariable storage self, address _token) public {
+    //     self.borrowRateIndex[_token][block.number] = getNowBorrowRate(self, _token);
+    // }
 
     function getNowBorrowRate(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 borrowRateLMBN = self.borrowRateLastModifiedBlockNumber[_token];
