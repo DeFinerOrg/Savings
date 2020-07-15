@@ -108,7 +108,7 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.cToken = _cToken;
         storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
         // Default values
-        // storageTokenInfo.borrowLTV = 60; //6e7; // 60%
+        storageTokenInfo.borrowLTV = 60; //6e7; // 60%
         // storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
         // storageTokenInfo.liquidationDiscountRatio = 95; // 95%
 
