@@ -470,6 +470,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
+                // yichun: this one is not doing what's it is described
                 it("when there is no liquidity for the asked MKR", async () => {
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
