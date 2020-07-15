@@ -1071,9 +1071,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
-                    console.log((await savingAccount.getAccountETHValue(user1)).toString());
-                    console.log((await savingAccount.getAccountETHValue(user2)).toString());
-                    console.log((await savingAccount.getAccountETHValue(user3)).toString());
+                    console.log((await savingAccount.getAccountETHValue(user1))[0].toString());
+                    console.log((await savingAccount.getAccountETHValue(user1))[1].toString());
+                    console.log((await savingAccount.getAccountETHValue(user2))[0].toString());
+                    console.log((await savingAccount.getAccountETHValue(user2))[1].toString());
+                    console.log((await savingAccount.getAccountETHValue(user3))[0].toString());
+                    console.log((await savingAccount.getAccountETHValue(user3))[1].toString());
                     await savingAccount.liquidate(user1, addressUSDT, { from: user2 });
                     const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
