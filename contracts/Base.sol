@@ -852,8 +852,12 @@ library Base {
         );
 
         require(
-            vars.msgTotalCollateral.mul(borrowLTV) == 0,
+            borrowLTV == 60,
             "11111");
+
+        require(
+            vars.msgTotalCollateral.mul(borrowLTV) != 0,
+            "22222");
 
         require(
             vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
