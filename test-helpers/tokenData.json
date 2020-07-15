@@ -7,17 +7,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
+
             "mainnet": {
                 "tokenAddress": "0x6b175474e89094c44da98b954eedeac495271d0f",
                 "aggregatorAddress": "0x037E8F2125bF532F3e228991e051c8A7253B642c",
                 "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x037E8F2125bF532F3e228991e051c8A7253B642c",
                 "cTokenAddress": "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff"
             }
         },
+
         {
             "name": "USD Coin",
             "symbol": "USDC",
@@ -25,17 +28,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "5309685000000000",
+
             "mainnet": {
                 "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
                 "aggregatorAddress": "0xdE54467873c3BCAA76421061036053e371721708",
                 "cTokenAddress": "0x39aa39c021dfbae8fac545936693ac917d5e7563"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0xE1480303DDe539E2c241bdC527649F37c9cBef7d",
                 "cTokenAddress": "0x20572e4c090f15667cf7378e16fad2ea0e2f3eff"
             }
         },
+
         {
             "name": "Tether",
             "symbol": "USDT",
@@ -43,17 +49,20 @@
             "isFeeEnabled": true,
             "isSupportedByCompound": true,
             "latestAnswer": "5164220000000000",
+
             "mainnet": {
                 "tokenAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
                 "aggregatorAddress": "0xa874fe207DF445ff19E7482C746C4D3fD0CB9AcE",
                 "cTokenAddress": "0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0xC08fe0C4D97ccda6B40649c6dA621761b628c288",
                 "cTokenAddress": "0xb6f7f1901ffbcbadf9cd9831a032395105bc3142"
             }
         },
+
         {
             "name": "TrueUSD",
             "symbol": "TUSD",
@@ -61,17 +70,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": false,
             "latestAnswer": "5172765000000000",
+
             "mainnet": {
                 "tokenAddress": "0x0000000000085d4780B73119b644AE5ecd22b376",
                 "aggregatorAddress": "0x73ead35fd6A572EF763B13Be65a9db96f7643577",
                 "cTokenAddress": "0x0000000000000000000000000000000000000001"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x523AC85618DF56E940534443125eF16DAf785620",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
+
         {
             "name": "Maker",
             "symbol": "MKR",
@@ -79,17 +91,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": false,
             "latestAnswer": "1716434500000000000",
+
             "mainnet": {
                 "tokenAddress": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
                 "aggregatorAddress": "0xDa3d675d50fF6C555973C4f0424964e1F6A4e7D3",
                 "cTokenAddress": "0x0000000000000000000000000000000000000002"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x811B1f727F8F4aE899774B568d2e72916D91F392",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
+
         {
             "name": "Basic attention token",
             "symbol": "BAT",
@@ -97,17 +112,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "918555000000000",
+
             "mainnet": {
                 "tokenAddress": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
                 "aggregatorAddress": "0x9b4e2579895efa2b4765063310Dc4109a7641129",
                 "cTokenAddress": "0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0xAfd8186C962daf599f171B8600f3e19Af7B52c92",
                 "cTokenAddress": "0xa253295ec2157b8b69c44b2cb35360016daa25b1"
             }
         },
+
         {
             "name": "0x",
             "symbol": "ZRX",
@@ -115,17 +133,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "953760000000000",
+
             "mainnet": {
                 "tokenAddress": "0xe41d2489571d322189246dafa5ebde1f4699f498",
                 "aggregatorAddress": "0xA0F9D94f060836756FFC84Db4C78d097cA8C23E8",
                 "cTokenAddress": "0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x1d0052E4ae5b4AE4563cBAc50Edc3627Ca0460d7",
                 "cTokenAddress": "0x3a728dd027ad6f76cdea227d5cf5ba7ce9390a3d"
             }
         },
+
         {
             "name": "Augur",
             "symbol": "REP",
@@ -133,17 +154,20 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "52943555000000000",
+
             "mainnet": {
                 "tokenAddress": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
                 "aggregatorAddress": "0xb8b513d9cf440C1b6f5C7142120d611C94fC220c",
                 "cTokenAddress": "0x158079ee67fce2f58472a96584a73c7ab9ac95c1"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0xa949eE9bA80c0F381481f2eaB538bC5547a5aC67",
                 "cTokenAddress": "0x5d4373f8c1af21c391ad7ec755762d8dd3cca809"
             }
         },
+
         {
             "name": "WBTC",
             "symbol": "WBTC",
@@ -151,11 +175,13 @@
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "latestAnswer": "41623010370000000000",
+
             "mainnet": {
                 "tokenAddress": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
                 "aggregatorAddress": "0x0133Aa47B6197D0BA090Bf2CD96626Eb71fFd13c",
                 "cTokenAddress": "0xc11b1268c1a384e55c48c2391d8d480264a3a7f4"
             },
+
             "ropsten": {
                 "tokenAddress": "",
                 "aggregatorAddress": "0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF",
@@ -163,12 +189,15 @@
             }
         }
     ],
-    "ETH": {
+    "ETH": 
+    {
         "decimals": 18,
         "latestAnswer": "1",
+
         "mainnet": {
             "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
         },
+
         "ropsten": {
             "cTokenAddress": "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff"
         }
