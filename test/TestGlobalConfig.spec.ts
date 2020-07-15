@@ -11,6 +11,7 @@ const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount"
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
+const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("GlobalConfig", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -27,6 +28,7 @@ contract("GlobalConfig", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        globalConfig = await testEngine.globalConfig;
     });
 
     context("constructor", async () => {
