@@ -729,7 +729,7 @@ library Base {
         // Update tokenInfo for the user
         tokenInfo.withdraw(_amount, accruedRate);
 
-        if(tokenInfo.getBorrowPrincipal() == 0) {
+        if(tokenInfo.getDepositPrincipal() == 0) {
             unsetFromDepositBitmap(self, msg.sender, _tokenIndex);
         }
 
@@ -771,7 +771,7 @@ library Base {
 
         tokenInfo.withdraw(amount, accruedRate);
 
-        if(tokenInfo.getBorrowPrincipal() == 0) {
+        if(tokenInfo.getDepositPrincipal() == 0) {
             unsetFromDepositBitmap(self, msg.sender, _tokenIndex);
         }
 
