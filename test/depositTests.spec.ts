@@ -47,12 +47,14 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressUSDC = tokens[1];
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
+        // Use ERC20 from OZ, import this
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
         erc20TUSD = await MockERC20.at(addressTUSD);
         erc20MKR = await MockERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        // Use CERC20, import from Compound
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
@@ -121,6 +123,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                 // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
+                // change variable name addressCTokenForDAI --> cDAI_addr
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
@@ -129,8 +132,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                 //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
+                // change cTokenDAI to `cDAI`
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                //expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
             it("when 1000 whole supported tokens are deposited", async () => {

@@ -70,8 +70,8 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cUSDC);
         cTokensCompound.push(compoundTokens.Contracts.cUSDT);
         cTokensCompound.push(compoundTokens.Contracts.cTUSD);
-        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
-        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
+        cTokensCompound.push(compoundTokens.Contracts.cMKR);
+        cTokensCompound.push(compoundTokens.Contracts.cBAT);
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
