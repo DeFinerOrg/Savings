@@ -852,7 +852,7 @@ library Base {
         );
 
         require(
-            borrowLTV == 60,
+            borrowLTV == 0,
             "11111");
 
         require(
