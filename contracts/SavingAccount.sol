@@ -200,7 +200,14 @@ contract SavingAccount {
         baseVariable.transfer(_activeAccount, _token, _amount, tokenRegistry.getTokenIndex(_token), symbols);
     }
 
-
+    /**
+     * Debug code by yichun.
+     */
+    function getTotalDepositsNow() public view returns(uint256) {
+        uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
+        // uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
+        return ETHValue;
+    }
     /**
      * Borrow the amount of token to the saving pool.
      */
