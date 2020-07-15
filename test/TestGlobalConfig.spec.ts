@@ -81,6 +81,55 @@ contract("GlobalConfig", async (accounts) => {
             });
         });
 
-        context("should succeed", async () => {});
+        context("should succeed", async () => {
+            it("executing updateCommunityFundRatio", async () => {
+                const beforeCommunityFundRatio = await globalConfig.communityFundRatio();
+                await globalConfig.updateCommunityFundRatio(new BN(20));
+                const afterCommunityFundRatio = await globalConfig.communityFundRatio();
+                expect(beforeCommunityFundRatio).to.be.bignumber.equal(new BN(10));
+                expect(afterCommunityFundRatio).to.be.bignumber.equal(new BN(20));
+            });
+
+            it("executing updateMinReserveRatio", async () => {
+                const beforeMinReserveRatio = await globalConfig.minReserveRatio();
+                await globalConfig.updateMinReserveRatio(new BN(15));
+                const afterMinReserveRatio = await globalConfig.minReserveRatio();
+                expect(beforeMinReserveRatio).to.be.bignumber.equal(new BN(10));
+                expect(afterMinReserveRatio).to.be.bignumber.equal(new BN(15));
+            });
+
+            it("executing updateMaxReserveRatio", async () => {
+                const beforeMaxReserveRatio = await globalConfig.maxReserveRatio();
+                await globalConfig.updateMaxReserveRatio(new BN(25));
+                const afterMaxReserveRatio = await globalConfig.maxReserveRatio();
+                expect(beforeMaxReserveRatio).to.be.bignumber.equal(new BN(20));
+                expect(afterMaxReserveRatio).to.be.bignumber.equal(new BN(25));
+            });
+
+            it("executing updateLiquidationThreshold", async () => {
+                const beforeLiquidationThreshold = await globalConfig.liquidationThreshold();
+                await globalConfig.updateLiquidationThreshold(new BN(20));
+                const afterLiquidationThreshold = await globalConfig.liquidationThreshold();
+                expect(beforeLiquidationThreshold).to.be.bignumber.equal(new BN(85));
+                expect(afterLiquidationThreshold).to.be.bignumber.equal(new BN(20));
+            });
+
+            it("executing updateLiquidationDiscountRatio", async () => {
+                const beforeLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
+                await globalConfig.updateLiquidationDiscountRatio(new BN(20));
+                const afterLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
+                expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(95));
+                expect(afterLiquidationDiscountRatio).to.be.bignumber.equal(new BN(20));
+            });
+
+            it("executing midReserveRatio", async () => {
+                const beforeLiquidationDiscountRatio = await globalConfig.midReserveRatio();
+                await globalConfig.updateMinReserveRatio(new BN(15));
+                await globalConfig.updateMaxReserveRatio(new BN(25));
+                const afterLiquidationDiscountRatio = await globalConfig.midReserveRatio();
+                expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(15));
+                expect(afterLiquidationDiscountRatio).to.be.bignumber.equal(new BN(20));
+            });
+        });
     });
 });
