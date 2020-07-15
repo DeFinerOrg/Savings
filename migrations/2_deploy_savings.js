@@ -41,6 +41,7 @@ module.exports = async function(deployer, network) {
 
     // Link libraries
     await deployer.link(SymbolsLib, SavingAccount);
+    await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
 
     const erc20Tokens = await getERC20Tokens();
