@@ -89,12 +89,6 @@ contract SavingAccount {
         return ETHValue;
     }
 
-    function getAccountETHValue(address _accountAddr) public view returns (uint256 borrowETHValue, uint256 mortgageETHValue) {
-        uint256 borrowETHValue = baseVariable.getBorrowETH(_accountAddr, symbols);
-        uint256 mortgageETHValue = baseVariable.getDepositETH(_accountAddr, symbols);
-        return (borrowETHValue, mortgageETHValue);
-    }
-
 	/**
 	 * Get the overall state of the saving pool
 	 */

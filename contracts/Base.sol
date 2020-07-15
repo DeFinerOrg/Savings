@@ -852,14 +852,6 @@ library Base {
         );
 
         require(
-            borrowLTV == 0,
-            "11111");
-
-        require(
-            vars.msgTotalCollateral.mul(borrowLTV) != 0,
-            "22222");
-
-        require(
             vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
             "No extra funds are used for liquidation."
         );
