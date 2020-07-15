@@ -387,7 +387,7 @@ contract SavingAccount {
         tokenInfo.withdraw(_amount, accruedRate);
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getBorrowPrincipal() == 0)
+        if(tokenInfo.getDepositPrincipal() == 0)
             baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
