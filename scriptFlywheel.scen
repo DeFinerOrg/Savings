@@ -46,6 +46,9 @@ Unitroller SetPendingImpl ComptrollerScen
 
 Comptroller SupportMarket cETH
 
+Prep first 100e30 BAT cBAT
+Mint first 50e30 cBAT--tokenbalance = 50e30 / 2e9 = 2.5e18
+
 Prep first 100e30 ZRX cZRX
 Mint first 50e30 cZRX--tokenbalance = 50e30 / 2e9 = 2.5e18
 
