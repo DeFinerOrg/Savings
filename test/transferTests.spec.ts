@@ -62,16 +62,19 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const numOfToken = new BN(1000);
                     // 1. Transfer DAI to user1 & user2.
                     // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
+                    let user1BalanceBefore = await erc20DAI.balanceOf(user1);
+                    let user2BalanceBefore = await erc20DAI.balanceOf(user2);
+
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
                     let user1Balance = await erc20DAI.balanceOf(user1);
-                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user1Balance).sub(BN(user1BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user2Balance = await erc20DAI.balanceOf(user2);
-                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user2Balance).sub(BN(user2BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
                         from: user1
@@ -90,8 +93,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
                         from: user2
                     });
-                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
-                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user2BalanceAfterDeposit[0]).sub(new BN(user2TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
 
                     await expectRevert(
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
@@ -118,18 +121,22 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
 
                     // 2. Borrow USDC
+                    const user2USDCBalanceBefore = await erc20USDC.balanceOf(user2);
+
                     await savingAccount.borrow(addressUSDC, borrowAmount, { from: user2 });
 
                     // Amount that is locked as collateral
                     const collateralLocked = borrowAmount
                         .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(eighteenPrecision)
                         .mul(new BN(100))
                         .div(new BN(60))
-                        .div(await savingAccount.getCoinToETHRate(0));
+                        .div(await savingAccount.getCoinToETHRate(0))
+                        .div(new BN(sixPrecision));
 
                     // 3. Verify the loan amount
-                    const user2USDCBalance = await erc20USDC.balanceOf(user2);
-                    expect(user2USDCBalance).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
+                    const user2USDCBalanceAfter = await erc20USDC.balanceOf(user2);
+                    expect(BN(user2USDCBalanceAfter).sub(BN(user2USDCBalanceBefore))).to.be.bignumber.equal(borrowAmount);
 
                     // Total remaining DAI after borrow
                     const remainingDAI = numOfDAI.sub(collateralLocked);
@@ -150,16 +157,19 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
                     // 3. Verity the new balance
+                    let user1BalanceBefore = await erc20DAI.balanceOf(user1);
+                    let user2BalanceBefore = await erc20DAI.balanceOf(user2);
+
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
                     let user1Balance = await erc20DAI.balanceOf(user1);
-                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user1Balance).sub(BN(user1BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user2Balance = await erc20DAI.balanceOf(user2);
-                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user2Balance).sub(BN(user2BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
                         from: user1
@@ -178,8 +188,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
                         from: user2
                     });
-                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
-                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user2BalanceAfterDeposit[0]).sub(new BN(user2TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
 
                     // Transfer 100 tokens from user2 to user1
                     await savingAccount.transfer(user1, addressDAI, new BN(100), {
@@ -206,6 +216,9 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
                     // 3. Verify the new balance
+                    let user1BalanceBefore = await erc20DAI.balanceOf(user1);
+                    let user2BalanceBefore = await erc20DAI.balanceOf(user2);
+
                     const numOfToken = new BN(1000);
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
@@ -213,10 +226,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
                     let user1Balance = await erc20DAI.balanceOf(user1);
-                    expect(user1Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user1Balance).sub(BN(user1BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user2Balance = await erc20DAI.balanceOf(user2);
-                    expect(user2Balance).to.be.bignumber.equal(numOfToken);
+                    expect(BN(user2Balance).sub(BN(user2BalanceBefore))).to.be.bignumber.equal(numOfToken);
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
                         from: user1
@@ -235,8 +248,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
                         from: user2
                     });
-                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
-                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
+                    expect(new BN(user2BalanceAfterDeposit[0]).sub(new BN(user2TotalBalanceBefore[0]))).to.be.bignumber.equal(numOfToken);
 
                     // transfer more than reserve
                     await savingAccount.transfer(user1, addressDAI, new BN(500), {
@@ -267,7 +280,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
                     const ETHtransferAmount = eighteenPrecision.mul(eighteenPrecision);
                     let ETHbalanceOfUser2 = await web3.eth.getBalance(user2);
-                    expect(ETHbalanceOfUser2).to.be.bignumber.lessThan(ETHtransferAmount);
+                    // Can't test this since the eth value is not set to 1000 now
+                    // expect(ETHbalanceOfUser2).to.be.bignumber.lessThan(ETHtransferAmount);
 
                     await expectRevert(
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
@@ -285,6 +299,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const depositAmount = new BN(10000);
                     const ETHtransferAmount = new BN(1100);
                     const USDCBorrowAmount = new BN(600);
+
+                    const user1BalanceUSDCInit = await erc20USDC.balanceOf(user1);
+                    const user2BalanceUSDCInit = await erc20USDC.balanceOf(user2);
+                    console.log("user1BalanceUSDCInit", user1BalanceUSDCInit);
+                    console.log("user2BalanceUSDCInit", user2BalanceUSDCInit);
 
                     // User 1 deposits USDC
                     await erc20USDC.transfer(user1, depositAmount);
@@ -324,14 +343,16 @@ contract("SavingAccount.transfer", async (accounts) => {
                         new BN(eighteenPrecision).mul(new BN(2))
                     );
 
-                    //FIXME:
+                    const user2BalanceUSDCBeforeBorrow = await erc20USDC.balanceOf(user2);
+
                     // User 2 borrowed USDC
                     await savingAccount.borrow(addressUSDC, USDCBorrowAmount, { from: user2 });
-                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify the loan amount.
                     const user2BalanceUSDC = await erc20USDC.balanceOf(user2);
-                    expect(user2BalanceUSDC).to.be.bignumber.equal(new BN(600));
+                    expect(
+                        new BN(user2BalanceUSDC).sub(new BN(user2BalanceUSDCBeforeBorrow))
+                    ).to.be.bignumber.equal(new BN(600));
 
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
@@ -376,10 +397,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
                         from: user2
                     });
-                    expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(
+                    expect(new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))).to.be.bignumber.equal(
                         depositAmount
                     );
-                    expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(
+                    expect(new BN(user2BalanceAfterDeposit[0]).sub(new BN(user2TotalBalanceBefore[0]))).to.be.bignumber.equal(
                         depositAmount
                     );
 
@@ -387,7 +408,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
 
-                    //FIXME:
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
@@ -449,7 +469,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
 
-                    //FIXME:
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
