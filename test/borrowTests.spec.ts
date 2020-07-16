@@ -90,7 +90,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "User not have any deposits"
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -255,7 +255,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -455,7 +455,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -466,10 +466,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "User not have any deposits"
+                        "The user doesn't have any deposits."
                     );
                 });
 
+                // yichun: this one is not doing what's it is described
                 it("when there is no liquidity for the asked MKR", async () => {
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
@@ -622,7 +623,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
