@@ -115,7 +115,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
         context("With multiple kinds of tokens", async () => {
             context("Should fail", async () => {
                 it("Borrow multiple compound supported tokens, liquidate with compound supported token, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 USDT
@@ -126,22 +126,48 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 40%, acccount2 tries to liquidate using USDC
                      * Account1: Collateral worth roughly 1.2 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.2
                      *           It can be liquidated but the collateral is not enough.
@@ -155,7 +181,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -166,23 +192,50 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(2)));
 
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 40%, acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.6 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.2
                      *           It can be liquidated but the collateral is not enough.
@@ -196,7 +249,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 USDC
@@ -207,25 +260,55 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows MKR that is the same value of 0.6 DAI and 0.6 TUSD
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).mul(new BN(60)).div(new BN(100)).div(BN(MKRprice));
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .div(BN(MKRprice));
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 40%, acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.6 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.6
                      *           It can be liquidated but the collateral is not enough.
@@ -238,7 +321,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -249,25 +332,57 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows MKR that is the same value of 0.6 DAI and 0.6 TUSD
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).div(BN(MKRprice)).mul(new BN(60)).div(new BN(100));
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .div(BN(MKRprice))
+                        .mul(new BN(60))
+                        .div(new BN(100));
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 40%, acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.2 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.6
                      *           It can be liquidated but the collateral is not enough.
@@ -280,7 +395,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 USDT
@@ -291,22 +406,50 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDC and 0.6 TUSD
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 20%, acccount2 tries to liquidate using USDC
                      * Account1: Collateral worth roughly 1.2 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.2
                      *           It can be liquidated but the collateral is not enough.
@@ -320,7 +463,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and there is not engough collteral.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -331,22 +474,52 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDC and 0.6 TUSD
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 20%, acccount2 tries to liquidate using USDC
                      * Account1: Collateral worth roughly 1.2 USD, 1.2/1.2 = 1 > 0.85 and 1.2 * 0.95 < 1.6
                      *           It can be liquidated but the collateral is not enough.
@@ -360,7 +533,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -371,24 +544,56 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      * Account2: borrows 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user2 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user2 }
+                    );
+                    /*
                      * Step 3. DAI and TUSD price drops 30%, acccount2 tries to liquidate using TUSD.
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4 * 0.95 = 1.33 > 1.2.
                      *           It can be liquidated and the collateral is enough.
@@ -406,9 +611,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
 
-
                 it("Borrow multiple compound supported tokens, liquidate with compound supported token, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 DAI
@@ -419,24 +623,56 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      * Account2: borrows 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user2 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user2 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4 * 0.95 = 1.33 > 1.2.
                      *           It can be liquidated and the collateral is enough.
@@ -451,7 +687,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 DAI
@@ -462,27 +698,63 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and MKR that is the same value as 0.6 DAI
                      * Account2: borrows 0.6 TUSD
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).div(BN(MKRprice)).mul(new BN(60)).div(new BN(100));
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .div(BN(MKRprice))
+                        .mul(new BN(60))
+                        .div(new BN(100));
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user2 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user2 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4 * 0.95 = 1.33 > 1.2.
                      *           It can be liquidated and the collateral is enough.
@@ -496,7 +768,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -507,27 +779,59 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and MKR that is the same value as 0.6 DAI
                      * Account2: borrows MKR that is the same value as 0.6 DAI
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).div(BN(MKRprice)).mul(new BN(60)).div(new BN(100));
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .div(BN(MKRprice))
+                        .mul(new BN(60))
+                        .div(new BN(100));
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user2 });
-                    /* 
+                    /*
                      * Step 3. DAI price drops 40%, TUSD price drops 20% acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.2 USD, the borrowed asset worth 0.6 + 0.6 * 0.8 = 1.08
                      *           1.08 / 1.2 = 0.9 > 0.85, liquidatable. 1.2 * 0.95 = 1.14 > 1.08, collateral enough
@@ -545,7 +849,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 DAI
@@ -556,24 +860,58 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 USDC and 0.6 TUSD
                      * Account2: borrows 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user2 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user2 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4 * 0.95 = 1.33 > 1.2.
                      *           It can be liquidated and the collateral is enough.
@@ -588,7 +926,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and the liqudiator don't have enough tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 1 TUSD
@@ -599,24 +937,58 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(2)));
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(2)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), { from: user3 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(2)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 USDC and 0.6 TUSD
                      * Account2: borrows 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user2 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user2 }
+                    );
+                    /*
                      * Step 3. DAI price drops 40%, TUSD price drops 20% acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.2 USD, the borrowed asset worth 0.6 + 0.6 * 0.8 = 1.08
                      *           1.08 / 1.2 = 0.9 > 0.85, liquidatable. 1.2 * 0.95 = 1.14 > 1.08, collateral enough
@@ -638,7 +1010,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
             context("Should succeed", async () => {
                 it("Borrow multiple compound supported tokens, liquidate with compound supported token.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 USDT
@@ -649,22 +1021,48 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using USDT
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -679,7 +1077,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Borrow multiple compound supported tokens, liquidate with compound unsupported token.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 TUSD
@@ -690,22 +1088,50 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(10)),
+                        { from: user2 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -720,7 +1146,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 DAI
@@ -731,25 +1157,57 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(20)));
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(10)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and MKR that is the same value as 0.6 DAI
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).div(BN(MKRprice)).mul(new BN(60)).div(new BN(100));
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .div(BN(MKRprice))
+                        .mul(new BN(60))
+                        .div(new BN(100));
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
-                    /* 
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -763,7 +1221,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 TUSD
@@ -774,25 +1232,57 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(20)));
                     await erc20MKR.transfer(user3, eighteenPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(10)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and MKR that is the same value as 0.6 DAI
                      */
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     let MKRprice = await mockChainlinkAggregatorforMKR.latestAnswer();
-                    let MKRAmount = eighteenPrecision.mul(BN(DAIprice)).div(BN(MKRprice)).mul(new BN(60)).div(new BN(100));
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
+                    let MKRAmount = eighteenPrecision
+                        .mul(BN(DAIprice))
+                        .div(BN(MKRprice))
+                        .mul(new BN(60))
+                        .div(new BN(100));
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressMKR, MKRAmount, { from: user1 });
-                    /* 
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using USDC
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -806,7 +1296,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 DAI
@@ -817,22 +1307,52 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(20)));
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(10)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -847,7 +1367,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 TUSD
@@ -858,22 +1378,52 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(20)));
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(10)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20)),
+                        { from: user3 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 0.6 TUSD and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -888,7 +1438,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Liquidate a huge amount of multiple kinds of compound supported tokens.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 20000 DAI
                      * Account2: deposits 100000 DAI
@@ -899,22 +1449,56 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(200000)));
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(200000)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(20000)), { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(100000)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(200000)), { from: user3 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(200000)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20000)),
+                        { from: user1 }
+                    );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(100000)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
+                    await erc20USDC.approve(
+                        savingAccount.address,
+                        sixPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(20000)), { from: user1 });
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100000)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(200000)), { from: user3 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(200000)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(20000)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100000)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(200000)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 6000 TUSD and 6000 USDC
                      */
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using DAI
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -929,7 +1513,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
                 it("Liquidate a huge amount of multiple kinds of compound unsupported tokens.", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 20000 DAI
                      * Account2: deposits 100000 TUSD
@@ -940,22 +1524,58 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20TUSD.transfer(user3, eighteenPrecision.mul(new BN(200000)));
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(200000)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(20000)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(100000)), { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(200000)), { from: user3 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(200000)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(20000)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(100000)),
+                        { from: user2 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
+                    await erc20USDC.approve(
+                        savingAccount.address,
+                        sixPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(20000)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100000)), { from: user2 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(200000)), { from: user3 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(200000)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(20000)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(100000)),
+                        { from: user2 }
+                    );
+                    await savingAccount.deposit(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(200000)),
+                        { from: user3 }
+                    );
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(200000)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 and User 2 borrows from DeFiner
                      * Account1: borrows 6000 TUSD and 6000 USDC
                      */
-                    await savingAccount.borrow(addressTUSD, eighteenPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)), { from: user1 });
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressTUSD,
+                        eighteenPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)).mul(new BN(10000)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using TUSD
                      * Account1: Collateral worth roughly 1,4 * 10000 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4 * 0.95 = 1.33 > 1.2
                      *           It can be liquidated and the collateral is enough.
@@ -974,7 +1594,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
         context("LTV rates changing tests.", async () => {
             context("Should fail.", async () => {
                 it("Account is liquidatable, and becomes unliquidatable after LTV changing", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 USDT
@@ -985,22 +1605,48 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 30%, acccount2 tries to liquidate using USDT
                      * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 and 1.4* 0.95 = 1.33 > 1.2
                      *           It is liquidatable before the LTV rate changes
@@ -1010,7 +1656,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(70)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    await testEngine.tokenInfoRegistry.updateLiquidationThreshold(90);
+                    testEngine.globalConfig.updateLiquidationThreshold(90);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
@@ -1023,7 +1669,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
             });
             context("Should succeed.", async () => {
                 it("Account is unliquidatable, and becomes liquidatable after LTV changing", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
                      * Account2: deposits 10 USDT
@@ -1034,22 +1680,48 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
                     await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), { from: user3 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(2)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), { from: user1 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), { from: user2 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), { from: user3 });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), { from: user3 });
-                    /* 
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(10)), {
+                        from: user2,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), {
+                        from: user3,
+                    });
+                    /*
                      * Step 2. User1 borrows from DeFiner
                      * Account1: borrows 0.6 USDT and 0.6 USDC
                      */
-                    await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    await savingAccount.borrow(addressUSDT, sixPrecision.mul(new BN(60)).div(new BN(100)), { from: user1 });
-                    /* 
+                    await savingAccount.borrow(
+                        addressUSDC,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    await savingAccount.borrow(
+                        addressUSDT,
+                        sixPrecision.mul(new BN(60)).div(new BN(100)),
+                        { from: user1 }
+                    );
+                    /*
                      * Step 3. DAI price drops 20%, acccount2 tries to liquidate using USDT
                      * Account1: Collateral worth roughly 1.6 USD, 1.2/1.6 = 0.75 < 0.85
                      *           It is not liquidatable before the LTV rate changes
@@ -1059,7 +1731,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice).mul(new BN(80)).div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await savingAccount.isAccountLiquidatable(user1);
-                    await testEngine.tokenInfoRegistry.updateLiquidationThreshold(70);
+                    testEngine.globalConfig.updateLiquidationThreshold(70);
                     const rateChangeAfter = await savingAccount.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;

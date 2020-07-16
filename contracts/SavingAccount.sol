@@ -2,11 +2,11 @@ pragma solidity 0.5.14;
 
 import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
+import "./config/GlobalConfig.sol";
 
 contract SavingAccount {
     using SymbolsLib for SymbolsLib.Symbols;
@@ -26,13 +26,11 @@ contract SavingAccount {
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     TokenInfoRegistry public tokenRegistry;
+    GlobalConfig public globalConfig;
 
     uint256 ACCURACY = 10**18;
     uint BLOCKS_PER_YEAR = 2102400;
 
-    uint COMMUNITY_FUND_RATIO = 10;
-    uint256 MIN_RESERVE_RATIO = 10;
-    uint256 MAX_RESERVE_RATIO = 20;
 
     uint256 public constant UINT_UNIT = 10 ** 18;
 
@@ -52,16 +50,18 @@ contract SavingAccount {
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
         address _chainlinkAddress,
-        TokenInfoRegistry _tokenRegistry
+        TokenInfoRegistry _tokenRegistry,
+        GlobalConfig _globalConfig
     )
         public
     {
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
+        globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses);
+        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig));
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(tokenAddresses[i]);
@@ -174,8 +174,8 @@ contract SavingAccount {
     */
 
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
-        uint256 liquidationThreshold = tokenRegistry.getLiquidationThreshold();
-        uint256 liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
+        uint256 liquidationThreshold = globalConfig.liquidationThreshold();
+        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
         uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
         if (
@@ -447,6 +447,9 @@ contract SavingAccount {
         uint256 tokenAmount;
         uint256 tokenDivisor;
         uint256 msgTokenAccruedRate;
+
+        uint8 tokenIndex;
+        uint borrowLTV;
     }
 
     /**
@@ -454,10 +457,6 @@ contract SavingAccount {
      */
     function liquidate(address targetAccountAddr, address _targetToken) public {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
-        uint borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-        uint liquidationThreshold = tokenRegistry.getLiquidationThreshold();
-        uint liquidationDiscountRatio = tokenRegistry.getLiquidationDiscountRatio();
-
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(targetAccountAddr, symbols);
         vars.totalCollateral = baseVariable.getDepositETH(targetAccountAddr, symbols);
@@ -467,8 +466,12 @@ contract SavingAccount {
 
         vars.targetTokenBalance = baseVariable.getDepositBalance(_targetToken, msg.sender);
 
+        uint liquidationThreshold =  GlobalConfig(baseVariable.globalConfigAddress).liquidationThreshold();
+        uint liquidationDiscountRatio = GlobalConfig(baseVariable.globalConfigAddress).liquidationDiscountRatio();
+
         require(_targetToken != address(0), "Token address is zero");
-        uint8 tokenIndex = tokenRegistry.getTokenIndex(_targetToken);
+        vars.tokenIndex = tokenRegistry.getTokenIndex(_targetToken);
+        vars.borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
@@ -485,7 +488,7 @@ contract SavingAccount {
         );
 
         require(
-            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
+            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
             "No extra funds are used for liquidation."
         );
 
@@ -498,8 +501,8 @@ contract SavingAccount {
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(borrowLTV).div(100)
-        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
+            vars.totalCollateral.mul(vars.borrowLTV).div(100)
+        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
 
         // Liquidators need to pay
         vars.targetTokenPrice = symbols.priceFromAddress(_targetToken);
@@ -507,9 +510,9 @@ contract SavingAccount {
 
         if(
             vars.msgTotalBorrow != 0 &&
-            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow)
+            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
          ) {
-            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow);
+            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
         }
 
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
@@ -526,12 +529,12 @@ contract SavingAccount {
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
         if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
-            baseVariable.unsetFromDepositBitmap(msg.sender, tokenIndex);
+            baseVariable.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
         }
 
         targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
         if(targetTokenInfo.getBorrowPrincipal() == 0) {
-            baseVariable.unsetFromBorrowBitmap(targetAccountAddr, tokenIndex);
+            baseVariable.unsetFromBorrowBitmap(targetAccountAddr, vars.tokenIndex);
         }
 
         // The collaterals are liquidate in the order of their market liquidity
@@ -567,11 +570,11 @@ contract SavingAccount {
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
                     tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
                     if(tokenInfo.getDepositPrincipal() == 0) {
-                        baseVariable.unsetFromDepositBitmap(targetAccountAddr, tokenIndex);
+                        baseVariable.unsetFromDepositBitmap(targetAccountAddr, vars.tokenIndex);
                     }
 
                     if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
-                        baseVariable.setInDepositBitmap(msg.sender, tokenIndex);
+                        baseVariable.setInDepositBitmap(msg.sender, vars.tokenIndex);
                     }
                     msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
                 }
