@@ -100,7 +100,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
                             from: user2
                         }),
-                        "Insufficient collateral."
+                        "Insufficient balance."
                     );
                 });
 
@@ -287,7 +287,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                             from: user2
                         }),
-                        "Insufficient collateral."
+                        "Insufficient balance."
                     );
                 });
 

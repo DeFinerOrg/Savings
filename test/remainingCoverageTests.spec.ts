@@ -96,7 +96,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
 
             it("when borrowRateLMBN is zero");
-            // cases of `getNowDepositRate`, line 261 Base.sol
+            // cases of `depositRateIndexNow`, line 261 Base.sol
 
             it("when borrowRateLMBN is equal to block number");
         });
@@ -245,7 +245,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     //------------Not high priority as of now-----------
-
+    /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
             //TODO
@@ -282,7 +282,8 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
     });
-
+    */
+    /*
     context("getMarketState", async () => {
         //TODO:
         context("should succeed", async () => {
@@ -302,7 +303,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
     });
-
+    */
     context("getTokenState", async () => {
         // Also being called by getMarketState
         context("should fail", async () => { });
@@ -314,7 +315,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
     });
-
+    /*
     context("getBalances", async () => {
         context("should fail", async () => { });
 
@@ -331,7 +332,7 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
     });
-
+    */
     context("getCoinAddress", async () => {
         context("should fail", async () => { });
 
