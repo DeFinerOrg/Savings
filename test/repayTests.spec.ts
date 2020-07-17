@@ -211,7 +211,7 @@ contract("SavingAccount", async (accounts) => {
                     await savingAccount.repay(addressUSDC, new BN(20), { from: user1 });
                     // 4. Verify the repay amount.
                     const user1BalanceRepayAfter = BN(await erc20USDC.balanceOf(user1));
-                    expect(user1BalanceBorrowAfter.sub(user1BalanceBorrowBefore)).to.be.bignumber.equal(numOfToken.add(new BN(10)));
+                    expect(user1BalanceBorrowAfter.sub(user1BalanceBorrowBefore)).to.be.bignumber.equal(new BN(10));
                     expect(user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)).to.be.bignumber.equal(numOfToken);
                 });
             });
