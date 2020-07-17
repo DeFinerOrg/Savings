@@ -103,7 +103,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
@@ -208,7 +208,7 @@ contract("RemainingCoverage", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("when valid token address is passed", async () => {});
+            it("when valid token address is passed", async () => { });
             // verify deFinerFund == 0, transfer()
         });
     });
@@ -267,6 +267,7 @@ contract("RemainingCoverage", async (accounts) => {
                 //1. Deposit DAI
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(100)), {
@@ -274,8 +275,8 @@ contract("RemainingCoverage", async (accounts) => {
                 });
 
                 // 3. Verify the loan amount
-                const user1Balance = await erc20USDC.balanceOf(user1);
-                expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
+                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
+                expect(BN(user1BalanceAfter).sub(user1BalanceBefore)).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
 
                 await savingAccount.getAccountTotalETHValue(user1);
             });
@@ -305,7 +306,7 @@ contract("RemainingCoverage", async (accounts) => {
     */
     context("getTokenState", async () => {
         // Also being called by getMarketState
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
@@ -316,7 +317,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
     /*
     context("getBalances", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when sender's address is valid", async () => {
@@ -333,7 +334,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
     */
     context("getCoinAddress", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when function is called", async () => {

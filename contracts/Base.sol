@@ -8,6 +8,7 @@ import "./lib/TokenInfoLib.sol";
 import "./lib/SymbolsLib.sol";
 import "./lib/BitmapLib.sol";
 import "./lib/SafeDecimalMath.sol";
+import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
@@ -36,6 +37,7 @@ library Base {
         // Store per account info
         mapping(address => Account) accounts;
         address payable deFinerCommunityFund;
+        address globalConfigAddress;
         mapping(address => uint) deFinerFund;
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
@@ -64,7 +66,8 @@ library Base {
     /**
      * Initialize
      */
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens) public {
+    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress) public {
+        self.globalConfigAddress = _globalConfigAddress;
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }
@@ -90,10 +93,10 @@ library Base {
 //        return account.borrowBitmap;
 //    }
 
-    function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-        Account storage account = self.accounts[_account];
-        return account.borrowBitmap > 0;
-    }
+    // function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
+    //     Account storage account = self.accounts[_account];
+    //     return account.borrowBitmap > 0;
+    // }
 
     function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
@@ -143,11 +146,11 @@ library Base {
     /**
      * Total amount of available tokens for withdraw and borrow
      */
-    function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = self.cTokenAddress[_token];
-        uint256 totalReserve = self.totalReserve[_token];
-        return self.totalCompound[cToken].add(totalReserve);
-    }
+    // function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
+    //     address cToken = self.cTokenAddress[_token];
+    //     uint256 totalReserve = self.totalReserve[_token];
+    //     return self.totalCompound[cToken].add(totalReserve);
+    // }
 
     /**
      * Update total amount of token in Compound as the cToken price changed
@@ -198,8 +201,8 @@ library Base {
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
             if (self.cTokenAddress[_token] != address(0) &&
-                totalReserveBeforeAdjust > totalAmount.mul(20).div(100)) { // sichaoy: 20 and 15 should be defined as constants
-                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(15).div(100);
+                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
+                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                 toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount.sub(toCompoundAmount));
@@ -224,17 +227,17 @@ library Base {
 
             // Trigger fromCompound if the new reservation ratio is less than 10%
             if(self.cTokenAddress[_token] != address(0) &&
-                (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(10).div(100))) {
+                (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(GlobalConfig(self.globalConfigAddress).minReserveRatio()).div(100))) {
 
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
-                if (totalAvailable < totalAmount.mul(15).div(100)){
+                if (totalAvailable < totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
                     fromCompound(self, _token, self.totalCompound[cToken]);
                     self.totalCompound[cToken] = 0;
                     self.totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(15).div(100);
+                    uint totalInCompound = totalAvailable - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                     fromCompound(self, _token, self.totalCompound[cToken]-totalInCompound);
                     self.totalCompound[cToken] = totalInCompound;
                     self.totalReserve[_token] = totalAvailable.sub(totalInCompound);
