@@ -8,6 +8,10 @@ PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero
 ComptrollerImpl Deploy ScenarioG2 ComptrollerScenG2
 Unitroller SetPendingImpl ComptrollerScenG2
 ComptrollerImpl ComptrollerScenG2 BecomeG2
+Erc20 Deploy Standard USDC "USD Coin" 6
+Erc20 Deploy Standard USDT "Tether" 6
+Erc20 Deploy Standard WBTC "WBTC" 8
+
 --list some tokens
 Comptroller SetPriceOracle (PriceOracleProxy Address)
 Comptroller SetMaxAssets 20
@@ -18,12 +22,13 @@ NewCToken ZRX cZRX
 NewCToken BAT cBAT
 NewCToken DAI cDAI
 NewCToken SAI cSAI
-NewCToken USDC cUSDC
-NewCToken USDT cUSDT
+NewCTokenBringERC20 USDC cUSDC
+NewCTokenBringERC20 USDT cUSDT
 NewCToken TUSD cTUSD
 NewCToken MKR cMKR
 NewCToken REP cREP
-NewCToken WBTC cWBTC
+NewCTokenBringERC20 WBTC cWBTC
+
 Support cZRX collateralFactor:0.5
 Support cBAT collateralFactor:0.5
 Support cDAI collateralFactor:0.5
@@ -34,38 +39,42 @@ Support cTUSD collateralFactor:0.5
 Support cMKR collateralFactor:0.5
 Support cREP collateralFactor:0.5
 Support cWBTC collateralFactor:0.5
+
 -- final
 ComptrollerImpl Deploy Scenario ComptrollerScen
 Unitroller SetPendingImpl ComptrollerScen
 
 Comptroller SupportMarket cETH
 
-Prep first 100e26 ZRX cZRX
-Mint first 50e26 cZRX--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 BAT cBAT
+Mint first 50e30 cBAT--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 DAI cDAI
-Mint first 50e26 cDAI--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 ZRX cZRX
+Mint first 50e30 cZRX--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 SAI cSAI
-Mint first 50e26 cSAI--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 DAI cDAI
+Mint first 50e30 cDAI--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 USDC cUSDC
-Mint first 50e26 cUSDC--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 SAI cSAI
+Mint first 50e30 cSAI--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 USDT cUSDT
-Mint first 50e26 cUSDT--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e18 USDC cUSDC
+Mint first 50e18 cUSDC--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 TUSD cTUSD
-Mint first 50e26 cTUSD--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e18 USDT cUSDT
+Mint first 50e18 cUSDT--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 MKR cMKR
-Mint first 50e26 cMKR--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 TUSD cTUSD
+Mint first 50e30 cTUSD--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 REP cREP
-Mint first 50e26 cREP--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 MKR cMKR
+Mint first 50e30 cMKR--tokenbalance = 50e30 / 2e9 = 2.5e18
 
-Prep first 100e26 WBTC cWBTC
-Mint first 50e26 cWBTC--tokenbalance = 50e26 / 2e9 = 2.5e18
+Prep first 100e30 REP cREP
+Mint first 50e30 cREP--tokenbalance = 50e30 / 2e9 = 2.5e18
+
+Prep first 100e20 WBTC cWBTC
+Mint first 50e20 cWBTC--tokenbalance = 50e30 / 2e9 = 2.5e18
 
 PriceOracleProxy Deploy Admin (PriceOracle Address) (Address cETH) (Address cUSDC) (Address cSAI) (Address cDAI) (Address cUSDT)
 
