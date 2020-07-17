@@ -4,13 +4,83 @@ import { TestEngine } from "../test-helpers/TestEngine";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../test-helpers/tokenData.json");
-
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.withdraw", async (accounts) => {
+    // const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+    // const addressZero: string = "0x0000000000000000000000000000000000000000";
+    // let testEngine: TestEngine;
+    // let savingAccount: t.SavingAccountInstance;
+
+    // const owner = accounts[0];
+    // const user1 = accounts[1];
+    // const user2 = accounts[2];
+    // const dummy = accounts[9];
+
+    // let tokens: any;
+    // let addressDAI: any;
+    // let addressUSDC: any;
+    // let addressUSDT: any;
+    // let addressWBTC: any;
+    // let addressTUSD: any;
+    // let addressMKR: any;
+    // let addressCTokenForDAI: any;
+    // let addressCTokenForUSDC: any;
+    // let addressCTokenForUSDT: any;
+    // let addressCTokenForWBTC: any;
+    // let cTokenDAI: t.MockCTokenInstance;
+    // let cTokenUSDC: t.MockCTokenInstance;
+    // let cTokenUSDT: t.MockCTokenInstance;
+    // let cTokenWBTC: t.MockCTokenInstance;
+    // let erc20DAI: t.MockERC20Instance;
+    // let erc20USDC: t.MockERC20Instance;
+    // let erc20USDT: t.MockERC20Instance;
+    // let erc20WBTC: t.MockERC20Instance;
+    // let erc20TUSD: t.MockERC20Instance;
+    // let erc20MKR: t.MockERC20Instance;
+    // let ZERO: any;
+    // let ONE_YEAR: any;
+    // let BLOCKS_MINED_WEEKLY: any;
+
+    // before(async () => {
+    //     // Things to initialize before all test
+    //     testEngine = new TestEngine();
+    // });
+
+    // beforeEach(async () => {
+    //     savingAccount = await testEngine.deploySavingAccount();
+    //     // 1. initialization.
+    //     tokens = await testEngine.erc20Tokens;
+    //     addressDAI = tokens[0];
+    //     addressUSDC = tokens[1];
+    //     addressUSDT = tokens[2];
+    //     addressTUSD = tokens[3];
+    //     addressMKR = tokens[4];
+    //     addressWBTC = tokens[8];
+    //     erc20DAI = await MockERC20.at(addressDAI);
+    //     erc20USDC = await MockERC20.at(addressUSDC);
+    //     erc20USDT = await MockERC20.at(addressUSDT);
+    //     erc20WBTC = await MockERC20.at(addressWBTC);
+    //     erc20TUSD = await MockERC20.at(addressTUSD);
+    //     erc20MKR = await MockERC20.at(addressMKR);
+    //     addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+    //     addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+    //     addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+    //     addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+    //     cTokenDAI = await MockCToken.at(addressCTokenForDAI);
+    //     cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+    //     cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
+    //     cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+    //     ZERO = new BN(0);
+    //     ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
+    //     BLOCKS_MINED_WEEKLY = new BN(30).mul(new BN(6)).mul(new BN(24));
+    // });
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -19,32 +89,58 @@ contract("SavingAccount.withdraw", async (accounts) => {
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
+    const user3 = accounts[3];
     const dummy = accounts[9];
-
+    const eighteenPrecision = new BN(10).pow(new BN(18));
+    const sixPrecision = new BN(10).pow(new BN(6));
+    const eightPrecision = new BN(10).pow(new BN(8));
     let tokens: any;
+    let mockChainlinkAggregators: any;
     let addressDAI: any;
     let addressUSDC: any;
     let addressUSDT: any;
-    let addressWBTC: any;
     let addressTUSD: any;
     let addressMKR: any;
+    let addressWBTC: any;
+    let mockChainlinkAggregatorforDAIAddress: any;
+    let mockChainlinkAggregatorforUSDCAddress: any;
+    let mockChainlinkAggregatorforUSDTAddress: any;
+    let mockChainlinkAggregatorforTUSDAddress: any;
+    let mockChainlinkAggregatorforMKRAddress: any;
+    let mockChainlinkAggregatorforWBTCAddress: any;
+    let mockChainlinkAggregatorforETHAddress: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
+    let addressCTokenForTUSD: any;
+    let addressCTokenForMKR: any;
     let addressCTokenForWBTC: any;
+
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
+    let cTokenTUSD: t.MockCTokenInstance;
+    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
+
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
+    let erc20MKR: t.MockERC20Instance;
+    let erc20TUSD: t.MockERC20Instance;
     let erc20USDT: t.MockERC20Instance;
     let erc20WBTC: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
+    let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
+
+    let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
+    let numOfToken: any;
+    let ONE_DAI: any;
+    let ONE_USDC: any;
     let ZERO: any;
-    let ONE_YEAR: any;
-    let BLOCKS_MINED_WEEKLY: any;
 
     before(async () => {
         // Things to initialize before all test
@@ -55,31 +151,55 @@ contract("SavingAccount.withdraw", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+        mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
+
+        mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
+        mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
+        mockChainlinkAggregatorforUSDTAddress = mockChainlinkAggregators[2];
+        mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
+        mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
+        mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
+
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];//todo:where is ETH address?
+        erc20WBTC = await MockERC20.at(addressWBTC);
+
         erc20DAI = await MockERC20.at(addressDAI);
         erc20USDC = await MockERC20.at(addressUSDC);
         erc20USDT = await MockERC20.at(addressUSDT);
-        erc20WBTC = await MockERC20.at(addressWBTC);
         erc20TUSD = await MockERC20.at(addressTUSD);
         erc20MKR = await MockERC20.at(addressMKR);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
+        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
+        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
+        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
-        ZERO = new BN(0);
-        ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
-        BLOCKS_MINED_WEEKLY = new BN(30).mul(new BN(6)).mul(new BN(24));
-    });
 
+        mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(mockChainlinkAggregatorforDAIAddress);
+        mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDCAddress);
+        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDTAddress);
+        mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(mockChainlinkAggregatorforTUSDAddress);
+        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(mockChainlinkAggregatorforMKRAddress);
+        mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(mockChainlinkAggregatorforETHAddress);
+        mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(mockChainlinkAggregatorforWBTCAddress);
+
+        ONE_DAI = eighteenPrecision;
+        ONE_USDC = sixPrecision;
+        numOfToken = new BN(1000);
+        ZERO = new BN(0);
+    });
     context("withdraw()", async () => {
         context("should succeed", async () => {
             it("when partial tokens are withdrawn", async () => {
@@ -732,9 +852,16 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const depositAmount = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, depositAmount);
                 let userBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(owner);
+                let accountBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(
+                    savingAccount.address
+                );
+
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20DAI.address
                 );
+                const compCDAIBefore = await cTokenDAI.balanceOf(savingAccount.address);
+
+                const compDAIBefore = await erc20DAI.balanceOf(addressCTokenForDAI);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20DAI.address, depositAmount);
@@ -747,6 +874,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(totalDefinerBalanceBeforeDeposit[0])
                 );
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+                console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
+                console.log((await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)).toString());
 
                 //Withdrawing DAI
                 await savingAccount.withdrawAll(erc20DAI.address);
@@ -760,21 +889,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     userBalanceAfterWithdrawDAI
                 );
                 // Verify contract balance
-                expect(accountBalanceAfterWithdrawDAI).to.be.bignumber.equal(ZERO);
+                expect(BN(accountBalanceAfterWithdrawDAI).sub(accountBalanceBeforeWithdrawDAI)).to.be.bignumber.equal(ZERO);
 
                 // Verify DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
                     erc20DAI.address
                 );
-                expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+                expect(ZERO).to.be.bignumber.equal(BN(totalDefinerBalancAfterWithdraw[0]).sub(BN(totalDefinerBalanceBeforeDeposit[0])));
 
                 // Verify Compound balance
-                const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
-                expect(ZERO).to.be.bignumber.equal(balCToken);
+                const compDAIAfter = await erc20DAI.balanceOf(addressCTokenForDAI);
+                expect(ZERO).to.be.bignumber.equal(BN(compDAIAfter).sub(BN(compDAIBefore)));
 
                 // Verify CToken balance
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                expect(ZERO).to.be.bignumber.equal(balCTokens);
+                const compCDAIAfter = await cTokenDAI.balanceOf(savingAccount.address);
+                expect(ZERO).to.be.bignumber.equal(BN(compCDAIAfter).sub(BN(compCDAIBefore)));
             });
 
             //Full withdrawal of tokens with 6 decimals
@@ -785,6 +914,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20USDC.address
                 );
+                let accountBalanceBeforeWithdrawUSDC = await erc20USDC.balanceOf(
+                    savingAccount.address
+                );
+                const totalDefinerBalancBeforeWithdraw = await savingAccount.tokenBalance(
+                    erc20USDC.address
+                );
+                const compUSDCBefore = await erc20USDC.balanceOf(addressCTokenForUSDC);
+                const compCUSDCBefore = await cTokenUSDC.balanceOf(savingAccount.address);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20USDC.address, depositAmount);
@@ -796,6 +933,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
                     new BN(totalDefinerBalanceBeforeDeposit[0])
                 );
+
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 //Withdrawing USDC
@@ -807,21 +945,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(userBalanceBeforeWithdrawUSDC).to.be.bignumber.equal(
                     userBalanceAfterWithdrawUSDC
                 );
-                expect(accountBalanceAfterWithdrawUSDC).to.be.bignumber.equal(ZERO);
+                expect(BN(accountBalanceAfterWithdrawUSDC).sub(BN(accountBalanceBeforeWithdrawUSDC))).to.be.bignumber.equal(ZERO);
 
                 // Verify DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
                     erc20USDC.address
                 );
-                expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+                expect(ZERO).to.be.bignumber.equal(BN(totalDefinerBalancAfterWithdraw[0]).sub(BN(totalDefinerBalancBeforeWithdraw[0])));
 
                 // Verify Compound balance
-                const balCToken = await erc20USDC.balanceOf(addressCTokenForUSDC);
-                expect(ZERO).to.be.bignumber.equal(balCToken);
+                const compUSDCAfter = await erc20USDC.balanceOf(addressCTokenForUSDC);
+                expect(ZERO).to.be.bignumber.equal(BN(compUSDCAfter).sub(compUSDCBefore));
 
                 // Verify CToken balance
-                const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
-                expect(ZERO).to.be.bignumber.equal(balCTokens);
+                const compCUSDCAfter = await cTokenUSDC.balanceOf(savingAccount.address);
+                expect(ZERO).to.be.bignumber.equal(BN(compCUSDCAfter).sub(compCUSDCBefore));
             });
 
             it("when full USDT withdrawn", async () => {
@@ -831,6 +969,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20USDT.address
                 );
+                let accountBalanceBeforeWithdrawUSDT = await erc20USDT.balanceOf(
+                    savingAccount.address
+                );
+                const totalDefinerBalanceBeforeWithdraw = await savingAccount.tokenBalance(
+                    erc20USDT.address
+                );
+                const compUSDTBefore = await erc20USDT.balanceOf(addressCTokenForUSDT);
+                const compCUSDTBefore = await cTokenUSDT.balanceOf(savingAccount.address);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20USDT.address, depositAmount);
@@ -853,21 +999,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(userBalanceBeforeWithdrawUSDT).to.be.bignumber.equal(
                     userBalanceAfterWithdrawUSDT
                 );
-                expect(accountBalanceAfterWithdrawUSDT).to.be.bignumber.equal(ZERO);
+                expect(BN(accountBalanceAfterWithdrawUSDT).sub(accountBalanceBeforeWithdrawUSDT)).to.be.bignumber.equal(ZERO);
 
                 // Verify DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
                     erc20USDT.address
                 );
-                expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+                expect(ZERO).to.be.bignumber.equal(BN(totalDefinerBalancAfterWithdraw[0]).sub(BN(totalDefinerBalanceBeforeWithdraw[0])));
 
                 // Verify Compound balance
-                const balCToken = await erc20USDT.balanceOf(addressCTokenForUSDT);
-                expect(ZERO).to.be.bignumber.equal(balCToken);
+                const compUSDTAfter = await erc20USDT.balanceOf(addressCTokenForUSDT);
+                expect(ZERO).to.be.bignumber.equal(BN(compUSDTAfter).sub(compUSDTBefore));
 
                 // Verify CToken balance
-                const balCTokens = await cTokenUSDT.balanceOf(savingAccount.address);
-                expect(ZERO).to.be.bignumber.equal(balCTokens);
+                const compCUSDTAfter = await cTokenUSDT.balanceOf(savingAccount.address);
+                expect(ZERO).to.be.bignumber.equal(BN(compCUSDTAfter).sub(compCUSDTBefore));
             });
 
             //Full withdrawal of tokens with 8 decimals
@@ -878,6 +1024,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20WBTC.address
                 );
+                const totalDefinerBalancBeforeWithdraw = await savingAccount.tokenBalance(
+                    erc20WBTC.address
+                );
+                let accountBalanceBeforeWithdrawWBTC = await erc20WBTC.balanceOf(
+                    savingAccount.address
+                );
+                const compWBTCBefore = await erc20WBTC.balanceOf(addressCTokenForWBTC);
+                const compCWBTCBefore = await cTokenWBTC.balanceOf(savingAccount.address);
 
                 // deposit tokens
                 await savingAccount.deposit(erc20WBTC.address, depositAmount);
@@ -900,21 +1054,21 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(userBalanceBeforeWithdrawWBTC).to.be.bignumber.equal(
                     userBalanceAfterWithdrawWBTC
                 );
-                expect(accountBalanceAfterWithdrawWBTC).to.be.bignumber.equal(ZERO);
+                expect(BN(accountBalanceAfterWithdrawWBTC).sub(BN(accountBalanceBeforeWithdrawWBTC))).to.be.bignumber.equal(ZERO);
 
                 // Verify DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
                     erc20WBTC.address
                 );
-                expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+                expect(ZERO).to.be.bignumber.equal(BN(totalDefinerBalancAfterWithdraw[0]).sub(BN(totalDefinerBalancBeforeWithdraw[0])));
 
                 // Verify Compound balance
-                const balCToken = await erc20WBTC.balanceOf(addressCTokenForWBTC);
-                expect(ZERO).to.be.bignumber.equal(balCToken);
+                const compWBTCAfter = await erc20WBTC.balanceOf(addressCTokenForWBTC);
+                expect(ZERO).to.be.bignumber.equal(BN(compWBTCAfter).sub(BN(compWBTCBefore)));
 
                 // Verify CToken balance
-                const balCTokens = await cTokenWBTC.balanceOf(savingAccount.address);
-                expect(ZERO).to.be.bignumber.equal(balCTokens);
+                const compCWBTCAfter = await cTokenWBTC.balanceOf(savingAccount.address);
+                expect(ZERO).to.be.bignumber.equal(BN(compCWBTCAfter).sub(BN(compCWBTCBefore)));
             });
 
             it("when full TUSD withdrawn", async () => {
