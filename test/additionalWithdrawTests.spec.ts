@@ -83,154 +83,154 @@ contract("SavingAccount.withdraw", async (accounts) => {
     });
 
     context("Addtional tests for withdraw", async () => {
-        context("when partial tokens are withdrawn, but triggers DeFiner to withdraw from Compound", async () => {
-            context("should succeed", async () => {
-                it("Use DAI, 18 decimals", async () => {
-                    /*
-                     * Step 1
-                     * Account 0 deposits 1000 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenDAI and 150 tokens for DAI
-                     */
-                    const numOfTokens = new BN(1000);
-                    await erc20DAI.approve(savingAccount.address, numOfTokens);
-                    await savingAccount.deposit(erc20DAI.address, numOfTokens);
-                    /*
-                     * Step 2
-                     * Account 0 withdraw 150 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenDAI, so it should trigger the mechanism 
-                     * to withdraw some tokens from Compound
-                     * To verify:
-                     * 1. withdraw amount = balance before withdraw - balance after withdraw
-                     * 2. cTokenDAI + DAI = 850
-                     * 3. cTokenDAI id either 723 or 722
-                     */
-                    const withdraws = new BN(150);
-                    let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
-                    await savingAccount.withdraw(erc20DAI.address, withdraws);
-                    let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
-                    const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                        BN(userBalanceBeforeWithdraw)
-                    );
-                    // Verify 1.
-                    expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
-                    const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
-                    const totalSavingAccount = (new BN(newbalSavingAccount)).add(new BN(balCToken));
-                    const totalDeposit = BN(numOfTokens.sub(withdraws));
-                    // Verify 2.
-                    expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
-                    // Verify 3.
-                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
-                });
-                it("Use USDC, 6 decimals", async () => {
-                    /*
-                     * Step 1
-                     * Account 0 deposits 1000 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenUSDC and 150 tokens for USDC
-                     */
-                    const numOfTokens = new BN(1000);
-                    await erc20USDC.approve(savingAccount.address, numOfTokens);
-                    await savingAccount.deposit(erc20USDC.address, numOfTokens);
-                    /*
-                     * Step 2
-                     * Account 0 withdraw 150 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenUSDC, so it should trigger the mechanism 
-                     * to withdraw some tokens from Compound
-                     * To verify:
-                     * 1. withdraw amount = balance before withdraw - balance after withdraw
-                     * 2. cTokenUSDC + USDC = 850
-                     * 3. cTokenUSDC id either 723 or 722
-                     */
-                    const withdraws = new BN(150);
-                    let userBalanceBeforeWithdraw = await erc20USDC.balanceOf(owner);
-                    await savingAccount.withdraw(erc20USDC.address, withdraws);
-                    let userBalanceAfterWithdraw = await erc20USDC.balanceOf(owner);
-                    const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                        BN(userBalanceBeforeWithdraw)
-                    );
-                    // Verify 1.
-                    expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
-                    const newbalSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
-                    const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
-                    const totalDeposit = BN(numOfTokens.sub(withdraws));
-                    // Verify 2.
-                    expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
-                    // Verify 3.
-                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
-                });
-                it("Use WBTC, 8 decimals", async () => {
-                    /*
-                     * Step 1
-                     * Account 0 deposits 1000 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenWBTC and 150 tokens for WBTC
-                     */
-                    const numOfTokens = new BN(1000);
-                    await erc20WBTC.approve(savingAccount.address, numOfTokens);
-                    await savingAccount.deposit(erc20WBTC.address, numOfTokens);
-                    /*
-                     * Step 2
-                     * Account 0 withdraw 150 tokens into DeFiner
-                     * DeFiner should have 850 tokens for cTokenWBTC, so it should trigger the mechanism 
-                     * to withdraw some tokens from Compound
-                     * To verify:
-                     * 1. withdraw amount = balance before withdraw - balance after withdraw
-                     * 2. cTokenWBTC + WBTC = 850
-                     * 3. cTokenWBTC id either 723 or 722
-                     */
-                    const withdraws = new BN(150);
-                    let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
-                    await savingAccount.withdraw(erc20WBTC.address, withdraws);
-                    let userBalanceAfterWithdraw = await erc20WBTC.balanceOf(owner);
-                    const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                        BN(userBalanceBeforeWithdraw)
-                    );
-                    // Verify 1.
-                    expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
-                    const newbalSavingAccount = await erc20WBTC.balanceOf(savingAccount.address);
-                    const balCToken = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
-                    const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
-                    const totalDeposit = BN(numOfTokens.sub(withdraws));
-                    // Verify 2.
-                    expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
-                    // Verify 3.
-                    expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
-                });
+        // context("when partial tokens are withdrawn, but triggers DeFiner to withdraw from Compound", async () => {
+        //     context("should succeed", async () => {
+        //         it("Use DAI, 18 decimals", async () => {
+        //             /*
+        //              * Step 1
+        //              * Account 0 deposits 1000 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenDAI and 150 tokens for DAI
+        //              */
+        //             const numOfTokens = new BN(1000);
+        //             await erc20DAI.approve(savingAccount.address, numOfTokens);
+        //             await savingAccount.deposit(erc20DAI.address, numOfTokens);
+        //             /*
+        //              * Step 2
+        //              * Account 0 withdraw 150 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenDAI, so it should trigger the mechanism 
+        //              * to withdraw some tokens from Compound
+        //              * To verify:
+        //              * 1. withdraw amount = balance before withdraw - balance after withdraw
+        //              * 2. cTokenDAI + DAI = 850
+        //              * 3. cTokenDAI id either 723 or 722
+        //              */
+        //             const withdraws = new BN(150);
+        //             let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
+        //             await savingAccount.withdraw(erc20DAI.address, withdraws);
+        //             let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
+        //             const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+        //             const balCToken = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+        //             const totalSavingAccount = (new BN(newbalSavingAccount)).add(new BN(balCToken));
+        //             const totalDeposit = BN(numOfTokens.sub(withdraws));
+        //             // Verify 2.
+        //             expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
+        //             // Verify 3.
+        //             expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
+        //         });
+        //         it("Use USDC, 6 decimals", async () => {
+        //             /*
+        //              * Step 1
+        //              * Account 0 deposits 1000 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenUSDC and 150 tokens for USDC
+        //              */
+        //             const numOfTokens = new BN(1000);
+        //             await erc20USDC.approve(savingAccount.address, numOfTokens);
+        //             await savingAccount.deposit(erc20USDC.address, numOfTokens);
+        //             /*
+        //              * Step 2
+        //              * Account 0 withdraw 150 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenUSDC, so it should trigger the mechanism 
+        //              * to withdraw some tokens from Compound
+        //              * To verify:
+        //              * 1. withdraw amount = balance before withdraw - balance after withdraw
+        //              * 2. cTokenUSDC + USDC = 850
+        //              * 3. cTokenUSDC id either 723 or 722
+        //              */
+        //             const withdraws = new BN(150);
+        //             let userBalanceBeforeWithdraw = await erc20USDC.balanceOf(owner);
+        //             await savingAccount.withdraw(erc20USDC.address, withdraws);
+        //             let userBalanceAfterWithdraw = await erc20USDC.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
+        //             const newbalSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
+        //             const balCToken = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
+        //             const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
+        //             const totalDeposit = BN(numOfTokens.sub(withdraws));
+        //             // Verify 2.
+        //             expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
+        //             // Verify 3.
+        //             expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
+        //         });
+        //         it("Use WBTC, 8 decimals", async () => {
+        //             /*
+        //              * Step 1
+        //              * Account 0 deposits 1000 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenWBTC and 150 tokens for WBTC
+        //              */
+        //             const numOfTokens = new BN(1000);
+        //             await erc20WBTC.approve(savingAccount.address, numOfTokens);
+        //             await savingAccount.deposit(erc20WBTC.address, numOfTokens);
+        //             /*
+        //              * Step 2
+        //              * Account 0 withdraw 150 tokens into DeFiner
+        //              * DeFiner should have 850 tokens for cTokenWBTC, so it should trigger the mechanism 
+        //              * to withdraw some tokens from Compound
+        //              * To verify:
+        //              * 1. withdraw amount = balance before withdraw - balance after withdraw
+        //              * 2. cTokenWBTC + WBTC = 850
+        //              * 3. cTokenWBTC id either 723 or 722
+        //              */
+        //             const withdraws = new BN(150);
+        //             let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
+        //             await savingAccount.withdraw(erc20WBTC.address, withdraws);
+        //             let userBalanceAfterWithdraw = await erc20WBTC.balanceOf(owner);
+        //             const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //                 BN(userBalanceBeforeWithdraw)
+        //             );
+        //             // Verify 1.
+        //             expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
+        //             const newbalSavingAccount = await erc20WBTC.balanceOf(savingAccount.address);
+        //             const balCToken = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
+        //             const totalSavingAccount = BN(newbalSavingAccount).add(balCToken);
+        //             const totalDeposit = BN(numOfTokens.sub(withdraws));
+        //             // Verify 2.
+        //             expect(totalSavingAccount).to.be.bignumber.equal(totalDeposit)
+        //             // Verify 3.
+        //             expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
+        //         });
 
-                // TODO: Compound unsupported tokens issues are not fixed yet.
-                // it("Use TUSD, compound not supported tokens", async () => {
-                //     /*
-                //         * Step 1
-                //         * Account 0 deposits 1000 tokens into DeFiner
-                //         * DeFiner should have 1000 tokens TUSD
-                //         */
-                //     const numOfTokens = new BN(1000);
-                //     await erc20TUSD.approve(savingAccount.address, numOfTokens);
-                //     await savingAccount.deposit(erc20TUSD.address, numOfTokens);
-                //     /*
-                //         * Step 2
-                //         * Account 0 withdraw 150 tokens into DeFiner
-                //         * DeFiner should have 850 TUSD tokens
-                //         * to withdraw some tokens from Compound
-                //         * To verify:
-                //         * 1. withdraw amount = balance before withdraw - balance after withdraw
-                //         * 2. TUSD tokens in compound is 850
-                //         */
-                //     const withdraws = new BN(150);
-                //     let userBalanceBeforeWithdraw = await erc20TUSD.balanceOf(owner);
-                //     await savingAccount.withdraw(erc20TUSD.address, withdraws);
-                //     let userBalanceAfterWithdraw = await erc20TUSD.balanceOf(owner);
-                //     const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
-                //         BN(userBalanceBeforeWithdraw)
-                //     );
-                //     // Verify 1.
-                //     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
-                //     const newbalSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
-                //     // Verify 2.
-                //     expect(newbalSavingAccount).to.be.bignumber.equal(new BN(850));
-                // });
-            });
-        });
+        //         // TODO: Compound unsupported tokens issues are not fixed yet.
+        //         // it("Use TUSD, compound not supported tokens", async () => {
+        //         //     /*
+        //         //         * Step 1
+        //         //         * Account 0 deposits 1000 tokens into DeFiner
+        //         //         * DeFiner should have 1000 tokens TUSD
+        //         //         */
+        //         //     const numOfTokens = new BN(1000);
+        //         //     await erc20TUSD.approve(savingAccount.address, numOfTokens);
+        //         //     await savingAccount.deposit(erc20TUSD.address, numOfTokens);
+        //         //     /*
+        //         //         * Step 2
+        //         //         * Account 0 withdraw 150 tokens into DeFiner
+        //         //         * DeFiner should have 850 TUSD tokens
+        //         //         * to withdraw some tokens from Compound
+        //         //         * To verify:
+        //         //         * 1. withdraw amount = balance before withdraw - balance after withdraw
+        //         //         * 2. TUSD tokens in compound is 850
+        //         //         */
+        //         //     const withdraws = new BN(150);
+        //         //     let userBalanceBeforeWithdraw = await erc20TUSD.balanceOf(owner);
+        //         //     await savingAccount.withdraw(erc20TUSD.address, withdraws);
+        //         //     let userBalanceAfterWithdraw = await erc20TUSD.balanceOf(owner);
+        //         //     const userBalanceDiff = BN(userBalanceAfterWithdraw).sub(
+        //         //         BN(userBalanceBeforeWithdraw)
+        //         //     );
+        //         //     // Verify 1.
+        //         //     expect(withdraws).to.be.bignumber.equal(userBalanceDiff);
+        //         //     const newbalSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
+        //         //     // Verify 2.
+        //         //     expect(newbalSavingAccount).to.be.bignumber.equal(new BN(850));
+        //         // });
+        //     });
+        // });
         // // TODO 1.3 Feature in DeFiner is not implemented yet.
         // context("When withdrawing an amount of value that is larger than the total tokens DeFiner has", async () => {
         //     context("should succeed", async () => {
@@ -643,24 +643,30 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * Then tries to withdraw all the tokens
                  * Should fail, beacuse user has to repay all the outstandings before withdrawing.
                  */
+                const userTotalBalanceBefore = await savingAccount.tokenBalance(
+                    addressUSDC,
+                    { from: user1 }
+                );
                 const borrows = new BN(10);
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
+                const UserTokenLeftBefore = new BN(await erc20DAI.balanceOf(user1));
+
                 await savingAccount.withdraw(erc20DAI.address, new BN(100), { from: user1 });
 
-                const TokenLeft = new BN(await erc20DAI.balanceOf(savingAccount.address));
+                // const TokenLeft = new BN(await erc20DAI.balanceOf(savingAccount.address));
                 const UserTokenLeft = new BN(await erc20DAI.balanceOf(user1));
 
-                const CTokenLeft = new BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
+                // const CTokenLeft = new BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
                 const userTotalBalance = await savingAccount.tokenBalance(
                     addressUSDC,
                     { from: user1 }
                 );
 
-                expect(TokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(15)).div(new BN(100)).sub(new BN(100)));
-                expect(CTokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(85)).div(new BN(100)));
-                expect(UserTokenLeft).to.be.bignumber.equal(new BN(100));
+                // expect(TokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(15)).div(new BN(100)).sub(new BN(100)));
+                // expect(CTokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(85)).div(new BN(100)));
+                expect(BN(UserTokenLeft).sub(BN(UserTokenLeftBefore))).to.be.bignumber.equal(new BN(100));
                 // Verify 2.
-                expect(BN(userTotalBalance[1])).to.be.bignumber.equal(new BN(10));
+                expect(BN(userTotalBalance[1]).sub(BN(userTotalBalanceBefore[1]))).to.be.bignumber.equal(new BN(10));
             });
         });
         context("Withdraw partially multiple times", async () => {

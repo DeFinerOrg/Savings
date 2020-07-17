@@ -281,9 +281,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
                         let borrow = new BN(10);
+                        let accTUSDBefore = await erc20TUSD.balanceOf(user1);
                         await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
-                        let accTUSD = await erc20TUSD.balanceOf(user1);
-                        expect(accTUSD).to.be.bignumber.equals(borrow);
+                        let accTUSDAfter = await erc20TUSD.balanceOf(user1);
+                        expect(BN(accTUSDAfter).sub(BN(accTUSDBefore))).to.be.bignumber.equals(borrow);
                     });
                     it("Deposits TUSD, borrows a small amount of WBTC ", async () => {
                         /* 
@@ -308,9 +309,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
                         let borrow = new BN(1);
+                        let accWBTCBefore = await erc20WBTC.balanceOf(user2);
                         await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
-                        let accWBTC = await erc20WBTC.balanceOf(user2);
-                        expect(accWBTC).to.be.bignumber.equals(borrow);
+                        let accWBTCAfter = await erc20WBTC.balanceOf(user2);
+                        expect(BN(accWBTCAfter).sub(BN(accWBTCBefore))).to.be.bignumber.equals(borrow);
                     });
                     it("Deposits WBTC, borrows the same amount of borrowing power ", async () => {
                         /* 
@@ -336,9 +338,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
 
                         let borrow = eighteenPrecision.mul(TUSDPrice).div(WBTCPrice).div(new BN(100)).mul(new BN(60));
+                        let accTUSDBefore = await erc20TUSD.balanceOf(user1);
+
                         await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
-                        let accTUSD = await erc20TUSD.balanceOf(user1);
-                        expect(accTUSD).to.be.bignumber.equals(borrow);
+                        let accTUSDAfter = await erc20TUSD.balanceOf(user1);
+                        expect(BN(accTUSDAfter).sub(accTUSDBefore)).to.be.bignumber.equals(borrow);
                     });
                     it("Deposits TUSD, borrows the same amount of borrowing power", async () => {
                         /* 
@@ -363,9 +367,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
                         let borrow = eightPrecision.mul(TUSDPrice).div(WBTCPrice).div(new BN(100)).mul(new BN(60));
+                        let accWBTCBefore = await erc20WBTC.balanceOf(user2);
+
                         await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
-                        let accWBTC = await erc20WBTC.balanceOf(user2);
-                        expect(accWBTC).to.be.bignumber.equals(borrow);
+                        let accWBTCAfter = await erc20WBTC.balanceOf(user2);
+                        expect(BN(accWBTCAfter).sub(BN(accWBTCBefore))).to.be.bignumber.equals(borrow);
                     });
                 });
             });
@@ -394,14 +400,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                      * 2. Account 1's TUSD balance should be 20 after the second borrow
                      */
                     let borrow = eighteenPrecision.mul(new BN(10));
+                    let accTUSDBeforeFirst = await erc20TUSD.balanceOf(user1);
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
                     let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
                     let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
                     // Verify 1.
-                    expect(accTUSDAfterFirst).to.be.bignumber.equals(borrow);
+                    expect(BN(accTUSDAfterFirst).sub(BN(accTUSDBeforeFirst))).to.be.bignumber.equals(borrow);
                     // Verify 2.
-                    expect(accTUSDAfterSecond).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                    expect(BN(accTUSDAfterSecond).sub(BN(accTUSDBeforeFirst))).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
                 });
                 it("Uses 6 decimals, USDC", async () => {
@@ -426,14 +433,16 @@ contract("SavingAccount.borrow", async (accounts) => {
                      * 2. Account 1's USDC balance should be 20 after the second borrow
                      */
                     let borrow = sixPrecision.mul(new BN(10));
+                    let accUSDCBeforeFirst = await erc20USDC.balanceOf(user1);
+
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
                     let accUSDCAfterFirst = await erc20USDC.balanceOf(user1);
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
                     let accUSDCAfterSecond = await erc20USDC.balanceOf(user1);
                     // Verify 1.
-                    expect(accUSDCAfterFirst).to.be.bignumber.equals(borrow);
+                    expect(BN(accUSDCAfterFirst).sub(BN(accUSDCBeforeFirst))).to.be.bignumber.equals(borrow);
                     // Verify 2.
-                    expect(accUSDCAfterSecond).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                    expect(BN(accUSDCAfterSecond).sub(BN(accUSDCBeforeFirst))).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
                 });
                 it("Uses 8 decimals, WBTC", async () => {
@@ -458,14 +467,16 @@ contract("SavingAccount.borrow", async (accounts) => {
                      * 2. Account 1's WBTC balance should be 20 after the second borrow
                      */
                     let borrow = eightPrecision.div(new BN(100));
+                    let accWBTCAfterFirstBefore = await erc20WBTC.balanceOf(user1);
+
                     await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
                     let accWBTCAfterFirst = await erc20WBTC.balanceOf(user1);
                     await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
                     let accWBTCAfterSecond = await erc20WBTC.balanceOf(user1);
                     // Verify 1.
-                    expect(accWBTCAfterFirst).to.be.bignumber.equals(borrow);
+                    expect(BN(accWBTCAfterFirst).sub(BN(accWBTCAfterFirstBefore))).to.be.bignumber.equals(borrow);
                     // Verify 2.
-                    expect(accWBTCAfterSecond).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                    expect(BN(accWBTCAfterSecond).sub(BN(accWBTCAfterFirstBefore))).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
                 });
 
