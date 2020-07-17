@@ -142,7 +142,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const remainingDAI = numOfDAI.sub(collateralLocked);
 
                     await expectRevert(
-                        savingAccount.transfer(user1, addressDAI, remainingDAI.add(new BN(100)), {
+                        savingAccount.transfer(user1, addressDAI, remainingDAI.add(eighteenPrecision), {
                             from: user2
                         }),
                         "Insufficient collateral."
