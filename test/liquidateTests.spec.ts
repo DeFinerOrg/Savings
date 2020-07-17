@@ -181,9 +181,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
                     // 2. Start borrowing.
-                    const borrowingPower2 = await savingAccount.getTotalDepositsNow({ from: user2 });
+                    /* const borrowingPower2 = await savingAccount.getTotalDepositsNow({ from: user2 });
                     const borrowingPower1 = await savingAccount.getTotalDepositsNow({ from: user1 });
-                    const balances2 = await savingAccount.getBalances({ from: user2 });
+                    const balances2 = await savingAccount.getBalances({ from: user2 }); */
 
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
