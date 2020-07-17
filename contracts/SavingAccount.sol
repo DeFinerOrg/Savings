@@ -219,17 +219,6 @@ contract SavingAccount {
         deposit(_to, _token, _amount);
     }
 
-<<<<<<< HEAD
-    /**
-     * Debug code by yichun.
-     */
-    function getTotalDepositsNow() public view returns(uint256) {
-        uint ETHValue = baseVariable.getDepositETH(msg.sender, symbols);
-        // uint totalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
-        return ETHValue;
-    }
-=======
->>>>>>> master
     /**
      * Borrow the amount of token from the saving pool.
      * @param _token token address
