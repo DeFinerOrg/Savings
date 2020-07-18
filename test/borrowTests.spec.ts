@@ -210,7 +210,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "User not have any deposits"
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -230,6 +230,7 @@ contract("SavingAccount.borrow", async (accounts) => {
             });
 
             context("should succeed", async () => {
+                // modified
                 it("Deposit DAI then borrow DAI", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, numOfToken);
@@ -246,6 +247,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
 
+                // modified
                 it("Deposit DAI & USDC then borrow DAI", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, numOfToken);
@@ -260,12 +262,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
 
+                // modified
                 it("Deposit DAI & USDC then borrow USDC", async () => {
                     // 1.1 Transfer DAI to user2.
                     await erc20DAI.transfer(user2, numOfToken);
@@ -284,7 +286,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
-
+                // modified
                 it("when supported token address is passed", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -387,7 +389,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -587,7 +589,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -598,10 +600,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "User not have any deposits"
+                        "The user doesn't have any deposits."
                     );
                 });
 
+                // yichun: this one is not doing what's it is described
                 it("when there is no liquidity for the asked MKR", async () => {
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
@@ -632,6 +635,7 @@ contract("SavingAccount.borrow", async (accounts) => {
             });
 
             context("should succeed", async () => {
+                // modified
                 it("Deposit MKR then borrow MKR", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20MKR.transfer(user1, numOfToken);
@@ -648,7 +652,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
                     expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(1));
                 });
-
+                // modified
                 it("Deposit TUSD then borrow TUSD", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20TUSD.transfer(user1, numOfToken);
@@ -666,6 +670,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
 
+                // modified
                 it("Deposit MKR & TUSD then borrow MKR", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20MKR.transfer(user1, numOfToken);
@@ -686,7 +691,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceAfter = BN(await erc20MKR.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
-
+                // modified
                 it("Deposit MKR & TUSD then borrow TUSD", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20TUSD.transfer(user1, numOfToken);
@@ -706,7 +711,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceAfter = BN(await erc20TUSD.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
-
+                // modified
                 it("When depositing DAI to borrow MKR.", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20MKR.transfer(user2, numOfToken);
@@ -721,7 +726,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
                     expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(1));
                 });
-
+                // modified
                 it("When depositing DAI to borrow TUSD.", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
@@ -763,7 +768,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(10), { from: user2 }),
-                        "Insufficient collateral."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -783,6 +788,7 @@ contract("SavingAccount.borrow", async (accounts) => {
             });
 
             context("should succeed", async () => {
+                // modified
                 it("Deposit USDC then borrow USDC", async () => {
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20USDC.transfer(user1, numOfToken);
@@ -799,7 +805,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
                 });
-
+                // modified
                 it("When depositing DAI to borrow USDC.", async () => {
                     const numOfDAI = eighteenPrecision.div(new BN(1000));
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -862,7 +868,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user1BalanceAfter = BN(await erc20USDC.balanceOf(user1));
                     expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
                 });
-
+                // modified
                 it("when borrow USDC of token is equal to ILTV of his collateral value", async () => {
                     const numOfDAI = eighteenPrecision.div(new BN(1000));
                     await erc20DAI.transfer(user1, numOfDAI);
