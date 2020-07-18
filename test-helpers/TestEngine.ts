@@ -8,6 +8,7 @@ const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require('child_process');
+const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -21,6 +22,7 @@ export class TestEngine {
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
+    public globalConfig!: t.GlobalConfigInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -160,6 +162,8 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
+        this.globalConfig = await GlobalConfig.new();
+
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
@@ -167,7 +171,8 @@ export class TestEngine {
             this.erc20Tokens,
             cTokens,
             chainLinkOracle.address,
-            this.tokenInfoRegistry.address
+            this.tokenInfoRegistry.address,
+            this.globalConfig.address
         );
     }
 
