@@ -45,6 +45,7 @@ contract("RemainingCoverage", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy();
     });
 
     beforeEach(async () => {
@@ -103,7 +104,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
@@ -208,7 +209,7 @@ contract("RemainingCoverage", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("when valid token address is passed", async () => {});
+            it("when valid token address is passed", async () => { });
             // verify deFinerFund == 0, transfer()
         });
     });
@@ -304,7 +305,7 @@ contract("RemainingCoverage", async (accounts) => {
 
     context("getTokenState", async () => {
         // Also being called by getMarketState
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
@@ -315,7 +316,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("getBalances", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when sender's address is valid", async () => {
@@ -332,7 +333,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("getCoinAddress", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when function is called", async () => {

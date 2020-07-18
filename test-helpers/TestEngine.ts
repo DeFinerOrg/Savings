@@ -1,12 +1,13 @@
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
-
+var shell = require('shelljs');
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+var child_process = require('child_process');
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -24,6 +25,18 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
+    public async deploy() {
+        // await exec('cd ../compound-protocol', (err: any, stdout: any, stderr: any) => {
+        //     console.log(stdout);
+        // });
+        // await exec('pwd', (err: any, stdout: any, stderr: any) => {
+        //     console.log(stdout);
+        // });
+
+        const log = shell.exec('PROVIDER="http://localhost:8545/" yarn --cwd ./compound-protocol run repl -s /Users/yanyichun/project/Savings/compound-protocol/script/scen/scriptFlywheel.scen');
+        // console.log(log)
+        compoundTokens = require("../compound-protocol/networks/development.json");
+    }
     /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
