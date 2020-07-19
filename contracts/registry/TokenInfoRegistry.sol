@@ -33,10 +33,6 @@ contract TokenInfoRegistry is Ownable {
         address chainLinkAggregator;
         // Borrow LTV, by default 60%
         uint256 borrowLTV;
-        // Liquidation threshold, by default 85%
-        // uint256 liquidationThreshold;
-        // Liquidation discount ratio, by default 95%
-        // uint256 liquidationDiscountRatio;
     }
 
     event TokenAdded(address indexed token);
@@ -49,9 +45,6 @@ contract TokenInfoRegistry is Ownable {
     //uint256 public SCALE = 1e8;
 
     uint256 public constant SCALE = 100;
-
-    uint256 liquidationThreshold = 85; //85e6; // 85%
-    uint256 liquidationDiscountRatio = 95; // 95%
 
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
@@ -107,8 +100,6 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
         // Default values
         storageTokenInfo.borrowLTV = 60; //6e7; // 60%
-        // storageTokenInfo.liquidationThreshold = 85; //85e6; // 85%
-        // storageTokenInfo.liquidationDiscountRatio = 95; // 95%
 
         tokens.push(_token);
         emit TokenAdded(_token);
@@ -124,35 +115,10 @@ contract TokenInfoRegistry is Ownable {
     {
         require(_borrowLTV != 0, "Borrow LTV is zero");
         require(_borrowLTV < SCALE, "Borrow LTV must be less than Scale");
-        require(liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
+        // require(liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
 
         tokenInfo[_token].borrowLTV = _borrowLTV;
         emit TokenUpdated(_token);
-    }
-
-    function updateLiquidationThreshold(
-        uint256 _liquidationThreshold
-    )
-        external
-        onlyOwner
-    {
-        require(_liquidationThreshold != 0, "Liquidation threshold is zero");
-        require(_liquidationThreshold < SCALE, "Liquidation threshold must be less than Scale");
-
-        liquidationThreshold = _liquidationThreshold;
-    }
-
-
-    function updateLiquidationDiscountRatio(
-        uint256 _liquidationDiscountRatio
-    )
-        external
-        onlyOwner
-    {
-        require(_liquidationDiscountRatio != 0, "Liquidation discount ratio is zero");
-        require(_liquidationDiscountRatio < SCALE, "Liquidation discount ratio must be less than Scale");
-
-        liquidationDiscountRatio = _liquidationDiscountRatio;
     }
 
     /**
@@ -289,13 +255,5 @@ contract TokenInfoRegistry is Ownable {
 
     function getBorrowLTV(address _token) external view returns (uint256) {
         return tokenInfo[_token].borrowLTV;
-    }
-
-    function getLiquidationThreshold() external view returns (uint256) {
-        return liquidationThreshold;
-    }
-
-    function getLiquidationDiscountRatio() external view returns (uint256) {
-        return liquidationDiscountRatio;
     }
 }
