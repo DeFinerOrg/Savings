@@ -1,10 +1,11 @@
+import { SavingAccountWithControllerContract } from './../types/truffle-contracts/index.d';
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
-const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccount = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -159,7 +160,8 @@ export class TestEngine {
             cTokens,
             chainLinkOracle.address,
             this.tokenInfoRegistry.address,
-            this.globalConfig.address
+            this.globalConfig.address,
+            compoundTokens.Comptroller.ComptrollerScen.address
         );
     }
 

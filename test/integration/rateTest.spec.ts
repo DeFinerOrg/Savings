@@ -88,14 +88,37 @@ contract("Integration Tests", async (accounts) => {
         ZERO = new BN(0);
         ONE_WEEK = new BN(7).mul(new BN(24).mul(new BN(3600)));
         ONE_MONTH = new BN(30).mul(new BN(24).mul(new BN(3600)));
-        /* addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC); */
+        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+    });
+
+    context("Compound Model Validation", async () => {
+        context("should success", async () => {
+            it("Deposit ETH and checkout the output rate", async() => {
+                // 1. Check the compound rate before deposit
+                const borrowRateBeforeDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForDAI, { from: user1 });
+                const depositRateBeforeDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForDAI, { from: user1 });
+                expect(borrowRateBeforeDeposit).to.be.bignumber.equal(new BN(5000000000000));
+                expect(depositRateBeforeDeposit).to.be.bignumber.equal(new BN(5000000000000));
+                // 2. User 1 deposits 1 DAI
+                const numOfDAI = eighteenPrecision;
+                await erc20DAI.transfer(user1, numOfDAI.mul(new BN(2)));
+                await erc20DAI.approve(savingAccount.address, numOfDAI.mul(new BN(2)), { from: user1 });
+                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                // 3. Advance 175,200 blocks, which roughly equals one month
+                // 4. Check the compound rate after deposit
+                const borrowRateAfterDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForDAI, { from: user1 });
+                const depositRateAfterDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForDAI, { from: user1 });
+                expect(borrowRateAfterDeposit).to.be.bignumber.equal(new BN(5000000000000));
+                expect(depositRateAfterDeposit).to.be.bignumber.equal(new BN(5000000000000));
+            });
+        });
     });
 
     context("Deposit and Withdraw", async () => {

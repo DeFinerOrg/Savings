@@ -79,6 +79,16 @@ contract SavingAccount {
         baseVariable.newRateIndexCheckpoint(_token);
     }
 
+    function getCompoundSupplyRatePerBlock(address _cToken) public view returns(uint) {
+        ICToken cToken = ICToken(_cToken);
+        return cToken.supplyRatePerBlock();
+    }
+
+    function getCompoundBorrowRatePerBlock(address _cToken) public view returns(uint) {
+        ICToken cToken = ICToken(_cToken);
+        return cToken.borrowRatePerBlock();
+    }
+
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
