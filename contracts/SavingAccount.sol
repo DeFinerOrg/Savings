@@ -180,16 +180,16 @@ contract SavingAccount {
 	/*
 	 * Get the state of the given token
 	 */
-    function getTokenState(address _token) public view returns (
-        uint256 deposits,
-        uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
-    )
-    {
-        return base.getTokenState(_token);
-    }
+//    function getTokenState(address _token) public view returns (
+//        uint256 deposits,
+//        uint256 loans,
+//        uint256 collateral,
+//        uint256 depositRatePerBlock,
+//        uint256 borrowRatePerBlock
+//    )
+//    {
+//        return base.getTokenState(_token);
+//    }
 
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
@@ -205,12 +205,12 @@ contract SavingAccount {
         return false;
     }
 
-    function tokenBalance(address _token) public view returns(
-        uint256 depositBalance,
-        uint256 borrowBalance
-    ) {
-        return (getDepositBalance(_token, msg.sender), getBorrowBalance(_token, msg.sender));
-    }
+//    function tokenBalance(address _token) public view returns(
+//        uint256 depositBalance,
+//        uint256 borrowBalance
+//    ) {
+//        return (getDepositBalance(_token, msg.sender), getBorrowBalance(_token, msg.sender));
+//    }
 
     /**
      * Transfer the token between users inside DeFiner
