@@ -9,7 +9,8 @@
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "truffle run coverage --file='test/*.ts' --network development",
-    "lint": "npx solium -d contracts/"
+    "lint": "npx solium -d contracts/",
+    "ganache": "ganache-cli -p 8545 -l 10000000 -e 10000 --allowUnlimitedContractSize"
   },
   "repository": {
     "type": "git",
