@@ -1,11 +1,11 @@
-import { SavingAccountWithControllerContract } from './../types/truffle-contracts/index.d';
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
-const SavingAccount = artifacts.require("SavingAccountWithController");
+const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccountWithControllerContract = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -139,7 +139,7 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
+    public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         //this.erc20Tokens = await this.deployMockERC20Tokens();
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         //this.cTokensCompound = await this.getCompoundAddresses();
@@ -155,14 +155,28 @@ export class TestEngine {
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
-        return SavingAccount.new(
-            this.erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            this.tokenInfoRegistry.address,
-            this.globalConfig.address,
-            compoundTokens.Comptroller.ComptrollerScen.address
-        );
+
+        const network = process.env.NETWORK;
+        // if (network == "development") {
+            return SavingAccountWithControllerContract.new(
+                this.erc20Tokens,
+                cTokens,
+                chainLinkOracle.address,
+                this.tokenInfoRegistry.address,
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            );
+        /*
+        } else {
+            return SavingAccount.new(
+                this.erc20Tokens,
+                cTokens,
+                chainLinkOracle.address,
+                this.tokenInfoRegistry.address,
+                this.globalConfig.address
+            );
+        }
+        */
     }
 
     private async initializeTokenInfoRegistry(

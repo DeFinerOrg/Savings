@@ -13,7 +13,7 @@ const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 contract("Integration Tests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -37,10 +37,12 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
     let addressCTokenForWBTC: any;
+    let addressCTokenForZRX: any;
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
+    let cTokenZRX: t.MockCTokenInstance;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
     let erc20USDT: t.MockERC20Instance;
@@ -92,31 +94,49 @@ contract("Integration Tests", async (accounts) => {
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        addressCTokenForZRX = await testEngine.tokenInfoRegistry.getCToken(addressZRX);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cTokenZRX = await MockCToken.at(addressCTokenForZRX);
     });
 
     context("Compound Model Validation", async () => {
         context("should success", async () => {
-            it("Deposit ETH and checkout the output rate", async() => {
+            it("Deposit DAI and checkout the output rate", async() => {
+
                 // 1. Check the compound rate before deposit
-                const borrowRateBeforeDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForDAI, { from: user1 });
-                const depositRateBeforeDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForDAI, { from: user1 });
+                const borrowRateBeforeDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForZRX, { from: user1 });
+                const depositRateBeforeDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForZRX, { from: user1 });
                 expect(borrowRateBeforeDeposit).to.be.bignumber.equal(new BN(5000000000000));
                 expect(depositRateBeforeDeposit).to.be.bignumber.equal(new BN(5000000000000));
-                // 2. User 1 deposits 1 DAI
-                const numOfDAI = eighteenPrecision;
-                await erc20DAI.transfer(user1, numOfDAI.mul(new BN(2)));
-                await erc20DAI.approve(savingAccount.address, numOfDAI.mul(new BN(2)), { from: user1 });
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                const balCTokenContract = await erc20ZRX.balanceOf(addressCTokenForZRX);
+                console.log("balCTokenContract = ", balCTokenContract.toString());
+                // expect(balCTokenContract).to.be.bignumber.equal(new BN(1));
+                // expect(balCTokenContract).to.be.bignumber.equal(new BN(50e30));
+
+                // 2. User 1 deposits 1 ZRX
+                const numOfZRX = eighteenPrecision;
+                await erc20ZRX.transfer(user1, numOfZRX.mul(new BN(2)));
+                await erc20ZRX.approve(savingAccount.address, numOfZRX.mul(new BN(2)), { from: user1 });
+                await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
+
                 // 3. Advance 175,200 blocks, which roughly equals one month
+                const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                console.log(b1.toString());
+                await savingAccount.fastForward(100000000);
+                const b2 = await savingAccount.getBlockNumber({ from: user1 });
+                console.log(b2.toString());
+
+                const balCTokenContract2 = await cTokenZRX.balanceOfUnderlying(savingAccount.address);
+
                 // 4. Check the compound rate after deposit
-                const borrowRateAfterDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForDAI, { from: user1 });
-                const depositRateAfterDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForDAI, { from: user1 });
+                const borrowRateAfterDeposit = await savingAccount.getCompoundBorrowRatePerBlock(addressCTokenForZRX, { from: user1 });
+                const depositRateAfterDeposit = await savingAccount.getCompoundSupplyRatePerBlock(addressCTokenForZRX, { from: user1 });
                 expect(borrowRateAfterDeposit).to.be.bignumber.equal(new BN(5000000000000));
                 expect(depositRateAfterDeposit).to.be.bignumber.equal(new BN(5000000000000));
+
             });
         });
     });

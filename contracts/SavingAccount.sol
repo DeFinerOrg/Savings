@@ -466,6 +466,7 @@ contract SavingAccount {
      * Liquidate function
      */
     function liquidate(address targetAccountAddr, address _targetToken) public {
+        /*
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(targetAccountAddr, symbols);
@@ -594,6 +595,7 @@ contract SavingAccount {
                 break;
             }
         }
+        */
     }
 
     function recycleCommunityFund(address _token) public {

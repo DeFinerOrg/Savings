@@ -1,6 +1,7 @@
 pragma solidity 0.5.14;
 
 import "./SavingAccount.sol";
+import { IController } from "./compound/ICompound.sol";
 
 contract SavingAccountWithController  is SavingAccount {
 
@@ -14,5 +15,13 @@ contract SavingAccountWithController  is SavingAccount {
                 address _comptroller
         ) SavingAccount(tokenAddresses, cTokenAddresses, _chainlinkAddress, _tokenRegistry, _globalConfig) public {
         comptroller = _comptroller;
+    }
+
+    function fastForward(uint blocks) public returns (uint) {
+        return IController(comptroller).fastForward(blocks);
+    }
+
+    function getBlockNumber() public view returns (uint) {
+        return IController(comptroller).getBlockNumber();
     }
 }
