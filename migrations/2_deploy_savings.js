@@ -31,17 +31,18 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
-    await deployer.deploy(TokenInfoLib);
 
     // Link Libraries
-    await deployer.link(TokenInfoLib, Base);
+    //await deployer.link(TokenInfoLib, Base);
     await deployer.link(SymbolsLib, Base);
+
+    await deployer.deploy(TokenInfoLib);
 
     // Deploy Base contract
     const base = await deployer.deploy(Base);
 
     // Link libraries
-    await deployer.link(SymbolsLib, SavingAccount);
+    //await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
 
     const erc20Tokens = await getERC20Tokens();
