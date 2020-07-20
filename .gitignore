@@ -16,9 +16,5 @@ types
 /coverage
 coverage.json
 
-<<<<<<< HEAD
-
-=======
 # compound related
->>>>>>> rishabh/compound-integration
 /compound-protocol
