@@ -37,13 +37,12 @@ module.exports = async function(deployer, network) {
     await deployer.link(TokenInfoLib, Base);
     await deployer.link(SymbolsLib, Base);
 
-    // Deploy Base library
-    await deployer.deploy(Base);
+    // Deploy Base contract
+    const base = await deployer.deploy(Base);
 
     // Link libraries
     await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
-    await deployer.link(Base, SavingAccount);
 
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
@@ -69,6 +68,7 @@ module.exports = async function(deployer, network) {
         erc20Tokens,
         cTokens,
         chainLinkOracle.address,
+        base.address,
         tokenInfoRegistry.address,
         globalConfig.address
     );
