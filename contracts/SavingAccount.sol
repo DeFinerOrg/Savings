@@ -238,8 +238,9 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100) <=
+            baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -274,7 +275,14 @@ contract SavingAccount {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
 
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        if(globalConfig.isTokenFeeCharged(_token)) {
+            uint prevBal = IERC20(_token).balanceOf(address(this));
+            receive(msg.sender, _amount, _token);
+            uint newBal = IERC20(_token).balanceOf(address(this));
+            _amount = newBal.sub(prevBal);
+        } else {
+            receive(msg.sender, _amount, _token);
+        }
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -315,7 +323,14 @@ contract SavingAccount {
      */
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        if(globalConfig.isTokenFeeCharged(_token)) {
+            uint prevBal = IERC20(_token).balanceOf(address(this));
+            receive(msg.sender, _amount, _token);
+            uint newBal = IERC20(_token).balanceOf(address(this));
+            _amount = newBal.sub(prevBal);
+        } else {
+            receive(msg.sender, _amount, _token);
+        }
         deposit(msg.sender, _token, _amount);
     }
 
@@ -373,8 +388,10 @@ contract SavingAccount {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
-            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
+            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral."
+            );
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.

@@ -203,7 +203,7 @@ library Base {
             if (self.cTokenAddress[_token] != address(0) &&
                 totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
-                toCompound(self, _token, toCompoundAmount);
+                toCompoundAmount = toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount.sub(toCompoundAmount));
             }
@@ -232,18 +232,17 @@ library Base {
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
-                    fromCompound(self, _token, self.totalCompound[cToken]);
+                    uint newFromCompound = fromCompound(self, _token, self.totalCompound[cToken]);
                     self.totalCompound[cToken] = 0;
-                    self.totalReserve[_token] = totalAvailable;
+                    self.totalReserve[_token] = self.totalReserve[_token].add(newFromCompound).sub(_amount);
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
-                    fromCompound(self, _token, self.totalCompound[cToken]-totalInCompound);
+                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100));
+                    uint newFromCompound = fromCompound(self, _token, self.totalCompound[cToken].sub(totalInCompound));
                     self.totalCompound[cToken] = totalInCompound;
                     self.totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
-            }
-            else {
+            } else {
                 self.totalReserve[_token] = self.totalReserve[_token].sub(_amount);
             }
         }
@@ -482,14 +481,18 @@ library Base {
      * @param _token token address
      * @param _amount amount of token
      */
-    function toCompound(BaseVariable storage self, address _token, uint _amount) public {
+    function toCompound(BaseVariable storage self, address _token, uint _amount) public returns(uint256){
         address cToken = self.cTokenAddress[_token];
         if (_token == ETH_ADDR) {
             // TODO Why we need to put gas here?
             // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
             ICETH(cToken).mint.value(_amount).gas(250000)();
+            return _amount;
         } else {
+            uint256 preBla = IERC20(_token).balanceOf(cToken);
             ICToken(cToken).mint(_amount);
+            uint256 newBla = IERC20(_token).balanceOf(cToken);
+            return newBla.sub(preBla);
         }
     }
 
@@ -498,9 +501,17 @@ library Base {
      * @param _token token address
      * @param _amount amount of token
      */
-    function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
+    function fromCompound(BaseVariable storage self, address _token, uint _amount) public returns(uint256){
         ICToken cToken = ICToken(self.cTokenAddress[_token]);
-        cToken.redeemUnderlying(_amount);
+        if(_token != ETH_ADDR) {
+            cToken.redeemUnderlying(_amount);
+            return _amount;
+        } else {
+            uint256 preBla = IERC20(_token).balanceOf(address(this));
+            cToken.redeemUnderlying(_amount);
+            uint256 newBla = IERC20(_token).balanceOf(address(this));
+            return newBla.sub(preBla);
+        }
     }
 
     /**

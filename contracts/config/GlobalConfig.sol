@@ -10,6 +10,8 @@ contract GlobalConfig is Ownable {
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
 
+    mapping(address => bool) public isTokenFeeCharged;
+
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
         require(_communityFundRatio != 0, "Community fund is zero");
         communityFundRatio = _communityFundRatio;
@@ -39,6 +41,10 @@ contract GlobalConfig is Ownable {
 
     function midReserveRatio() public view returns(uint256){
         return (minReserveRatio + maxReserveRatio) / 2;
+    }
+
+    function updateTokenFeeCharged(address _token, bool _tokenFeeCharged) external onlyOwner {
+        isTokenFeeCharged[_token] = _tokenFeeCharged;
     }
 
 }
