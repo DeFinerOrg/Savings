@@ -24,7 +24,7 @@ contract SavingAccount {
     GlobalConfig public globalConfig;
 
     uint256 ACCURACY = 10**18;
-    uint256 BLOCKS_PER_YEAR = 2102400;
+    // uint256 BLOCKS_PER_YEAR = 2102400;
     uint256 public constant UINT_UNIT = 10 ** 18;
 
     mapping(address => Account) accounts;
@@ -77,9 +77,9 @@ contract SavingAccount {
 
     // TODO Security issue, as this function is open for all
 	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address _token) public {
-        base.newRateIndexCheckpoint(_token);
-    }
+//    function updateDefinerRate(address _token) public {
+//        base.newRateIndexCheckpoint(_token);
+//    }
 
     /**
      * Get current deposit balance of a token
@@ -652,9 +652,9 @@ contract SavingAccount {
         deFinerCommunityFund = _DeFinerCommunityFund;
     }
 
-    function getDeFinerCommunityFund(address _token) public view returns(uint256){
-        return deFinerFund[_token];
-    }
+//    function getDeFinerCommunityFund(address _token) public view returns(uint256){
+//        return deFinerFund[_token];
+//    }
 }
 
 interface IERC20Extended {
