@@ -77,6 +77,7 @@ module.exports = async function(deployer, network) {
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
+    console.log("base:", base.address);
     console.log("SavingAccount:", savingAccount.address);
 };
 

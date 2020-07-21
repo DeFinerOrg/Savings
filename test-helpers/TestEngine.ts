@@ -5,6 +5,7 @@ const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
+const Base = artifacts.require("Base");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -19,6 +20,7 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
+    public base!: t.BaseInstance;
 
     public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
@@ -110,10 +112,14 @@ export class TestEngine {
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
+
+        this.base = await Base.new();
+
         return SavingAccount.new(
             this.erc20Tokens,
             cTokens,
             chainLinkOracle.address,
+            this.base.address,
             this.tokenInfoRegistry.address,
             this.globalConfig.address
         );
