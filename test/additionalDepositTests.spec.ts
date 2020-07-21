@@ -155,16 +155,16 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userDAIBalance = await savingAccount.tokenBalance(addressDAI, { from: user1 });
-                    const userUSDCBalance = await savingAccount.tokenBalance(addressUSDC, { from: user1 });
+                    const userDAIBalance = await savingAccount.getDepositBalance(addressDAI, { from: user1 });
+                    const userUSDCBalance = await savingAccount.getDepositBalance(addressUSDC, { from: user1 });
                     const savingAccountDAIToken = await erc20DAI.balanceOf(savingAccount.address);
                     const savingAccountUSDCToken = await erc20USDC.balanceOf(savingAccount.address);
                     const savingAccountCDAIToken = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
                     const savingAccountCUSDCToken = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
 
                     // verify 1.
-                    expect(new BN(userDAIBalance[0])).to.be.bignumber.equals(eighteenPrecision);
-                    expect(new BN(userUSDCBalance[0])).to.be.bignumber.equals(sixPrecision);
+                    expect(new BN(userDAIBalance)).to.be.bignumber.equals(eighteenPrecision);
+                    expect(new BN(userUSDCBalance)).to.be.bignumber.equals(sixPrecision);
                     // verify 2.
                     expect(new BN(savingAccountCDAIToken)).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
                     expect(new BN(savingAccountCUSDCToken)).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(85)));
@@ -193,16 +193,16 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userWBTCBalance = await savingAccount.tokenBalance(addressWBTC, { from: user1 });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
+                    const userWBTCBalance = await savingAccount.getDepositBalance(addressWBTC, { from: user1 });
+                    const userTUSDBalance = await savingAccount.getDepositBalance(addressTUSD, { from: user1 });
                     const savingAccountWBTCToken = await erc20WBTC.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
                     const savingAccountCWBTCToken = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
                     const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
 
                     // verify 1.
-                    expect(new BN(userWBTCBalance[0])).to.be.bignumber.equals(eightPrecision);
-                    expect(new BN(userTUSDBalance[0])).to.be.bignumber.equals(eighteenPrecision);
+                    expect(new BN(userWBTCBalance)).to.be.bignumber.equals(eightPrecision);
+                    expect(new BN(userTUSDBalance)).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
                     expect(new BN(savingAccountCWBTCToken)).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(85)));
                     expect(new BN(savingAccountCTUSDToken)).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
@@ -231,16 +231,16 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userMKRBalance = await savingAccount.tokenBalance(addressMKR, { from: user1 });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
+                    const userMKRBalance = await savingAccount.getDepositBalance(addressMKR, { from: user1 });
+                    const userTUSDBalance = await savingAccount.getDepositBalance(addressTUSD, { from: user1 });
                     const savingAccountMKRToken = await erc20MKR.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
                     const savingAccountCMKRToken = await cTokenMKR.balanceOfUnderlying.call(savingAccount.address);
                     const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
 
                     // verify 1.
-                    expect(new BN(userMKRBalance[0])).to.be.bignumber.equals(eighteenPrecision);
-                    expect(new BN(userTUSDBalance[0])).to.be.bignumber.equals(eighteenPrecision);
+                    expect(new BN(userMKRBalance)).to.be.bignumber.equals(eighteenPrecision);
+                    expect(new BN(userTUSDBalance)).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
                     expect(new BN(savingAccountCMKRToken)).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
                     expect(new BN(savingAccountCTUSDToken)).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
