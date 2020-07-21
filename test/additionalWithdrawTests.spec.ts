@@ -651,16 +651,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const UserTokenLeft = new BN(await erc20DAI.balanceOf(user1));
 
                 const CTokenLeft = new BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
-                const userTotalBalance = await savingAccount.tokenBalance(
-                    addressUSDC,
-                    { from: user1 }
-                );
+                const userTotalBalance = await savingAccount.getBorrowBalance(addressUSDC, user1 );
 
                 expect(TokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(15)).div(new BN(100)).sub(new BN(100)));
                 expect(CTokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(85)).div(new BN(100)));
                 expect(UserTokenLeft).to.be.bignumber.equal(new BN(100));
                 // Verify 2.
-                expect(BN(userTotalBalance[1])).to.be.bignumber.equal(new BN(10));
+                expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(10));
             });
         });
         context("Withdraw partially multiple times", async () => {
@@ -703,12 +700,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(BN(userDAIBalanceAfterForthWithdraw).sub(userDAIBalanceBeforeForthWithdraw))
                         .to.be.bignumber.equal(quaterOfDAIs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user1 }
-                    );
+                    const userTotalBalance = await savingAccount.getDepositBalance(addressDAI, user1);
                     // Verify 2.
-                    expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
+                    expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(0));
                 });
                 it("Use USDC which 6 is decimals, deposit some tokens and withdraw all of them in four times", async () => {
                     /*
@@ -751,12 +745,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(BN(userUSDCBalanceAfterForthWithdraw).sub(userUSDCBalanceBeforeForthWithdraw))
                         .to.be.bignumber.equal(quaterOfUSDCs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
+                    const userTotalBalance = await savingAccount.getDepositBalance(addressUSDC, user1);
                     // Verify 2.
-                    expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
+                    expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(0));
                 });
                 it("Use WBTC which 8 is decimals, deposit some tokens and withdraw all of them in four times", async () => {
                     /*
@@ -796,12 +787,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 1.
                     expect(BN(userWBTCBalanceAfterForthWithdraw).sub(userWBTCBalanceBeforeForthWithdraw))
                         .to.be.bignumber.equal(quaterOfWBTCs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressWBTC,
-                        { from: user1 }
-                    );
+                    const userTotalBalance = await savingAccount.getDepositBalance(addressWBTC, user1);
                     // Verify 2.
-                    expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
+                    expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(0));
                 });
             });
             context("Should fail", async () => {
