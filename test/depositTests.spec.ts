@@ -320,55 +320,55 @@ contract("SavingAccount.deposit", async (accounts) => {
                 expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
             });
 
-            it("when ETH address is passed", async () => {
-                const depositAmount = new BN(10);
-                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
-                const totalDefinerBalanceBeforeDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
+            // it("when ETH address is passed", async () => {
+            //     const depositAmount = new BN(10);
+            //     const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
+            //     const totalDefinerBalanceBeforeDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
+            //
+            //     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+            //         value: depositAmount
+            //     });
+            //
+            //     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+            //     const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
+            //         new BN(ETHbalanceBeforeDeposit)
+            //     );
+            //     // validate savingAccount ETH balance
+            //     expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
+            //
+            //     // Validate the total balance on DeFiner
+            //     const totalDefinerBalanceAfterDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
+            //     const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
+            //         new BN(totalDefinerBalanceBeforeDeposit)
+            //     );
+            //     expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+            // });
 
-                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                });
-
-                const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-                const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                    new BN(ETHbalanceBeforeDeposit)
-                );
-                // validate savingAccount ETH balance
-                expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
-
-                // Validate the total balance on DeFiner
-                const totalDefinerBalanceAfterDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
-                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
-                    new BN(totalDefinerBalanceBeforeDeposit)
-                );
-                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-            });
-
-            it("when 1000 whole ETH are deposited", async () => {
-                const depositAmount = web3.utils.toWei("1000", "ether");
-                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
-                const totalDefinerBalanceBeforeDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
-
-                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                });
-
-                const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-
-                const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                    new BN(ETHbalanceBeforeDeposit)
-                );
-
-                // validate savingAccount ETH balance
-                expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
-
-                // Validate the total balance on DeFiner
-                const totalDefinerBalanceAfterDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
-                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
-                    new BN(totalDefinerBalanceBeforeDeposit)
-                );
-                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-            });
+            // it("when 1000 whole ETH are deposited", async () => {
+            //     const depositAmount = web3.utils.toWei("1000", "ether");
+            //     const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
+            //     const totalDefinerBalanceBeforeDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
+            //
+            //     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+            //         value: depositAmount
+            //     });
+            //
+            //     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+            //
+            //     const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
+            //         new BN(ETHbalanceBeforeDeposit)
+            //     );
+            //
+            //     // validate savingAccount ETH balance
+            //     expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
+            //
+            //     // Validate the total balance on DeFiner
+            //     const totalDefinerBalanceAfterDeposit = await savingAccount.getDepositBalance(ETH_ADDRESS, owner);
+            //     const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
+            //         new BN(totalDefinerBalanceBeforeDeposit)
+            //     );
+            //     expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+            // });
         });
     });
 });
