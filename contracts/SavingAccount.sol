@@ -624,34 +624,34 @@ contract SavingAccount {
     // EMERGENCY WITHDRAWAL FUNCTIONS
     // TODO Needs to be removed when final version deployed
     // ============================================
-    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        if(_token == ETH_ADDR) {
-            EMERGENCY_ADDR.transfer(address(this).balance);
-        } else {
-            uint256 amount = IERC20(_token).balanceOf(address(this));
-            require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
-        }
-    }
-
-    function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeem(_amount);
-    }
-
-    function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeemUnderlying(_amount);
-    }
-
-    function recycleCommunityFund(address _token) public {
-        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
-        deFinerCommunityFund.transfer(uint256(deFinerFund[_token]));
-        deFinerFund[_token] == 0;
-    }
-
-    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
-        deFinerCommunityFund = _DeFinerCommunityFund;
-    }
-
+//    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
+//        if(_token == ETH_ADDR) {
+//            EMERGENCY_ADDR.transfer(address(this).balance);
+//        } else {
+//            uint256 amount = IERC20(_token).balanceOf(address(this));
+//            require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
+//        }
+//    }
+//
+//    function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+//        ICToken(_cToken).redeem(_amount);
+//    }
+//
+//    function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+//        ICToken(_cToken).redeemUnderlying(_amount);
+//    }
+//
+//    function recycleCommunityFund(address _token) public {
+//        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
+//        deFinerCommunityFund.transfer(uint256(deFinerFund[_token]));
+//        deFinerFund[_token] == 0;
+//    }
+//
+//    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
+//        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
+//        deFinerCommunityFund = _DeFinerCommunityFund;
+//    }
+//
 //    function getDeFinerCommunityFund(address _token) public view returns(uint256){
 //        return deFinerFund[_token];
 //    }
