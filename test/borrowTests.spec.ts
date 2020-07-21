@@ -15,7 +15,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
-    let base: t.BaseInstance
+    let base: t.BaseInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
