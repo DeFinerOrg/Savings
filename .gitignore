@@ -15,6 +15,3 @@ types
 # coverage related
 /coverage
 coverage.json
-
-# compound related
-/compound-protocol
