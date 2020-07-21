@@ -312,9 +312,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
 
                 // 4.2 Validate DeFiner balance
-                const totalDefinerBalancAfterWithdraw = await savingAccount.getDepositBalance(
-                    erc20USDC.address
-                );
+                const totalDefinerBalancAfterWithdraw = await savingAccount.getDepositBalance(erc20USDC.address, owner);
                 const totalDefinerBalancDifference = new BN(totalDefinerBalanceAfterDeposit).sub(
                     new BN(totalDefinerBalancAfterWithdraw)
                 );
