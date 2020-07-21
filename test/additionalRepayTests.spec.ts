@@ -204,24 +204,15 @@ contract("SavingAccount.repay", async (accounts) => {
                 });
                 it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async () => {
                     const quaterOfDAI = numOfDAI.div(new BN(4));
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user2 }
-                    );
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(numOfDAI.div(new BN(2)));
+                    const userBalanceBeforeRepay = await savingAccount.getBorrowBalance(addressDAI, user2);
+                    expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(numOfDAI.div(new BN(2)));
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
-                    const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user2 }
-                    );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(numOfDAI.div(new BN(4)));
+                    const userBalanceAfterFirstRepay = await savingAccount.getBorrowBalance(addressDAI, user2);
+                    expect(BN(userBalanceAfterFirstRepay)).to.be.bignumber.equal(numOfDAI.div(new BN(4)));
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
 
-                    const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user2 }
-                    );
-                    expect(BN(userBalanceAfterSecondRepay[1])).to.be.bignumber.equal(ZERO);
+                    const userBalanceAfterSecondRepay = await savingAccount.getBorrowBalance(addressDAI, user2);
+                    expect(BN(userBalanceAfterSecondRepay)).to.be.bignumber.equal(ZERO);
                 });
             });
             context("Use USDC, should succeed", async () => {
@@ -245,26 +236,17 @@ contract("SavingAccount.repay", async (accounts) => {
                     const quaterOfUSDC = numOfUSDC.div(new BN(4));
                     const USDCBalance = await erc20USDC.balanceOf(user1);
                     expect(BN(USDCBalance)).to.be.bignumber.equal(numOfUSDC.div(new BN(2)));
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
+                    const userBalanceBeforeRepay = await savingAccount.getBorrowBalance(addressUSDC, user1);
 
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(numOfUSDC.div(new BN(2)));
+                    expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(numOfUSDC.div(new BN(2)));
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
-                    const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(numOfUSDC.div(new BN(4)));
+                    const userBalanceAfterFirstRepay = await savingAccount.getBorrowBalance(addressUSDC, user1);
+                    expect(BN(userBalanceAfterFirstRepay)).to.be.bignumber.equal(numOfUSDC.div(new BN(4)));
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
 
-                    const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
+                    const userBalanceAfterSecondRepay = await savingAccount.getBorrowBalance(addressUSDC, user1);
 
-                    expect(BN(userBalanceAfterSecondRepay[1])).to.be.bignumber.equal(ZERO);
+                    expect(BN(userBalanceAfterSecondRepay)).to.be.bignumber.equal(ZERO);
                 });
             });
         });
