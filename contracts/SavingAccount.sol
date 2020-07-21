@@ -65,7 +65,7 @@ contract SavingAccount {
         globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
-        base.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig), params.tokenNames(), _chainlinkAddress);
+        base.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig), params.tokenNames(), _chainlinkAddress, address(this));
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 require(cTokenAddresses[i] != address(0x0), "cToken address is zero");
@@ -212,6 +212,22 @@ contract SavingAccount {
 //        return (getDepositBalance(_token, msg.sender), getBorrowBalance(_token, msg.sender));
 //    }
 
+    function fromCompound(address _token, uint _amount) public {
+        ICToken cToken = ICToken(base.cTokenAddress(_token));
+        cToken.redeemUnderlying(_amount);
+    }
+
+    function toCompound(address _token, uint _amount) public {
+        address cToken = base.cTokenAddress(_token);
+        if (_token == ETH_ADDR) {
+            // TODO Why we need to put gas here?
+            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
+            ICETH(cToken).mint.value(_amount).gas(250000)();
+        } else {
+            ICToken(cToken).mint(_amount);
+        }
+    }
+
     /**
      * Transfer the token between users inside DeFiner
      * @param _to the address that the token be transfered to
@@ -263,7 +279,8 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         base.updateTotalCompound(_token);
         base.updateTotalLoan(_token);
-        base.updateTotalReserve(_token, _amount, uint8(2)); // Last parameter false means withdraw token
+        uint compoundAmount = base.updateTotalReserve(_token, _amount, uint8(2)); // Last parameter false means withdraw token
+        fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
@@ -303,7 +320,8 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         base.updateTotalCompound(_token);
         base.updateTotalLoan(_token);
-        base.updateTotalReserve(_token, amount, uint8(3));
+        uint compoundAmount = base.updateTotalReserve(_token, amount, uint8(3));
+        toCompound(_token, compoundAmount);
 
         // Send the remain money back
         uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
@@ -349,7 +367,8 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         base.updateTotalCompound(_token);
         base.updateTotalLoan(_token);
-        base.updateTotalReserve(_token, _amount, uint8(0)); // Last parameter false means deposit token
+        uint compoundAmount = base.updateTotalReserve(_token, _amount, uint8(0)); // Last parameter false means deposit token
+        toCompound(_token, compoundAmount);
     }
 
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
@@ -405,7 +424,8 @@ contract SavingAccount {
         // of C (Compound Ratio) and U (Utilization Ratio).
         base.updateTotalCompound(_token);
         base.updateTotalLoan(_token);
-        base.updateTotalReserve(_token, _amount, uint8(1)); // Last parameter false means withdraw token
+        uint compoundAmount = base.updateTotalReserve(_token, _amount, uint8(1)); // Last parameter false means withdraw token
+        fromCompound(_token, compoundAmount);
 
         return _amount;
     }
@@ -459,136 +479,136 @@ contract SavingAccount {
     /**
      * Liquidate function
      */
-    function liquidate(address targetAccountAddr, address _targetToken) public {
-        require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
-        LiquidationVars memory vars;
-        vars.totalBorrow = getBorrowETH(targetAccountAddr);
-        vars.totalCollateral = getDepositETH(targetAccountAddr);
-
-        vars.msgTotalBorrow = getBorrowETH(msg.sender);
-        vars.msgTotalCollateral = getDepositETH(msg.sender);
-
-        vars.targetTokenBalance = getDepositBalance(_targetToken, msg.sender);
-
-        uint liquidationThreshold =  globalConfig.liquidationThreshold();
-        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-
-        require(_targetToken != address(0), "Token address is zero");
-        vars.tokenIndex = tokenRegistry.getTokenIndex(_targetToken);
-        vars.borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
-
-        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-        );
-
-        // The value of discounted collateral should be never less than the borrow amount.
-        // We assume this will never happen as the market will not drop extreamly fast so that
-        // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
-
-        require(
-            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
-            "No extra funds are used for liquidation."
-        );
-
-        require(
-            vars.targetTokenBalance > 0,
-            "The account amount must be greater than zero."
-        );
-
-        uint divisor = _targetToken == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(_targetToken).decimals());
-
-        // Amount of assets that need to be liquidated
-        vars.liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(vars.borrowLTV).div(100)
-        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
-
-        // Liquidators need to pay
-        vars.targetTokenPrice = base.getPriceFromAddress(_targetToken);
-        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
-
-        if(
-            vars.msgTotalBorrow != 0 &&
-            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
-         ) {
-            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
-        }
-
-        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
-            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
-        }
-
-        TokenInfoLib.TokenInfo storage targetTokenInfo = accounts[targetAccountAddr].tokenInfos[_targetToken];
-        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = accounts[msg.sender].tokenInfos[_targetToken];
-        // Target token rate of the liquidator
-        vars.msgTargetTokenAccruedRate = base.getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
-        // Target token rate of the user to be liquidated
-        vars.targetTokenAccruedRate = base.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
-
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
-        if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
-            base.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
-        }
-
-        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
-        if(targetTokenInfo.getBorrowPrincipal() == 0) {
-            base.unsetFromBorrowBitmap(targetAccountAddr, vars.tokenIndex);
-        }
-
-        // The collaterals are liquidate in the order of their market liquidity
-        for(uint i = 0; i < base.getCoinLength(); i++) {
-            vars.token = base.getCoinAddress(i);
-            if(base.isUserHasDeposits(targetAccountAddr, uint8(i))) {
-                vars.tokenPrice = base.getCoinToETHRate(i);
-
-                vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
-
-                TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAccountAddr].tokenInfos[vars.token];
-
-                if(tokenInfo.getBorrowPrincipal() == 0) {
-                    TokenInfoLib.TokenInfo storage msgTokenInfo = accounts[msg.sender].tokenInfos[vars.token];
-                    base.newRateIndexCheckpoint(vars.token);
-
-                    // Token rate of the liquidator
-                    vars.msgTokenAccruedRate =
-                    msgTokenInfo.getBorrowPrincipal() > 0 ?
-                    base.getBorrowAccruedRate(vars.token, msgTokenInfo.getLastBorrowBlock())
-                    :
-                    base.getDepositAccruedRate(vars.token, msgTokenInfo.getLastDepositBlock());
-
-                    // Token rate of the user to be liquidated
-                    vars.tokenAccruedRate = base.getDepositAccruedRate(vars.token, tokenInfo.getLastDepositBlock());
-                    vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
-                    if(vars.coinValue > vars.liquidationDebtValue) {
-                        vars.coinValue = vars.liquidationDebtValue;
-                        vars.liquidationDebtValue = 0;
-                    } else {
-                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
-                    }
-                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
-                    if(tokenInfo.getDepositPrincipal() == 0) {
-                        base.unsetFromDepositBitmap(targetAccountAddr, vars.tokenIndex);
-                    }
-
-                    if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
-                        base.setInDepositBitmap(msg.sender, vars.tokenIndex);
-                    }
-                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
-                }
-            }
-
-            if(vars.liquidationDebtValue == 0) {
-                break;
-            }
-        }
-    }
+//    function liquidate(address targetAccountAddr, address _targetToken) public {
+//        require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
+//        LiquidationVars memory vars;
+//        vars.totalBorrow = getBorrowETH(targetAccountAddr);
+//        vars.totalCollateral = getDepositETH(targetAccountAddr);
+//
+//        vars.msgTotalBorrow = getBorrowETH(msg.sender);
+//        vars.msgTotalCollateral = getDepositETH(msg.sender);
+//
+//        vars.targetTokenBalance = getDepositBalance(_targetToken, msg.sender);
+//
+//        uint liquidationThreshold =  globalConfig.liquidationThreshold();
+//        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+//
+//        require(_targetToken != address(0), "Token address is zero");
+//        vars.tokenIndex = tokenRegistry.getTokenIndex(_targetToken);
+//        vars.borrowLTV = tokenRegistry.getBorrowLTV(_targetToken);
+//
+//        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+//        require(
+//            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
+//            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+//        );
+//
+//        // The value of discounted collateral should be never less than the borrow amount.
+//        // We assume this will never happen as the market will not drop extreamly fast so that
+//        // the LTV changes from 85% to 95%, an 10% drop within one block.
+//        require(
+//            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
+//            "Collateral is not sufficient to be liquidated."
+//        );
+//
+//        require(
+//            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
+//            "No extra funds are used for liquidation."
+//        );
+//
+//        require(
+//            vars.targetTokenBalance > 0,
+//            "The account amount must be greater than zero."
+//        );
+//
+//        uint divisor = _targetToken == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(_targetToken).decimals());
+//
+//        // Amount of assets that need to be liquidated
+//        vars.liquidationDebtValue = vars.totalBorrow.sub(
+//            vars.totalCollateral.mul(vars.borrowLTV).div(100)
+//        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
+//
+//        // Liquidators need to pay
+//        vars.targetTokenPrice = base.getPriceFromAddress(_targetToken);
+//        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
+//
+//        if(
+//            vars.msgTotalBorrow != 0 &&
+//            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
+//         ) {
+//            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
+//        }
+//
+//        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
+//            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+//        }
+//
+//        TokenInfoLib.TokenInfo storage targetTokenInfo = accounts[targetAccountAddr].tokenInfos[_targetToken];
+//        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = accounts[msg.sender].tokenInfos[_targetToken];
+//        // Target token rate of the liquidator
+//        vars.msgTargetTokenAccruedRate = base.getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
+//        // Target token rate of the user to be liquidated
+//        vars.targetTokenAccruedRate = base.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
+//
+//        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+//        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
+//        if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
+//            base.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
+//        }
+//
+//        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
+//        if(targetTokenInfo.getBorrowPrincipal() == 0) {
+//            base.unsetFromBorrowBitmap(targetAccountAddr, vars.tokenIndex);
+//        }
+//
+//        // The collaterals are liquidate in the order of their market liquidity
+//        for(uint i = 0; i < base.getCoinLength(); i++) {
+//            vars.token = base.getCoinAddress(i);
+//            if(base.isUserHasDeposits(targetAccountAddr, uint8(i))) {
+//                vars.tokenPrice = base.getCoinToETHRate(i);
+//
+//                vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+//
+//                TokenInfoLib.TokenInfo storage tokenInfo = accounts[targetAccountAddr].tokenInfos[vars.token];
+//
+//                if(tokenInfo.getBorrowPrincipal() == 0) {
+//                    TokenInfoLib.TokenInfo storage msgTokenInfo = accounts[msg.sender].tokenInfos[vars.token];
+//                    base.newRateIndexCheckpoint(vars.token);
+//
+//                    // Token rate of the liquidator
+//                    vars.msgTokenAccruedRate =
+//                    msgTokenInfo.getBorrowPrincipal() > 0 ?
+//                    base.getBorrowAccruedRate(vars.token, msgTokenInfo.getLastBorrowBlock())
+//                    :
+//                    base.getDepositAccruedRate(vars.token, msgTokenInfo.getLastDepositBlock());
+//
+//                    // Token rate of the user to be liquidated
+//                    vars.tokenAccruedRate = base.getDepositAccruedRate(vars.token, tokenInfo.getLastDepositBlock());
+//                    vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
+//                    if(vars.coinValue > vars.liquidationDebtValue) {
+//                        vars.coinValue = vars.liquidationDebtValue;
+//                        vars.liquidationDebtValue = 0;
+//                    } else {
+//                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+//                    }
+//                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+//                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+//                    if(tokenInfo.getDepositPrincipal() == 0) {
+//                        base.unsetFromDepositBitmap(targetAccountAddr, vars.tokenIndex);
+//                    }
+//
+//                    if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
+//                        base.setInDepositBitmap(msg.sender, vars.tokenIndex);
+//                    }
+//                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
+//                }
+//            }
+//
+//            if(vars.liquidationDebtValue == 0) {
+//                break;
+//            }
+//        }
+//    }
 
     /**
      * Receive the amount of token from msg.sender

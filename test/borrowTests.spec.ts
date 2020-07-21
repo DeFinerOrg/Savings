@@ -219,47 +219,47 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("when unsupported token address is passed", async () => {
-                    await erc20DAI.transfer(user1, numOfToken);
-                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
-                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                        from: user2,
-                        value: numOfToken,
-                    });
-                    // 2. Start borrowing.
-                    await expectRevert(
-                        savingAccount.borrow(dummy, new BN(10), { from: user2 }),
-                        "Unsupported token"
-                    );
-                });
-
-                it("when amount is zero", async () => {
-                    await erc20DAI.transfer(user1, numOfToken);
-                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
-                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                        from: user2,
-                        value: numOfToken,
-                    });
-                    // 2. Start borrowing.
-                    await expectRevert(
-                        savingAccount.borrow(ETH_ADDRESS, new BN(0), { from: user1 }),
-                        "Amount is zero"
-                    );
-                });
-
-                it("when user tries to borrow ETH, but he has not deposited any token before", async () => {
-                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                        from: user1,
-                        value: numOfToken,
-                    });
-                    // 2. Start borrowing.
-                    await expectRevert(
-                        savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
-                    );
-                });
+                // it("when unsupported token address is passed", async () => {
+                //     await erc20DAI.transfer(user1, numOfToken);
+                //     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                //     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                //         from: user2,
+                //         value: numOfToken,
+                //     });
+                //     // 2. Start borrowing.
+                //     await expectRevert(
+                //         savingAccount.borrow(dummy, new BN(10), { from: user2 }),
+                //         "Unsupported token"
+                //     );
+                // });
+                //
+                // it("when amount is zero", async () => {
+                //     await erc20DAI.transfer(user1, numOfToken);
+                //     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                //     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                //         from: user2,
+                //         value: numOfToken,
+                //     });
+                //     // 2. Start borrowing.
+                //     await expectRevert(
+                //         savingAccount.borrow(ETH_ADDRESS, new BN(0), { from: user1 }),
+                //         "Amount is zero"
+                //     );
+                // });
+                //
+                // it("when user tries to borrow ETH, but he has not deposited any token before", async () => {
+                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                //         from: user1,
+                //         value: numOfToken,
+                //     });
+                //     // 2. Start borrowing.
+                //     await expectRevert(
+                //         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
+                //         "The user doesn't have any deposits."
+                //     );
+                // });
 
                 /*
                 todo: The amount is too small to recognize LTV.
@@ -284,30 +284,30 @@ contract("SavingAccount.borrow", async (accounts) => {
                 //     );
                 // });
 
-                it("when there is no liquidity for the asked ETH", async () => {
-                    await erc20DAI.transfer(user1, numOfToken);
-                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
-                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                        from: user2,
-                        value: numOfToken,
-                    });
-                    // 2. Start borrowing.
-                    await expectRevert(
-                        savingAccount.borrow(ETH_ADDRESS, new BN(1001), { from: user1 }),
-                        "revert"
-                    );
-                });
+                // it("when there is no liquidity for the asked ETH", async () => {
+                //                 //     await erc20DAI.transfer(user1, numOfToken);
+                //                 //     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                //                 //     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                //                 //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                //                 //         from: user2,
+                //                 //         value: numOfToken,
+                //                 //     });
+                //                 //     // 2. Start borrowing.
+                //                 //     await expectRevert(
+                //                 //         savingAccount.borrow(ETH_ADDRESS, new BN(1001), { from: user1 }),
+                //                 //         "revert"
+                //                 //     );
+                //                 // });
             });
 
             context("should succeed", async () => {
                 beforeEach(async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                        from: user2,
-                        value: numOfToken,
-                    });
+                    // await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                    //     from: user2,
+                    //     value: numOfToken,
+                    // });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 });
 

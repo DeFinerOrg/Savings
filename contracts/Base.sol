@@ -37,6 +37,7 @@ contract Base {
     //mapping(address => Account) accounts;
     mapping(address => Bitmap) bitmaps;
     address globalConfigAddress;
+    address savingAccountAddress;
     // Third Party Pools
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
@@ -59,11 +60,13 @@ contract Base {
     /**
      * Initialize
      */
-    function initialize(address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress, string memory _tokenNames, address _chainlinkAddress) public {
+    function initialize(address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress, string memory _tokenNames, address _chainlinkAddress, address _savingAccountAddress) public {
 
         symbols.initialize(_tokenNames, _tokens, _chainlinkAddress);
 
         globalConfigAddress = _globalConfigAddress;
+        savingAccountAddress = _savingAccountAddress;
+
         for(uint i = 0;i < _tokens.length;i++) {
             cTokenAddress[_tokens[i]] = _cTokens[i];
         }
@@ -147,7 +150,7 @@ contract Base {
     function updateTotalCompound(address _token) public {
         address cToken = cTokenAddress[_token];
         if(cToken != address(0)) {
-            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(this));
+            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(savingAccountAddress);
         }
     }
 
@@ -175,7 +178,7 @@ contract Base {
      * token in Compound.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, uint8 _action) public {
+    function updateTotalReserve(address _token, uint _amount, uint8 _action) public returns(uint compoundAmount){
         address cToken = cTokenAddress[_token];
         if (_action == uint8(ActionChoices.Deposit) || _action == uint8(ActionChoices.Repay)) {
             // Total amount of token after deposit or repay
@@ -191,7 +194,8 @@ contract Base {
             if (cTokenAddress[_token] != address(0) &&
             totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(globalConfigAddress).midReserveRatio()).div(100);
-                toCompound(_token, toCompoundAmount);
+                // toCompound(_token, toCompoundAmount);
+                compoundAmount = toCompoundAmount;
                 totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
                 totalReserve[_token] = totalReserve[_token].add(_amount.sub(toCompoundAmount));
             }
@@ -220,13 +224,15 @@ contract Base {
                 uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(GlobalConfig(globalConfigAddress).midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
-                    fromCompound(_token, totalCompound[cToken]);
+                    // fromCompound(_token, totalCompound[cToken]);
+                    compoundAmount = totalCompound[cToken];
                     totalCompound[cToken] = 0;
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable - totalAmount.mul(GlobalConfig(globalConfigAddress).midReserveRatio()).div(100);
-                    fromCompound(_token, totalCompound[cToken]-totalInCompound);
+                    // fromCompound(_token, totalCompound[cToken]-totalInCompound);
+                    compoundAmount = totalCompound[cToken]-totalInCompound;
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -235,6 +241,7 @@ contract Base {
                 totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
+        return compoundAmount;
     }
 
     // sichaoy: these two functions should be moved to a seperate library
@@ -468,24 +475,24 @@ contract Base {
      * @param _token token address
      * @param _amount amount of token
      */
-    function toCompound(address _token, uint _amount) public {
-        address cToken = cTokenAddress[_token];
-        if (_token == ETH_ADDR) {
-            // TODO Why we need to put gas here?
-            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
-            ICETH(cToken).mint.value(_amount).gas(250000)();
-        } else {
-            ICToken(cToken).mint(_amount);
-        }
-    }
+//    function toCompound(address _token, uint _amount) public {
+//        address cToken = cTokenAddress[_token];
+//        if (_token == ETH_ADDR) {
+//            // TODO Why we need to put gas here?
+//            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
+//            ICETH(cToken).mint.value(_amount).gas(250000)();
+//        } else {
+//            ICToken(cToken).mint(_amount);
+//        }
+//    }
 
     /**
      * Withdraw token from Compound
      * @param _token token address
      * @param _amount amount of token
      */
-    function fromCompound(address _token, uint _amount) public {
-        ICToken cToken = ICToken(cTokenAddress[_token]);
-        cToken.redeemUnderlying(_amount);
-    }
+//    function fromCompound(address _token, uint _amount) public {
+//        ICToken cToken = ICToken(cTokenAddress[_token]);
+//        cToken.redeemUnderlying(_amount);
+//    }
 }
