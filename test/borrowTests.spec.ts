@@ -15,6 +15,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountInstance;
+    let base: t.BaseInstance
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -42,6 +43,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        base = await testEngine.base;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -185,10 +187,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(await base.getCoinToETHRate(1))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToETHRate(0));
+                        .div(await base.getCoinToETHRate(0));
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
@@ -683,10 +685,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToETHRate(0))
+                        .mul(await base.getCoinToETHRate(0))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToETHRate(1));
+                        .div(await base.getCoinToETHRate(1));
                     await savingAccount.borrow(addressUSDC, limitAmount, { from: user1 });
                     // 3. Verify the loan amount.
                     const user1Balance = await erc20USDC.balanceOf(user1);
@@ -721,10 +723,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(await base.getCoinToETHRate(1))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToETHRate(0));
+                        .div(await base.getCoinToETHRate(0));
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2Balance = await erc20DAI.balanceOf(user2);
