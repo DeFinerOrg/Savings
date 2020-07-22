@@ -1,6 +1,6 @@
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
-
+var shell = require('shelljs');
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
@@ -8,6 +8,7 @@ const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithControllerContract = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+var child_process = require('child_process');
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 var tokenData = require("../test-helpers/tokenData.json");
@@ -27,6 +28,13 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
+    public async deploy(compoumdDir: String, script: String) {
+        const scriptPath: String = `${compoumdDir}/scirpt/scen/${script}`;
+        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compoumdDir} run repl -s ${scriptPath}`;
+        const log = shell.exec(command);
+        const configFile = `${compoumdDir}/networks/development.json`;
+        compoundTokens = require(configFile);
+    }
     /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
