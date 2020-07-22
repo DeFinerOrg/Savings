@@ -29,7 +29,7 @@ contract SavingAccount {
     GlobalConfig public globalConfig;
 
     uint256 ACCURACY = 10**18;
-    uint BLOCKS_PER_YEAR = 2102400;
+    // uint BLOCKS_PER_YEAR = 2102400;
 
 
     uint256 public constant UINT_UNIT = 10 ** 18;
@@ -649,20 +649,20 @@ contract SavingAccount {
     // EMERGENCY WITHDRAWAL FUNCTIONS
     // TODO Needs to be removed when final version deployed
     // ============================================
-    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        if(_token == ETH_ADDR) {
-            EMERGENCY_ADDR.transfer(address(this).balance);
-        } else {
-            uint256 amount = IERC20(_token).balanceOf(address(this));
-            require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
-        }
-    }
+    // function emergencyWithdraw(address _token) external onlyEmergencyAddress {
+    //     if(_token == ETH_ADDR) {
+    //         EMERGENCY_ADDR.transfer(address(this).balance);
+    //     } else {
+    //         uint256 amount = IERC20(_token).balanceOf(address(this));
+    //         require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
+    //     }
+    // }
 
-    function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeem(_amount);
-    }
+    // function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+    //     ICToken(_cToken).redeem(_amount);
+    // }
 
-    function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeemUnderlying(_amount);
-    }
+    // function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+    //     ICToken(_cToken).redeemUnderlying(_amount);
+    // }
 }
