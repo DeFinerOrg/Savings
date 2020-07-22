@@ -622,6 +622,10 @@ library Base {
     function getDeFinerCommunityFund(BaseVariable storage self, address _token) public view returns(uint256){
         return self.deFinerFund[_token];
     }
+
+    function getDeFinerCommunityFund(BaseVariable storage self) public view returns(address){
+        return self.deFinerCommunityFund;
+    }
 }
 
 interface IERC20Extended {

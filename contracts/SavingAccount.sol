@@ -25,6 +25,7 @@ contract SavingAccount {
     // TODO This is emergency address to allow withdrawal of funds from the contract
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    address public constant COMP_ADDR = 0x000000000000000000000000000000000000000E;
     TokenInfoRegistry public tokenRegistry;
     GlobalConfig public globalConfig;
 
@@ -626,6 +627,10 @@ contract SavingAccount {
 
     function _isETH(address _token) internal pure returns (bool) {
         return ETH_ADDR == _token;
+    }
+
+    function withdrawComp() public {
+        send(baseVariable.getDeFinerCommunityFund(), IERC20(COMP_ADDR).balanceOf(address(this)), COMP_ADDR);
     }
 
     // ============================================
