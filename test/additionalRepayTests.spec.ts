@@ -81,42 +81,49 @@ contract("SavingAccount.repay", async (accounts) => {
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
-
     });
 
     context("Addtional tests for repay()", async () => {
-        context("Borrow out all the tokens in DeFiner, then repay, verify CToken and tokens in saving acount", async () => {
-            it("Deposit DAI, borrows USDC and wants to withdraw", async () => {
-                /*
-                 * Step 1
-                 * Account 1 deposit 2 whole DAI and Account 1 deposit 1 whole USDC
-                 */
+        context(
+            "Borrow out all the tokens in DeFiner, then repay, verify CToken and tokens in saving acount",
+            async () => {
+                it("Deposit DAI, borrows USDC and wants to withdraw", async () => {
+                    /*
+                     * Step 1
+                     * Account 1 deposit 2 whole DAI and Account 1 deposit 1 whole USDC
+                     */
 
-                const numOfDAI = eighteenPrecision.mul(new BN(2));
-                const numOfUSDC = sixPrecision;
-                await erc20DAI.transfer(user1, numOfDAI);
-                await erc20USDC.transfer(user2, numOfUSDC);
-                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                /*
-                 * Step 2
-                 * Account 1 borrows the 1 USDC from DeFiner
-                 * To verify:
-                 * CToken for USDC left in saving account
-                 * USDC token left in saving account
-                 */
-                const CTokenLeftBefore = new BN(await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address));
-                const TokenLeftBefore = new BN(await erc20USDC.balanceOf(savingAccount.address));
-                await savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
-                const CTokenLeft = new BN(await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address));
-                const TokenLeft = new BN(await erc20USDC.balanceOf(savingAccount.address));
-                expect(CTokenLeft).to.be.bignumber.equal(ZERO);
-                expect(TokenLeft).to.be.bignumber.equal(ZERO);
-
-            });
-        });
+                    const numOfDAI = eighteenPrecision.mul(new BN(2));
+                    const numOfUSDC = sixPrecision;
+                    await erc20DAI.transfer(user1, numOfDAI);
+                    await erc20USDC.transfer(user2, numOfUSDC);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                    await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                    /*
+                     * Step 2
+                     * Account 1 borrows the 1 USDC from DeFiner
+                     * To verify:
+                     * CToken for USDC left in saving account
+                     * USDC token left in saving account
+                     */
+                    const CTokenLeftBefore = new BN(
+                        await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const TokenLeftBefore = new BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+                    await savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
+                    const CTokenLeft = new BN(
+                        await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const TokenLeft = new BN(await erc20USDC.balanceOf(savingAccount.address));
+                    expect(CTokenLeft).to.be.bignumber.equal(ZERO);
+                    expect(TokenLeft).to.be.bignumber.equal(ZERO);
+                });
+            }
+        );
 
         // These tests can't be verified after integrated with compound
         // context("Checking saving account's value after repayment", async () => {
@@ -208,21 +215,26 @@ contract("SavingAccount.repay", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), { from: user2 });
+                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
+                        from: user2
+                    });
                 });
                 it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async () => {
                     const quaterOfDAI = numOfDAI.div(new BN(4));
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user2 }
+                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(addressDAI, {
+                        from: user2
+                    });
+                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(
+                        numOfDAI.div(new BN(2))
                     );
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(numOfDAI.div(new BN(2)));
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
                     const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
                         addressDAI,
                         { from: user2 }
                     );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(numOfDAI.div(new BN(4)));
+                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(
+                        numOfDAI.div(new BN(4))
+                    );
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
 
                     const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
@@ -247,23 +259,28 @@ contract("SavingAccount.repay", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                    await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(2)), { from: user1 });
+                    await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(2)), {
+                        from: user1
+                    });
                 });
                 it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async () => {
                     const quaterOfUSDC = numOfUSDC.div(new BN(4));
                     const USDCBalance = await erc20USDC.balanceOf(user1);
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
+                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
 
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(numOfUSDC.div(new BN(2)));
+                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(
+                        numOfUSDC.div(new BN(2))
+                    );
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
                     const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
                         addressUSDC,
                         { from: user1 }
                     );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(numOfUSDC.div(new BN(4)));
+                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(
+                        numOfUSDC.div(new BN(4))
+                    );
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
 
                     const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
@@ -296,7 +313,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
                     // 4. Verify the repay amount.
                     const user2BalanceAfter = await erc20DAI.balanceOf(user2);
-                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(new BN(10));
+                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("When the repayment DAI Amount is less than the loan amount.", async () => {
@@ -307,7 +326,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressDAI, new BN(5), { from: user2 });
                     // 4. Verify the repay amount.
                     const user2BalanceAfter = await erc20DAI.balanceOf(user2);
-                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(new BN(5));
+                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(
+                        new BN(5)
+                    );
                 });
 
                 it("When the repayment DAI Amount is equal than the loan amount.", async () => {
@@ -318,7 +339,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
                     // 4. Verify the repay amount.
                     const user2BalanceAfter = await erc20DAI.balanceOf(user2);
-                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(new BN(10));
+                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("When the repayment DAI Amount is greater than the loan amount.", async () => {
@@ -331,7 +354,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressDAI, new BN(20), { from: user2 });
                     // 4. Verify the repay amount.
                     const user2BalanceAfter = await erc20DAI.balanceOf(user2);
-                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(new BN(10));
+                    expect(BN(user2BalanceBefore).sub(BN(user2BalanceAfter))).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("When the repayment WBTC Amount is less than the loan amount.", async () => {
@@ -346,7 +371,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressWBTC, new BN(5), { from: user1 });
                     // 4. Verify the repay amount.
                     const user1BalanceAfter = await erc20WBTC.balanceOf(user1);
-                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(new BN(5));
+                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(
+                        new BN(5)
+                    );
                 });
 
                 it("When the repayment WBTC Amount is equal than the loan amount.", async () => {
@@ -361,7 +388,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressWBTC, new BN(10), { from: user1 });
                     // 4. Verify the repay amount.
                     const user1BalanceAfter = await erc20WBTC.balanceOf(user1);
-                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(new BN(10));
+                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("When the repayment WBTC Amount is greater than the loan amount.", async () => {
@@ -378,7 +407,9 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.repay(addressWBTC, new BN(20), { from: user1 });
                     // 4. Verify the repay amount.
                     const user1BalanceAfter = await erc20WBTC.balanceOf(user1);
-                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(new BN(10));
+                    expect(BN(user1BalanceBefore).sub(BN(user1BalanceAfter))).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
             });
         });

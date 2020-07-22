@@ -27,8 +27,8 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressMKR: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
     let erc20DAI: t.MockERC20Instance;
     let erc20USDC: t.MockERC20Instance;
     let erc20TUSD: t.MockERC20Instance;
@@ -55,8 +55,8 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         // Use CERC20, import from Compound
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cDAI = await MockCToken.at(addressCTokenForDAI);
+        cUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
 
     context("deposit()", async () => {
@@ -82,19 +82,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const numOfToken = new BN(1000);
                 await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                // gets init with 5e26
-                const balCTokenContractInit = await erc20DAI.balanceOf(addressCTokenForDAI);
-                // gets init with 0
-                const balCTokensInit = await cTokenDAI.balanceOf(savingAccount.address);
-
-                //expect(balCTokenContractInit).to.be.bignumber.equal(new BN(10));
-                //expect(balCTokensInit).to.be.bignumber.equal(new BN(10));
-
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20DAI.address
                 );
 
                 const balCTokenContractBefore = await erc20DAI.balanceOf(addressCTokenForDAI);
+                const balCTokensBefore = await cDAI.balanceOf(savingAccount.address);
 
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20DAI.address, numOfToken);
@@ -124,6 +117,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                 // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 // change variable name addressCTokenForDAI --> cDAI_addr
+                // balanceOfUnderlying -- erc20 token balance
+                // should equal cDAI.balanceOf
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
@@ -132,9 +127,11 @@ contract("SavingAccount.deposit", async (accounts) => {
                 //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                // change cTokenDAI to `cDAI`
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                //expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                // get exchange rate and then verify
+                const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                expect(
+                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
             });
 
             it("when 1000 whole supported tokens are deposited", async () => {
@@ -185,8 +182,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                //expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    new BN(balCTokens).div(new BN(10))
+                );
             });
 
             // When Compound unsupported tokens are passed
@@ -371,8 +370,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
-                //expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                const balCTokens = await cUSDC.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokens.div(new BN(100000))
+                );
             });
 
             it("when ETH address is passed", async () => {
