@@ -79,7 +79,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
-
     });
 
     context("Addtional tests for withdraw", async () => {
@@ -97,7 +96,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         //             /*
         //              * Step 2
         //              * Account 0 withdraw 150 tokens into DeFiner
-        //              * DeFiner should have 850 tokens for cTokenDAI, so it should trigger the mechanism 
+        //              * DeFiner should have 850 tokens for cTokenDAI, so it should trigger the mechanism
         //              * to withdraw some tokens from Compound
         //              * To verify:
         //              * 1. withdraw amount = balance before withdraw - balance after withdraw
@@ -134,7 +133,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         //             /*
         //              * Step 2
         //              * Account 0 withdraw 150 tokens into DeFiner
-        //              * DeFiner should have 850 tokens for cTokenUSDC, so it should trigger the mechanism 
+        //              * DeFiner should have 850 tokens for cTokenUSDC, so it should trigger the mechanism
         //              * to withdraw some tokens from Compound
         //              * To verify:
         //              * 1. withdraw amount = balance before withdraw - balance after withdraw
@@ -171,7 +170,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         //             /*
         //              * Step 2
         //              * Account 0 withdraw 150 tokens into DeFiner
-        //              * DeFiner should have 850 tokens for cTokenWBTC, so it should trigger the mechanism 
+        //              * DeFiner should have 850 tokens for cTokenWBTC, so it should trigger the mechanism
         //              * to withdraw some tokens from Compound
         //              * To verify:
         //              * 1. withdraw amount = balance before withdraw - balance after withdraw
@@ -411,11 +410,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     let userUSDCBalanceAfterWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfDAIs));
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfDAIs));
                     // Verify 2.
-                    expect(BN(userUSDCBalanceAfterWithdraw).sub(BN(userUSDCBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfUSDCs));
+                    expect(
+                        BN(userUSDCBalanceAfterWithdraw).sub(BN(userUSDCBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfUSDCs));
                 });
                 it("Deposit DAI and USDC, withdraw fully", async () => {
                     const numOfDAIs = new BN(1).mul(eighteenPrecision);
@@ -445,11 +446,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     let userUSDCBalanceAfterWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(numOfDAIs);
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(numOfDAIs);
                     // Verify 2.
-                    expect(BN(userUSDCBalanceAfterWithdraw).sub(BN(userUSDCBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(numOfUSDCs));
+                    expect(
+                        BN(userUSDCBalanceAfterWithdraw).sub(BN(userUSDCBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(numOfUSDCs));
                 });
                 it("Deposit DAI and TUSD, withdraw partially", async () => {
                     const numOfDAIs = new BN(1).mul(eighteenPrecision);
@@ -481,11 +484,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     let userTUSDBalanceAfterWithdraw = await erc20TUSD.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfDAIs));
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfDAIs));
                     // Verify 2.
-                    expect(BN(userTUSDBalanceAfterWithdraw).sub(BN(userTUSDBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfTUSDs));
+                    expect(
+                        BN(userTUSDBalanceAfterWithdraw).sub(BN(userTUSDBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfTUSDs));
                 });
                 it("Deposit DAI and TUSD, withdraw fully", async () => {
                     const numOfDAIs = new BN(1).mul(eighteenPrecision);
@@ -515,11 +520,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     let userTUSDBalanceAfterWithdraw = await erc20TUSD.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(numOfDAIs));
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(numOfDAIs));
                     // Verify 2.
-                    expect(BN(userTUSDBalanceAfterWithdraw).sub(BN(userTUSDBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(numOfTUSDs));
+                    expect(
+                        BN(userTUSDBalanceAfterWithdraw).sub(BN(userTUSDBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(numOfTUSDs));
                 });
             });
             context("Should fail", async () => {
@@ -549,8 +556,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     let userDAIBalanceBeforeWithdraw = await erc20DAI.balanceOf(user1);
                     await savingAccount.withdraw(erc20DAI.address, halfOfDAIs, { from: user1 });
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfDAIs));
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfDAIs));
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20USDC.address, doubleOfUSDCs, { from: user1 }),
@@ -585,8 +593,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.withdraw(erc20DAI.address, halfOfDAIs, { from: user1 });
                     let userDAIBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw)))
-                        .to.be.bignumber.equal(BN(halfOfDAIs));
+                    expect(
+                        BN(userDAIBalanceAfterWithdraw).sub(BN(userDAIBalanceBeforeWithdraw))
+                    ).to.be.bignumber.equal(BN(halfOfDAIs));
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20TUSD.address, doubleOfTUSDs, { from: user1 }),
@@ -622,7 +631,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     savingAccount.withdrawAll(erc20DAI.address, { from: user1 }),
                     "Insufficient collateral."
                 );
-
             });
             it("Deposit DAI, borrows USDC and wants to withdraw", async () => {
                 /*
@@ -643,10 +651,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * Then tries to withdraw all the tokens
                  * Should fail, beacuse user has to repay all the outstandings before withdrawing.
                  */
-                const userTotalBalanceBefore = await savingAccount.tokenBalance(
-                    addressUSDC,
-                    { from: user1 }
-                );
+                const userTotalBalanceBefore = await savingAccount.tokenBalance(addressUSDC, {
+                    from: user1
+                });
                 const borrows = new BN(10);
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
                 const UserTokenLeftBefore = new BN(await erc20DAI.balanceOf(user1));
@@ -657,16 +664,19 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const UserTokenLeft = new BN(await erc20DAI.balanceOf(user1));
 
                 // const CTokenLeft = new BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
-                const userTotalBalance = await savingAccount.tokenBalance(
-                    addressUSDC,
-                    { from: user1 }
-                );
+                const userTotalBalance = await savingAccount.tokenBalance(addressUSDC, {
+                    from: user1
+                });
 
                 // expect(TokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(15)).div(new BN(100)).sub(new BN(100)));
                 // expect(CTokenLeft).to.be.bignumber.equal(numOfDAI.mul(new BN(85)).div(new BN(100)));
-                expect(BN(UserTokenLeft).sub(BN(UserTokenLeftBefore))).to.be.bignumber.equal(new BN(100));
+                expect(BN(UserTokenLeft).sub(BN(UserTokenLeftBefore))).to.be.bignumber.equal(
+                    new BN(100)
+                );
                 // Verify 2.
-                expect(BN(userTotalBalance[1]).sub(BN(userTotalBalanceBefore[1]))).to.be.bignumber.equal(new BN(10));
+                expect(
+                    BN(userTotalBalance[1]).sub(BN(userTotalBalanceBefore[1]))
+                ).to.be.bignumber.equal(new BN(10));
             });
         });
         context("Withdraw partially multiple times", async () => {
@@ -682,7 +692,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfDAIs, { from: user1 });
                     /*
                      * Step 2
-                     * Withdraw 1/4 of the whole 10^18 tokens for four times 
+                     * Withdraw 1/4 of the whole 10^18 tokens for four times
                      * To verify
                      * 1. Tokens in user's account increase 1/4 * 10^18 after every withdraw
                      * 2. Tokens in DeFiner of user1 should be 0 after four withdraws
@@ -692,27 +702,34 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.withdraw(erc20DAI.address, quaterOfDAIs, { from: user1 });
                     const userDAIBalanceBeforeSecondWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceBeforeSecondWithdraw).sub(userDAIBalanceBeforeFirstWithdraw))
-                        .to.be.bignumber.equal(quaterOfDAIs);
+                    expect(
+                        BN(userDAIBalanceBeforeSecondWithdraw).sub(
+                            userDAIBalanceBeforeFirstWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfDAIs);
                     await savingAccount.withdraw(erc20DAI.address, quaterOfDAIs, { from: user1 });
                     const userDAIBalanceBeforeThirdWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceBeforeThirdWithdraw).sub(userDAIBalanceBeforeSecondWithdraw))
-                        .to.be.bignumber.equal(quaterOfDAIs);
+                    expect(
+                        BN(userDAIBalanceBeforeThirdWithdraw).sub(
+                            userDAIBalanceBeforeSecondWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfDAIs);
                     await savingAccount.withdraw(erc20DAI.address, quaterOfDAIs, { from: user1 });
                     const userDAIBalanceBeforeForthWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceBeforeForthWithdraw).sub(userDAIBalanceBeforeThirdWithdraw))
-                        .to.be.bignumber.equal(quaterOfDAIs);
+                    expect(
+                        BN(userDAIBalanceBeforeForthWithdraw).sub(userDAIBalanceBeforeThirdWithdraw)
+                    ).to.be.bignumber.equal(quaterOfDAIs);
                     await savingAccount.withdraw(erc20DAI.address, quaterOfDAIs, { from: user1 });
                     const userDAIBalanceAfterForthWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceAfterForthWithdraw).sub(userDAIBalanceBeforeForthWithdraw))
-                        .to.be.bignumber.equal(quaterOfDAIs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressDAI,
-                        { from: user1 }
-                    );
+                    expect(
+                        BN(userDAIBalanceAfterForthWithdraw).sub(userDAIBalanceBeforeForthWithdraw)
+                    ).to.be.bignumber.equal(quaterOfDAIs);
+                    const userTotalBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
                     // Verify 2.
                     expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
                 });
@@ -727,7 +744,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfUSDCs, { from: user1 });
                     /*
                      * Step 2
-                     * Withdraw 1/4 of the whole 10^18 tokens for four times 
+                     * Withdraw 1/4 of the whole 10^18 tokens for four times
                      * To verify
                      * 1. Tokens in user's account increase 1/4 * 10^6 after every withdraw
                      * 2. Tokens in DeFiner of user1 should be 0 after four withdraws
@@ -739,28 +756,39 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     const userUSDCBalanceBeforeSecondWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
 
-                    expect(BN(userUSDCBalanceBeforeSecondWithdraw).sub(userUSDCBalanceBeforeFirstWithdraw))
-                        .to.be.bignumber.equal(quaterOfUSDCs);
+                    expect(
+                        BN(userUSDCBalanceBeforeSecondWithdraw).sub(
+                            userUSDCBalanceBeforeFirstWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfUSDCs);
                     await savingAccount.withdraw(erc20USDC.address, quaterOfUSDCs, { from: user1 });
                     const userUSDCBalanceBeforeThirdWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userUSDCBalanceBeforeThirdWithdraw).sub(userUSDCBalanceBeforeSecondWithdraw))
-                        .to.be.bignumber.equal(quaterOfUSDCs);
+                    expect(
+                        BN(userUSDCBalanceBeforeThirdWithdraw).sub(
+                            userUSDCBalanceBeforeSecondWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfUSDCs);
                     await savingAccount.withdraw(erc20USDC.address, quaterOfUSDCs, { from: user1 });
                     const userUSDCBalanceBeforeForthWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
 
-                    expect(BN(userUSDCBalanceBeforeForthWithdraw).sub(userUSDCBalanceBeforeThirdWithdraw))
-                        .to.be.bignumber.equal(quaterOfUSDCs);
+                    expect(
+                        BN(userUSDCBalanceBeforeForthWithdraw).sub(
+                            userUSDCBalanceBeforeThirdWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfUSDCs);
                     await savingAccount.withdraw(erc20USDC.address, quaterOfUSDCs, { from: user1 });
                     const userUSDCBalanceAfterForthWithdraw = await erc20USDC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userUSDCBalanceAfterForthWithdraw).sub(userUSDCBalanceBeforeForthWithdraw))
-                        .to.be.bignumber.equal(quaterOfUSDCs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressUSDC,
-                        { from: user1 }
-                    );
+                    expect(
+                        BN(userUSDCBalanceAfterForthWithdraw).sub(
+                            userUSDCBalanceBeforeForthWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfUSDCs);
+                    const userTotalBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
                     // Verify 2.
                     expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
                 });
@@ -775,7 +803,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.deposit(addressWBTC, numOfWBTCs, { from: user1 });
                     /*
                      * Step 2
-                     * Withdraw 1/4 of the whole 10^18 tokens for four times 
+                     * Withdraw 1/4 of the whole 10^18 tokens for four times
                      * To verify
                      * 1. Tokens in user's account increase 1/4 * 10^18 after every withdraw
                      * 2. Tokens in DeFiner of user1 should be 0 after four withdraws
@@ -785,27 +813,38 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.withdraw(erc20WBTC.address, quaterOfWBTCs, { from: user1 });
                     const userWBTCBalanceBeforeSecondWithdraw = await erc20WBTC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userWBTCBalanceBeforeSecondWithdraw).sub(userWBTCBalanceBeforeFirstWithdraw))
-                        .to.be.bignumber.equal(quaterOfWBTCs);
+                    expect(
+                        BN(userWBTCBalanceBeforeSecondWithdraw).sub(
+                            userWBTCBalanceBeforeFirstWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfWBTCs);
                     await savingAccount.withdraw(erc20WBTC.address, quaterOfWBTCs, { from: user1 });
                     const userWBTCBalanceBeforeThirdWithdraw = await erc20WBTC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userWBTCBalanceBeforeThirdWithdraw).sub(userWBTCBalanceBeforeSecondWithdraw))
-                        .to.be.bignumber.equal(quaterOfWBTCs);
+                    expect(
+                        BN(userWBTCBalanceBeforeThirdWithdraw).sub(
+                            userWBTCBalanceBeforeSecondWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfWBTCs);
                     await savingAccount.withdraw(erc20WBTC.address, quaterOfWBTCs, { from: user1 });
                     const userWBTCBalanceBeforeForthWithdraw = await erc20WBTC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userWBTCBalanceBeforeForthWithdraw).sub(userWBTCBalanceBeforeThirdWithdraw))
-                        .to.be.bignumber.equal(quaterOfWBTCs);
+                    expect(
+                        BN(userWBTCBalanceBeforeForthWithdraw).sub(
+                            userWBTCBalanceBeforeThirdWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfWBTCs);
                     await savingAccount.withdraw(erc20WBTC.address, quaterOfWBTCs, { from: user1 });
                     const userWBTCBalanceAfterForthWithdraw = await erc20WBTC.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userWBTCBalanceAfterForthWithdraw).sub(userWBTCBalanceBeforeForthWithdraw))
-                        .to.be.bignumber.equal(quaterOfWBTCs);
-                    const userTotalBalance = await savingAccount.tokenBalance(
-                        addressWBTC,
-                        { from: user1 }
-                    );
+                    expect(
+                        BN(userWBTCBalanceAfterForthWithdraw).sub(
+                            userWBTCBalanceBeforeForthWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfWBTCs);
+                    const userTotalBalance = await savingAccount.tokenBalance(addressWBTC, {
+                        from: user1
+                    });
                     // Verify 2.
                     expect(BN(userTotalBalance[0])).to.be.bignumber.equal(new BN(0));
                 });
@@ -832,8 +871,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     await savingAccount.withdraw(erc20DAI.address, quaterOfDAIs, { from: user1 });
                     const userDAIBalanceBeforeSecondWithdraw = await erc20DAI.balanceOf(user1);
                     // Verify 1.
-                    expect(BN(userDAIBalanceBeforeSecondWithdraw).sub(userDAIBalanceBeforeFirstWithdraw))
-                        .to.be.bignumber.equal(quaterOfDAIs);
+                    expect(
+                        BN(userDAIBalanceBeforeSecondWithdraw).sub(
+                            userDAIBalanceBeforeFirstWithdraw
+                        )
+                    ).to.be.bignumber.equal(quaterOfDAIs);
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, numOfDAIs, { from: user1 }),
                         "Insufficient balance."

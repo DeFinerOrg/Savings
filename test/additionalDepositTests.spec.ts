@@ -95,7 +95,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         mockChainlinkAggregatorforUSDTAddress = mockChainlinkAggregators[2];
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];//todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
         erc20WBTC = await MockERC20.at(addressWBTC);
 
         erc20DAI = await MockERC20.at(addressDAI);
@@ -116,12 +116,24 @@ contract("SavingAccount.deposit", async (accounts) => {
         cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
-        mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(mockChainlinkAggregatorforDAIAddress);
-        mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDCAddress);
-        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDTAddress);
-        mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(mockChainlinkAggregatorforTUSDAddress);
-        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(mockChainlinkAggregatorforMKRAddress);
-        mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(mockChainlinkAggregatorforETHAddress);
+        mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforDAIAddress
+        );
+        mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforUSDCAddress
+        );
+        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforUSDTAddress
+        );
+        mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforTUSDAddress
+        );
+        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforMKRAddress
+        );
+        mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforETHAddress
+        );
         numOfToken = new BN(1000);
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
@@ -137,136 +149,258 @@ contract("SavingAccount.deposit", async (accounts) => {
         context("With multiple tokens", async () => {
             context("Should suceed", async () => {
                 it("Deposit DAI and USDC, both compound supported", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 DAI and 1 USDC
                      */
-                    const userDAIBalanceBefore = await savingAccount.tokenBalance(addressDAI, { from: user1 });
-                    const userUSDCBalanceBefore = await savingAccount.tokenBalance(addressUSDC, { from: user1 });
-                    const savingAccountDAITokenBefore = await erc20DAI.balanceOf(savingAccount.address);
-                    const savingAccountUSDCTokenBefore = await erc20USDC.balanceOf(savingAccount.address);
-                    const savingAccountCDAITokenBefore = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCUSDCTokenBefore = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
+                    const userDAIBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+                    const userUSDCBalanceBefore = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
+                    const savingAccountDAITokenBefore = await erc20DAI.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountUSDCTokenBefore = await erc20USDC.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountCDAITokenBefore = await cTokenDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCUSDCTokenBefore = await cTokenUSDC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1)));
                     await erc20USDC.transfer(user1, sixPrecision.mul(new BN(1)));
 
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), { from: user1 });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user1 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
 
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), { from: user1 });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), { from: user1 });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
                     /*
                      * To verify:
                      * 1. User 1's token balance should be 1 DAI and 1 USDC
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userDAIBalance = await savingAccount.tokenBalance(addressDAI, { from: user1 });
-                    const userUSDCBalance = await savingAccount.tokenBalance(addressUSDC, { from: user1 });
+                    const userDAIBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+                    const userUSDCBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
                     const savingAccountDAIToken = await erc20DAI.balanceOf(savingAccount.address);
                     const savingAccountUSDCToken = await erc20USDC.balanceOf(savingAccount.address);
-                    const savingAccountCDAIToken = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCUSDCToken = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
+                    const savingAccountCDAIToken = await cTokenDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCUSDCToken = await cTokenUSDC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
 
                     // verify 1.
-                    expect(BN(userDAIBalance[0]).sub(BN(userDAIBalanceBefore[0]))).to.be.bignumber.equals(eighteenPrecision);
-                    expect(BN(userUSDCBalance[0]).sub(BN(userUSDCBalanceBefore[0]))).to.be.bignumber.equals(sixPrecision);
+                    expect(
+                        BN(userDAIBalance[0]).sub(BN(userDAIBalanceBefore[0]))
+                    ).to.be.bignumber.equals(eighteenPrecision);
+                    expect(
+                        BN(userUSDCBalance[0]).sub(BN(userUSDCBalanceBefore[0]))
+                    ).to.be.bignumber.equals(sixPrecision);
                     // verify 2.
-                    expect(BN(savingAccountCDAIToken).sub(BN(savingAccountCDAITokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
-                    expect(BN(savingAccountCUSDCToken).sub(BN(savingAccountCUSDCTokenBefore))).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCDAIToken).sub(BN(savingAccountCDAITokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCUSDCToken).sub(BN(savingAccountCUSDCTokenBefore))
+                    ).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(85)));
                     // verify 3.
-                    expect(BN(savingAccountDAIToken).sub(BN(savingAccountDAITokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
-                    expect(BN(savingAccountUSDCToken).sub(BN(savingAccountUSDCTokenBefore))).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(15)));
-
-
+                    expect(
+                        BN(savingAccountDAIToken).sub(BN(savingAccountDAITokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
+                    expect(
+                        BN(savingAccountUSDCToken).sub(BN(savingAccountUSDCTokenBefore))
+                    ).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(15)));
                 });
                 it("Deposit WBTC and TUSD, compound supported and unsupported", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 WBTC and 1 TUSD
                      */
-                    const userWBTCBalanceBefore = await savingAccount.tokenBalance(addressWBTC, { from: user1 });
-                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
-                    const savingAccountWBTCTokenBefore = await erc20WBTC.balanceOf(savingAccount.address);
-                    const savingAccountTUSDTokenBefore = await erc20TUSD.balanceOf(savingAccount.address);
-                    const savingAccountCWBTCTokenBefore = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCTUSDTokenBefore = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
+                    const userWBTCBalanceBefore = await savingAccount.tokenBalance(addressWBTC, {
+                        from: user1
+                    });
+                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, {
+                        from: user1
+                    });
+                    const savingAccountWBTCTokenBefore = await erc20WBTC.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountTUSDTokenBefore = await erc20TUSD.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountCWBTCTokenBefore = await cTokenWBTC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCTUSDTokenBefore = await cTokenTUSD.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
                     await erc20TUSD.transfer(user1, eighteenPrecision.mul(new BN(1)));
 
-                    await erc20WBTC.approve(savingAccount.address, eightPrecision.mul(new BN(1)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user1 });
+                    await erc20WBTC.approve(savingAccount.address, eightPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user1 }
+                    );
 
-                    await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user1 });
+                    await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
                     /*
                      * To verify:
                      * 1. User 1's token balance should be 1 WBTC and 1 TUSD
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userWBTCBalance = await savingAccount.tokenBalance(addressWBTC, { from: user1 });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
+                    const userWBTCBalance = await savingAccount.tokenBalance(addressWBTC, {
+                        from: user1
+                    });
+                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, {
+                        from: user1
+                    });
                     const savingAccountWBTCToken = await erc20WBTC.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
-                    const savingAccountCWBTCToken = await cTokenWBTC.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
+                    const savingAccountCWBTCToken = await cTokenWBTC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
 
                     // verify 1.
-                    expect(BN(userWBTCBalance[0]).sub(BN(userWBTCBalanceBefore[0]))).to.be.bignumber.equals(eightPrecision);
-                    expect(BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))).to.be.bignumber.equals(eighteenPrecision);
+                    expect(
+                        BN(userWBTCBalance[0]).sub(BN(userWBTCBalanceBefore[0]))
+                    ).to.be.bignumber.equals(eightPrecision);
+                    expect(
+                        BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))
+                    ).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
-                    expect(BN(savingAccountCWBTCToken).sub(BN(savingAccountCWBTCTokenBefore))).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(85)));
-                    expect(BN(savingAccountCTUSDToken).sub(BN(savingAccountCTUSDTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCWBTCToken).sub(BN(savingAccountCWBTCTokenBefore))
+                    ).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCTUSDToken).sub(BN(savingAccountCTUSDTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
                     // verify 3.
-                    expect(BN(savingAccountWBTCToken).sub(BN(savingAccountWBTCTokenBefore))).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(15)));
-                    expect(BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
-
-
+                    expect(
+                        BN(savingAccountWBTCToken).sub(BN(savingAccountWBTCTokenBefore))
+                    ).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(15)));
+                    expect(
+                        BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
                 });
                 it("Deposit MKR and TUSD, both compound supported", async () => {
-                    /* 
+                    /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 MKR and 1 TUSD
                      */
-                    const userMKRBalanceBefore = await savingAccount.tokenBalance(addressMKR, { from: user1 });
-                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
-                    const savingAccountMKRTokenBefore = await erc20MKR.balanceOf(savingAccount.address);
-                    const savingAccountTUSDTokenBefore = await erc20TUSD.balanceOf(savingAccount.address);
-                    const savingAccountCMKRTokenBefore = await cTokenMKR.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCTUSDTokenBefore = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
+                    const userMKRBalanceBefore = await savingAccount.tokenBalance(addressMKR, {
+                        from: user1
+                    });
+                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, {
+                        from: user1
+                    });
+                    const savingAccountMKRTokenBefore = await erc20MKR.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountTUSDTokenBefore = await erc20TUSD.balanceOf(
+                        savingAccount.address
+                    );
+                    const savingAccountCMKRTokenBefore = await cTokenMKR.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCTUSDTokenBefore = await cTokenTUSD.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     await erc20MKR.transfer(user1, eighteenPrecision.mul(new BN(1)));
                     await erc20TUSD.transfer(user1, eighteenPrecision.mul(new BN(1)));
 
-                    await erc20MKR.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user1 });
-                    await erc20TUSD.approve(savingAccount.address, eighteenPrecision.mul(new BN(1)), { from: user1 });
+                    await erc20MKR.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1)),
+                        { from: user1 }
+                    );
 
-                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(1)), { from: user1 });
-                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), { from: user1 });
+                    await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
+                        from: user1
+                    });
                     /*
                      * To verify:
                      * 1. User 1's token balance should be 1 MKR and 1 TUSD
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userMKRBalance = await savingAccount.tokenBalance(addressMKR, { from: user1 });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, { from: user1 });
+                    const userMKRBalance = await savingAccount.tokenBalance(addressMKR, {
+                        from: user1
+                    });
+                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, {
+                        from: user1
+                    });
                     const savingAccountMKRToken = await erc20MKR.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
-                    const savingAccountCMKRToken = await cTokenMKR.balanceOfUnderlying.call(savingAccount.address);
-                    const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(savingAccount.address);
+                    const savingAccountCMKRToken = await cTokenMKR.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
 
                     // verify 1.
-                    expect(BN(userMKRBalance[0]).sub(BN(userMKRBalanceBefore[0]))).to.be.bignumber.equals(eighteenPrecision);
-                    expect(BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))).to.be.bignumber.equals(eighteenPrecision);
+                    expect(
+                        BN(userMKRBalance[0]).sub(BN(userMKRBalanceBefore[0]))
+                    ).to.be.bignumber.equals(eighteenPrecision);
+                    expect(
+                        BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))
+                    ).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
-                    expect(BN(savingAccountCMKRToken).sub(BN(savingAccountCMKRTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
-                    expect(BN(savingAccountCTUSDToken).sub(BN(savingAccountCTUSDTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCMKRToken).sub(BN(savingAccountCMKRTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
+                    expect(
+                        BN(savingAccountCTUSDToken).sub(BN(savingAccountCTUSDTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
                     // verify 3.
-                    expect(BN(savingAccountMKRToken).sub(BN(savingAccountMKRTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
-                    expect(BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
-
-
+                    expect(
+                        BN(savingAccountMKRToken).sub(BN(savingAccountMKRTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
+                    expect(
+                        BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
+                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(15)));
                 });
             });
         });
