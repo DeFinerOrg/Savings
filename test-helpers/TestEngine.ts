@@ -28,11 +28,15 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
-    public async deploy(compoumdDir: String, script: String) {
-        const scriptPath: String = `${compoumdDir}/scirpt/scen/${script}`;
-        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compoumdDir} run repl -s ${scriptPath}`;
+    public async deploy(script: String) {
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const scriptPath = `${compound}/script/scen/${script}`;
+
+        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
         const log = shell.exec(command);
-        const configFile = `${compoumdDir}/networks/development.json`;
+        const configFile = "../compound-protocol/networks/development.json";
+        delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
         compoundTokens = require(configFile);
     }
     /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
@@ -166,14 +170,14 @@ export class TestEngine {
 
         const network = process.env.NETWORK;
         // if (network == "development") {
-            return SavingAccountWithControllerContract.new(
-                this.erc20Tokens,
-                cTokens,
-                chainLinkOracle.address,
-                this.tokenInfoRegistry.address,
-                this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
-            );
+        return SavingAccountWithControllerContract.new(
+            this.erc20Tokens,
+            cTokens,
+            chainLinkOracle.address,
+            this.tokenInfoRegistry.address,
+            this.globalConfig.address,
+            compoundTokens.Contracts.Comptroller
+        );
         /*
         } else {
             return SavingAccount.new(

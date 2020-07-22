@@ -62,7 +62,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
-        testEngine.deploy();
     });
 
     beforeEach(async () => {
