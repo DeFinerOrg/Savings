@@ -27,17 +27,12 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
-    public async deploy() {
-        // await exec('cd ../compound-protocol', (err: any, stdout: any, stderr: any) => {
-        //     console.log(stdout);
-        // });
-        // await exec('pwd', (err: any, stdout: any, stderr: any) => {
-        //     console.log(stdout);
-        // });
-
-        const log = shell.exec('PROVIDER="http://localhost:8545/" yarn --cwd ./compound-protocol run repl -s /Users/yanyichun/project/Savings/compound-protocol/script/scen/scriptFlywheel.scen');
-        // console.log(log)
-        compoundTokens = require("../compound-protocol/networks/development.json");
+    public async deploy(compoumdDir: String, script: String) {
+        const scriptPath: String = `${compoumdDir}/scirpt/scen/${script}`;
+        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compoumdDir} run repl -s ${scriptPath}`;
+        const log = shell.exec(command);
+        const configFile = `${compoumdDir}/networks/development.json`;
+        compoundTokens = require(configFile);
     }
     /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
