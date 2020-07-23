@@ -1,18 +1,20 @@
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
-
+var shell = require('shelljs');
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccountWithControllerContract = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+var child_process = require('child_process');
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
-var compoundTokens = require("../compound-protocol/networks/development.json");
-
+// var compoundTokens: any = require("../compound-protocol/networks/development.json");
+var compoundTokens: any;
 const addressZero: string = "0x0000000000000000000000000000000000000001";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
@@ -26,6 +28,18 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
+    public async deploy(script: String) {
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const scriptPath = `${compound}/script/scen/${script}`;
+        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+        const log = shell.exec(command);
+        const configFile = "../compound-protocol/networks/development.json";
+
+        // clean import caches
+        delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
+        compoundTokens = require(configFile);
+    }
     /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var cTokens = new Array();
@@ -138,7 +152,7 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
+    public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         //this.erc20Tokens = await this.deployMockERC20Tokens();
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         //this.cTokensCompound = await this.getCompoundAddresses();
@@ -154,13 +168,28 @@ export class TestEngine {
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
-        return SavingAccount.new(
+
+        const network = process.env.NETWORK;
+        // if (network == "development") {
+        return SavingAccountWithControllerContract.new(
             this.erc20Tokens,
             cTokens,
             chainLinkOracle.address,
             this.tokenInfoRegistry.address,
-            this.globalConfig.address
+            this.globalConfig.address,
+            compoundTokens.Contracts.Comptroller
         );
+        /*
+        } else {
+            return SavingAccount.new(
+                this.erc20Tokens,
+                cTokens,
+                chainLinkOracle.address,
+                this.tokenInfoRegistry.address,
+                this.globalConfig.address
+            );
+        }
+        */
     }
 
     private async initializeTokenInfoRegistry(
