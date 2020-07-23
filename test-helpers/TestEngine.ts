@@ -1,6 +1,6 @@
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
-var shell = require('shelljs');
+var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
@@ -8,7 +8,7 @@ const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithControllerContract = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
-var child_process = require('child_process');
+var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 var tokenData = require("../test-helpers/tokenData.json");
@@ -40,27 +40,6 @@ export class TestEngine {
         delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
         compoundTokens = require(configFile);
     }
-    /* public async deployMockCTokens(erc20Tokens: Array<string>): Promise<Array<string>> {
-        const network = process.env.NETWORK;
-        var cTokens = new Array();
-        await Promise.all(
-            erc20Tokens.map(async (tokenAddr: any) => {
-                let addr;
-                if (network == "development") {
-                    // Create MockCToken for given ERC20 token address
-                    addr = (await MockCToken.new(tokenAddr)).address;
-                } else if (network == "ropsten") {
-                    addr = tokenAddr.ropsten.cTokenAddress;
-                } else if (network == "mainnet" || network == "mainnet-fork") {
-                    addr = tokenAddr.mainnet.cTokenAddress;
-                }
-                cTokens.push(addr);
-            })
-        );
-        let addr = (await MockCToken.new(ETH_ADDR)).address;
-        cTokens.push(addr);
-        return cTokens;
-    } */
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
@@ -74,7 +53,6 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
-        //console.log("erc20", erc20TokensFromCompound);
 
         return erc20TokensFromCompound;
     }
@@ -92,34 +70,9 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-        //console.log("cTokens", cTokensCompound);
 
         return cTokensCompound;
     }
-
-    /* public async deployMockERC20Tokens(): Promise<Array<string>> {
-        const network = process.env.NETWORK;
-        const ONE_BILLION = new BN(10).pow(new BN(9));
-        const tokensToMint = ONE_BILLION;
-        var erc20TokenAddresses = new Array();
-        let addr;
-        await Promise.all(
-            tokenData.tokens.map(async (token: any) => {
-                let addr;
-                if (network == "development") {
-                    addr = (
-                        await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint)
-                    ).address;
-                } else if (network == "ropsten") {
-                    addr = token.ropsten.tokenAddress;
-                } else if (network == "mainnet" || network == "mainnet-fork") {
-                    addr = token.mainnet.tokenAddress;
-                }
-                erc20TokenAddresses.push(addr);
-            })
-        );
-        return erc20TokenAddresses;
-    } */
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         //var aggregators = new Array();
@@ -153,10 +106,7 @@ export class TestEngine {
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
-        //this.erc20Tokens = await this.deployMockERC20Tokens();
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
-        //this.cTokensCompound = await this.getCompoundAddresses();
-        //const cTokens: Array<string> = await this.deployMockCTokens(this.erc20Tokens);
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
