@@ -40,7 +40,7 @@ jobs:
           name: "Install dependencies"
           command: |
             cd ./compound-protocol
-            yarn     
+            yarn install --lock-file   
 
       # Download and cache dependencies
       - restore_cache:
