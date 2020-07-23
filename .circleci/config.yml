@@ -30,6 +30,7 @@ jobs:
           - v1-dependencies-
 
       - run: yarn
+      - run: yarn add tools.repl
 
       - save_cache:
           paths:
