@@ -10,7 +10,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
@@ -38,15 +38,14 @@ contract("RemainingCoverage", async (accounts) => {
     let addressDAI: any;
     let addressUSDC: any;
     let tempContractAddress: any;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20contr: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20contr: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
-
     });
 
     beforeEach(async () => {
@@ -55,8 +54,8 @@ contract("RemainingCoverage", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
     });
 
     context("approveAll", async () => {
@@ -105,7 +104,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => { });
+        context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
@@ -117,8 +116,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const ONE_DAI = eighteenPrecision;
@@ -171,8 +170,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -210,7 +209,7 @@ contract("RemainingCoverage", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("when valid token address is passed", async () => { });
+            it("when valid token address is passed", async () => {});
             // verify deFinerFund == 0, transfer()
         });
     });
@@ -308,7 +307,7 @@ contract("RemainingCoverage", async (accounts) => {
     */
     context("getTokenState", async () => {
         // Also being called by getMarketState
-        context("should fail", async () => { });
+        context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
@@ -336,7 +335,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
     */
     context("getCoinAddress", async () => {
-        context("should fail", async () => { });
+        context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when function is called", async () => {
