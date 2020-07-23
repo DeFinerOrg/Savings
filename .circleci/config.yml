@@ -9,6 +9,7 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.15.3
+      - image: compoundfinance/alpine-java-z3:latest
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -22,7 +23,7 @@ jobs:
     steps:
       - run:
         |
-          sudo apt-get install libudev-dev libfoo-dev
+          sudo apt-get install libudev-dev
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
