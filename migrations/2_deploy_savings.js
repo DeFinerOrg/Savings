@@ -1,4 +1,5 @@
 var tokenData = require("../test-helpers/tokenData.json");
+// var compound = require("../compound-protocol/networks/development.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -7,6 +8,8 @@ const TokenInfoLib = artifacts.require("TokenInfoLib");
 const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccountWithController = artifacts.require("SavingAccountWithController");
+
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
@@ -28,7 +31,7 @@ const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -44,6 +47,10 @@ module.exports = async function(deployer, network) {
     await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
+
+    await deployer.link(SymbolsLib, SavingAccountWithController);
+    await deployer.link(TokenInfoLib, SavingAccountWithController);
+    await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
@@ -63,20 +70,34 @@ module.exports = async function(deployer, network) {
 
     const globalConfig = await deployer.deploy(GlobalConfig);
 
-    // Deploy SavingAccount contract
-    const savingAccount = await deployer.deploy(
-        SavingAccount,
-        erc20Tokens,
-        cTokens,
-        chainLinkOracle.address,
-        tokenInfoRegistry.address,
-        globalConfig.address
-    );
+    // Move this to testengineer
+    if (network == "development") {
+        const savingAccount = await deployer.deploy(
+            SavingAccountWithController,
+            erc20Tokens,
+            cTokens,
+            chainLinkOracle.address,
+            tokenInfoRegistry.address,
+            globalConfig.address,
+            // compound.Contracts.Comptroller
+            "0x0000000000000000000000000000000000000001"
+        );
+        console.log("SavingAccount:", savingAccount.address);
+    } else {
+        const savingAccount = await deployer.deploy(
+            SavingAccount,
+            erc20Tokens,
+            cTokens,
+            chainLinkOracle.address,
+            tokenInfoRegistry.address,
+            globalConfig.address
+        );
+        console.log("SavingAccount:", savingAccount.address);
+    }
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
-    console.log("SavingAccount:", savingAccount.address);
 };
 
 const initializeTokenInfoRegistry = async (

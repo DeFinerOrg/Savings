@@ -7,7 +7,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.withdraw", async (accounts) => {
@@ -36,12 +36,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20USDT: t.MockERC20Instance;
-    let erc20WBTC: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20USDT: t.ERC20Instance;
+    let erc20WBTC: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
     let ZERO: any;
     let ONE_YEAR: any;
     const eighteenPrecision = new BN(10).pow(new BN(18));
@@ -51,6 +51,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -63,12 +64,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20USDT = await MockERC20.at(addressUSDT);
-        erc20WBTC = await MockERC20.at(addressWBTC);
-        erc20TUSD = await MockERC20.at(addressTUSD);
-        erc20MKR = await MockERC20.at(addressMKR);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20USDT = await ERC20.at(addressUSDT);
+        erc20WBTC = await ERC20.at(addressWBTC);
+        erc20TUSD = await ERC20.at(addressTUSD);
+        erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);

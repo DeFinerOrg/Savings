@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -41,26 +41,27 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20USDT: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
-    let erc20BAT: t.MockERC20Instance;
-    let erc20ZRX: t.MockERC20Instance;
-    let erc20REP: t.MockERC20Instance;
-    let erc20WBTC: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20USDT: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
+    let erc20BAT: t.ERC20Instance;
+    let erc20ZRX: t.ERC20Instance;
+    let erc20REP: t.ERC20Instance;
+    let erc20WBTC: t.ERC20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
-    let erc20contr: t.MockERC20Instance;
+    let erc20contr: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -76,15 +77,15 @@ contract("Integration Tests", async (accounts) => {
         addressZRX = tokens[6];
         addressREP = tokens[7];
         addressWBTC = tokens[8];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20USDT = await MockERC20.at(addressUSDT);
-        erc20TUSD = await MockERC20.at(addressTUSD);
-        erc20MKR = await MockERC20.at(addressMKR);
-        erc20BAT = await MockERC20.at(addressBAT);
-        erc20ZRX = await MockERC20.at(addressZRX);
-        erc20REP = await MockERC20.at(addressREP);
-        erc20WBTC = await MockERC20.at(addressWBTC);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20USDT = await ERC20.at(addressUSDT);
+        erc20TUSD = await ERC20.at(addressTUSD);
+        erc20MKR = await ERC20.at(addressMKR);
+        erc20BAT = await ERC20.at(addressBAT);
+        erc20ZRX = await ERC20.at(addressZRX);
+        erc20REP = await ERC20.at(addressREP);
+        erc20WBTC = await ERC20.at(addressWBTC);
         ZERO = new BN(0);
         ONE_WEEK = new BN(7).mul(new BN(24).mul(new BN(3600)));
         ONE_MONTH = new BN(30).mul(new BN(24).mul(new BN(3600)));
@@ -107,7 +108,7 @@ contract("Integration Tests", async (accounts) => {
 
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
                     addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                         tempContractAddress
                     );
@@ -181,7 +182,7 @@ contract("Integration Tests", async (accounts) => {
                 //Withdraw all tokens of each Address
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
                     addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                         tempContractAddress
                     );
@@ -221,7 +222,7 @@ contract("Integration Tests", async (accounts) => {
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
 
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
@@ -255,7 +256,7 @@ contract("Integration Tests", async (accounts) => {
                 //Withdraw TUSD & MKR
                 for (let i = 3; i <= 4; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
 
                     await savingAccount.withdrawAll(erc20contr.address);
 
@@ -278,7 +279,7 @@ contract("Integration Tests", async (accounts) => {
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
@@ -312,7 +313,7 @@ contract("Integration Tests", async (accounts) => {
                 for (let i = 0; i < 9; i++) {
                     if (i != 3 && i != 4) {
                         tempContractAddress = tokens[i];
-                        erc20contr = await MockERC20.at(tempContractAddress);
+                        erc20contr = await ERC20.at(tempContractAddress);
                         addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                             tempContractAddress
                         );
@@ -340,7 +341,7 @@ contract("Integration Tests", async (accounts) => {
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
 
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
@@ -374,7 +375,7 @@ contract("Integration Tests", async (accounts) => {
                 for (let i = 0; i < 9; i++) {
                     if (i == 1 || i == 2 || i == 8) {
                         tempContractAddress = tokens[i];
-                        erc20contr = await MockERC20.at(tempContractAddress);
+                        erc20contr = await ERC20.at(tempContractAddress);
                         await savingAccount.withdrawAll(erc20contr.address);
 
                         //Verify if withdrawAll was successful
@@ -396,7 +397,7 @@ contract("Integration Tests", async (accounts) => {
                 // Deposit all tokens
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
 
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
@@ -431,7 +432,7 @@ contract("Integration Tests", async (accounts) => {
 
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
-                    erc20contr = await MockERC20.at(tempContractAddress);
+                    erc20contr = await ERC20.at(tempContractAddress);
 
                     await savingAccount.withdrawAll(erc20contr.address);
 

@@ -9,7 +9,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
@@ -31,10 +31,10 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     // let addressMKR: any;
     // let addressTUSD: any;
-    // let erc20DAI: t.MockERC20Instance;
-    // let erc20USDC: t.MockERC20Instance;
-    // let erc20MKR: t.MockERC20Instance;
-    // let erc20TUSD: t.MockERC20Instance;
+    // let erc20DAI: t.ERC20Instance;
+    // let erc20USDC: t.ERC20Instance;
+    // let erc20MKR: t.ERC20Instance;
+    // let erc20TUSD: t.ERC20Instance;
     // let numOfToken: any;
 
     // before(async () => {
@@ -50,10 +50,10 @@ contract("SavingAccount.borrow", async (accounts) => {
     //     addressUSDC = tokens[1];
     //     addressMKR = tokens[4];
     //     addressTUSD = tokens[3];
-    //     erc20DAI = await MockERC20.at(addressDAI);
-    //     erc20USDC = await MockERC20.at(addressUSDC);
-    //     erc20MKR = await MockERC20.at(addressMKR);
-    //     erc20TUSD = await MockERC20.at(addressTUSD);
+    //     erc20DAI = await ERC20.at(addressDAI);
+    //     erc20USDC = await ERC20.at(addressUSDC);
+    //     erc20MKR = await ERC20.at(addressMKR);
+    //     erc20TUSD = await ERC20.at(addressTUSD);
     //     numOfToken = new BN(1000);
     // });
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -98,12 +98,12 @@ contract("SavingAccount.borrow", async (accounts) => {
     let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20USDT: t.MockERC20Instance;
-    let erc20WBTC: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
+    let erc20USDT: t.ERC20Instance;
+    let erc20WBTC: t.ERC20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -119,6 +119,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -140,14 +141,14 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];//todo:where is ETH address?
-        erc20WBTC = await MockERC20.at(addressWBTC);
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        erc20WBTC = await ERC20.at(addressWBTC);
 
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20USDT = await MockERC20.at(addressUSDT);
-        erc20TUSD = await MockERC20.at(addressTUSD);
-        erc20MKR = await MockERC20.at(addressMKR);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20USDT = await ERC20.at(addressUSDT);
+        erc20TUSD = await ERC20.at(addressTUSD);
+        erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
@@ -161,18 +162,31 @@ contract("SavingAccount.borrow", async (accounts) => {
         cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
-        mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(mockChainlinkAggregatorforDAIAddress);
-        mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDCAddress);
-        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDTAddress);
-        mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(mockChainlinkAggregatorforTUSDAddress);
-        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(mockChainlinkAggregatorforMKRAddress);
-        mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(mockChainlinkAggregatorforETHAddress);
-        mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(mockChainlinkAggregatorforWBTCAddress);
+        mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforDAIAddress
+        );
+        mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforUSDCAddress
+        );
+        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforUSDTAddress
+        );
+        mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforTUSDAddress
+        );
+        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforMKRAddress
+        );
+        mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforETHAddress
+        );
+        mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforWBTCAddress
+        );
 
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
         numOfToken = new BN(1000);
-
     });
 
     context("borrow()", async () => {
@@ -244,7 +258,9 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 // modified
@@ -264,7 +280,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 // modified
@@ -284,7 +302,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user2 });
                     const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
                 // modified
                 it("when supported token address is passed", async () => {
@@ -299,7 +319,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("when borrow amount of token less then ILTV of his collateral value");
@@ -307,7 +329,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                 it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
                     await erc20DAI.transfer(user1, eighteenPrecision);
                     await erc20USDC.transfer(user2, sixPrecision);
-                    await erc20DAI.approve(savingAccount.address, eighteenPrecision, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, eighteenPrecision, {
+                        from: user1
+                    });
                     await erc20USDC.approve(savingAccount.address, sixPrecision, { from: user2 });
                     await savingAccount.deposit(addressDAI, eighteenPrecision, { from: user1 });
                     await savingAccount.deposit(addressUSDC, sixPrecision, { from: user2 });
@@ -317,14 +341,16 @@ contract("SavingAccount.borrow", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .div(await savingAccount.getCoinToETHRate(0));
-                    const user2DAI = await (savingAccount.tokenBalance(addressDAI, { from: user1 }));
+                    const user2DAI = await savingAccount.tokenBalance(addressDAI, { from: user1 });
                     // console.log(user2DAI[0].toString());
                     // console.log((await (cTokenDAI.balanceOfUnderlying.call(savingAccount.address))).toString());
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(limitAmount);
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        limitAmount
+                    );
                 });
 
                 it("when borrowing a whole DAI", async () => {
@@ -344,7 +370,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(numOfDAI.div(new BN(10)));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        numOfDAI.div(new BN(10))
+                    );
                 });
             });
         });
@@ -650,7 +678,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressMKR, new BN(1), { from: user1 });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(1));
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        new BN(1)
+                    );
                 });
                 // modified
                 it("Deposit TUSD then borrow TUSD", async () => {
@@ -667,7 +697,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressTUSD, new BN(10), { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20TUSD.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 // modified
@@ -689,7 +721,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressMKR, new BN(10), { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20MKR.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
                 // modified
                 it("Deposit MKR & TUSD then borrow TUSD", async () => {
@@ -709,7 +743,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressTUSD, new BN(10), { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20TUSD.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
                 // modified
                 it("When depositing DAI to borrow MKR.", async () => {
@@ -724,7 +760,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressMKR, new BN(1), { from: user1 });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(1));
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        new BN(1)
+                    );
                 });
                 // modified
                 it("When depositing DAI to borrow TUSD.", async () => {
@@ -739,7 +777,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressTUSD, new BN(1), { from: user1 });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20TUSD.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(1));
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        new BN(1)
+                    );
                 });
             });
         });
@@ -803,7 +843,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
                 // modified
                 it("When depositing DAI to borrow USDC.", async () => {
@@ -820,7 +862,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user1 });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20USDC.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(new BN(10));
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        new BN(10)
+                    );
                 });
 
                 it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
@@ -838,16 +882,24 @@ contract("SavingAccount.borrow", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .div(await savingAccount.getCoinToETHRate(1));
-                    const user2USDC = await (savingAccount.tokenBalance(addressUSDC, { from: user2 }));
+                    const user2USDC = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user2
+                    });
                     console.log(user2USDC[0].toString());
                     console.log((await erc20USDC.balanceOf(savingAccount.address)).toString());
                     console.log(addressCTokenForUSDC);
-                    console.log((await (cTokenUSDC.balanceOfUnderlying.call(savingAccount.address))).toString());
+                    console.log(
+                        (
+                            await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        ).toString()
+                    );
                     const user1BalanceBefore = BN(await erc20USDC.balanceOf(user1));
                     await savingAccount.borrow(addressUSDC, limitAmount, { from: user1 });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20USDC.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(limitAmount);
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        limitAmount
+                    );
                 });
 
                 it("When the DAI is large, deposit DAI to borrow USDC.", async () => {
@@ -866,7 +918,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     });
                     // 3. Verify the loan amount.
                     const user1BalanceAfter = BN(await erc20USDC.balanceOf(user1));
-                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(numOfUSDC.div(new BN(10)));
+                    expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                        numOfUSDC.div(new BN(10))
+                    );
                 });
                 // modified
                 it("when borrow USDC of token is equal to ILTV of his collateral value", async () => {
@@ -888,7 +942,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Verify the loan amount.
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(limitAmount);
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        limitAmount
+                    );
                 });
             });
         });

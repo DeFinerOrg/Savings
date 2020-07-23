@@ -10,7 +10,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -47,10 +47,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
@@ -62,6 +62,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -80,10 +81,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20MKR = await MockERC20.at(addressMKR);
-        erc20TUSD = await MockERC20.at(addressTUSD);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20MKR = await ERC20.at(addressMKR);
+        erc20TUSD = await ERC20.at(addressTUSD);
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
         );
@@ -288,7 +289,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC);
-                    const ctokenBal = await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address);
+                    const ctokenBal = await cTokenUSDC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     console.log(ctokenBal.toString());
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
