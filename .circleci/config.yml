@@ -37,6 +37,7 @@ jobs:
             git checkout definer/compound
       - run: cd compound-protocol && yarn install
       - run: cd compound-protocol/scenario && yarn install
+      - run: cd compound-protocol/scenario && yarn build
 
       # Download and cache dependencies
       - restore_cache:
