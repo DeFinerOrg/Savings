@@ -36,8 +36,12 @@ jobs:
           command: |
             cd ./compound-protocol
             git checkout definer/compound
-      - run: yarn
-      - run: cd ..
+      - run: 
+          name: "Install dependencies"
+          command: |
+            yarn
+            cd ..
+     
 
       # Download and cache dependencies
       - restore_cache:
