@@ -42,4 +42,4 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: yarn generate # Generate typings
-      - run: yarn add tools.repl && yarn test # triggers truffle test
+      - run: yarn test # triggers truffle test
