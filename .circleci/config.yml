@@ -34,7 +34,7 @@ jobs:
           name: "Update submodule"
           command: |
             cd ./compound-protocol
-            git checkout definer-compound
+            git checkout definer/compound
       - run: yarn
       - run: cd ..
 
