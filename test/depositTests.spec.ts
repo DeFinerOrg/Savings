@@ -7,8 +7,8 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -29,16 +29,15 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressCTokenForUSDC: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
-
     });
 
     beforeEach(async () => {
@@ -50,10 +49,10 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         // Use ERC20 from OZ, import this
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20TUSD = await MockERC20.at(addressTUSD);
-        erc20MKR = await MockERC20.at(addressMKR);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20TUSD = await ERC20.at(addressTUSD);
+        erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         // Use CERC20, import from Compound
