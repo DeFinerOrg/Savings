@@ -9,8 +9,6 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.15.3
-      - image: compoundfinance/alpine-java-z3:latest
-
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -37,11 +35,8 @@ jobs:
           command: |
             cd ./compound-protocol
             git checkout definer/compound
-      - run: 
-          name: "Install dependencies"
-          command: |
-            cd ./compound-protocol
-            yarn install --lock-file   
+      - run: cd compound-protocol && yarn install
+      - run: cd compound-protocol/scenario && yarn install
 
       # Download and cache dependencies
       - restore_cache:
