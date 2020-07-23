@@ -22,9 +22,9 @@ jobs:
     steps:
       - run:
         |
+          sudo apt-get install libudev-dev
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
-          apt-get install libudev-dev
       - checkout
       - run:
           name: "Pull Submodules"
