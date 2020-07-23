@@ -30,6 +30,13 @@ jobs:
           command: |
             git submodule init
             git submodule update
+      - run: 
+          name: "Update submodule"
+          command: |
+            cd ./compound-protocol
+            git checkout definer-compound
+      - run: yarn
+      - run: cd ..
 
       # Download and cache dependencies
       - restore_cache:
