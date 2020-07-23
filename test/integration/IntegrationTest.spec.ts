@@ -61,6 +61,7 @@ contract("Integration Tests", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -1031,7 +1032,7 @@ contract("Integration Tests", async (accounts) => {
                 } */
             });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -1192,9 +1193,9 @@ contract("Integration Tests", async (accounts) => {
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
             });
 
-            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
+            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and liquidate", async () => {

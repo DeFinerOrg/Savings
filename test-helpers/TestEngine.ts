@@ -13,8 +13,8 @@ const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
-var compoundTokens = require("../compound-protocol/networks/development.json");
-
+// var compoundTokens: any = require("../compound-protocol/networks/development.json");
+var compoundTokens: any;
 const addressZero: string = "0x0000000000000000000000000000000000000001";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
@@ -32,10 +32,11 @@ export class TestEngine {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
-
         const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
         const log = shell.exec(command);
         const configFile = "../compound-protocol/networks/development.json";
+
+        // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
         compoundTokens = require(configFile);
     }

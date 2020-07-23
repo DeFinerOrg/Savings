@@ -79,16 +79,6 @@ contract SavingAccount {
         baseVariable.newRateIndexCheckpoint(_token);
     }
 
-    function getCompoundSupplyRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        return cToken.supplyRatePerBlock();
-    }
-
-    function getCompoundBorrowRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        return cToken.borrowRatePerBlock();
-    }
-
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
@@ -119,14 +109,12 @@ contract SavingAccount {
     )
     {
         uint coinsLen = getCoinLength();
-
         addresses = new address[](coinsLen);
         deposits = new uint256[](coinsLen);
         loans = new uint256[](coinsLen);
         collateral = new uint256[](coinsLen);
         depositRatePerBlock = new uint256[](coinsLen);
         borrowRatePerBlock = new uint256[](coinsLen);
-
         for (uint i = 0; i < coinsLen; i++) {
             address tokenAddress = symbols.addressFromIndex(i);
             addresses[i] = tokenAddress;
@@ -167,18 +155,15 @@ contract SavingAccount {
     )
     {
         uint coinsLen = getCoinLength();
-
         addresses = new address[](coinsLen);
         depositBalance = new uint256[](coinsLen);
         borrowBalance = new uint256[](coinsLen);
-
         for (uint i = 0; i < coinsLen; i++) {
             address tokenAddress = symbols.addressFromIndex(i);
             addresses[i] = tokenAddress;
             depositBalance[i] = baseVariable.getDepositBalance(tokenAddress, msg.sender);
             borrowBalance[i] = baseVariable.getBorrowBalance(tokenAddress, msg.sender);
         }
-
         return (addresses, depositBalance, borrowBalance);
     }
     */
@@ -466,7 +451,6 @@ contract SavingAccount {
      * Liquidate function
      */
     function liquidate(address targetAccountAddr, address _targetToken) public {
-        /*
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(targetAccountAddr, symbols);
@@ -595,7 +579,6 @@ contract SavingAccount {
                 break;
             }
         }
-        */
     }
 
     function recycleCommunityFund(address _token) public {

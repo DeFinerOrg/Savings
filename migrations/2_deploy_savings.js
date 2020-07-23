@@ -1,5 +1,5 @@
 var tokenData = require("../test-helpers/tokenData.json");
-var compound = require("../compound-protocol/networks/development.json");
+// var compound = require("../compound-protocol/networks/development.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -31,7 +31,7 @@ const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -79,7 +79,8 @@ module.exports = async function(deployer, network) {
             chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address,
-            compound.Contracts.Comptroller
+            // compound.Contracts.Comptroller
+            "0x0000000000000000000000000000000000000001"
         );
         console.log("SavingAccount:", savingAccount.address);
     } else {
