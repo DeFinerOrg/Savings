@@ -51,6 +51,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
+
     });
 
     beforeEach(async () => {
