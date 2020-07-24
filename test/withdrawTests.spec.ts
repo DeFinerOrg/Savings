@@ -296,27 +296,36 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
 
+                // TODO: Does withdraw have any effect on Compound?
                 // 4.2 Amount in Compound
-                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const expectedTokensAtCToken = numOfTokens
+                    .sub(new BN("100").mul(ONE_DAI))
+                    .mul(new BN(85))
+                    .div(new BN(100));
                 const balCToken = await erc20DAI.balanceOf(addressCTokenForDAI);
                 expect(expectedTokensAtCToken.add(balCTokenContractBefore)).to.be.bignumber.equal(
                     new BN(balCToken)
                 );
 
                 // 4.3 cToken must be minted for SavingAccount
-                const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const expectedCTokensAtSavingAccount = numOfTokens
+                    .sub(new BN("100").mul(ONE_DAI))
+                    .mul(new BN(85))
+                    .div(new BN(100));
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokens.div(new BN(10))
+                );
             });
-            /**
-             * todo:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
-             */
+
+            // TODO:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
+
             it("when 100 whole USDC tokens are withdrawn", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     erc20DAI.address
                 );
-                const balCTokenContractBefore = await erc20DAI.balanceOf(addressCTokenForDAI);
+                const balCTokenContractBefore = await erc20USDC.balanceOf(addressCTokenForUSDC);
                 const balCTokenInit = await erc20USDC.balanceOf(addressCTokenForUSDC);
 
                 // 1. Approve 1000 tokens
@@ -369,14 +378,24 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 ); */
 
                 // 4.2 Amount in Compound
-                const expectedTokensAtCToken = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const expectedTokensAtCToken = numOfTokens
+                    .sub(new BN("100").mul(ONE_USDC))
+                    .mul(new BN(85))
+                    .div(new BN(100));
                 const balCToken = await erc20USDC.balanceOf(addressCTokenForUSDC);
-                expect(expectedTokensAtCToken).to.be.bignumber.equal(balCToken);
+                expect(expectedTokensAtCToken.add(balCTokenContractBefore)).to.be.bignumber.equal(
+                    balCToken
+                );
 
                 // 4.3 cToken must be minted for SavingAccount
-                const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
+                const expectedCTokensAtSavingAccount = numOfTokens
+                    .sub(new BN("100").mul(ONE_USDC))
+                    .mul(new BN(85))
+                    .div(new BN(100));
                 const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
-                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokens.div(new BN(10).pow(new BN(5)))
+                );
             });
 
             //Partial withdrawal of tokens with 6 decimals
