@@ -37,16 +37,16 @@ jobs:
             git checkout definer/compound
 
       - restore_cache:
-        keys:
-        - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
-        # fallback to using the latest cache if no exact match is found
-        - v1-dependencies-
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
       - restore_cache:
-        keys:
-        - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
-        # fallback to using the latest cache if no exact match is found
-        - v1-dependencies-
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
       # Download and cache dependencies
       - restore_cache:
@@ -64,11 +64,11 @@ jobs:
           - compound-protocol/node_modules
         key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
 
-        - save_cache:
-          paths:
-            - compound-protocol/scenario/node_modules
-          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
-          
+      - save_cache:
+        paths:
+          - compound-protocol/scenario/node_modules
+        key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+
       - save_cache:
           paths:
             - node_modules
