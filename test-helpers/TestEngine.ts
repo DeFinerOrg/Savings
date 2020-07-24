@@ -9,6 +9,10 @@ const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
+// Contracts for Upgradability
+const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
+const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+
 var tokenData = require("../test-helpers/tokenData.json");
 
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
@@ -110,13 +114,29 @@ export class TestEngine {
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
-        return SavingAccount.new(
-            this.erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            this.tokenInfoRegistry.address,
-            this.globalConfig.address
+
+        // Deploy Upgradability contracts
+        const proxyAdmin = await ProxyAdmin.new();
+        const savingAccountProxy = await SavingAccountProxy.new();
+        const savingAccount = await SavingAccount.new();
+
+        const initialize_data = savingAccount.contract.methods
+            .initialize(
+                this.erc20Tokens,
+                cTokens,
+                chainLinkOracle.address,
+                this.tokenInfoRegistry.address,
+                this.globalConfig.address
+            )
+            .encodeABI();
+        await savingAccountProxy.initialize(
+            savingAccount.address,
+            proxyAdmin.address,
+            initialize_data
         );
+
+        const proxy: t.SavingAccountInstance = SavingAccount.at(savingAccountProxy.address);
+        return proxy;
     }
 
     private async initializeTokenInfoRegistry(
