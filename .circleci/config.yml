@@ -60,14 +60,14 @@ jobs:
       - run: yarn
 
       - save_cache:
-        paths:
-          - compound-protocol/node_modules
-        key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+          paths:
+            - compound-protocol/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
 
       - save_cache:
-        paths:
-          - compound-protocol/scenario/node_modules
-        key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+          paths:
+            - compound-protocol/scenario/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
 
       - save_cache:
           paths:
