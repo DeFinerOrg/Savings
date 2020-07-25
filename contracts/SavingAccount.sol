@@ -110,52 +110,13 @@ contract SavingAccount is Initializable {
     }
     */
 
-	/**
-	 * Get the overall state of the saving pool
-	 */
-     /*
-    function getMarketState() public view returns (
-        address[] memory addresses,
-        uint256[] memory deposits,
-        uint256[] memory loans,
-        uint256[] memory collateral,
-        uint256[] memory depositRatePerBlock,
-        uint256[] memory borrowRatePerBlock
-    )
-    {
-        uint coinsLen = getCoinLength();
-
-        addresses = new address[](coinsLen);
-        deposits = new uint256[](coinsLen);
-        loans = new uint256[](coinsLen);
-        collateral = new uint256[](coinsLen);
-        depositRatePerBlock = new uint256[](coinsLen);
-        borrowRatePerBlock = new uint256[](coinsLen);
-
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            (
-            deposits[i],
-            loans[i],
-            collateral[i],
-            depositRatePerBlock[i],
-            borrowRatePerBlock[i]
-            ) = baseVariable.getTokenState(tokenAddress);
-        }
-        return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
-    }
-    */
-
 	/*
 	 * Get the state of the given token
 	 */
-    function getTokenState(address _token) public view returns (
+    function getTokenState(address _token) public returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
+        uint256 collateral
     )
     {
         return baseVariable.getTokenState(_token);
@@ -164,29 +125,12 @@ contract SavingAccount is Initializable {
 	/**
 	 * Get all balances for the sender's account
 	 */
-     /*
-    function getBalances() public view returns (
-        address[] memory addresses,
-        uint256[] memory depositBalance,
-        uint256[] memory borrowBalance
-    )
-    {
-        uint coinsLen = getCoinLength();
-
-        addresses = new address[](coinsLen);
-        depositBalance = new uint256[](coinsLen);
-        borrowBalance = new uint256[](coinsLen);
-
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            depositBalance[i] = baseVariable.getDepositBalance(tokenAddress, msg.sender);
-            borrowBalance[i] = baseVariable.getBorrowBalance(tokenAddress, msg.sender);
-        }
-
-        return (addresses, depositBalance, borrowBalance);
+    function getBalances(address _token) public view returns (uint256 depositBalance, uint256 borrowBalance) {
+        return (
+            baseVariable.getDepositBalance(_token, msg.sender),
+            baseVariable.getBorrowBalance(_token, msg.sender)
+            );
     }
-    */
 
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
