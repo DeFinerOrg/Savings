@@ -391,7 +391,7 @@ contract SavingAccount is Initializable {
         withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
 
-        emit DepositorOperations(2, _token, msg.sender, address(0), _amount);
+        emit DepositorOperations(2, _token, msg.sender, address(0), amount);
     }
 
     struct LiquidationVars {
