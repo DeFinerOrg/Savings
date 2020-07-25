@@ -23,6 +23,7 @@ contract MockCToken {
     function borrow(uint borrowAmount) external returns (uint);
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
+    // Error returned: identifier not found or not unique:
     //function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
     function _addReserves(uint addAmount) external returns (uint);
     function getCashPrior() internal view returns (uint);
@@ -36,14 +37,16 @@ contract MockCToken {
     function borrow(uint borrowAmount) external returns (uint); */
     function repayBorrow() external payable;
     function repayBorrowBehalf(address borrower) external payable;
+
+    // Error returned: identifier not found or not unique:
     //function liquidateBorrow(address borrower, CToken cTokenCollateral) external payable;
-    //function () external payable;
+
     /* function getCashPrior() internal view returns (uint);
     function doTransferIn(address from, uint amount) internal returns (uint);
     function doTransferOut(address payable to, uint amount) internal; */
     function requireNoError(uint errCode, string memory message) internal pure;
 
-    // ERC20.sol
+    // 3. ERC20.sol
     function totalSupply() public view returns (uint256);
     function balanceOf(address account) public view returns (uint256);
     function transfer(address recipient, uint256 amount) public returns (bool);
