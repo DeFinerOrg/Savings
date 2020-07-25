@@ -11,6 +11,10 @@ const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenI
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
+// Contracts for Upgradability
+const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
+const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+
 var tokenData = require("../test-helpers/tokenData.json");
 
 // var compoundTokens: any = require("../compound-protocol/networks/development.json");
@@ -119,27 +123,28 @@ export class TestEngine {
             this.tokenInfoRegistry.address
         );
 
-        const network = process.env.NETWORK;
-        // if (network == "development") {
-        return SavingAccountWithControllerContract.new(
-            this.erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            this.tokenInfoRegistry.address,
-            this.globalConfig.address,
-            compoundTokens.Contracts.Comptroller
-        );
-        /*
-        } else {
-            return SavingAccount.new(
+        // Deploy Upgradability contracts
+        const proxyAdmin = await ProxyAdmin.new();
+        const savingAccountProxy = await SavingAccountProxy.new();
+        const savingAccount = await SavingAccount.new();
+
+        const initialize_data = savingAccount.contract.methods
+            .initialize(
                 this.erc20Tokens,
                 cTokens,
                 chainLinkOracle.address,
                 this.tokenInfoRegistry.address,
                 this.globalConfig.address
-            );
-        }
-        */
+            )
+            .encodeABI();
+        await savingAccountProxy.initialize(
+            savingAccount.address,
+            proxyAdmin.address,
+            initialize_data
+        );
+
+        const proxy: t.SavingAccountInstance = SavingAccount.at(savingAccountProxy.address);
+        return proxy;
     }
 
     private async initializeTokenInfoRegistry(

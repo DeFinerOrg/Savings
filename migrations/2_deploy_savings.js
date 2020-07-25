@@ -14,6 +14,10 @@ const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 
+// Upgradablility contracts
+const ProxyAdmin = artifacts.require("ProxyAdmin");
+const SavingAccountProxy = artifacts.require("SavingAccountProxy");
+
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
 const MockCToken = artifacts.require("MockCToken");
@@ -70,34 +74,27 @@ module.exports = async function (deployer, network) {
 
     const globalConfig = await deployer.deploy(GlobalConfig);
 
-    // Move this to testengineer
-    if (network == "development") {
-        const savingAccount = await deployer.deploy(
-            SavingAccountWithController,
-            erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            tokenInfoRegistry.address,
-            globalConfig.address,
-            // compound.Contracts.Comptroller
-            "0x0000000000000000000000000000000000000001"
-        );
-        console.log("SavingAccount:", savingAccount.address);
-    } else {
-        const savingAccount = await deployer.deploy(
-            SavingAccount,
+    // Deploy Upgradability
+    const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
+    const proxyAdmin = await deployer.deploy(ProxyAdmin);
+
+    // Deploy SavingAccount contract
+    const savingAccount = await deployer.deploy(SavingAccount);
+    const initialize_data = savingAccount.contract.methods
+        .initialize(
             erc20Tokens,
             cTokens,
             chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address
-        );
-        console.log("SavingAccount:", savingAccount.address);
-    }
+        )
+        .encodeABI();
+    await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
+    console.log("SavingAccount:", savingAccountProxy.address);
 };
 
 const initializeTokenInfoRegistry = async (

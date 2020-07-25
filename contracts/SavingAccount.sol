@@ -7,8 +7,9 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract SavingAccount {
+contract SavingAccount is Initializable {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
@@ -22,17 +23,16 @@ contract SavingAccount {
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
-    // TODO This is emergency address to allow withdrawal of funds from the contract
-    address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
-    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     TokenInfoRegistry public tokenRegistry;
     GlobalConfig public globalConfig;
 
-    uint256 ACCURACY = 10**18;
-    uint BLOCKS_PER_YEAR = 2102400;
-
-
-    uint256 public constant UINT_UNIT = 10 ** 18;
+    // Following are the constants, initialized via upgradable proxy contract
+    // TODO This is emergency address to allow withdrawal of funds from the contract
+    address payable public EMERGENCY_ADDR;
+    address public ETH_ADDR;
+    uint256 public ACCURACY;
+    uint256 public BLOCKS_PER_YEAR;
+    uint256 public UINT_UNIT;
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
@@ -46,7 +46,14 @@ contract SavingAccount {
         _;
     }
 
-    constructor(
+    constructor() public {
+        // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
+    }
+
+    /**
+     * @dev Initialize function to be called by the Deployer for the first time
+     */
+    function initialize(
         address[] memory tokenAddresses,
         address[] memory cTokenAddresses,
         address _chainlinkAddress,
@@ -54,6 +61,7 @@ contract SavingAccount {
         GlobalConfig _globalConfig
     )
         public
+        initializer
     {
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
@@ -67,6 +75,13 @@ contract SavingAccount {
                 baseVariable.approveAll(tokenAddresses[i]);
             }
         }
+
+        //Initialize constants defined in this contract
+        EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
+        ETH_ADDR = 0x000000000000000000000000000000000000000E;
+        ACCURACY = 10**18;
+        BLOCKS_PER_YEAR = 2102400;
+        UINT_UNIT = 10 ** 18;
     }
 
     function approveAll(address _token) public {
@@ -619,7 +634,7 @@ contract SavingAccount {
         }
     }
 
-    function _isETH(address _token) internal pure returns (bool) {
+    function _isETH(address _token) internal view returns (bool) {
         return ETH_ADDR == _token;
     }
 
