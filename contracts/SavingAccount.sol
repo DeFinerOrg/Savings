@@ -88,12 +88,6 @@ contract SavingAccount is Initializable {
         baseVariable.approveAll(_token);
     }
 
-    // TODO Security issue, as this function is open for all
-	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address _token) public {
-        baseVariable.newRateIndexCheckpoint(_token);
-    }
-
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
