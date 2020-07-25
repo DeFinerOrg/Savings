@@ -7,8 +7,8 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -27,16 +27,17 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressMKR: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -47,14 +48,16 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressUSDC = tokens[1];
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20TUSD = await MockERC20.at(addressTUSD);
-        erc20MKR = await MockERC20.at(addressMKR);
+        // Use ERC20 from OZ, import this
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20TUSD = await ERC20.at(addressTUSD);
+        erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+        // Use CERC20, import from Compound
+        cDAI = await MockCToken.at(addressCTokenForDAI);
+        cUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
 
     context("deposit()", async () => {
@@ -84,6 +87,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                     erc20DAI.address
                 );
 
+                const balCTokenContractBefore = await erc20DAI.balanceOf(addressCTokenForDAI);
+                const balCTokensBefore = await cDAI.balanceOf(savingAccount.address);
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20DAI.address, numOfToken);
 
@@ -111,13 +117,22 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                 // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
+                // change variable name addressCTokenForDAI --> cDAI_addr
+                // balanceOfUnderlying -- erc20 token balance
+                // should equal cDAI.balanceOf
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
-                expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
+                expect(
+                    new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
 
+                //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                // get exchange rate and then verify
+                const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                expect(
+                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
             });
 
             it("when 1000 whole supported tokens are deposited", async () => {
@@ -131,6 +146,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     erc20DAI.address
                 );
 
+                const balCTokenContractBefore = await erc20DAI.balanceOf(addressCTokenForDAI);
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20DAI.address, numOfToken);
 
@@ -159,12 +176,17 @@ contract("SavingAccount.deposit", async (accounts) => {
                 // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
-                expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
+                expect(
+                    new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
 
+                //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
-                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    new BN(balCTokens).div(new BN(10))
+                );
             });
 
             // When Compound unsupported tokens are passed
@@ -312,6 +334,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     erc20USDC.address
                 );
 
+                const balCTokenContractBefore = await erc20USDC.balanceOf(addressCTokenForUSDC);
+
                 // 2. Deposit Token to SavingContract
                 await savingAccount.deposit(erc20USDC.address, numOfToken);
 
@@ -340,12 +364,17 @@ contract("SavingAccount.deposit", async (accounts) => {
                 // 3.3 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
-                expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(balCTokenContract);
+                expect(
+                    new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
 
+                //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-                const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
-                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                const balCTokens = await cUSDC.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokens.div(new BN(100000))
+                );
             });
 
             it("when ETH address is passed", async () => {

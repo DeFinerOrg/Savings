@@ -2,6 +2,7 @@ import { BigNumber } from "bignumber.js";
 import { MockChainLinkAggregatorInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
 import { TestEngine } from "../test-helpers/TestEngine";
+const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -9,7 +10,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -33,13 +34,23 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let addressUSDC: any;
     let addressMKR: any;
     let addressTUSD: any;
+    let addressUSDT: any;
+    let addressWBTC: any;
+    let addressCTokenForDAI: any;
+    let addressCTokenForUSDC: any;
+    let addressCTokenForUSDT: any;
+    let addressCTokenForWBTC: any;
+    let cTokenDAI: t.MockCTokenInstance;
+    let cTokenUSDC: t.MockCTokenInstance;
+    let cTokenUSDT: t.MockCTokenInstance;
+    let cTokenWBTC: t.MockCTokenInstance;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20MKR: t.ERC20Instance;
+    let erc20TUSD: t.ERC20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
@@ -51,6 +62,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -62,13 +74,17 @@ contract("SavingAccount.liquidate", async (accounts) => {
         addressUSDC = tokens[1];
         addressMKR = tokens[4];
         addressTUSD = tokens[3];
+        addressUSDT = tokens[2];
+
+        addressWBTC = tokens[8];
+
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
-        erc20MKR = await MockERC20.at(addressMKR);
-        erc20TUSD = await MockERC20.at(addressTUSD);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
+        erc20MKR = await ERC20.at(addressMKR);
+        erc20TUSD = await ERC20.at(addressTUSD);
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
         );
@@ -78,6 +94,14 @@ contract("SavingAccount.liquidate", async (accounts) => {
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
         );
+        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
+        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
+        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
         numOfToken = new BN(1000);
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
@@ -158,6 +182,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
                     // 2. Start borrowing.
+                    /* const borrowingPower2 = await savingAccount.getTotalDepositsNow({ from: user2 });
+                    const borrowingPower1 = await savingAccount.getTotalDepositsNow({ from: user1 });
+                    const balances2 = await savingAccount.getBalances({ from: user2 }); */
+
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
                     let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -192,6 +220,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .mul(ONE_DAI)
                         .div(new BN(await savingAccount.getCoinToETHRate(0)));
+                    const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
+                    console.log(accountUSDC.toString());
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
@@ -259,6 +289,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC);
+                    const ctokenBal = await cTokenUSDC.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    console.log(ctokenBal.toString());
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
                     // 3. Change the price.

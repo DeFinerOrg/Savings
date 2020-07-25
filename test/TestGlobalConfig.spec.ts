@@ -8,7 +8,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -24,6 +24,7 @@ contract("GlobalConfig", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {

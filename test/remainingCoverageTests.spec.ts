@@ -10,7 +10,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
@@ -38,13 +38,14 @@ contract("RemainingCoverage", async (accounts) => {
     let addressDAI: any;
     let addressUSDC: any;
     let tempContractAddress: any;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20contr: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20contr: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -53,8 +54,8 @@ contract("RemainingCoverage", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
     });
 
     context("approveAll", async () => {
@@ -115,8 +116,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const ONE_DAI = eighteenPrecision;
@@ -169,8 +170,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -267,6 +268,7 @@ contract("RemainingCoverage", async (accounts) => {
                 //1. Deposit DAI
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(100)), {
@@ -274,8 +276,8 @@ contract("RemainingCoverage", async (accounts) => {
                 });
 
                 // 3. Verify the loan amount
-                const user1Balance = await erc20USDC.balanceOf(user1);
-                expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
+                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
+                expect(BN(user1BalanceAfter).sub(user1BalanceBefore)).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
 
                 await savingAccount.getAccountTotalETHValue(user1);
             });
@@ -316,7 +318,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
     /*
     context("getBalances", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when sender's address is valid", async () => {
