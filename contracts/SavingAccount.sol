@@ -34,6 +34,8 @@ contract SavingAccount is Initializable {
     uint256 public BLOCKS_PER_YEAR;
     uint256 public UINT_UNIT;
 
+    event DepositorOperations(uint256 indexed type, address token, address from, address tp, uint256 amount);
+
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
         _;
@@ -170,6 +172,8 @@ contract SavingAccount is Initializable {
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
         deposit(_to, _token, _amount);
+
+        emit DepositorOperations(5, _token, msg.sender, _to, _amount);
     }
 
     /**
@@ -216,6 +220,8 @@ contract SavingAccount is Initializable {
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
+
+        emit DepositorOperations(3, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -259,6 +265,8 @@ contract SavingAccount is Initializable {
         if(remain != 0) {
             send(msg.sender, remain, _token);
         }
+
+        emit DepositorOperations(4, _token, msg.sender, address(0), _amount.sub(remain));
     }
 
     /**
@@ -270,6 +278,8 @@ contract SavingAccount is Initializable {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
+
+        emit DepositorOperations(0, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -305,6 +315,8 @@ contract SavingAccount is Initializable {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -378,6 +390,8 @@ contract SavingAccount is Initializable {
 
         withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(2, _token, msg.sender, address(0), _amount);
     }
 
     struct LiquidationVars {
