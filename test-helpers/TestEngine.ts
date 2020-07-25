@@ -109,7 +109,7 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
+    public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
