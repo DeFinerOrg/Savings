@@ -63,6 +63,8 @@ library Base {
         uint borrowRatePerBlock;    // the borrow rate of the token in third party
     }
 
+    event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
+
     /**
      * Initialize
      */
@@ -424,6 +426,7 @@ library Base {
                 self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
             }
         }
+        emit UpdateIndex(_token, self.depositeRateIndex[_token][block.number], self.borrowRateIndex[_token][block.number]);
     }
 
     /**
