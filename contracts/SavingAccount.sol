@@ -34,7 +34,7 @@ contract SavingAccount is Initializable {
     uint256 public BLOCKS_PER_YEAR;
     uint256 public UINT_UNIT;
 
-    event DepositorOperations(uint256 indexed type, address token, address from, address tp, uint256 amount);
+    event DepositorOperations(uint256 indexed code, address token, address from, address to, uint256 amount);   
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
