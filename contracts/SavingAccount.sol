@@ -34,6 +34,8 @@ contract SavingAccount is Initializable {
     uint256 public BLOCKS_PER_YEAR;
     uint256 public UINT_UNIT;
 
+    event DepositorOperations(uint256 indexed code, address token, address from, address to, uint256 amount);   
+
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
         _;
@@ -88,12 +90,6 @@ contract SavingAccount is Initializable {
         baseVariable.approveAll(_token);
     }
 
-    // TODO Security issue, as this function is open for all
-	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address _token) public {
-        baseVariable.newRateIndexCheckpoint(_token);
-    }
-
 	/**
 	 * Gets the total amount of balance that give accountAddr stored in saving pool.
 	 */
@@ -110,50 +106,13 @@ contract SavingAccount is Initializable {
     }
     */
 
-	/**
-	 * Get the overall state of the saving pool
-	 */
-     /*
-    function getMarketState() public view returns (
-        address[] memory addresses,
-        uint256[] memory deposits,
-        uint256[] memory loans,
-        uint256[] memory collateral,
-        uint256[] memory depositRatePerBlock,
-        uint256[] memory borrowRatePerBlock
-    )
-    {
-        uint coinsLen = getCoinLength();
-        addresses = new address[](coinsLen);
-        deposits = new uint256[](coinsLen);
-        loans = new uint256[](coinsLen);
-        collateral = new uint256[](coinsLen);
-        depositRatePerBlock = new uint256[](coinsLen);
-        borrowRatePerBlock = new uint256[](coinsLen);
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            (
-            deposits[i],
-            loans[i],
-            collateral[i],
-            depositRatePerBlock[i],
-            borrowRatePerBlock[i]
-            ) = baseVariable.getTokenState(tokenAddress);
-        }
-        return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
-    }
-    */
-
 	/*
 	 * Get the state of the given token
 	 */
-    function getTokenState(address _token) public view returns (
+    function getTokenState(address _token) public returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
+        uint256 collateral
     )
     {
         return baseVariable.getTokenState(_token);
@@ -162,26 +121,12 @@ contract SavingAccount is Initializable {
 	/**
 	 * Get all balances for the sender's account
 	 */
-     /*
-    function getBalances() public view returns (
-        address[] memory addresses,
-        uint256[] memory depositBalance,
-        uint256[] memory borrowBalance
-    )
-    {
-        uint coinsLen = getCoinLength();
-        addresses = new address[](coinsLen);
-        depositBalance = new uint256[](coinsLen);
-        borrowBalance = new uint256[](coinsLen);
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            depositBalance[i] = baseVariable.getDepositBalance(tokenAddress, msg.sender);
-            borrowBalance[i] = baseVariable.getBorrowBalance(tokenAddress, msg.sender);
-        }
-        return (addresses, depositBalance, borrowBalance);
+    function getBalances(address _token) public view returns (uint256 depositBalance, uint256 borrowBalance) {
+        return (
+            baseVariable.getDepositBalance(_token, msg.sender),
+            baseVariable.getBorrowBalance(_token, msg.sender)
+            );
     }
-    */
 
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
@@ -227,6 +172,8 @@ contract SavingAccount is Initializable {
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
         deposit(_to, _token, _amount);
+
+        emit DepositorOperations(5, _token, msg.sender, _to, _amount);
     }
 
     /**
@@ -273,6 +220,8 @@ contract SavingAccount is Initializable {
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
+
+        emit DepositorOperations(3, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -316,6 +265,8 @@ contract SavingAccount is Initializable {
         if(remain != 0) {
             send(msg.sender, remain, _token);
         }
+
+        emit DepositorOperations(4, _token, msg.sender, address(0), _amount.sub(remain));
     }
 
     /**
@@ -327,6 +278,8 @@ contract SavingAccount is Initializable {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
+
+        emit DepositorOperations(0, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -362,6 +315,8 @@ contract SavingAccount is Initializable {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -435,6 +390,8 @@ contract SavingAccount is Initializable {
 
         withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(2, _token, msg.sender, address(0), amount);
     }
 
     struct LiquidationVars {
