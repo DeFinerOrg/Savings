@@ -487,7 +487,8 @@ library Base {
             // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
             ICETH(cToken).mint.value(_amount).gas(250000)();
         } else {
-            ICToken(cToken).mint(_amount);
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
         }
     }
 
