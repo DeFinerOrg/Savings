@@ -11,6 +11,7 @@ import "./lib/SafeDecimalMath.sol";
 import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
+import { IBlockNumber } from "./ISavingAccount.sol";
 
 library Base {
     using SafeMath for uint256;
@@ -38,6 +39,7 @@ library Base {
         mapping(address => Account) accounts;
         address payable deFinerCommunityFund;
         address globalConfigAddress;
+        address savingAccountAddress;
         mapping(address => uint) deFinerFund;
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
@@ -66,8 +68,9 @@ library Base {
     /**
      * Initialize
      */
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress) public {
+    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress, address _savingAccountAddress) public {
         self.globalConfigAddress = _globalConfigAddress;
+        self.savingAccountAddress = _savingAccountAddress;
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }
@@ -249,7 +252,7 @@ library Base {
         }
     }
 
-    // sichaoy: these two functions should be moved to a seperate library
+    // sichaoy: these two functions should be moved to a seperate library. Not used, can be removed.
     /**
      * Get compound supply rate.
      * @param _cToken cToken address
@@ -356,7 +359,7 @@ library Base {
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
             // sichaoy: to check that the current block rate index already exist
-            return self.depositeRateIndex[_token][block.number].mul(UNIT).div(depositRate); // index(current block)/index(start block)
+            return self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
 
@@ -380,7 +383,7 @@ library Base {
             return UNIT;
         } else {
             // rate change
-            return self.borrowRateIndex[_token][block.number].mul(UNIT).div(borrowRate);
+            return self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()].mul(UNIT).div(borrowRate);
         }
     }
 
@@ -389,39 +392,66 @@ library Base {
      */
     function newRateIndexCheckpoint(BaseVariable storage self, address _token) public {
 
-        if (block.number == self.lastCheckpoint[_token])
+        if (IBlockNumber(self.savingAccountAddress).getBlockNumber() == self.lastCheckpoint[_token])
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
 
         // If it is the first check point, initialize the rate index
         if (self.lastCheckpoint[_token] == 0) {
-            self.borrowRateIndex[_token][block.number] = UNIT;
-            self.depositeRateIndex[_token][block.number] = UNIT;
+            address cToken = self.cTokenAddress[_token];
+            if(cToken == address(0)) {
+                self.compoundPool[_token].supported = false;
+
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
+            }
+            else {
+                self.compoundPool[_token].supported = true;
+                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
+
+                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
+                // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
+                self.compoundPool[_token].capitalRatio = getCapitalCompoundRatio(self, _token);
+                self.compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
+                self.compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
+
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
+                self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+            }
+
         } else {
             address cToken = self.cTokenAddress[_token];
             if(cToken == address(0)) {
                 self.compoundPool[_token].supported = false;
 
-                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
-                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = depositRateIndexNow(self, _token);
 
                 // Update the last checkpoint
-                self.lastCheckpoint[_token] = block.number;
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
             } else {
                 self.compoundPool[_token].supported = true;
                 uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
-                // Get the curretn cToken exchange rate in Compound
+
+                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 self.compoundPool[_token].capitalRatio = getCapitalCompoundRatio(self, _token);
                 self.compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 self.compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(self.lastCTokenExchangeRate[cToken])
-                    .sub(UNIT).div(block.number.sub(self.lastCheckpoint[_token]));
+                    .sub(UNIT).div(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(self.lastCheckpoint[_token]));
 
-                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
-                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = depositRateIndexNow(self, _token);
 
                 // Update the last checkpoint
-                self.lastCheckpoint[_token] = block.number;
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
                 self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
             }
         }
@@ -430,6 +460,8 @@ library Base {
     /**
      * Calculate a token deposite rate of current block
      * @param _token token address
+     * @dev This is an looking forward estimation from last checkpoint and not the exactly rate that the user will pay or earn.
+     * change name to depositRateIndexForward? or EstimateDepositRateIndex?
      */
     function depositRateIndexNow(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 lastCheckpoint = self.lastCheckpoint[_token];
@@ -437,9 +469,11 @@ library Base {
         // If this is the first checkpoint, set the index be 1.
         if(lastCheckpoint == 0)
             return UNIT;
+
         uint256 lastDepositeRateIndex = self.depositeRateIndex[_token][lastCheckpoint];
         uint256 depositRatePerBlock = getDepositRatePerBlock(self, _token);
-        return lastDepositeRateIndex.mul(block.number.sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
+        return lastDepositeRateIndex.mul(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -454,7 +488,7 @@ library Base {
             return UNIT;
         uint256 lastBorrowRateIndex = self.borrowRateIndex[_token][lastCheckpoint];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, _token);
-        return lastBorrowRateIndex.mul(block.number.sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /*

@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@types/shelljs": "^0.8.8",
-    "shelljs": "^0.8.4"
+    "shelljs": "^0.8.4",
+    "solidity-parser-antlr": "^0.4.11"
   }
 }
