@@ -65,6 +65,8 @@ library Base {
         uint borrowRatePerBlock;    // the borrow rate of the token in third party
     }
 
+    event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
+
     /**
      * Initialize
      */
@@ -138,7 +140,7 @@ library Base {
      * sichaoy: This is not right since the cToken rate has changed
      * @param _token token address
      */
-    function getTotalDepositsNow(BaseVariable storage self, address _token) public view returns(uint) {
+    function getTotalDepositsStore(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = self.cTokenAddress[_token];
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
@@ -192,9 +194,9 @@ library Base {
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
         address cToken = self.cTokenAddress[_token];
+        uint totalAmount = getTotalDepositsStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
-            uint totalAmount = getTotalDepositsNow(self, _token);
             if (_action == ActionChoices.Deposit)
                 totalAmount = totalAmount.add(_amount);
             else
@@ -220,7 +222,6 @@ library Base {
                 );
 
             // Total amount of token after withdraw or borrow
-            uint totalAmount = getTotalDepositsNow(self, _token);
             if (_action == ActionChoices.Withdraw)
                 totalAmount = totalAmount.sub(_amount);
             else
@@ -311,7 +312,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalUtilizationRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        uint256 totalDepositsNow = getTotalDepositsNow(self, _token);
+        uint256 totalDepositsNow = getTotalDepositsStore(self, _token);
         if(totalDepositsNow == 0) {
             return 0;
         } else {
@@ -327,7 +328,7 @@ library Base {
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsNow(self, _token)));
+            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsStore(self, _token)));
         }
     }
 
@@ -336,7 +337,7 @@ library Base {
     //        if(self.totalReserve[tokenAddress] == 0) {
     //            return 0;
     //        } else {
-    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsNow(self, tokenAddress));
+    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsStore(self, tokenAddress));
     //        }
     //    }
 
@@ -455,6 +456,7 @@ library Base {
                 self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
             }
         }
+        emit UpdateIndex(_token, self.depositeRateIndex[_token][block.number], self.borrowRateIndex[_token][block.number]);
     }
 
     /**
@@ -494,20 +496,16 @@ library Base {
     /*
 	 * Get the state of the given token
 	 */
-    function getTokenState(BaseVariable storage self, address _token) public view returns (
+    function getTokenState(BaseVariable storage self, address _token) public returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
+        uint256 collateral
     )
     {
         return (
-        getTotalDepositsNow(self, _token),
+        getTotalDepositsStore(self, _token),
         self.totalLoans[_token],
-        self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]),
-        getDepositRatePerBlock(self, _token),
-        getBorrowRatePerBlock(self, _token)
+        self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]])
         );
     }
 
