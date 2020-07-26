@@ -35,7 +35,7 @@ const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-module.exports = async function (deployer, network) {
+module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -147,7 +147,9 @@ const getCTokens = async (erc20Tokens) => {
                     erc20Address = ZERO_ADDRESS;
                 }
                 // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(erc20Address)).address;
+                //addr = (await MockCToken.new(erc20Address)).address;
+                // TODO: fix this when tokeninforegistry is integrated
+                addr = ZERO_ADDRESS;
             }
             cTokens.push(addr);
         })
