@@ -613,10 +613,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     }
 
     function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeem(_amount);
+        uint256 success = ICToken(_cToken).redeem(_amount);
+        require(success == 0, "redeem failed");
     }
 
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeemUnderlying(_amount);
+        uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 }
