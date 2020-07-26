@@ -7,7 +7,20 @@ contract SavingAccountWithController  is SavingAccount {
 
     address comptroller;
 
-    constructor(address _comptroller) SavingAccount() public {
+    constructor() public {
+        // DO NOT ADD ANY LOGIC HERE.
+        // THIS IS AN UPGRADABLE CONTRACT
+    }
+
+    function initialize(
+        address[] memory tokenAddresses,
+        address[] memory cTokenAddresses,
+        address _chainlinkAddress,
+        TokenInfoRegistry _tokenRegistry,
+        GlobalConfig _globalConfig,
+        address _comptroller
+    ) public initializer {
+        super.initialize(tokenAddresses, cTokenAddresses, _chainlinkAddress, _tokenRegistry, _globalConfig);
         comptroller = _comptroller;
     }
 

@@ -71,7 +71,7 @@ contract SavingAccount is Initializable {
 
         //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig));
+        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig), address(this));
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(tokenAddresses[i]);
@@ -161,6 +161,14 @@ contract SavingAccount is Initializable {
         return symbols.priceFromIndex(_coinIndex);
     }
 
+    function getBlockNumber() public view returns (uint) {
+        return block.number;
+    }
+
+    function newRateIndexCheckpoint(address _token) public {
+        baseVariable.newRateIndexCheckpoint(_token);
+    }
+
     /**
      * Transfer the token between users inside DeFiner
      * @param _to the address that the token be transfered to
@@ -206,7 +214,7 @@ contract SavingAccount is Initializable {
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
         uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.borrow(_amount, accruedRate);
+        tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
         // Set the borrow bitmap
         baseVariable.setInBorrowBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
@@ -248,7 +256,7 @@ contract SavingAccount is Initializable {
         uint rate = baseVariable.getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        tokenInfo.repay(amount, rate);
+        tokenInfo.repay(amount, rate, this.getBlockNumber());
 
         // Unset borrow bitmap if the balance is fully repaid
         if(tokenInfo.getBorrowPrincipal() == 0)
@@ -299,7 +307,7 @@ contract SavingAccount is Initializable {
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.deposit(_amount, accruedRate);
+        tokenInfo.deposit(_amount, accruedRate, this.getBlockNumber());
 
         // Set the deposit bitmap
         baseVariable.setInDepositBitmap(_to, tokenRegistry.getTokenIndex(_token));
@@ -349,7 +357,7 @@ contract SavingAccount is Initializable {
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate);
+        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
         if(tokenInfo.getDepositPrincipal() == 0)
@@ -494,12 +502,12 @@ contract SavingAccount is Initializable {
         vars.targetTokenAccruedRate = baseVariable.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
+        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate, this.getBlockNumber());
         if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
             baseVariable.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
         }
 
-        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
+        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate, this.getBlockNumber());
         if(targetTokenInfo.getBorrowPrincipal() == 0) {
             baseVariable.unsetFromBorrowBitmap(targetAccountAddr, vars.tokenIndex);
         }
@@ -535,7 +543,7 @@ contract SavingAccount is Initializable {
                         vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                     }
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate, this.getBlockNumber());
                     if(tokenInfo.getDepositPrincipal() == 0) {
                         baseVariable.unsetFromDepositBitmap(targetAccountAddr, vars.tokenIndex);
                     }
@@ -543,7 +551,7 @@ contract SavingAccount is Initializable {
                     if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
                         baseVariable.setInDepositBitmap(msg.sender, vars.tokenIndex);
                     }
-                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
+                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate, this.getBlockNumber());
                 }
             }
 

@@ -45,8 +45,8 @@ library TokenInfoLib {
         return self.lastBorrowBlock;
     }
 
-    function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
-        newBorrowCheckpoint(self, accruedRate);
+    function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {
+        newBorrowCheckpoint(self, accruedRate, _block);
         self.borrowPrincipal = self.borrowPrincipal.add(amount);
     }
 
@@ -54,8 +54,8 @@ library TokenInfoLib {
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      * sichaoy: should return the exact amount that withdrawn?
      */
-    function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate) public {
-        newDepositCheckpoint(self, accruedRate);
+    function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {
+        newDepositCheckpoint(self, accruedRate, _block);
         if (self.depositInterest >= amount) {
             self.depositInterest = self.depositInterest.sub(amount);
         } else if (self.depositPrincipal.add(self.depositInterest) >= amount) {
@@ -70,14 +70,14 @@ library TokenInfoLib {
     /**
      * Update token info for deposit
      */
-    function deposit(TokenInfo storage self, uint256 amount, uint accruedRate) public {
-        newDepositCheckpoint(self, accruedRate);
+    function deposit(TokenInfo storage self, uint256 amount, uint accruedRate, uint256 _block) public {
+        newDepositCheckpoint(self, accruedRate, _block);
         self.depositPrincipal = self.depositPrincipal.add(amount);
     }
 
-    function repay(TokenInfo storage self, uint256 amount, uint accruedRate) public {
+    function repay(TokenInfo storage self, uint256 amount, uint accruedRate, uint256 _block) public {
         // updated rate (new index rate), applying the rate from startBlock(checkpoint) to currBlock
-        newBorrowCheckpoint(self, accruedRate);
+        newBorrowCheckpoint(self, accruedRate, _block);
         // user owes money, then he tries to repays
         if (self.borrowInterest > amount) {
             self.borrowInterest = self.borrowInterest.sub(amount);
@@ -90,24 +90,21 @@ library TokenInfoLib {
         }
     }
 
-    function newDepositCheckpoint(TokenInfo storage self, uint accruedRate) public {
+    function newDepositCheckpoint(TokenInfo storage self, uint accruedRate, uint256 _block) public {
         self.depositInterest = calculateDepositInterest(self, accruedRate);
-        self.lastDepositBlock = block.number;
+        self.lastDepositBlock = _block;
     }
 
-    function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate) public {
+    function newBorrowCheckpoint(TokenInfo storage self, uint accruedRate, uint256 _block) public {
         self.borrowInterest = calculateBorrowInterest(self, accruedRate);
-        self.lastBorrowBlock = block.number;
+        self.lastBorrowBlock = _block;
     }
 
     // Calculating interest according to the new rate
+    // sichaoy: this function is not self-containing, have to make sure the acccuredRate
+    // calculated starting from last deposit checkpoint
     function calculateDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
-        uint256 _balance = self.depositPrincipal;
-        if(accruedRate == 0 || _balance == 0 || BASE >= accruedRate) {
-            return self.depositInterest;
-        } else {
-            return _balance.add(self.depositInterest).mul(accruedRate).sub(_balance.mul(BASE)).div(BASE);
-        }
+        return self.depositPrincipal.add(self.depositInterest).mul(accruedRate).sub(self.depositPrincipal.mul(BASE)).div(BASE);
     }
 
     function calculateBorrowInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {

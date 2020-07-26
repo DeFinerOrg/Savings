@@ -1,3 +1,4 @@
+import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
@@ -5,7 +6,7 @@ const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
-const SavingAccountWithControllerContract = artifacts.require("SavingAccountWithController");
+const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require("child_process");
@@ -109,7 +110,8 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    public async deploySavingAccount(): Promise<t.SavingAccountInstance> {
+    // sichaoy: How to write a return value here
+    public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
@@ -126,7 +128,8 @@ export class TestEngine {
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
-        const savingAccount = await SavingAccount.new();
+
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
@@ -134,7 +137,8 @@ export class TestEngine {
                 cTokens,
                 chainLinkOracle.address,
                 this.tokenInfoRegistry.address,
-                this.globalConfig.address
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
         await savingAccountProxy.initialize(
@@ -143,8 +147,21 @@ export class TestEngine {
             initialize_data
         );
 
-        const proxy: t.SavingAccountInstance = SavingAccount.at(savingAccountProxy.address);
+        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         return proxy;
+
+        /*
+        const savingAccount = await SavingAccountWithController.new(
+            compoundTokens.Contracts.Comptroller
+        );
+
+        await savingAccount.initialize(this.erc20Tokens,
+            cTokens,
+            chainLinkOracle.address,
+            this.tokenInfoRegistry.address,
+            this.globalConfig.address);
+
+        return savingAccount;*/
     }
 
     private async initializeTokenInfoRegistry(
