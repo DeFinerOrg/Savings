@@ -1,4 +1,5 @@
 var tokenData = require("../test-helpers/tokenData.json");
+// var compound = require("../compound-protocol/networks/development.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -7,6 +8,8 @@ const TokenInfoLib = artifacts.require("TokenInfoLib");
 const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccountWithController = artifacts.require("SavingAccountWithController");
+
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
@@ -32,7 +35,7 @@ const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     // Deploy Libs
     await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
@@ -48,6 +51,10 @@ module.exports = async function(deployer, network) {
     await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
+
+    await deployer.link(SymbolsLib, SavingAccountWithController);
+    await deployer.link(TokenInfoLib, SavingAccountWithController);
+    await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
