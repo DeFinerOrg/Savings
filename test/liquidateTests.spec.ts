@@ -19,7 +19,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

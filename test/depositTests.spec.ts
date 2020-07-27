@@ -13,7 +13,7 @@ const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

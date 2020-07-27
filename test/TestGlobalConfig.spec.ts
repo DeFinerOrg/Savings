@@ -18,7 +18,7 @@ contract("GlobalConfig", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
     let globalConfig: t.GlobalConfigInstance;
 
     before(async () => {
