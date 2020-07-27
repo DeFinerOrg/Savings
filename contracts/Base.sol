@@ -128,7 +128,7 @@ library Base {
      * sichaoy: This is not right since the cToken rate has changed
      * @param _token token address
      */
-    function getTotalDepositsStore(BaseVariable storage self, address _token) public view returns(uint) {
+    function getTotalDepositStore(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
