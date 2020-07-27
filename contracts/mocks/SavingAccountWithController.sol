@@ -1,7 +1,7 @@
 pragma solidity 0.5.14;
 
-import "./SavingAccount.sol";
-import { IController } from "./compound/ICompound.sol";
+import "../SavingAccount.sol";
+import { IController } from "../compound/ICompound.sol";
 
 contract SavingAccountWithController  is SavingAccount {
 
