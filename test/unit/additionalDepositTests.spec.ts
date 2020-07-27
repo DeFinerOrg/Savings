@@ -319,7 +319,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                 });
-                it("Deposit MKR and TUSD, both compound supported", async () => {
+                it("Deposit MKR and TUSD, both compound unsupported", async () => {
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 MKR and 1 TUSD
@@ -387,7 +387,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     // verify 2.
                     expect(
                         BN(savingAccountMKRToken).sub(BN(savingAccountMKRTokenBefore))
-                    ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)));
+                    ).to.be.bignumber.equals(eighteenPrecision);
                     expect(
                         BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
