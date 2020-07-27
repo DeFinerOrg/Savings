@@ -190,7 +190,7 @@ contract("RemainingCoverage", async (accounts) => {
     /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
-            //TODO
+
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -227,7 +227,6 @@ contract("RemainingCoverage", async (accounts) => {
     */
     /*
     context("getMarketState", async () => {
-        //TODO:
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
                 const numOfToken = new BN(1000);

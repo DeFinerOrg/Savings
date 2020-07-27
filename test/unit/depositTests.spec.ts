@@ -325,17 +325,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                 );
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
-                // 3.2 SavingAccount variables are changed
-                // TODO Need to improve the code design to verify these variables
-
-                // 3.3 Some tokens are sent to Compound contract
+                // 3.2 Some tokens are sent to Compound contract
                 const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
                 expect(
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
                 ).to.be.bignumber.equal(balCTokenContract);
 
-                //TODO
                 // 3.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cUSDC.balanceOf(savingAccount.address);
