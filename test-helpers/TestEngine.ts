@@ -110,7 +110,6 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    // sichaoy: How to write a return value here
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         const cTokens: Array<string> = await this.getCompoundAddresses();

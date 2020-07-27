@@ -228,7 +228,7 @@ library Base {
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
             if (self.cTokenAddress[_token] != address(0) &&
-                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
+                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                 toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
@@ -287,7 +287,6 @@ library Base {
             return getCapitalUtilizationRatio(self, _token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        // sichaoy: confirm the formula
         return (self.compoundPool[_token].depositRatePerBlock).mul(4).
             add((self.compoundPool[_token].borrowRatePerBlock).mul(6)).div(10);
     }

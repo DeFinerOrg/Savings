@@ -52,7 +52,6 @@ library TokenInfoLib {
 
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
-     * sichaoy: should return the exact amount that withdrawn?
      */
     function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {
         newDepositCheckpoint(self, accruedRate, _block);
@@ -101,7 +100,6 @@ library TokenInfoLib {
     }
 
     // Calculating interest according to the new rate
-    // sichaoy: this function is not self-containing, have to make sure the acccuredRate
     // calculated starting from last deposit checkpoint
     function calculateDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
         return self.depositPrincipal.add(self.depositInterest).mul(accruedRate).sub(self.depositPrincipal.mul(BASE)).div(BASE);
