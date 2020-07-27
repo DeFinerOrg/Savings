@@ -1,11 +1,11 @@
-import { BaseContract, BaseInstance } from "./../types/truffle-contracts/index.d";
-import * as t from "../types/truffle-contracts/index";
-import { MockChainLinkAggregatorInstance } from "./../types/truffle-contracts/index.d";
-import { TestEngine } from "../test-helpers/TestEngine";
+import { BaseContract, BaseInstance } from "../../types/truffle-contracts/index.d";
+import * as t from "../../types/truffle-contracts/index";
+import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
