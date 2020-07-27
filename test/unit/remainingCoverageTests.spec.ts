@@ -334,17 +334,6 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getCoinAddress", async () => {
-        context("should fail", async () => {});
-
-        context("should succeed", async () => {
-            it("when function is called", async () => {
-                for (let i = 0; i < 9; i++) {
-                    await savingAccount.getCoinAddress(i);
-                }
-            });
-        });
-    });
 
     //TODO:
     context("getDeFinerCommunityFund", async () => {

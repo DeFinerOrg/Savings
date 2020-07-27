@@ -78,11 +78,6 @@ library Base {
         }
     }
 
-//    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.depositBitmap;
-//    }
-
     function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
         Account storage account = self.accounts[_account];
         return account.depositBitmap > 0;
@@ -92,16 +87,6 @@ library Base {
         Account storage account = self.accounts[_account];
         return account.depositBitmap.isBitSet(_index);
     }
-
-//    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.borrowBitmap;
-//    }
-
-    // function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-    //     Account storage account = self.accounts[_account];
-    //     return account.borrowBitmap > 0;
-    // }
 
     function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
@@ -140,22 +125,13 @@ library Base {
      * sichaoy: This is not right since the cToken rate has changed
      * @param _token token address
      */
-    function getTotalDepositsStore(BaseVariable storage self, address _token) public view returns(uint) {
+    function getTotalDepositStore(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = self.cTokenAddress[_token];
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
         // TODO Are all of these variables are in same token decimals?
     }
-
-    /**
-     * Total amount of available tokens for withdraw and borrow
-     */
-    // function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
-    //     address cToken = self.cTokenAddress[_token];
-    //     uint256 totalReserve = self.totalReserve[_token];
-    //     return self.totalCompound[cToken].add(totalReserve);
-    // }
 
     /**
      * Update total amount of token in Compound as the cToken price changed
@@ -194,7 +170,7 @@ library Base {
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
         address cToken = self.cTokenAddress[_token];
-        uint totalAmount = getTotalDepositsStore(self, _token);
+        uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
             if (_action == ActionChoices.Deposit)
@@ -253,26 +229,6 @@ library Base {
         }
     }
 
-    // sichaoy: these two functions should be moved to a seperate library. Not used, can be removed.
-    /**
-     * Get compound supply rate.
-     * @param _cToken cToken address
-     */
-    function getCompoundSupplyRatePerBlock(BaseVariable storage self, address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        // return cToken.exchangeRateCurrent().mul(SafeDecimalMath.getUNIT()).div(self.lastCTokenExchangeRate[_cToken]);
-        return cToken.supplyRatePerBlock();
-    }
-
-    /**
-     * Get compound borrow rate.
-     * @param _cToken cToken adress
-     */
-    function getCompoundBorrowRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        return cToken.borrowRatePerBlock();
-    }
-
     /**
      * Get the borrowing interest rate Borrowing interest rate.
      * @param _token token address
@@ -312,7 +268,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalUtilizationRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        uint256 totalDepositsNow = getTotalDepositsStore(self, _token);
+        uint256 totalDepositsNow = getTotalDepositStore(self, _token);
         if(totalDepositsNow == 0) {
             return 0;
         } else {
@@ -328,18 +284,9 @@ library Base {
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsStore(self, _token)));
+            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositStore(self, _token)));
         }
     }
-
-    //    //准备金率 R  The scaling is 10 ** 18
-    //    function getCapitalReserveRate(BaseVariable storage self, address tokenAddress) public returns(int) {
-    //        if(self.totalReserve[tokenAddress] == 0) {
-    //            return 0;
-    //        } else {
-    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsStore(self, tokenAddress));
-    //        }
-    //    }
 
     /**
      * Get the cummulative deposit rate in a block interval ending in current block
@@ -503,7 +450,7 @@ library Base {
     )
     {
         return (
-        getTotalDepositsStore(self, _token),
+        getTotalDepositStore(self, _token),
         self.totalLoans[_token],
         self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]])
         );
@@ -638,21 +585,6 @@ library Base {
             }
         }
         return borrowETH;
-    }
-
-    function recycleCommunityFund(BaseVariable storage self, address _token) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[_token]));
-        self.deFinerFund[_token] == 0;
-    }
-
-    function setDeFinerCommunityFund(BaseVariable storage self, address payable _DeFinerCommunityFund) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund = _DeFinerCommunityFund;
-    }
-
-    function getDeFinerCommunityFund(BaseVariable storage self, address _token) public view returns(uint256){
-        return self.deFinerFund[_token];
     }
 }
 

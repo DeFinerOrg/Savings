@@ -90,22 +90,6 @@ contract SavingAccount is Initializable {
         baseVariable.approveAll(_token);
     }
 
-	/**
-	 * Gets the total amount of balance that give accountAddr stored in saving pool.
-	 */
-     /*
-    function getAccountTotalETHValue(address _accountAddr) public view returns (uint256 ETHValue) {
-        uint256 borrowETHValue = baseVariable.getBorrowETH(_accountAddr, symbols);
-        uint256 mortgageETHValue = baseVariable.getDepositETH(_accountAddr, symbols);
-        if(borrowETHValue > mortgageETHValue) {
-            ETHValue = borrowETHValue.sub(mortgageETHValue);
-        } else {
-            ETHValue = mortgageETHValue.sub(borrowETHValue);
-        }
-        return ETHValue;
-    }
-    */
-
 	/*
 	 * Get the state of the given token
 	 */
@@ -153,20 +137,12 @@ contract SavingAccount is Initializable {
         return (baseVariable.getDepositBalance(_token, msg.sender), baseVariable.getBorrowBalance(_token, msg.sender));
     }
 
-    function getCoinAddress(uint256 _coinIndex) public view returns(address) {
-        return symbols.addressFromIndex(_coinIndex);
-    }
-
     function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
         return symbols.priceFromIndex(_coinIndex);
     }
 
     function getBlockNumber() public view returns (uint) {
         return block.number;
-    }
-
-    function newRateIndexCheckpoint(address _token) public {
-        baseVariable.newRateIndexCheckpoint(_token);
     }
 
     /**
@@ -562,15 +538,18 @@ contract SavingAccount is Initializable {
     }
 
     function recycleCommunityFund(address _token) public {
-        baseVariable.recycleCommunityFund(_token);
+        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
+        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
+        baseVariable.deFinerFund[_token] == 0;
     }
 
-    function setDeFinerCommunityFund(address payable _deFinerCommunityFund) public {
-        baseVariable.setDeFinerCommunityFund(_deFinerCommunityFund);
+    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
+        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
+        baseVariable.deFinerCommunityFund = _DeFinerCommunityFund;
     }
 
-    function getDeFinerCommunityFund(address _token) public view returns(uint256) {
-        return baseVariable.getDeFinerCommunityFund(_token);
+    function getDeFinerCommunityFund( address _token) public view returns(uint256){
+        return baseVariable.deFinerFund[_token];
     }
 
     /**
