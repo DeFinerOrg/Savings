@@ -197,7 +197,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
         //             expect(BN(balCToken)).to.be.bignumber.equal(new BN(723));
         //         });
 
-        //         // TODO: Compound unsupported tokens issues are not fixed yet.
         //         // it("Use TUSD, compound not supported tokens", async () => {
         //         //     /*
         //         //         * Step 1
@@ -627,7 +626,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  */
                 const borrows = new BN(10);
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
-                // TODO: Should Fail
+
                 await expectRevert(
                     savingAccount.withdrawAll(erc20DAI.address, { from: user1 }),
                     "Insufficient collateral."

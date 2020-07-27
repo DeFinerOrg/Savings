@@ -308,8 +308,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
             });
 
-            // TODO:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
-
             it("when 100 whole USDC tokens are withdrawn", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
