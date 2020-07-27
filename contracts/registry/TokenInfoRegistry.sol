@@ -40,10 +40,6 @@ contract TokenInfoRegistry is Ownable {
 
     address internal constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     uint256 public constant MAX_TOKENS = 128;
-
-    // TODO SCALE to represent 100%
-    //uint256 public SCALE = 1e8;
-
     uint256 public constant SCALE = 100;
 
     // TokenAddress to TokenInfo mapping
