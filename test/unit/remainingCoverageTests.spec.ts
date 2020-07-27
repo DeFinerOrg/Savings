@@ -158,13 +158,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
                 let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
-<<<<<<< HEAD
 
                 expect(isAccountLiquidatableStr).equal(false);
-=======
-                // should return "false"
-                //expect(isAccountLiquidatableStr).equal(false);
->>>>>>> master
             });
         });
     });
@@ -189,36 +184,12 @@ contract("RemainingCoverage", async (accounts) => {
                 );
             });
         });
-<<<<<<< HEAD
-=======
-
-        context("should succeed", async () => {
-            // verify if self.deFinerCommunityFund has been updated with the new address
-        });
-    });
-
-    context("emergencyWithdraw", async () => {
-        context("should fail", async () => {
-            //await savingAccount.emergencyWithdraw(addressDAI, { from: user1 });
-        });
-
-        context("should succeed", async () => {
-            it("when supported address is passed");
-            it("when ETH address is passed", async () => {
-                //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
-            });
-        });
->>>>>>> master
     });
 
     //------------Not high priority as of now-----------
     /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
-<<<<<<< HEAD
-
-=======
->>>>>>> master
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -275,7 +246,7 @@ contract("RemainingCoverage", async (accounts) => {
     */
     context("getTokenState", async () => {
         // Also being called by getMarketState
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
