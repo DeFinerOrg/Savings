@@ -1,50 +1,30 @@
 pragma solidity 0.5.14;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./../external/strings.sol";
 import "./../oracle/ChainLinkOracle.sol";
+import "./registry/TokenInfoRegistry.sol";
 
 library SymbolsLib {
-    using SafeMath for uint256;
 
     struct Symbols {
         uint count;
-        mapping(uint => string) indexToSymbol;
-        mapping(string => uint256) symbolToPrices;
-        mapping(address => string) addressToSymbol;
-        mapping(string => address) symbolToAddress;
-        ChainLinkOracle chainlinkAggregator;
+        mapping(uint => address) indexToSymbol;
+        address tokenInfoRegistryAddress;
     }
 
 	/**
 	 *  initializes the symbols structure
 	 */
-    function initialize(Symbols storage self, string memory tokenNames, address[] memory tokenAddresses, address _chainlinkAddress) public {
-        self.chainlinkAggregator = ChainLinkOracle(_chainlinkAddress);
+    function initialize(Symbols storage self, address[] memory tokenAddresses, address _tokenRegistry) public {
+        self.tokenInfoRegistryAddress = _tokenRegistry;
 
-        strings.slice memory delim = strings.toSlice(",");
-        strings.slice memory tokensList = strings.toSlice(tokenNames);
-
-        self.count = strings.count(tokensList, delim) + 1;
-        require(self.count == tokenAddresses.length, "");
-
+        self.count = tokenAddresses.length;
         for(uint i = 0; i < self.count; i++) {
-            strings.slice memory token;
-            strings.split(tokensList, delim, token);
-
-            address tokenAddress = tokenAddresses[i];
-            string memory tokenName = strings.toString(token);
-
-            self.indexToSymbol[i] = tokenName;
-            self.addressToSymbol[tokenAddress] = tokenName;
-            self.symbolToAddress[tokenName] = tokenAddress;
+            self.indexToSymbol[i] = tokenAddresses[i];
         }
         // Temp fix
         // Adding ETH
         address ETH_ADDR = 0x000000000000000000000000000000000000000E;
-        self.indexToSymbol[self.count] = "ETH";
-        self.addressToSymbol[ETH_ADDR] = "ETH";
-        self.symbolToAddress["ETH"] = ETH_ADDR;
+        self.indexToSymbol[self.count] = ETH_ADDR;
         self.count = self.count + 1;
     }
 
@@ -54,17 +34,17 @@ library SymbolsLib {
 
     function addressFromIndex(Symbols storage self, uint index) public view returns(address) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
-        return self.symbolToAddress[self.indexToSymbol[index]];
+        return self.indexToSymbol[index];
     }
 
     function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
-        address tokenAddress = self.symbolToAddress[self.indexToSymbol[index]];
+        address tokenAddress = self.indexToSymbol[index];
         // Temp fix
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
+        return uint256(ChainLinkOracle(TokenInfoRegistry(self.tokenInfoRegistryAddress).getChainLinkAggregator(tokenAddress)).getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
@@ -72,7 +52,7 @@ library SymbolsLib {
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(self.chainlinkAggregator.getLatestAnswer(tokenAddress));
+        return uint256(ChainLinkOracle(TokenInfoRegistry(self.tokenInfoRegistryAddress).getChainLinkAggregator(tokenAddress)).getLatestAnswer(tokenAddress));
     }
 
     // Temp fix

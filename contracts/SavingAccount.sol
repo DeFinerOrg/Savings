@@ -2,7 +2,6 @@ pragma solidity 0.5.14;
 
 import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
@@ -57,23 +56,20 @@ contract SavingAccount is Initializable {
      */
     function initialize(
         address[] memory tokenAddresses,
-        address[] memory cTokenAddresses,
-        address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
     )
         public
         initializer
     {
-        SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
-        symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig), address(this));
+        symbols.initialize(tokenAddresses, address(_tokenRegistry));
+        baseVariable.initialize(address(_globalConfig), address(_tokenRegistry), address(this));
         for(uint i = 0;i < tokenAddresses.length;i++) {
-            if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
+            if(tokenRegistry.getCToken(tokenAddresses[i]) != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(tokenAddresses[i]);
             }
         }
@@ -201,14 +197,14 @@ contract SavingAccount is Initializable {
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint divisor = SafeDecimalMath.getUINT_UNIT();
         if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
+            divisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_token));
         }
         require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
             <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = baseVariable.cTokenAddress[_token];
+        address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
@@ -344,14 +340,14 @@ contract SavingAccount is Initializable {
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
         uint divisor = SafeDecimalMath.getUINT_UNIT();
         if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
+            divisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_token));
         }
         require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
             .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = baseVariable.cTokenAddress[_token];
+        address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
@@ -472,7 +468,7 @@ contract SavingAccount is Initializable {
             "The account amount must be greater than zero."
         );
 
-        uint divisor = _targetToken == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(_targetToken).decimals());
+        uint divisor = _targetToken == ETH_ADDR ? UINT_UNIT : 10**uint256(tokenRegistry.getTokenDecimals(_targetToken));
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
@@ -518,7 +514,7 @@ contract SavingAccount is Initializable {
             if(baseVariable.isUserHasDeposits(targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = symbols.priceFromIndex(i);
 
-                vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+                vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(tokenRegistry.getTokenDecimals(vars.token));
 
                 TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[targetAccountAddr].tokenInfos[vars.token];
 
