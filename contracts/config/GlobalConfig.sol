@@ -1,9 +1,13 @@
 pragma solidity 0.5.14;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../registry/TokenInfoRegistry.sol";
 
 contract GlobalConfig is Ownable {
+    using SafeMath for uint256;
+
     uint256 public communityFundRatio = 10;
     uint256 public minReserveRatio = 10;
     uint256 public maxReserveRatio = 20;
@@ -61,7 +65,7 @@ contract GlobalConfig is Ownable {
      * Medium value of the reservation ratio, which is the value that the pool try to maintain.
      */
     function midReserveRatio() public view returns(uint256){
-        return (minReserveRatio + maxReserveRatio) / 2;
+        return minReserveRatio.add(maxReserveRatio).div(2);
     }
 
 }
