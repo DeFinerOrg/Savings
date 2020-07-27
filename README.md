@@ -5,23 +5,23 @@ make rinkeby
 make mainnet
 ```
 
-## _Run the tests:_
+## Run the tests:
 
-**1)** Enter this directory & install dependencies:
+**1)** Download the compound-protocol as a submodule & install dependencies:
 
-**`cd saving-pool-contract && npm i`**
+**`cd Savings && git submodule init && git submodule update`**
 
-**2)** Launch the Truffle development console:
+**2)** Install dependencies:
 
-**`npx truffle develop`**
+**`cd Savings && yarn`**
 
-**3)** Open a _new_ console in the same directory & spool up the ethereum-bridge:
+**3)** Launch ganache-cli:
 
-**`npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev`**
+**`ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true`**
 
-**4)** Once the bridge is ready & listening, go back to the first console with Truffle running & set the tests going!
+**4)** Run test scripts
 
-**`truffle(develop)> test`**
+**`yarn test`**
 
 ## Passing Tests:
 
@@ -36,19 +36,3 @@ make mainnet
     etc..
 
 ```
-
-# New Test Setup
-
-`yarn`
-
-`ganache-cli -p 8546 -l 10000000 -e 10000`
-
-`make all`
-
-`yarn compile`
-
-`truffle migrate --reset`
-
-`yarn prepare`
-
-`yarn test`
