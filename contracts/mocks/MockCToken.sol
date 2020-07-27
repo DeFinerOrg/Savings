@@ -3,32 +3,18 @@ pragma solidity 0.5.14;
 contract MockCToken {
 
     // 1. CERC20 
-    /* function initialize(address underlying_,
-                        ComptrollerInterface comptroller_,
-                        InterestRateModel interestRateModel_,
-                        uint initialExchangeRateMantissa_,
-                        string memory name_,
-                        string memory symbol_,
-                        uint8 decimals_) public; */
     function mint(uint mintAmount) external returns (uint);
     function redeem(uint redeemAmount) external returns (uint);
     function redeemUnderlying(uint redeemAmount) external returns (uint);
     function borrow(uint borrowAmount) external returns (uint);
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
-    // Error returned: identifier not found or not unique:
-    //function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, address cTokenCollateral) external returns (uint);
 
     // 2. CETHER.sol
     function mint() external payable;
-    /* function redeem(uint redeemTokens) external returns (uint);
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function borrow(uint borrowAmount) external returns (uint); */
     function repayBorrow() external payable;
     function repayBorrowBehalf(address borrower) external payable;
-
-    // Error returned: identifier not found or not unique:
-    //function liquidateBorrow(address borrower, CToken cTokenCollateral) external payable;
 
     // 3. ERC20.sol
     function totalSupply() public view returns (uint256);

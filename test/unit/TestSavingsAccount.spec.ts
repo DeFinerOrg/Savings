@@ -1,9 +1,9 @@
-import * as t from "../types/truffle-contracts/index";
-import { TestEngine } from "../test-helpers/TestEngine";
+import * as t from "../../types/truffle-contracts/index";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 

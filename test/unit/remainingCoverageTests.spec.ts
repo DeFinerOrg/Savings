@@ -1,11 +1,11 @@
-import { BaseContract, BaseInstance } from "./../types/truffle-contracts/index.d";
-import * as t from "../types/truffle-contracts/index";
-import { MockChainLinkAggregatorInstance } from "./../types/truffle-contracts/index.d";
-import { TestEngine } from "../test-helpers/TestEngine";
+import { BaseContract, BaseInstance } from "../../types/truffle-contracts/index.d";
+import * as t from "../../types/truffle-contracts/index";
+import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -334,17 +334,6 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getCoinAddress", async () => {
-        context("should fail", async () => {});
-
-        context("should succeed", async () => {
-            it("when function is called", async () => {
-                for (let i = 0; i < 9; i++) {
-                    await savingAccount.getCoinAddress(i);
-                }
-            });
-        });
-    });
 
     //TODO:
     context("getDeFinerCommunityFund", async () => {

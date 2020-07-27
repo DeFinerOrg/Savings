@@ -1,12 +1,12 @@
-import * as t from "../types/truffle-contracts/index";
-import { TestEngine } from "../test-helpers/TestEngine";
+import * as t from "../../types/truffle-contracts/index";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
 
 const Web3 = require("web3");
 const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 

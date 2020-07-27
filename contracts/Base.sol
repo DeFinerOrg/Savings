@@ -81,11 +81,6 @@ library Base {
         self.savingAccountAddress = _savingAccountAddress;
     }
 
-//    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.depositBitmap;
-//    }
-
     function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
         Account storage account = self.accounts[_account];
         return account.depositBitmap > 0;
@@ -95,16 +90,6 @@ library Base {
         Account storage account = self.accounts[_account];
         return account.depositBitmap.isBitSet(_index);
     }
-
-//    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.borrowBitmap;
-//    }
-
-    // function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-    //     Account storage account = self.accounts[_account];
-    //     return account.borrowBitmap > 0;
-    // }
 
     function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
@@ -188,7 +173,7 @@ library Base {
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
         address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
-        uint totalAmount = getTotalDepositsStore(self, _token);
+        uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
             if (_action == ActionChoices.Deposit)
@@ -247,26 +232,6 @@ library Base {
         }
     }
 
-    // sichaoy: these two functions should be moved to a seperate library. Not used, can be removed.
-    /**
-     * Get compound supply rate.
-     * @param _cToken cToken address
-     */
-    function getCompoundSupplyRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        // return cToken.exchangeRateCurrent().mul(SafeDecimalMath.getUNIT()).div(self.lastCTokenExchangeRate[_cToken]);
-        return cToken.supplyRatePerBlock();
-    }
-
-    /**
-     * Get compound borrow rate.
-     * @param _cToken cToken adress
-     */
-    function getCompoundBorrowRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        return cToken.borrowRatePerBlock();
-    }
-
     /**
      * Get the borrowing interest rate Borrowing interest rate.
      * @param _token token address
@@ -306,7 +271,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalUtilizationRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        uint256 totalDepositsNow = getTotalDepositsStore(self, _token);
+        uint256 totalDepositsNow = getTotalDepositStore(self, _token);
         if(totalDepositsNow == 0) {
             return 0;
         } else {
@@ -322,18 +287,9 @@ library Base {
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsStore(self, _token)));
+            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositStore(self, _token)));
         }
     }
-
-    //    //准备金率 R  The scaling is 10 ** 18
-    //    function getCapitalReserveRate(BaseVariable storage self, address tokenAddress) public returns(int) {
-    //        if(self.totalReserve[tokenAddress] == 0) {
-    //            return 0;
-    //        } else {
-    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsStore(self, tokenAddress));
-    //        }
-    //    }
 
     /**
      * Get the cummulative deposit rate in a block interval ending in current block
@@ -490,7 +446,7 @@ library Base {
     )
     {
         return (
-        getTotalDepositsStore(self, _token),
+        getTotalDepositStore(self, _token),
         self.totalLoans[_token],
         self.totalReserve[_token].add(self.totalCompound[TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token)])
         );
@@ -504,11 +460,10 @@ library Base {
     function toCompound(BaseVariable storage self, address _token, uint _amount) public {
         address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if (_token == ETH_ADDR) {
-            // TODO Why we need to put gas here?
-            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
-            ICETH(cToken).mint.value(_amount).gas(250000)();
+            ICETH(cToken).mint.value(_amount)();
         } else {
-            ICToken(cToken).mint(_amount);
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
         }
     }
 
@@ -519,7 +474,8 @@ library Base {
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
         ICToken cToken = ICToken(TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token));
-        cToken.redeemUnderlying(_amount);
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 
     /**
