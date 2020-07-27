@@ -324,7 +324,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                 });
 
                 it("Not enough collatral for borrowed asset if transfer (for ETH)", async () => {
-                    //TODO:
                     // 1. Transfer ETH to user1 & user2.
                     // 2. User2 borrow USDC and use it's ETH as collateral
                     // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV

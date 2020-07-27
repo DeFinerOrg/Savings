@@ -28,7 +28,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     GlobalConfig public globalConfig;
 
     // Following are the constants, initialized via upgradable proxy contract
-    // TODO This is emergency address to allow withdrawal of funds from the contract
+    // This is emergency address to allow withdrawal of funds from the contract
     address payable public EMERGENCY_ADDR;
     address public ETH_ADDR;
     uint256 public ACCURACY;
@@ -73,7 +73,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
 
-        //TODO This needs improvement as it could go out of gas
         symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
         baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig), address(this));
         for(uint i = 0;i < tokenAddresses.length;i++) {
@@ -574,8 +573,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     function send(address _to, uint256 _amount, address _token) private {
         if (_isETH(_token)) {
-            //TODO need to check for re-entrancy security attack
-            //TODO Can this ETH be received by a contract?
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(_to, _amount);
@@ -588,7 +585,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
-    // TODO Needs to be removed when final version deployed
+    // Needs to be removed when final version deployed
     // ============================================
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         if(_token == ETH_ADDR) {

@@ -102,8 +102,6 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Withdraw", async () => {
         context("should succeed", async () => {
             it("should deposit all tokens and withdraw all tokens", async () => {
-                //TODO: Deposit & withdraw w/ multiple users once deposit bug is fixed
-                // Error: multiplication overflow
                 const numOfToken = new BN(1000);
 
                 for (let i = 0; i < 9; i++) {
@@ -170,7 +168,6 @@ contract("Integration Tests", async (accounts) => {
                         new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
                     );
 
-                    //TODO
                     // Verify balance for cTokens
                     const expectedCTokensAtSavingAccount = numOfToken
                         .mul(new BN(85))
@@ -915,7 +912,6 @@ contract("Integration Tests", async (accounts) => {
             });
 
             it("User 1 should deposit USDC, multiple users should borrow USDC and repay after 1 week", async () => {
-                // TODO:
                 /* const numOfDAI = eighteenPrecision.div(new BN(1000));
                 const numOfToken = new BN(100000);
                 const borrowAmount = new BN(1000);
@@ -1131,7 +1127,6 @@ contract("Integration Tests", async (accounts) => {
                 );
             });
 
-            // TODO: replace this with the new test case..
             it("should deposit DAI and borrow DAI only after withdrawing first", async () => {
                 /* const numOfToken = new BN(1000);
                 // 1. Transfer 1000 DAI to user 1 & 2, 1000 USDC to user 1

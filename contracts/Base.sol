@@ -130,7 +130,6 @@ library Base {
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
-        // TODO Are all of these variables are in same token decimals?
     }
 
     /**
@@ -493,7 +492,6 @@ library Base {
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        // TODO Why need storage
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
@@ -522,7 +520,6 @@ library Base {
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        // TODO Why need storage
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
@@ -549,7 +546,6 @@ library Base {
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
     ) public view returns (uint256 depositETH) {
-        //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
@@ -573,7 +569,6 @@ library Base {
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
     ) public view returns (uint256 borrowETH) {
-        //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
