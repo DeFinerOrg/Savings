@@ -1,7 +1,7 @@
 pragma solidity 0.5.14;
 
 import "./../oracle/ChainLinkOracle.sol";
-import "./registry/TokenInfoRegistry.sol";
+import "../registry/TokenInfoRegistry.sol";
 
 library SymbolsLib {
 

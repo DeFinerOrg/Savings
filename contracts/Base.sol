@@ -252,7 +252,7 @@ library Base {
      * Get compound supply rate.
      * @param _cToken cToken address
      */
-    function getCompoundSupplyRatePerBlock(BaseVariable storage self, address _cToken) public view returns(uint) {
+    function getCompoundSupplyRatePerBlock(address _cToken) public view returns(uint) {
         ICToken cToken = ICToken(_cToken);
         // return cToken.exchangeRateCurrent().mul(SafeDecimalMath.getUNIT()).div(self.lastCTokenExchangeRate[_cToken]);
         return cToken.supplyRatePerBlock();
