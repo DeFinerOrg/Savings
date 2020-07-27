@@ -169,8 +169,6 @@ contract("Integration Tests", async (accounts) => {
                             new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
                         );
 
-                        console.log("tokenI", i);
-
                         const expectedCTokensAtSavingAccount = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));

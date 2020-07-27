@@ -51,8 +51,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
@@ -66,7 +64,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
-
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
@@ -99,7 +96,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
         erc20WBTC = await ERC20.at(addressWBTC);
 
         erc20DAI = await ERC20.at(addressDAI);
@@ -116,8 +113,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -219,7 +214,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
@@ -228,9 +222,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
             });
 
-            /**
-             * todo:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
-             */
             it("when 100 whole suported tokens are withdrawn", async () => {
                 const ONE_DAI = new BN(10).pow(new BN(18));
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
@@ -296,7 +287,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
 
-                // TODO: Does withdraw have any effect on Compound?
                 // 4.2 Amount in Compound
                 const expectedTokensAtCToken = numOfTokens
                     .sub(new BN("100").mul(ONE_DAI))
@@ -323,7 +313,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when 100 whole USDC tokens are withdrawn", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                    erc20DAI.address
+                    erc20USDC.address
                 );
                 const balCTokenContractBefore = await erc20USDC.balanceOf(addressCTokenForUSDC);
                 const balCTokenInit = await erc20USDC.balanceOf(addressCTokenForUSDC);
@@ -337,12 +327,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 // Validate the total balance on DeFiner after deposit
                 const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                    erc20DAI.address
+                    erc20USDC.address
                 );
                 const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
                     new BN(totalDefinerBalanceBeforeDeposit[0])
                 );
-                //expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
+                expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
 
                 //Number of tokens to withdraw
                 const withdraws = new BN("100").mul(ONE_USDC);
@@ -469,7 +459,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
@@ -549,7 +538,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.3 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDT.balanceOf(savingAccount.address);
@@ -630,7 +618,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenWBTC.balanceOf(savingAccount.address);
@@ -683,10 +670,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // 4. Validate Withdraw
 
                 // 4.1 Validate savingAccount contract balance
-                const expectedTokenBalanceAfterWithdraw = numOfTokens
-                    .mul(new BN(15))
-                    .div(new BN(100))
-                    .sub(new BN(20));
+                const expectedTokenBalanceAfterWithdraw = numOfTokens.sub(new BN(20));
                 const newbalSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
@@ -702,9 +686,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
             });
 
-            /**
-             * todo:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
-             */
             it("when 1000 whole TUSD withdrawn", async () => {
                 const ONE_TUSD = new BN(10).pow(new BN(18));
                 const newbalSavingAccountInit = await erc20TUSD.balanceOf(savingAccount.address);
@@ -744,9 +725,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN("1000").mul(ONE_TUSD)
                 );
                 const newbalSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
-                /* expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     new BN(newbalSavingAccount).sub(new BN(newbalSavingAccountInit))
-                ); */
+                );
             });
 
             it("when partial MKR withdrawn", async () => {
@@ -793,10 +774,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // 4. Validate Withdraw
 
                 // 4.1 Validate savingAccount contract balance
-                const expectedTokenBalanceAfterWithdraw = numOfTokens
-                    .mul(new BN(15))
-                    .div(new BN(100))
-                    .sub(new BN(20));
+                const expectedTokenBalanceAfterWithdraw = numOfTokens.sub(new BN(20));
                 const newbalSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
                 expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
@@ -812,9 +790,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
             });
 
-            /**
-             * todo:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
-             */
             it("when 1000 whole MKR withdrawn", async () => {
                 const ONE_MKR = new BN(10).pow(new BN(18));
 
@@ -849,16 +824,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 // 4. Validate Withdraw
 
                 // 4.1 Validate savingAccount contract balance
-                const expectedTokenBalanceAfterWithdraw = numOfTokens
-                    .mul(new BN(15))
-                    .div(new BN(100))
-                    .sub(new BN("1000").mul(ONE_MKR));
+                const expectedTokenBalanceAfterWithdraw = numOfTokens.sub(
+                    new BN("1000").mul(ONE_MKR)
+                );
                 const newbalSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
                 console.log("newbalSavingAccount", newbalSavingAccount);
 
-                /* expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
+                expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                     newbalSavingAccount
-                ); */
+                );
             });
 
             it("when full tokens withdrawn", async () => {
@@ -1336,7 +1310,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 //Withdrawing DAI
                 await savingAccount.withdrawAll(erc20DAI.address, { from: owner });
 
-                // TODO: Need to write DeFiner balance once the interest function is implemented
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
                 let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(savingAccount.address);
                 expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
@@ -1395,7 +1368,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     "Insufficient balance."
                 );
             });
-            it("when user tries to withdraw tokens which are used as collateral by the user");
         });
     });
 });
