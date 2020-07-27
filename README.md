@@ -1,15 +1,10 @@
-## Generate deployable smart contract
-
-```
-make rinkeby
-make mainnet
-```
-
-## Run the tests:
+## Compile the contract and run the tests:
 
 **1)** Download the compound-protocol as a submodule & install dependencies:
 
 **`cd Savings && git submodule init && git submodule update`**
+
+**`cd compound-prototol && npm i`**
 
 **2)** Install dependencies:
 
