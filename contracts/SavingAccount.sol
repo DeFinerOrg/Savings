@@ -8,8 +8,9 @@ import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import "./InitializableReentrancyGuard.sol";
 
-contract SavingAccount is Initializable {
+contract SavingAccount is Initializable, InitializableReentrancyGuard {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
@@ -65,6 +66,9 @@ contract SavingAccount is Initializable {
         public
         initializer
     {
+        // Initialize InitializableReentrancyGuard
+        super._initialize();
+
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
@@ -151,7 +155,7 @@ contract SavingAccount is Initializable {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public {
+    function transfer(address _to, address _token, uint _amount) public nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
@@ -165,7 +169,7 @@ contract SavingAccount is Initializable {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupported(_token) {
+    function borrow(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
@@ -214,7 +218,7 @@ contract SavingAccount is Initializable {
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
+    function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
@@ -258,7 +262,7 @@ contract SavingAccount is Initializable {
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
+    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
@@ -295,7 +299,7 @@ contract SavingAccount is Initializable {
         baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
     }
 
-    function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
+    function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
@@ -359,7 +363,7 @@ contract SavingAccount is Initializable {
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupported(_token) {
+    function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -406,7 +410,7 @@ contract SavingAccount is Initializable {
     /**
      * Liquidate function
      */
-    function liquidate(address targetAccountAddr, address _targetToken) public {
+    function liquidate(address targetAccountAddr, address _targetToken) public nonReentrant {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(targetAccountAddr, symbols);
@@ -596,10 +600,12 @@ contract SavingAccount is Initializable {
     }
 
     function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeem(_amount);
+        uint256 success = ICToken(_cToken).redeem(_amount);
+        require(success == 0, "redeem failed");
     }
 
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeemUnderlying(_amount);
+        uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 }

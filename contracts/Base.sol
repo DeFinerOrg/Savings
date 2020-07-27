@@ -464,11 +464,10 @@ library Base {
     function toCompound(BaseVariable storage self, address _token, uint _amount) public {
         address cToken = self.cTokenAddress[_token];
         if (_token == ETH_ADDR) {
-            // TODO Why we need to put gas here?
-            // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
-            ICETH(cToken).mint.value(_amount).gas(250000)();
+            ICETH(cToken).mint.value(_amount)();
         } else {
-            ICToken(cToken).mint(_amount);
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
         }
     }
 
@@ -479,7 +478,8 @@ library Base {
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
         ICToken cToken = ICToken(self.cTokenAddress[_token]);
-        cToken.redeemUnderlying(_amount);
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 
     /**
