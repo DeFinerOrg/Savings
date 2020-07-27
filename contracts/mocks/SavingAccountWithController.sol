@@ -15,8 +15,6 @@ contract SavingAccountWithController  is SavingAccount {
     /**
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
-     * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _chainlinkAddress chainlink oracle address
      * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      * @param _comptroller Compound controller address
