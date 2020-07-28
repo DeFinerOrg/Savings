@@ -329,14 +329,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
-        // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
+        // // Update tokenInfo for the user
+        // TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        // uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        // tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
-        // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getDepositPrincipal() == 0)
-            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
+        // // Unset deposit bitmap if the deposit is fully withdrawn
+        // if(tokenInfo.getDepositPrincipal() == 0)
+        //     baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
