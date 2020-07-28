@@ -340,9 +340,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-        _amount = _amount.sub(commission);
+        // uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        // baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+        // _amount = _amount.sub(commission);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
