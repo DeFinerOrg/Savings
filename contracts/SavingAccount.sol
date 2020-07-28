@@ -343,7 +343,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(tokenInfo.getDepositPrincipal() == 0)
             baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
-        DeFiner takes 10% commission on the interest a user earn
+        // DeFiner takes 10% commission on the interest a user earn
         sichaoy: 10 percent is a constant?
         uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
         baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
