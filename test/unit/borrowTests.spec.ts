@@ -93,7 +93,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
         erc20WBTC = await ERC20.at(addressWBTC);
 
         erc20DAI = await ERC20.at(addressDAI);
@@ -368,25 +368,25 @@ contract("SavingAccount.borrow", async (accounts) => {
                 /*
                 todo: The amount is too small to recognize LTV.
                  */
-                // it("when user tries to borrow more than initial LTV (ILTV)", async () => {
-                //     await erc20DAI.transfer(user1, numOfToken);
-                //     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                //     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
-                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                //         from: user2,
-                //         value: numOfToken
-                //     });
-                //     const balance = numOfToken
-                //         .mul(await savingAccount.getCoinToETHRate(1))
-                //         .mul(new BN(85))
-                //         .div(new BN(100))
-                //         .div(await savingAccount.getCoinToETHRate(0));
-                //     // 2. Start borrowing.
-                //     await expectRevert(
-                //         savingAccount.borrow(ETH_ADDRESS, balance, { from: user1 }),
-                //         "Insufficient collateral."
-                //     );
-                // });
+                it("when user tries to borrow more than initial LTV (ILTV)", async () => {
+                    await erc20DAI.transfer(user1, numOfToken);
+                    await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
+                    await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                        from: user2,
+                        value: numOfToken
+                    });
+                    const balance = numOfToken
+                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(new BN(85))
+                        .div(new BN(100))
+                        .div(await savingAccount.getCoinToETHRate(0));
+                    // 2. Start borrowing.
+                    await expectRevert(
+                        savingAccount.borrow(ETH_ADDRESS, balance, { from: user1 }),
+                        "Insufficient collateral."
+                    );
+                });
 
                 it("when there is no liquidity for the asked ETH", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
@@ -415,112 +415,114 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 });
 
-                // it("Deposit ETH & USDC then borrow ETH", async () => {
-                //     // 1.2 Transfer USDC to user1.
-                //     await erc20USDC.transfer(user1, numOfToken);
-                //     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
-                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                //         from: user1,
-                //         value: numOfToken,
-                //     });
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
-                //     const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                //         from: user1,
-                //     });
-                //     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
-                // });
+                it("Deposit ETH & USDC then borrow ETH", async () => {
+                    // 1.2 Transfer USDC to user1.
+                    await erc20USDC.transfer(user1, numOfToken);
+                    await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                        from: user1,
+                        value: numOfToken
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                });
 
-                // it("Deposit DAI & ETH then borrow ETH", async () => {
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
-                //     const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                //         from: user1,
-                //     });
-                //     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
-                // });
+                it("Deposit DAI & ETH then borrow ETH", async () => {
+                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                        from: user1,
+                        value: numOfToken
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                });
 
-                // it("Deposit ETH then borrow ETH", async () => {
-                //     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-                //         from: user1,
-                //         value: numOfToken
-                //     });
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 })
-                //     const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                //             from: user1
-                //         });
-                //     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
-                // });
-
-                /*
-                todo: There are still problems with the price acquisition of ETH.
-                 */
-                // it("when supported token address is passed", async () => {
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
-                //     // 3. Verify the loan amount.
-                //     const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                //         from: user1
-                //     });
-                //     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
-                // });
+                it("Deposit ETH then borrow ETH", async () => {
+                    await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                        from: user1,
+                        value: numOfToken
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                });
 
                 /*
                 todo: There are still problems with the price acquisition of ETH.
                  */
-                // it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
-                //     // 3. Verify the loan amount.
-                //     const user1ETHBorrowValue = await savingAccount.tokenBalance(
-                //         ETH_ADDRESS,
-                //         {
-                //             from: user1
-                //         }
-                //     );
-                //     expect(new BN(user1ETHBorrowValue[1])).to.be.bignumber.equal(new BN(1));
-                // });
+                /* it("when supported token address is passed", async () => {
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                }); */
+
+                /*
+                todo: There are still problems with the price acquisition of ETH.
+                 */
+                it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHBorrowValue[1])).to.be.bignumber.equal(new BN(1));
+                });
 
                 /*
                 todo: There are still problems with the price acquisition of ETH.
                  */
 
-                // it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
-                //     // 2. Start borrowing.
-                //     const limitAmount = numOfToken
-                //         .mul(await savingAccount.getCoinToETHRate(1))
-                //         .mul(new BN(60))
-                //         .div(new BN(100))
-                //         .div(await savingAccount.getCoinToETHRate(0));
-                //     await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
-                //     // 3. Verify the loan amount.
-                //     const user2ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, { from: user1})
-                //     expect(new BN(user2ETHBorrowValue[1])).to.be.bignumber.equal(limitAmount);
-                // });
+                /* it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
+                    // 2. Start borrowing.
+                    const limitAmount = numOfToken
+                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .div(await savingAccount.getCoinToETHRate(0));
+                    await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user2ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user2ETHBorrowValue[1])).to.be.bignumber.equal(limitAmount);
+                }); */
 
                 /*
                 todo: There are still problems with the price acquisition of ETH.
                  */
-                // it("When the amount is large, deposit DAI to borrow ETH.", async () => {
-                //     const numOfDAI = eighteenPrecision.mul(new BN(10));
-                //     const numOfETH = eighteenPrecision.mul(new BN(10));
-                //     await erc20DAI.transfer(user1, numOfDAI);
-                //     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
-                //     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
-                //     await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
-                //         from: user2,
-                //         value: numOfETH
-                //     });
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
-                //     // 3. Verify the loan amount.
-                //     const user1ETHBorrowValue = await savingAccount.tokenBalance(
-                //         ETH_ADDRESS,
-                //         { from: user1 }
-                //     );
-                //     expect(new new BN(user1ETHBorrowValue[1])).to.be.bignumber.equal(new BN(10));
-                // });
+                /* it("When the amount is large, deposit DAI to borrow ETH.", async () => {
+                    const numOfDAI = eighteenPrecision.mul(new BN(10));
+                    const numOfETH = eighteenPrecision.mul(new BN(10));
+                    await erc20DAI.transfer(user1, numOfDAI);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
+                        from: user2,
+                        value: numOfETH
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new new BN(user1ETHBorrowValue[1])()).to.be.bignumber.equal(new BN(10));
+                }); */
             });
         });
 
