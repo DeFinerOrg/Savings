@@ -182,22 +182,14 @@ contract("Integration Tests", async (accounts) => {
                 //Withdraw all tokens of each Address
                 for (let j = 0; j < 9; j++) {
                     tempContractAddress = tokens[j];
-                    console.log(tempContractAddress);
                     erc20contr = await ERC20.at(tempContractAddress);
                     addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                         tempContractAddress
                     );
-                    console.log(addressCTokenTemp);
                     cTokenTemp = await MockCToken.at(addressCTokenTemp);
-
-                    let price = await savingAccount.getPrice(tempContractAddress);
-                    console.log(price[0].toString(), price[1].toString());
-
-                    console.log("1");
                     await savingAccount.withdrawAll(erc20contr.address, {
                         from: user1,
                     });
-                    console.log("2");
 
                     //Verify if withdrawAll was successful
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
