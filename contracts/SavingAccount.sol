@@ -55,13 +55,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     /**
      * Initialize function to be called by the Deployer for the first time
      * @param _tokenAddresses list of token addresses
-     * @param _cTokenAddresses list of corresponding cToken addresses
      * @param _chainlinkAddress chainlink oracle address
      * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      */
     function initialize(
-        address[] memory tokenAddresses,
+        address[] memory _tokenAddresses,
         address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
@@ -75,11 +74,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
-        symbols.initialize(tokenAddresses, _chainlinkAddress);
+        symbols.initialize(_tokenAddresses, _chainlinkAddress);
         baseVariable.initialize(address(_globalConfig), address(_tokenRegistry), address(this));
-        for(uint i = 0;i < tokenAddresses.length;i++) {
-            if(tokenRegistry.getCToken(tokenAddresses[i]) != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
-                baseVariable.approveAll(tokenAddresses[i]);
+        for(uint i = 0;i < _tokenAddresses.length;i++) {
+            if(tokenRegistry.getCToken(_tokenAddresses[i]) != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
+                baseVariable.approveAll(_tokenAddresses[i]);
             }
         }
 
