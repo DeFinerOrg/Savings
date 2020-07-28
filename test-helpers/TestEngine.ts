@@ -134,6 +134,7 @@ export class TestEngine {
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
+                chainLinkOracle.address,
                 this.tokenInfoRegistry.address,
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller

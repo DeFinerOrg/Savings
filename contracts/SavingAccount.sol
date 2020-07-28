@@ -57,6 +57,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function initialize(
         address[] memory tokenAddresses,
+        address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
     )
@@ -69,7 +70,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig = _globalConfig;
 
         //TODO This needs improvement as it could go out of gas
-        symbols.initialize(tokenAddresses, address(_tokenRegistry));
+        symbols.initialize(tokenAddresses, _chainlinkAddress);
         baseVariable.initialize(address(_globalConfig), address(_tokenRegistry), address(this));
         for(uint i = 0;i < tokenAddresses.length;i++) {
             if(tokenRegistry.getCToken(tokenAddresses[i]) != address(0x0) && tokenAddresses[i] != ETH_ADDR) {

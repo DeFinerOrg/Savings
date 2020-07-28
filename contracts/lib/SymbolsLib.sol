@@ -1,21 +1,20 @@
 pragma solidity 0.5.14;
 
 import "./../oracle/ChainLinkOracle.sol";
-import "../registry/TokenInfoRegistry.sol";
 
 library SymbolsLib {
 
     struct Symbols {
         uint count;
         mapping(uint => address) indexToSymbol;
-        address tokenInfoRegistryAddress;
+        address chainlinkAddress;
     }
 
 	/**
 	 *  initializes the symbols structure
 	 */
-    function initialize(Symbols storage self, address[] memory tokenAddresses, address _tokenRegistry) public {
-        self.tokenInfoRegistryAddress = _tokenRegistry;
+    function initialize(Symbols storage self, address[] memory tokenAddresses, address _chainlinkAddress) public {
+        self.chainlinkAddress = _chainlinkAddress;
 
         self.count = tokenAddresses.length;
         for(uint i = 0; i < self.count; i++) {
@@ -44,7 +43,7 @@ library SymbolsLib {
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(ChainLinkOracle(TokenInfoRegistry(self.tokenInfoRegistryAddress).getChainLinkAggregator(tokenAddress)).getLatestAnswer(tokenAddress));
+        return uint256(ChainLinkOracle(self.chainlinkAddress).getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
@@ -52,7 +51,7 @@ library SymbolsLib {
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(ChainLinkOracle(TokenInfoRegistry(self.tokenInfoRegistryAddress).getChainLinkAggregator(tokenAddress)).getLatestAnswer(tokenAddress));
+        return uint256(ChainLinkOracle(self.chainlinkAddress).getLatestAnswer(tokenAddress));
     }
 
     // Temp fix
