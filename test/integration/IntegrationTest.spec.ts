@@ -108,32 +108,40 @@ contract("Integration Tests", async (accounts) => {
 
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
+                    console.log("tempContractAddress: " + tempContractAddress);
                     erc20contr = await ERC20.at(tempContractAddress);
                     addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                         tempContractAddress
                     );
+                    console.log("addressCTokenTemp: " + addressCTokenTemp);
                     cTokenTemp = await MockCToken.at(addressCTokenTemp);
 
+                    console.log("1");
                     await erc20contr.transfer(user1, numOfToken);
+                    console.log("2");
                     await erc20contr.approve(savingAccount.address, numOfToken, {
-                        from: user1
+                        from: user1,
                     });
+                    console.log("3");
 
                     const balSavingAccountBeforeDeposit = await erc20contr.balanceOf(
                         savingAccount.address
                     );
+                    console.log("4");
                     const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                         erc20contr.address,
                         {
-                            from: user1
+                            from: user1,
                         }
                     );
+                    console.log("5");
                     const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                     //await erc20contr.approve(savingAccount.address, numOfToken);
                     await savingAccount.deposit(erc20contr.address, numOfToken, {
-                        from: user1
+                        from: user1,
                     });
+                    console.log("6");
 
                     const balSavingAccountAfterDeposit = await erc20contr.balanceOf(
                         savingAccount.address
@@ -143,7 +151,7 @@ contract("Integration Tests", async (accounts) => {
                     const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
                         erc20contr.address,
                         {
-                            from: user1
+                            from: user1,
                         }
                     );
 
@@ -192,7 +200,7 @@ contract("Integration Tests", async (accounts) => {
 
                     console.log("1");
                     await savingAccount.withdrawAll(erc20contr.address, {
-                        from: user1
+                        from: user1,
                     });
                     console.log("2");
 
@@ -212,7 +220,7 @@ contract("Integration Tests", async (accounts) => {
                     const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
                         erc20contr.address,
                         {
-                            from: user1
+                            from: user1,
                         }
                     );
                     expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
@@ -593,7 +601,7 @@ contract("Integration Tests", async (accounts) => {
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
-                    from: user1
+                    from: user1,
                 });
 
                 // 3. Verify the loan amount
@@ -668,7 +676,7 @@ contract("Integration Tests", async (accounts) => {
                     .div(eighteenPrecision);
 
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
-                    from: user1
+                    from: user1,
                 });
 
                 // 3. Verify the loan amount.
@@ -706,11 +714,11 @@ contract("Integration Tests", async (accounts) => {
 
                     await erc20DAI.transfer(userNumber, depositAmountCollateral);
                     await erc20DAI.approve(savingAccount.address, depositAmountCollateral, {
-                        from: userNumber
+                        from: userNumber,
                     });
 
                     await savingAccount.deposit(addressDAI, depositAmountCollateral, {
-                        from: userNumber
+                        from: userNumber,
                     });
 
                     let userDefinerBalanceBeforeBorrow = await savingAccount.tokenBalance(
@@ -719,7 +727,7 @@ contract("Integration Tests", async (accounts) => {
                     );
 
                     let userTotalBalanceBeforeDAI = await savingAccount.tokenBalance(addressDAI, {
-                        from: userNumber
+                        from: userNumber,
                     });
 
                     const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
@@ -744,7 +752,7 @@ contract("Integration Tests", async (accounts) => {
 
                     // check for interest rate
                     let userTotalBalanceAfterDAI = await savingAccount.tokenBalance(addressDAI, {
-                        from: userNumber
+                        from: userNumber,
                     });
 
                     expect(new BN(userTotalBalanceBeforeDAI[0])).to.be.bignumber.equal(
@@ -754,7 +762,7 @@ contract("Integration Tests", async (accounts) => {
                     // Start borrowing
                     const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
                     await savingAccount.borrow(addressUSDC, borrowAmount, {
-                        from: userNumber
+                        from: userNumber,
                     });
 
                     let userDefinerBalanceAfterBorrow = await savingAccount.tokenBalance(
