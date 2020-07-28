@@ -326,8 +326,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = tokenRegistry.getCToken(_token);
-        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        // address cToken = tokenRegistry.getCToken(_token);
+        // require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // // Update tokenInfo for the user
         // TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
