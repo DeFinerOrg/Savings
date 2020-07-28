@@ -316,11 +316,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
-        // uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        // uint divisor = SafeDecimalMath.getUINT_UNIT();
-        // if(_token != ETH_ADDR) {
-        //     divisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_token));
-        // }
+        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
+        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        if(_token != ETH_ADDR) {
+            divisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_token));
+        }
         // require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
         //     .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
