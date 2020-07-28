@@ -83,7 +83,7 @@ module.exports = async function(deployer, network) {
     const initialize_data = savingAccount.contract.methods
         .initialize(
             erc20Tokens,
-            chainLinkOracle.address
+            chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address
         )
