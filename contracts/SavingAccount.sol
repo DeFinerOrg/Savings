@@ -144,6 +144,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         return block.number;
     }
 
+    function getPrice(address _token) public view returns (uint, uint) {
+        return (symbols.priceFromAddress(_token), symbols.priceFromIndex(0));
+    }
+
     /**
      * Transfer the token between users inside DeFiner
      * @param _to the address that the token be transfered to
