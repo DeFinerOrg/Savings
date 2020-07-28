@@ -940,7 +940,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterRepayUSDCUser1[1]).to.be.bignumber.equal(ZERO);
             });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and Withdraw", async () => {

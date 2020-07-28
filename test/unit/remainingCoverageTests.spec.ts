@@ -190,7 +190,6 @@ contract("RemainingCoverage", async (accounts) => {
     /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
-
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -247,7 +246,7 @@ contract("RemainingCoverage", async (accounts) => {
     */
     context("getTokenState", async () => {
         // Also being called by getMarketState
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
@@ -274,17 +273,6 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getCoinAddress", async () => {
-        context("should fail", async () => {});
-
-        context("should succeed", async () => {
-            it("when function is called", async () => {
-                for (let i = 0; i < 9; i++) {
-                    await savingAccount.getCoinAddress(i);
-                }
-            });
-        });
-    });
 
     context("getDeFinerCommunityFund", async () => {
         context("should succeed", async () => {

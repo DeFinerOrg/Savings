@@ -18,7 +18,7 @@ library TokenInfoLib {
         uint256 lastBorrowBlock;    // the block number of user's last borrow
     }
 
-    uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
+    uint256 constant BASE = 10**18;
 
     // returns the principal
     function getDepositPrincipal(TokenInfo storage self) public view returns(uint256) {
