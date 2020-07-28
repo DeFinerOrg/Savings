@@ -108,40 +108,32 @@ contract("Integration Tests", async (accounts) => {
 
                 for (let i = 0; i < 9; i++) {
                     tempContractAddress = tokens[i];
-                    console.log("tempContractAddress: " + tempContractAddress);
                     erc20contr = await ERC20.at(tempContractAddress);
                     addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                         tempContractAddress
                     );
-                    console.log("addressCTokenTemp: " + addressCTokenTemp);
                     cTokenTemp = await MockCToken.at(addressCTokenTemp);
 
-                    console.log("1");
                     await erc20contr.transfer(user1, numOfToken);
-                    console.log("2");
                     await erc20contr.approve(savingAccount.address, numOfToken, {
                         from: user1,
                     });
-                    console.log("3");
 
                     const balSavingAccountBeforeDeposit = await erc20contr.balanceOf(
                         savingAccount.address
                     );
-                    console.log("4");
                     const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                         erc20contr.address,
                         {
                             from: user1,
                         }
                     );
-                    console.log("5");
                     const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                     //await erc20contr.approve(savingAccount.address, numOfToken);
                     await savingAccount.deposit(erc20contr.address, numOfToken, {
                         from: user1,
                     });
-                    console.log("6");
 
                     const balSavingAccountAfterDeposit = await erc20contr.balanceOf(
                         savingAccount.address
