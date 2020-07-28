@@ -331,30 +331,30 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        // address cToken = tokenRegistry.getCToken(_token);
-        // require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        address cToken = tokenRegistry.getCToken(_token);
+        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
-        // // Update tokenInfo for the user
-        // TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
-        // uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        // tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
+        // Update tokenInfo for the user
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
-        // // Unset deposit bitmap if the deposit is fully withdrawn
-        // if(tokenInfo.getDepositPrincipal() == 0)
-        //     baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
+        // Unset deposit bitmap if the deposit is fully withdrawn
+        if(tokenInfo.getDepositPrincipal() == 0)
+            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
-        // DeFiner takes 10% commission on the interest a user earn
-        // sichaoy: 10 percent is a constant?
-        // uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-        // baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-        // _amount = _amount.sub(commission);
+        DeFiner takes 10% commission on the interest a user earn
+        sichaoy: 10 percent is a constant?
+        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+        _amount = _amount.sub(commission);
 
-        // Update pool balance
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        // baseVariable.updateTotalCompound(_token);
-        // baseVariable.updateTotalLoan(_token);
-        // baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+        Update pool balance
+        Update the amount of tokens in compound and loans, i.e. derive the new values
+        of C (Compound Ratio) and U (Utilization Ratio).
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
         return _amount;
     }
