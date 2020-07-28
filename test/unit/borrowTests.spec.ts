@@ -458,7 +458,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: There are still problems with the price acquisition of ETH.
                  */
                 /* it("when supported token address is passed", async () => {
                     // 2. Start borrowing.
@@ -470,9 +470,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
                 }); */
 
-                /*
-                todo: There are still problems with the price acquisition of ETH.
-                 */
                 it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
@@ -484,9 +481,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: why is it using price of USDC?
                  */
-
                 /* it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
                     // 2. Start borrowing.
                     const limitAmount = numOfToken
@@ -502,10 +498,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(new BN(user2ETHBorrowValue[1])).to.be.bignumber.equal(limitAmount);
                 }); */
 
-                /*
-                todo: There are still problems with the price acquisition of ETH.
-                 */
-                /* it("When the amount is large, deposit DAI to borrow ETH.", async () => {
+                it("When the amount is large, deposit DAI to borrow ETH.", async () => {
                     const numOfDAI = eighteenPrecision.mul(new BN(10));
                     const numOfETH = eighteenPrecision.mul(new BN(10));
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -521,8 +514,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user1ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
                         from: user1
                     });
-                    expect(new new BN(user1ETHBorrowValue[1])()).to.be.bignumber.equal(new BN(10));
-                }); */
+                    expect(new BN(user1ETHBorrowValue[1])).to.be.bignumber.equal(new BN(10));
+                });
             });
         });
 
