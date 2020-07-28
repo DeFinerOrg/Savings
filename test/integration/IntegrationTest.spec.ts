@@ -190,9 +190,10 @@ contract("Integration Tests", async (accounts) => {
                     console.log(addressCTokenTemp);
                     cTokenTemp = await MockCToken.at(addressCTokenTemp);
 
-                    console.log("1");
                     let price = await savingAccount.getPrice(tempContractAddress);
                     console.log(price[0].toString(), price[1].toString());
+
+                    console.log("1");
                     await savingAccount.withdrawAll(erc20contr.address, {
                         from: user1,
                     });
