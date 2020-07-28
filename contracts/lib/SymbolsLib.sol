@@ -38,13 +38,8 @@ library SymbolsLib {
 
     function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
-<<<<<<< HEAD
         address tokenAddress = self.indexToSymbol[index];
         // Temp fix
-=======
-        address tokenAddress = self.symbolToAddress[self.indexToSymbol[index]];
-
->>>>>>> master2
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
