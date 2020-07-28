@@ -18,7 +18,7 @@ library TokenInfoLib {
         uint256 lastBorrowBlock;    // the block number of user's last borrow
     }
 
-    uint256 constant BASE = 10**18; // TODO: 12 vs 18?  // sichaoy: can I remove this? As UNIT has been defined somewhere else
+    uint256 constant BASE = 10**18;
 
     // returns the principal
     function getDepositPrincipal(TokenInfo storage self) public view returns(uint256) {
@@ -52,7 +52,6 @@ library TokenInfoLib {
 
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
-     * sichaoy: should return the exact amount that withdrawn?
      */
     function withdraw(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {
         newDepositCheckpoint(self, accruedRate, _block);
@@ -101,7 +100,6 @@ library TokenInfoLib {
     }
 
     // Calculating interest according to the new rate
-    // sichaoy: this function is not self-containing, have to make sure the acccuredRate
     // calculated starting from last deposit checkpoint
     function calculateDepositInterest(TokenInfo storage self, uint accruedRate) public view returns(uint256) {
         return self.depositPrincipal.add(self.depositInterest).mul(accruedRate).sub(self.depositPrincipal.mul(BASE)).div(BASE);

@@ -219,7 +219,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenDAI.balanceOf(savingAccount.address);
@@ -296,7 +295,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
                 expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(withdraws);
 
-                // TODO: Does withdraw have any effect on Compound?
                 // 4.2 Amount in Compound
                 const expectedTokensAtCToken = numOfTokens
                     .sub(new BN("100").mul(ONE_DAI))
@@ -317,8 +315,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     balCTokens.div(new BN(10))
                 );
             });
-
-            // TODO:The value of expectedTokenBalanceAfterWithdraw is incorrectly calculated.
 
             it("when 100 whole USDC tokens are withdrawn", async () => {
                 const ONE_USDC = new BN(10).pow(new BN(6));
@@ -469,7 +465,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDC.balanceOf(savingAccount.address);
@@ -549,7 +544,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.3 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenUSDT.balanceOf(savingAccount.address);
@@ -630,7 +624,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                 ).to.be.bignumber.equal(balCToken);
 
-                //TODO
                 // 4.4 cToken must be minted for SavingAccount
                 const expectedCTokensAtSavingAccount = numOfTokens.mul(new BN(85)).div(new BN(100));
                 const balCTokens = await cTokenWBTC.balanceOf(savingAccount.address);
@@ -1336,7 +1329,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 //Withdrawing DAI
                 await savingAccount.withdrawAll(erc20DAI.address, { from: owner });
 
-                // TODO: Need to write DeFiner balance once the interest function is implemented
                 let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
                 let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(savingAccount.address);
                 expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);

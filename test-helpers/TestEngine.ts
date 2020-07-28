@@ -110,7 +110,6 @@ export class TestEngine {
         return this.mockChainlinkAggregators;
     }
 
-    // sichaoy: How to write a return value here
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         const cTokens: Array<string> = await this.getCompoundAddresses();
@@ -172,7 +171,6 @@ export class TestEngine {
                 const tokenAddr = this.erc20Tokens[i];
                 const decimals = token.decimals;
                 const isTransferFeeEnabled = token.isFeeEnabled;
-                // TODO When PR merged fix this, by default set to `true`
                 const isSupportedOnCompound = true;
                 const cToken = cTokens[i];
                 const chainLinkAggregator = aggregators[i];

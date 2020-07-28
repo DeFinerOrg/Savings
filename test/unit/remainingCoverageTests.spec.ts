@@ -189,14 +189,12 @@ contract("RemainingCoverage", async (accounts) => {
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
                 let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
-                // TODO:
                 // should return "false"
                 //expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
 
-    //TODO:
     context("recycleCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
@@ -224,7 +222,6 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
 
-        //TODO:
         context("should succeed", async () => {
             // verify if self.deFinerCommunityFund has been updated with the new address
         });
@@ -237,8 +234,6 @@ contract("RemainingCoverage", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported address is passed");
-
-            //TODO
             it("when ETH address is passed", async () => {
                 //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
             });
@@ -249,7 +244,6 @@ contract("RemainingCoverage", async (accounts) => {
     /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
-            //TODO
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -286,7 +280,6 @@ contract("RemainingCoverage", async (accounts) => {
     */
     /*
     context("getMarketState", async () => {
-        //TODO:
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
                 const numOfToken = new BN(1000);
@@ -335,7 +328,6 @@ contract("RemainingCoverage", async (accounts) => {
     });
     */
 
-    //TODO:
     context("getDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             //await savingAccount.getDeFinerCommunityFund(dummy);

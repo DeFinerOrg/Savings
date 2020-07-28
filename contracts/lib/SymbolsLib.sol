@@ -20,7 +20,7 @@ library SymbolsLib {
         for(uint i = 0; i < self.count; i++) {
             self.indexToSymbol[i] = tokenAddresses[i];
         }
-        // Temp fix
+
         // Adding ETH
         address ETH_ADDR = 0x000000000000000000000000000000000000000E;
         self.indexToSymbol[self.count] = ETH_ADDR;
@@ -38,8 +38,13 @@ library SymbolsLib {
 
     function priceFromIndex(Symbols storage self, uint index) public view returns(uint256) {
         require(index < self.count, "coinIndex must be smaller than the coins length.");
+<<<<<<< HEAD
         address tokenAddress = self.indexToSymbol[index];
         // Temp fix
+=======
+        address tokenAddress = self.symbolToAddress[self.indexToSymbol[index]];
+
+>>>>>>> master2
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
@@ -47,14 +52,12 @@ library SymbolsLib {
     }
 
     function priceFromAddress(Symbols storage self, address tokenAddress) public view returns(uint256) {
-        // Temp fix
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
         return uint256(ChainLinkOracle(self.chainlinkAddress).getLatestAnswer(tokenAddress));
     }
 
-    // Temp fix
     function _isETH(address _token) internal pure returns (bool) {
         return address(0x000000000000000000000000000000000000000E) == _token;
     }
