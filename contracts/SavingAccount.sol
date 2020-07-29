@@ -107,7 +107,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token addrss
      * @return the current deposits, loans, and collateral ratio of the token
 	 */
-    function getTokenState(address _token) public returns (
+    function getTokenState(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral

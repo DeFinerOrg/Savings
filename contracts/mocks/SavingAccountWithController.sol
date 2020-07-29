@@ -48,4 +48,28 @@ contract SavingAccountWithController  is SavingAccount {
     function getBlockNumber() public view returns (uint) {
         return IController(comptroller).getBlockNumber();
     }
+
+    function newRateIndexCheckpoint(address _token) public {
+        baseVariable.newRateIndexCheckpoint(_token);
+    }
+
+    function getDepositPrincipal(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.depositPrincipal;
+    }
+
+    function getDepositInterest(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.depositInterest;
+    }
+
+    function getBorrowPrincipal(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.borrowPrincipal;
+    }
+
+    function getBorrowInterest(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.borrowInterest;
+    }
 }

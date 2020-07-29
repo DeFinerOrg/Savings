@@ -492,16 +492,16 @@ library Base {
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(BaseVariable storage self, address _token) public returns (
+    function getTokenState(BaseVariable storage self, address _token) public view returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral
+        uint256 reservation
     )
     {
         return (
-        getTotalDepositStore(self, _token),
-        self.totalLoans[_token],
-        self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]])
+            getTotalDepositStore(self, _token),
+            self.totalLoans[_token],
+            self.totalReserve[_token]
         );
     }
 
