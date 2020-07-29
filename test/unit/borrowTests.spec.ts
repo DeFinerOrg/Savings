@@ -460,7 +460,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 /*
                 TODO: There are still problems with the price acquisition of ETH.
                  */
-                /* it("when supported token address is passed", async () => {
+                it("when supported token address is passed", async () => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
                     // 3. Verify the loan amount.
@@ -468,7 +468,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                         from: user1
                     });
                     expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
-                }); */
+                });
 
                 it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
                     // 2. Start borrowing.
@@ -481,15 +481,18 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 /*
-                TODO: why is it using price of USDC?
+                TODO: lack of liquidity..
                  */
                 /* it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
+                    let DAIAmount = new BN(1).mul(eighteenPrecision);
+                    await erc20DAI.transfer(user1, DAIAmount);
+                    await erc20DAI.approve(savingAccount.address, DAIAmount, { from: user1 });
+                    await savingAccount.deposit(addressDAI, DAIAmount, { from: user1 });
                     // 2. Start borrowing.
-                    const limitAmount = numOfToken
-                        .mul(await savingAccount.getCoinToETHRate(1))
+                    const limitAmount = DAIAmount.mul(await savingAccount.getCoinToETHRate(0))
                         .mul(new BN(60))
                         .div(new BN(100))
-                        .div(await savingAccount.getCoinToETHRate(0));
+                        .div(eighteenPrecision);
                     await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
                     // 3. Verify the loan amount.
                     const user2ETHBorrowValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
