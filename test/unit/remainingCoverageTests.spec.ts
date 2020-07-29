@@ -215,7 +215,7 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    context("setDeFinerCommunityFund", async () => {
+    context("updateDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
