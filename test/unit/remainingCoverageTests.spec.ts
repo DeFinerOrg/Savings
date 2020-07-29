@@ -220,7 +220,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
                     globalConfig.updateDeFinerCommunityFund(user1, { from: user1 }),
-                    "Unauthorized call"
+                    "caller is not the owner"
                 );
             });
         });
