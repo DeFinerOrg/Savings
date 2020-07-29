@@ -36,7 +36,6 @@ library Base {
         mapping(address => uint) lastCTokenExchangeRate;    // last compound cToken exchange rate
         // Store per account info
         mapping(address => Account) accounts;
-        address payable deFinerCommunityFund;
         address globalConfigAddress;
         mapping(address => uint) deFinerFund;
         // Third Party Pools
@@ -606,25 +605,6 @@ library Base {
             }
         }
         return borrowETH;
-    }
-
-    function recycleCommunityFund(BaseVariable storage self, address _token) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[_token]));
-        self.deFinerFund[_token] == 0;
-    }
-
-    function setDeFinerCommunityFund(BaseVariable storage self, address payable _DeFinerCommunityFund) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund = _DeFinerCommunityFund;
-    }
-
-    function getDeFinerCommunityFund(BaseVariable storage self, address _token) public view returns(uint256){
-        return self.deFinerFund[_token];
-    }
-
-    function getDeFinerCommunityFund(BaseVariable storage self) public view returns(address){
-        return self.deFinerCommunityFund;
     }
 }
 
