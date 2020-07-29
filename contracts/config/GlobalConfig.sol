@@ -9,7 +9,7 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
-    address public payable deFinerCommunityFund;
+    address payable public deFinerCommunityFund;
     address public compoundAddress;
 
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
