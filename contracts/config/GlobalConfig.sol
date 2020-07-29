@@ -70,7 +70,7 @@ contract GlobalConfig is Ownable {
         return minReserveRatio.add(maxReserveRatio).div(2);
     }
 
-    function updateDeFinerCommunityFund(address _deFinerCommunityFund) external onlyOwner {
+    function updateDeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner {
         require(_deFinerCommunityFund != address(0x0), "deFinerCommunityFund is zero");
         deFinerCommunityFund = _deFinerCommunityFund;
     }
