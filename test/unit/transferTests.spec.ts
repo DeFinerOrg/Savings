@@ -368,10 +368,15 @@ contract("SavingAccount.transfer", async (accounts) => {
                         from: user2
                     });
 
+                    const expectedTokensAtSavingAccountContract = new BN(eighteenPrecision)
+                        .mul(new BN(2))
+                        .mul(new BN(15))
+                        .div(new BN(100));
+
                     // verify deposit
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(new BN(ETHbalanceAfterDeposit)).to.be.bignumber.equal(
-                        new BN(eighteenPrecision).mul(new BN(2))
+                        new BN(expectedTokensAtSavingAccountContract)
                     );
 
                     const user2BalanceUSDCBeforeBorrow = await erc20USDC.balanceOf(user2);
@@ -435,15 +440,21 @@ contract("SavingAccount.transfer", async (accounts) => {
                         new BN(user2BalanceAfterDeposit[0]).sub(new BN(user2TotalBalanceBefore[0]))
                     ).to.be.bignumber.equal(depositAmount);
 
+                    const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                        .mul(new BN(2))
+                        .mul(new BN(15))
+                        .div(new BN(100));
+
                     // validate savingAccount ETH balance
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
+                        new BN(expectedTokensAtSavingAccountContract)
+                    );
 
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
-                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
@@ -460,6 +471,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
+                // TODO: ETH not getting deposited on Compound..
                 it("Transfer large amount of balance", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
@@ -496,15 +508,21 @@ contract("SavingAccount.transfer", async (accounts) => {
                     expect(new BN(user2BalanceAfterDeposit[0])).to.be.bignumber.equal(
                         depositAmount
                     );
+                    const expectedTokensAtSavingAccountContract = depositAmount
+                        .mul(new BN(2))
+                        .mul(new BN(15))
+                        .div(new BN(100));
+
                     // validate savingAccount ETH balance
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
+                        expectedTokensAtSavingAccountContract
+                    );
 
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
-                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
