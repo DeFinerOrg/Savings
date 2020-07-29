@@ -372,7 +372,8 @@ contract("SavingAccount.deposit", async (accounts) => {
             });
 
             it("when ETH address is passed", async () => {
-                const depositAmount = new BN(10);
+                // if amount is 10, reserve == 1
+                const depositAmount = new BN(100);
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
@@ -386,8 +387,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                 const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
                     new BN(ETHbalanceBeforeDeposit)
                 );
+
+                const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                    .mul(new BN(15))
+                    .div(new BN(100));
+
                 // validate savingAccount ETH balance
-                expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(depositAmount);
+                expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
+                    expectedTokensAtSavingAccountContract
+                );
 
                 // Validate the total balance on DeFiner
                 const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
