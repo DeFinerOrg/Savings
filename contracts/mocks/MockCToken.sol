@@ -1,66 +1,34 @@
 pragma solidity 0.5.14;
 
-// import { CToken } from "../Base.sol";
+contract MockCToken {
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+    // 1. CERC20 
+    function mint(uint mintAmount) external returns (uint);
+    function redeem(uint redeemAmount) external returns (uint);
+    function redeemUnderlying(uint redeemAmount) external returns (uint);
+    function borrow(uint borrowAmount) external returns (uint);
+    function repayBorrow(uint repayAmount) external returns (uint);
+    function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, address cTokenCollateral) external returns (uint);
 
-contract MockCToken is ERC20Mintable, ERC20Burnable {
-    using SafeMath for uint256;
-    IERC20 public token;
+    // 2. CETHER.sol
+    function mint() external payable;
+    function repayBorrow() external payable;
+    function repayBorrowBehalf(address borrower) external payable;
 
-    // TODO we can add Token name, symbol, decimals
-    constructor(address _token) public {
-        token = IERC20(_token);
-    }
+    // 3. ERC20.sol
+    function totalSupply() public view returns (uint256);
+    function balanceOf(address account) public view returns (uint256);
+    function transfer(address recipient, uint256 amount) public returns (bool);
+    function allowance(address owner, address spender) public view returns (uint256);
+    function approve(address spender, uint256 amount) public returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool);
+    function increaseAllowance(address spender, uint256 addedValue) public returns (bool);
+    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool);
 
-    function mint(uint mintAmount) external returns (uint) {
-        token.transferFrom(msg.sender, address(this), mintAmount);
-
-        _mint(msg.sender, mintAmount.div(1)); // mintAmount / exchangeRate
-    }
-
-    // TODO need to improve
-    function redeemUnderlying(uint redeemAmount) external returns (uint) {
-        burn(redeemAmount);
-        // redeemAmount * exchangeRate
-        uint256 finalRedeemAmount = redeemAmount.mul(1);
-        token.transfer(msg.sender, finalRedeemAmount);
-    }
-
-    // TODO need to improve
-    function redeem(uint redeemAmount) external returns (uint) {
-        burn(redeemAmount);
-        // redeemAmount * exchangeRate
-        uint256 finalRedeemAmount = redeemAmount.mul(1);
-        token.transfer(msg.sender, finalRedeemAmount);
-    }
-
-    function supplyRatePerBlock() external view returns (uint) {
-        // Per block increase by 1
-        return 1;
-    }
-
-    function borrowRatePerBlock() external view returns (uint) {
-        return 1;
-    }
-
-    function exchangeRateStore() external view returns (uint) {
-        return 1;
-    }
-
-    function exchangeRateCurrent() external returns (uint) {
-        return 1;
-    }
-
-    function getInterest() internal view returns (uint) {
-        // TODO need to calculate interest according to block number
-        return 1;
-    }
-
-    function balanceOfUnderlying(address owner) external returns (uint) {
-        // TODO Need to improve
-        return balanceOf(owner);
-    }
+    function supplyRatePerBlock() external view returns (uint);
+    function borrowRatePerBlock() external view returns (uint);
+    function exchangeRateStore() external view returns (uint);
+    function exchangeRateCurrent() external returns (uint);
+    function balanceOfUnderlying(address owner) external returns (uint);
 }

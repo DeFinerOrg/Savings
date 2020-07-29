@@ -7,8 +7,10 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import "./InitializableReentrancyGuard.sol";
 
-contract SavingAccount {
+contract SavingAccount is Initializable, InitializableReentrancyGuard {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
@@ -22,17 +24,18 @@ contract SavingAccount {
     SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
-    // TODO This is emergency address to allow withdrawal of funds from the contract
-    address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
-    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     TokenInfoRegistry public tokenRegistry;
     GlobalConfig public globalConfig;
 
-    uint256 ACCURACY = 10**18;
-    uint BLOCKS_PER_YEAR = 2102400;
+    // Following are the constants, initialized via upgradable proxy contract
+    // This is emergency address to allow withdrawal of funds from the contract
+    address payable public EMERGENCY_ADDR;
+    address public ETH_ADDR;
+    uint256 public ACCURACY;
+    uint256 public BLOCKS_PER_YEAR;
+    uint256 public UINT_UNIT;
 
-
-    uint256 public constant UINT_UNIT = 10 ** 18;
+    event DepositorOperations(uint256 indexed code, address token, address from, address to, uint256 amount);   
 
     modifier onlyEmergencyAddress() {
         require(msg.sender == EMERGENCY_ADDR, "User not authorized");
@@ -46,133 +49,78 @@ contract SavingAccount {
         _;
     }
 
-    constructor(
-        address[] memory tokenAddresses,
-        address[] memory cTokenAddresses,
+    constructor() public {
+        // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
+    }
+
+    /**
+     * Initialize function to be called by the Deployer for the first time
+     * @param _tokenAddresses list of token addresses
+     * @param _cTokenAddresses list of corresponding cToken addresses
+     * @param _chainlinkAddress chainlink oracle address
+     * @param _tokenRegistry token registry contract
+     * @param _globalConfig global configuration contract
+     */
+    function initialize(
+        address[] memory _tokenAddresses,
+        address[] memory _cTokenAddresses,
         address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
     )
         public
+        initializer
     {
+        // Initialize InitializableReentrancyGuard
+        super._initialize();
+
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
 
-        //TODO This needs improvement as it could go out of gas
-        symbols.initialize(params.tokenNames(), tokenAddresses, _chainlinkAddress);
-        baseVariable.initialize(tokenAddresses, cTokenAddresses, address(_globalConfig));
-        for(uint i = 0;i < tokenAddresses.length;i++) {
-            if(cTokenAddresses[i] != address(0x0) && tokenAddresses[i] != ETH_ADDR) {
-                baseVariable.approveAll(tokenAddresses[i]);
+        symbols.initialize(params.tokenNames(), _tokenAddresses, _chainlinkAddress);
+        baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this));
+        for(uint i = 0;i < _tokenAddresses.length;i++) {
+            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
+                baseVariable.approveAll(_tokenAddresses[i]);
             }
         }
+
+        //Initialize constants defined in this contract
+        EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
+        ETH_ADDR = 0x000000000000000000000000000000000000000E;
+        ACCURACY = 10**18;
+        BLOCKS_PER_YEAR = 2102400;
+        UINT_UNIT = 10 ** 18;
     }
 
+    /**
+     * Approve transfer of all available tokens
+     * @param _token token address
+     */
     function approveAll(address _token) public {
         baseVariable.approveAll(_token);
     }
 
-    // TODO Security issue, as this function is open for all
-	//Update borrow rates. borrowRate = 1 + blockChangeValue * rate
-    function updateDefinerRate(address _token) public {
-        baseVariable.newRateIndexCheckpoint(_token);
-    }
-
 	/**
-	 * Gets the total amount of balance that give accountAddr stored in saving pool.
-	 */
-     /*
-    function getAccountTotalETHValue(address _accountAddr) public view returns (uint256 ETHValue) {
-        uint256 borrowETHValue = baseVariable.getBorrowETH(_accountAddr, symbols);
-        uint256 mortgageETHValue = baseVariable.getDepositETH(_accountAddr, symbols);
-        if(borrowETHValue > mortgageETHValue) {
-            ETHValue = borrowETHValue.sub(mortgageETHValue);
-        } else {
-            ETHValue = mortgageETHValue.sub(borrowETHValue);
-        }
-        return ETHValue;
-    }
-    */
-
-	/**
-	 * Get the overall state of the saving pool
-	 */
-     /*
-    function getMarketState() public view returns (
-        address[] memory addresses,
-        uint256[] memory deposits,
-        uint256[] memory loans,
-        uint256[] memory collateral,
-        uint256[] memory depositRatePerBlock,
-        uint256[] memory borrowRatePerBlock
-    )
-    {
-        uint coinsLen = getCoinLength();
-
-        addresses = new address[](coinsLen);
-        deposits = new uint256[](coinsLen);
-        loans = new uint256[](coinsLen);
-        collateral = new uint256[](coinsLen);
-        depositRatePerBlock = new uint256[](coinsLen);
-        borrowRatePerBlock = new uint256[](coinsLen);
-
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            (
-            deposits[i],
-            loans[i],
-            collateral[i],
-            depositRatePerBlock[i],
-            borrowRatePerBlock[i]
-            ) = baseVariable.getTokenState(tokenAddress);
-        }
-        return (addresses, deposits, loans, collateral, depositRatePerBlock, borrowRatePerBlock);
-    }
-    */
-
-	/*
-	 * Get the state of the given token
+	 * Get the state of a given token
+     * @param _token token addrss
+     * @return the current deposits, loans, and collateral ratio of the token
 	 */
     function getTokenState(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
+        uint256 collateral
     )
     {
         return baseVariable.getTokenState(_token);
     }
 
 	/**
-	 * Get all balances for the sender's account
+	 * Check if the account is liquidatable
+     * @param _borrower borrower's account
+     * @return true if the account is liquidatable
 	 */
-     /*
-    function getBalances() public view returns (
-        address[] memory addresses,
-        uint256[] memory depositBalance,
-        uint256[] memory borrowBalance
-    )
-    {
-        uint coinsLen = getCoinLength();
-
-        addresses = new address[](coinsLen);
-        depositBalance = new uint256[](coinsLen);
-        borrowBalance = new uint256[](coinsLen);
-
-        for (uint i = 0; i < coinsLen; i++) {
-            address tokenAddress = symbols.addressFromIndex(i);
-            addresses[i] = tokenAddress;
-            depositBalance[i] = baseVariable.getDepositBalance(tokenAddress, msg.sender);
-            borrowBalance[i] = baseVariable.getBorrowBalance(tokenAddress, msg.sender);
-        }
-
-        return (addresses, depositBalance, borrowBalance);
-    }
-    */
-
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
         uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
@@ -187,10 +135,18 @@ contract SavingAccount {
         return false;
     }
 
+    /**
+     * Get the total number of suppported tokens
+     */
     function getCoinLength() public view returns(uint256 length) {
         return symbols.getCoinLength();
     }
 
+    /**
+	 * Get token balances for the sender's account
+     * @param _token token address
+     * @return the deposit balance and borrow balance of the token
+	 */
     function tokenBalance(address _token) public view returns(
         uint256 depositBalance,
         uint256 borrowBalance
@@ -198,12 +154,16 @@ contract SavingAccount {
         return (baseVariable.getDepositBalance(_token, msg.sender), baseVariable.getBorrowBalance(_token, msg.sender));
     }
 
-    function getCoinAddress(uint256 _coinIndex) public view returns(address) {
-        return symbols.addressFromIndex(_coinIndex);
-    }
-
     function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
         return symbols.priceFromIndex(_coinIndex);
+    }
+
+    /**
+     * Get current block number
+     * @return the current block number
+     */
+    function getBlockNumber() public view returns (uint) {
+        return block.number;
     }
 
     /**
@@ -212,11 +172,13 @@ contract SavingAccount {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public {
+    function transfer(address _to, address _token, uint _amount) public nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
         deposit(_to, _token, _amount);
+
+        emit DepositorOperations(5, _token, msg.sender, _to, _amount);
     }
 
     /**
@@ -224,7 +186,7 @@ contract SavingAccount {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupported(_token) {
+    function borrow(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
@@ -249,7 +211,7 @@ contract SavingAccount {
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
         uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.borrow(_amount, accruedRate);
+        tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
         // Set the borrow bitmap
         baseVariable.setInBorrowBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
@@ -263,6 +225,8 @@ contract SavingAccount {
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
+
+        emit DepositorOperations(3, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -271,7 +235,7 @@ contract SavingAccount {
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupported(_token) {
+    function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
@@ -289,7 +253,7 @@ contract SavingAccount {
         uint rate = baseVariable.getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        tokenInfo.repay(amount, rate);
+        tokenInfo.repay(amount, rate, this.getBlockNumber());
 
         // Unset borrow bitmap if the balance is fully repaid
         if(tokenInfo.getBorrowPrincipal() == 0)
@@ -306,6 +270,8 @@ contract SavingAccount {
         if(remain != 0) {
             send(msg.sender, remain, _token);
         }
+
+        emit DepositorOperations(4, _token, msg.sender, address(0), _amount.sub(remain));
     }
 
     /**
@@ -313,10 +279,12 @@ contract SavingAccount {
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) {
+    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
+
+        emit DepositorOperations(0, _token, msg.sender, address(0), _amount);
     }
 
     /**
@@ -336,7 +304,7 @@ contract SavingAccount {
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.deposit(_amount, accruedRate);
+        tokenInfo.deposit(_amount, accruedRate, this.getBlockNumber());
 
         // Set the deposit bitmap
         baseVariable.setInDepositBitmap(_to, tokenRegistry.getTokenIndex(_token));
@@ -348,13 +316,24 @@ contract SavingAccount {
         baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
     }
 
-    function withdraw(address _token, uint256 _amount) public onlySupported(_token) {
+    /**
+     * Withdraw a token from an address
+     * @param _token token address
+     * @param _amount amount to be withdrawn
+     */
+    function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
     }
 
     /**
+     * Withdraw a token from an address
+     * @param _from address to be withdrawn from
+     * @param _token token address
+     * @param _amount amount to be withdrawn
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
     function withdraw(address _from, address _token, uint256 _amount) internal returns(uint) {
@@ -384,7 +363,7 @@ contract SavingAccount {
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate);
+        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
         if(tokenInfo.getDepositPrincipal() == 0)
@@ -394,23 +373,23 @@ contract SavingAccount {
         // sichaoy: 10 percent is a constant?
         uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
         baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-        _amount = _amount.sub(commission);
+        uint256 amount = _amount.sub(commission);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
         baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
-        return _amount;
+        return amount;
     }
 
     /**
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupported(_token) {
+    function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -425,6 +404,8 @@ contract SavingAccount {
 
         withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
+
+        emit DepositorOperations(2, _token, msg.sender, address(0), amount);
     }
 
     struct LiquidationVars {
@@ -454,12 +435,14 @@ contract SavingAccount {
 
     /**
      * Liquidate function
+     * @param _targetAccountAddr account to be liquidated
+     * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address targetAccountAddr, address _targetToken) public {
+    function liquidate(address _targetAccountAddr, address _targetToken) public nonReentrant {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.getBorrowETH(targetAccountAddr, symbols);
-        vars.totalCollateral = baseVariable.getDepositETH(targetAccountAddr, symbols);
+        vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr, symbols);
+        vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr, symbols);
 
         vars.msgTotalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
         vars.msgTotalCollateral = baseVariable.getDepositETH(msg.sender, symbols);
@@ -519,7 +502,7 @@ contract SavingAccount {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
 
-        TokenInfoLib.TokenInfo storage targetTokenInfo = baseVariable.accounts[targetAccountAddr].tokenInfos[_targetToken];
+        TokenInfoLib.TokenInfo storage targetTokenInfo = baseVariable.accounts[_targetAccountAddr].tokenInfos[_targetToken];
         TokenInfoLib.TokenInfo storage msgTargetTokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_targetToken];
         // Target token rate of the liquidator
         vars.msgTargetTokenAccruedRate = baseVariable.getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
@@ -527,25 +510,25 @@ contract SavingAccount {
         vars.targetTokenAccruedRate = baseVariable.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate);
+        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate, this.getBlockNumber());
         if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
             baseVariable.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
         }
 
-        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate);
+        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate, this.getBlockNumber());
         if(targetTokenInfo.getBorrowPrincipal() == 0) {
-            baseVariable.unsetFromBorrowBitmap(targetAccountAddr, vars.tokenIndex);
+            baseVariable.unsetFromBorrowBitmap(_targetAccountAddr, vars.tokenIndex);
         }
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < symbols.getCoinLength(); i++) {
             vars.token = symbols.addressFromIndex(i);
-            if(baseVariable.isUserHasDeposits(targetAccountAddr, uint8(i))) {
+            if(baseVariable.isUserHasDeposits(_targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = symbols.priceFromIndex(i);
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
 
-                TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[targetAccountAddr].tokenInfos[vars.token];
+                TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_targetAccountAddr].tokenInfos[vars.token];
 
                 if(tokenInfo.getBorrowPrincipal() == 0) {
                     TokenInfoLib.TokenInfo storage msgTokenInfo = baseVariable.accounts[msg.sender].tokenInfos[vars.token];
@@ -568,15 +551,15 @@ contract SavingAccount {
                         vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                     }
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate);
+                    tokenInfo.withdraw(vars.tokenAmount, vars.tokenAccruedRate, this.getBlockNumber());
                     if(tokenInfo.getDepositPrincipal() == 0) {
-                        baseVariable.unsetFromDepositBitmap(targetAccountAddr, vars.tokenIndex);
+                        baseVariable.unsetFromDepositBitmap(_targetAccountAddr, vars.tokenIndex);
                     }
 
                     if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
                         baseVariable.setInDepositBitmap(msg.sender, vars.tokenIndex);
                     }
-                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate);
+                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate, this.getBlockNumber());
                 }
             }
 
@@ -586,16 +569,30 @@ contract SavingAccount {
         }
     }
 
+    /**
+     * Withdraw the community fund (commission fee)
+     * @param _token token address
+     */
     function recycleCommunityFund(address _token) public {
-        baseVariable.recycleCommunityFund(_token);
+        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
+        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
+        baseVariable.deFinerFund[_token] == 0;
     }
 
-    function setDeFinerCommunityFund(address payable _deFinerCommunityFund) public {
-        baseVariable.setDeFinerCommunityFund(_deFinerCommunityFund);
+    /**
+     * Change the communitiy fund address
+     * @param _DeFinerCommunityFund the new community fund address
+     */
+    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
+        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
+        baseVariable.deFinerCommunityFund = _DeFinerCommunityFund;
     }
 
-    function getDeFinerCommunityFund(address _token) public view returns(uint256) {
-        return baseVariable.getDeFinerCommunityFund(_token);
+    /**
+     * The current community fund address
+     */
+    function getDeFinerCommunityFund( address _token) public view returns(uint256){
+        return baseVariable.deFinerFund[_token];
     }
 
     /**
@@ -614,17 +611,26 @@ contract SavingAccount {
         }
     }
 
+    /**
+     * Send the amount of token to an address
+     * @param _to address of the token receiver
+     * @param _amount amount of token
+     * @param _token token address
+     */
     function send(address _to, uint256 _amount, address _token) private {
         if (_isETH(_token)) {
-            //TODO need to check for re-entrancy security attack
-            //TODO Can this ETH be received by a contract?
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(_to, _amount);
         }
     }
 
-    function _isETH(address _token) internal pure returns (bool) {
+    /**
+     * Check if the token is Ether
+     * @param _token token address
+     * @return true if the token is Ether
+     */
+    function _isETH(address _token) internal view returns (bool) {
         return ETH_ADDR == _token;
     }
 
@@ -647,7 +653,7 @@ contract SavingAccount {
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
-    // TODO Needs to be removed when final version deployed
+    // Needs to be removed when final version deployed
     // ============================================
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         if(_token == ETH_ADDR) {
@@ -659,10 +665,12 @@ contract SavingAccount {
     }
 
     function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeem(_amount);
+        uint256 success = ICToken(_cToken).redeem(_amount);
+        require(success == 0, "redeem failed");
     }
 
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        ICToken(_cToken).redeemUnderlying(_amount);
+        uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 }

@@ -1,16 +1,16 @@
-import { BaseContract, BaseInstance } from "./../types/truffle-contracts/index.d";
-import * as t from "../types/truffle-contracts/index";
-import { MockChainLinkAggregatorInstance } from "./../types/truffle-contracts/index.d";
-import { TestEngine } from "../test-helpers/TestEngine";
+import { BaseContract, BaseInstance } from "../../types/truffle-contracts/index.d";
+import * as t from "../../types/truffle-contracts/index";
+import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
@@ -23,7 +23,7 @@ contract("RemainingCoverage", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let base: t.BaseInstance;
 
@@ -38,13 +38,14 @@ contract("RemainingCoverage", async (accounts) => {
     let addressDAI: any;
     let addressUSDC: any;
     let tempContractAddress: any;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20contr: t.MockERC20Instance;
+    let erc20DAI: t.ERC20Instance;
+    let erc20USDC: t.ERC20Instance;
+    let erc20contr: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
@@ -53,8 +54,8 @@ contract("RemainingCoverage", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
-        erc20DAI = await MockERC20.at(addressDAI);
-        erc20USDC = await MockERC20.at(addressUSDC);
+        erc20DAI = await ERC20.at(addressDAI);
+        erc20USDC = await ERC20.at(addressUSDC);
     });
 
     context("approveAll", async () => {
@@ -80,27 +81,27 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    context("updateDefinerRate", async () => {
-        context("should fail", async () => {
-            it("when unsupported token address is passed");
-        });
+    // context("updateDefinerRate", async () => {
+    //     context("should fail", async () => {
+    //         it("when unsupported token address is passed");
+    //     });
 
-        context("should succeed", async () => {
-            it("when supported token address is passed", async () => {
-                const ERC20TokenAddresses = testEngine.erc20Tokens;
-                // Update the rate of the first token
-                await savingAccount.updateDefinerRate(ERC20TokenAddresses[0]);
+    //     context("should succeed", async () => {
+    //         it("when supported token address is passed", async () => {
+    //             const ERC20TokenAddresses = testEngine.erc20Tokens;
+    //             // Update the rate of the first token
+    //             await savingAccount.updateDefinerRate(ERC20TokenAddresses[0]);
 
-                // Deposit & borrow Rate for verification, getBlockIntervalDepositRateRecord, getBlockIntervalBorrowRateRecord?
-                //const borrowRateAfter = await base.getBlockIntervalBorrowRateRecord;
-            });
+    //             // Deposit & borrow Rate for verification, getBlockIntervalDepositRateRecord, getBlockIntervalBorrowRateRecord?
+    //             //const borrowRateAfter = await base.getBlockIntervalBorrowRateRecord;
+    //         });
 
-            it("when borrowRateLMBN is zero");
-            // cases of `depositRateIndexNow`, line 261 Base.sol
+    //         it("when borrowRateLMBN is zero");
+    //         // cases of `depositRateIndexNow`, line 261 Base.sol
 
-            it("when borrowRateLMBN is equal to block number");
-        });
-    });
+    //         it("when borrowRateLMBN is equal to block number");
+    //     });
+    // });
 
     context("isAccountLiquidatable", async () => {
         context("should fail", async () => {});
@@ -115,8 +116,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const ONE_DAI = eighteenPrecision;
@@ -169,8 +170,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.MockERC20Instance = await MockERC20.at(addressDAI);
-                const erc20USDC: t.MockERC20Instance = await MockERC20.at(addressUSDC);
+                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -188,14 +189,12 @@ contract("RemainingCoverage", async (accounts) => {
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
                 let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
-                // TODO:
                 // should return "false"
                 //expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
 
-    //TODO:
     context("recycleCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
@@ -223,7 +222,6 @@ contract("RemainingCoverage", async (accounts) => {
             });
         });
 
-        //TODO:
         context("should succeed", async () => {
             // verify if self.deFinerCommunityFund has been updated with the new address
         });
@@ -236,8 +234,6 @@ contract("RemainingCoverage", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported address is passed");
-
-            //TODO
             it("when ETH address is passed", async () => {
                 //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
             });
@@ -248,7 +244,6 @@ contract("RemainingCoverage", async (accounts) => {
     /*
     context("getAccountTotalUsdValue", async () => {
         context("should succeed", async () => {
-            //TODO
             it("when ETH address is passed");
 
             it("when user's address is passed, who hasn't borrowed", async () => {
@@ -267,6 +262,7 @@ contract("RemainingCoverage", async (accounts) => {
                 //1. Deposit DAI
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
 
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(100)), {
@@ -274,8 +270,8 @@ contract("RemainingCoverage", async (accounts) => {
                 });
 
                 // 3. Verify the loan amount
-                const user1Balance = await erc20USDC.balanceOf(user1);
-                expect(user1Balance).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
+                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
+                expect(BN(user1BalanceAfter).sub(user1BalanceBefore)).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
 
                 await savingAccount.getAccountTotalETHValue(user1);
             });
@@ -284,7 +280,6 @@ contract("RemainingCoverage", async (accounts) => {
     */
     /*
     context("getMarketState", async () => {
-        //TODO:
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
                 const numOfToken = new BN(1000);
@@ -316,7 +311,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
     /*
     context("getBalances", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when sender's address is valid", async () => {
@@ -332,19 +327,7 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getCoinAddress", async () => {
-        context("should fail", async () => {});
 
-        context("should succeed", async () => {
-            it("when function is called", async () => {
-                for (let i = 0; i < 9; i++) {
-                    await savingAccount.getCoinAddress(i);
-                }
-            });
-        });
-    });
-
-    //TODO:
     context("getDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             //await savingAccount.getDeFinerCommunityFund(dummy);
