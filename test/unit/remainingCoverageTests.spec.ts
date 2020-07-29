@@ -16,6 +16,7 @@ const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkO
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
+const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("RemainingCoverage", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -26,6 +27,7 @@ contract("RemainingCoverage", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let base: t.BaseInstance;
+    let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -50,6 +52,7 @@ contract("RemainingCoverage", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        globalConfig = await testEngine.globalConfig;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -216,7 +219,7 @@ contract("RemainingCoverage", async (accounts) => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
-                    savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
+                    globalConfig.updateDeFinerCommunityFund(user1, { from: user1 }),
                     "Unauthorized call"
                 );
             });
