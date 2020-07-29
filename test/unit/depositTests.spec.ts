@@ -387,7 +387,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     new BN(ETHbalanceBeforeDeposit)
                 );
                 // validate savingAccount ETH balance
-                expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
+                expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(depositAmount);
 
                 // Validate the total balance on DeFiner
                 const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
@@ -416,8 +416,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                     new BN(ETHbalanceBeforeDeposit)
                 );
 
+                const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                    .mul(new BN(15))
+                    .div(new BN(100));
+
                 // validate savingAccount ETH balance
-                expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
+                expect(userBalanceDiff).to.be.bignumber.equal(
+                    expectedTokensAtSavingAccountContract
+                );
 
                 // Validate the total balance on DeFiner
                 const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
