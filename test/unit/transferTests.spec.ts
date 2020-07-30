@@ -490,10 +490,23 @@ contract("SavingAccount.transfer", async (accounts) => {
                         value: depositAmount,
                         from: user1,
                     });
+
+                    const ETHbalance1 = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+
+                    console.log(ETHbalance1.toString())
+
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
                         from: user2,
                     });
+
+                    const ETHbalance2 = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+
+                    console.log(ETHbalance2.toString())
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
