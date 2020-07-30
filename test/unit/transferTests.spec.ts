@@ -82,10 +82,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -93,10 +93,10 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
                     expect(
                         new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))
@@ -107,7 +107,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
-                            from: user2
+                            from: user2,
                         }),
                         "Insufficient balance."
                     );
@@ -158,7 +158,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                             addressDAI,
                             remainingDAI.add(eighteenPrecision),
                             {
-                                from: user2
+                                from: user2,
                             }
                         ),
                         "Insufficient collateral."
@@ -192,10 +192,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -203,10 +203,10 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
                     expect(
                         new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))
@@ -217,15 +217,15 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Transfer 100 tokens from user2 to user1
                     await savingAccount.transfer(user1, addressDAI, new BN(100), {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterTransfer = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
                     expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).add(new BN(100))
@@ -260,10 +260,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2TotalBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -271,10 +271,10 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
                     expect(
                         new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))
@@ -285,15 +285,15 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // transfer more than reserve
                     await savingAccount.transfer(user1, addressDAI, new BN(500), {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterTransfer = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
                     expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).add(new BN(500))
@@ -317,7 +317,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                            from: user2
+                            from: user2,
                         }),
                         "Insufficient balance."
                     );
@@ -339,7 +339,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // User 1 deposits USDC
                     await erc20USDC.transfer(user1, depositAmount);
                     await erc20USDC.approve(savingAccount.address, depositAmount, {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressUSDC, depositAmount, { from: user1 });
 
@@ -359,13 +359,13 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
                         value: eighteenPrecision,
-                        from: user1
+                        from: user1,
                     });
 
                     // User 2 deposits ETH
                     await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
                         value: eighteenPrecision,
-                        from: user2
+                        from: user2,
                     });
 
                     const expectedTokensAtSavingAccountContract = new BN(eighteenPrecision)
@@ -391,7 +391,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     ).to.be.bignumber.equal(new BN(600));
 
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
                 });
             });
@@ -411,27 +411,27 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
                     let user1TotalBalanceBefore = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
+                        from: user1,
                     });
                     let user2TotalBalanceBefore = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
+                        from: user2,
                     });
 
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
+                        from: user2,
                     });
                     expect(
                         new BN(user1BalanceAfterDeposit[0]).sub(new BN(user1TotalBalanceBefore[0]))
@@ -453,15 +453,15 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
+                        from: user2,
                     });
                     expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).add(ETHtransferAmount)
@@ -488,19 +488,19 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // deposit ETH
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
+                        from: user2,
                     });
                     expect(new BN(user1BalanceAfterDeposit[0])).to.be.bignumber.equal(
                         depositAmount
@@ -519,17 +519,19 @@ contract("SavingAccount.transfer", async (accounts) => {
                         expectedTokensAtSavingAccountContract
                     );
 
+                    console.log("1");
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
+                    console.log("2");
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
+                        from: user1,
                     });
                     let user2BalanceAfterTransfer = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
+                        from: user2,
                     });
                     expect(new BN(user1BalanceAfterTransfer[0])).to.be.bignumber.equal(
                         new BN(user1BalanceAfterDeposit[0]).add(ETHtransferAmount)
