@@ -4,6 +4,7 @@ import { TestEngine } from "../../test-helpers/TestEngine";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../test-helpers/tokenData.json");
+var compoundTokens: any = require("../../compound-protocol/networks/development.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -20,6 +21,11 @@ contract("GlobalConfig", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let globalConfig: t.GlobalConfigInstance;
+
+    const owner = accounts[0];
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const dummy = accounts[9];
 
     before(async () => {
         // Things to initialize before all test
@@ -132,6 +138,24 @@ contract("GlobalConfig", async (accounts) => {
                 const afterLiquidationDiscountRatio = await globalConfig.midReserveRatio();
                 expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(15));
                 expect(afterLiquidationDiscountRatio).to.be.bignumber.equal(new BN(20));
+            });
+
+            it("executing updateDeFinerCommunityFund", async () => {
+                const beforeDeFinerCommunityFund = await globalConfig.deFinerCommunityFund();
+                await globalConfig.updateDeFinerCommunityFund(owner);
+                const afterDeFinerCommunityFund = await globalConfig.deFinerCommunityFund();
+                expect(beforeDeFinerCommunityFund).to.equal(addressZero);
+                expect(afterDeFinerCommunityFund).to.equal(owner);
+            });
+
+            it("executing updateCompoundAddress", async () => {
+                const beforeCompoundAddress = await globalConfig.compoundAddress();
+                const compTokenAddress = compoundTokens.Contracts.COMP;
+                console.log(compTokenAddress);
+                await globalConfig.updateMinReserveRatio(compTokenAddress);
+                const afterCompoundAddress = await globalConfig.compoundAddress();
+                expect(beforeCompoundAddress).to.equal(addressZero);
+                expect(afterCompoundAddress).to.equal(compTokenAddress);
             });
         });
     });
