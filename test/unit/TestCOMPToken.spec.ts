@@ -44,6 +44,7 @@ contract("SavingAccount.COMP", async (accounts) => {
     let erc20USDC: t.ERC20Instance;
     let erc20TUSD: t.ERC20Instance;
     let erc20MKR: t.ERC20Instance;
+    let erc20COMP: t.ERC20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -67,6 +68,7 @@ contract("SavingAccount.COMP", async (accounts) => {
         erc20USDC = await ERC20.at(addressUSDC);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
+        erc20COMP = await ERC20.at(COMPTokenAddress);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         // Use CERC20, import from Compound
@@ -77,10 +79,10 @@ contract("SavingAccount.COMP", async (accounts) => {
     context("constructor", async () => {
         context("should fail", async () => {
             it("When executing updateCommunityFundRatio, the input parameter is zero.", async () => {
-                await expectRevert(
-                    globalConfig.updateCommunityFundRatio(new BN(0)),
-                    "Community fund is zero"
-                );
+                // await expectRevert(
+                //     globalConfig.updateCommunityFundRatio(new BN(0)),
+                //     "Community fund is zero"
+                // );
             });
         });
 
@@ -92,17 +94,17 @@ contract("SavingAccount.COMP", async (accounts) => {
                 await globalConfig.updateCompoundAddress(COMPTokenAddress);
                 //3. Deposit token.
                 const ONE_DAI = eighteenPrecision.mul(new BN(1));
-                await erc20DAI.approve(savingAccount.address, numOfToken);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI);
+                await savingAccount.deposit(erc20DAI.address, ONE_DAI);
                 //4. After a while.
-
+                var beforeAmount = await erc20MKR.balanceOf(savingAccount.address);
+                await savingAccount.fastForward(100000);
+                var afterAmount = await erc20MKR.balanceOf(savingAccount.address);
+                console.log("beforeAmount: " + beforeAmount);
+                console.log("afterAmount: " + afterAmount);
                 //5. Withdraw COMP token.
 
                 //6. Compare the results..
-                const beforeCommunityFundRatio = await globalConfig.communityFundRatio();
-                await globalConfig.updateCommunityFundRatio(new BN(20));
-                const afterCommunityFundRatio = await globalConfig.communityFundRatio();
-                expect(beforeCommunityFundRatio).to.be.bignumber.equal(new BN(10));
-                expect(afterCommunityFundRatio).to.be.bignumber.equal(new BN(20));
             });
         });
     });
