@@ -44,7 +44,7 @@ export class TestEngine {
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
         compoundTokens = require(configFile);
-        console.log(compoundTokens);
+        console.log(compoundTokens.Contracts.COMP);
     }
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
