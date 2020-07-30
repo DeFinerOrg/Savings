@@ -103,7 +103,9 @@ contract("SavingAccount.COMP", async (accounts) => {
                 console.log("beforeAmount: " + beforeAmount);
                 console.log("afterAmount: " + afterAmount);
                 //5. Withdraw COMP token.
-
+                await savingAccount.withdrawComp(new BN(afterAmount));
+                var afterAmount1 = await erc20MKR.balanceOf(savingAccount.address);
+                console.log("afterAmount1: " + afterAmount1);
                 //6. Compare the results..
             });
         });
