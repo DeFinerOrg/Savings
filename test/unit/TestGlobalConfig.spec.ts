@@ -21,6 +21,7 @@ contract("GlobalConfig", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let globalConfig: t.GlobalConfigInstance;
+    let COMPTokenAddress: string;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -36,6 +37,7 @@ contract("GlobalConfig", async (accounts) => {
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
+        COMPTokenAddress = await testEngine.getCOMPTokenAddress();
     });
 
     context("constructor", async () => {
@@ -150,12 +152,11 @@ contract("GlobalConfig", async (accounts) => {
 
             it("executing updateCompoundAddress", async () => {
                 const beforeCompoundAddress = await globalConfig.compoundAddress();
-                const compTokenAddress = compoundTokens.Contracts.COMP;
-                console.log(compTokenAddress);
-                await globalConfig.updateMinReserveRatio(compTokenAddress);
+                console.log(COMPTokenAddress);
+                await globalConfig.updateMinReserveRatio(COMPTokenAddress);
                 const afterCompoundAddress = await globalConfig.compoundAddress();
                 expect(beforeCompoundAddress).to.equal(addressZero);
-                expect(afterCompoundAddress).to.equal(compTokenAddress);
+                expect(afterCompoundAddress).to.equal(COMPTokenAddress);
             });
         });
     });

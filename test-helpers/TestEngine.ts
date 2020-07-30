@@ -194,4 +194,11 @@ export class TestEngine {
             aggregators[9]
         );
     }
+
+    public async getCOMPTokenAddress(): Promise<string> {
+        const network = process.env.NETWORK;
+        var COMPTokenAddress = compoundTokens.Contracts.COMP;
+
+        return COMPTokenAddress;
+    }
 }
