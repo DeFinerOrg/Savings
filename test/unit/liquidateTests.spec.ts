@@ -109,210 +109,210 @@ contract("SavingAccount.liquidate", async (accounts) => {
     });
 
     context("liquidate()", async () => {
-        context("with Token", async () => {
-            context("should fail", async () => {
-                it("when unsupported token address is passed", async () => {
-                    //Try depositting unsupported Token to SavingContract
-                    await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
-                });
+        // context("with Token", async () => {
+        //     context("should fail", async () => {
+        //         it("when unsupported token address is passed", async () => {
+        //             //Try depositting unsupported Token to SavingContract
+        //             await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
+        //         });
 
-                it("when tokenAddress is zero", async () => {
-                    //Try depositting zero address
-                    await expectRevert(
-                        savingAccount.liquidate(owner, addressZero),
-                        "Unsupported token"
-                    );
-                });
+        //         it("when tokenAddress is zero", async () => {
+        //             //Try depositting zero address
+        //             await expectRevert(
+        //                 savingAccount.liquidate(owner, addressZero),
+        //                 "Unsupported token"
+        //             );
+        //         });
 
-                it("when the ratio of borrowed money and collateral is less than 85%", async () => {
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
+        //         it("when the ratio of borrowed money and collateral is less than 85%", async () => {
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             // 2. Start borrowing.
+        //             await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
 
-                    await expectRevert(
-                        savingAccount.liquidate(user2, addressDAI),
-                        "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-                    );
-                });
+        //             await expectRevert(
+        //                 savingAccount.liquidate(user2, addressDAI),
+        //                 "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+        //             );
+        //         });
 
-                it("when collateral is not sufficient to be liquidated", async () => {
-                    // 2. Approve 1000 tokens
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    // 2. Start borrowing.
-                    const limitAmount = ONE_USDC.mul(await savingAccount.getCoinToETHRate(1))
-                        .mul(new BN(60))
-                        .div(new BN(100))
-                        .div(await savingAccount.getCoinToETHRate(0));
-                    await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
-                    // 3. Change the price.
-                    let updatedPrice = new BN(1);
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+        //         it("when collateral is not sufficient to be liquidated", async () => {
+        //             // 2. Approve 1000 tokens
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             // 2. Start borrowing.
+        //             const limitAmount = ONE_USDC.mul(await savingAccount.getCoinToETHRate(1))
+        //                 .mul(new BN(60))
+        //                 .div(new BN(100))
+        //                 .div(await savingAccount.getCoinToETHRate(0));
+        //             await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
+        //             // 3. Change the price.
+        //             let updatedPrice = new BN(1);
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                    await expectRevert(
-                        savingAccount.liquidate(user2, addressDAI),
-                        "Collateral is not sufficient to be liquidated."
-                    );
-                });
-            });
+        //             await expectRevert(
+        //                 savingAccount.liquidate(user2, addressDAI),
+        //                 "Collateral is not sufficient to be liquidated."
+        //             );
+        //         });
+        //     });
 
-            context("should succeed", async () => {
-                it("When user tries to liquidate partially", async () => {
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    const borrowAmt = new BN(await savingAccount.getCoinToETHRate(1))
-                        .mul(new BN(60))
-                        .div(new BN(100))
-                        .mul(ONE_DAI)
-                        .div(new BN(await savingAccount.getCoinToETHRate(0)));
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
-                    // 2. Start borrowing.
-                    /* const borrowingPower2 = await savingAccount.getTotalDepositsNow({ from: user2 });
-                    const borrowingPower1 = await savingAccount.getTotalDepositsNow({ from: user1 });
-                    const balances2 = await savingAccount.getBalances({ from: user2 }); */
+        //     context("should succeed", async () => {
+        //         it("When user tries to liquidate partially", async () => {
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             const borrowAmt = new BN(await savingAccount.getCoinToETHRate(1))
+        //                 .mul(new BN(60))
+        //                 .div(new BN(100))
+        //                 .mul(ONE_DAI)
+        //                 .div(new BN(await savingAccount.getCoinToETHRate(0)));
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI);
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+        //             // 2. Start borrowing.
+        //             /* const borrowingPower2 = await savingAccount.getTotalDepositsNow({ from: user2 });
+        //             const borrowingPower1 = await savingAccount.getTotalDepositsNow({ from: user1 });
+        //             const balances2 = await savingAccount.getBalances({ from: user2 }); */
 
-                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
-                    // 3. Change the price.
-                    let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
-                    // update price of DAI to 70% of it's value
-                    let updatedPrice = BN(USDCprice)
-                        .mul(new BN(7))
-                        .div(new BN(10));
+        //             await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+        //             // 3. Change the price.
+        //             let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+        //             // update price of DAI to 70% of it's value
+        //             let updatedPrice = BN(USDCprice)
+        //                 .mul(new BN(7))
+        //                 .div(new BN(10));
 
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
-                    // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+        //             // 4. Start liquidation.
+        //             const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
 
-                    await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
-                    expect(liquidateBefore).to.equal(true);
-                    expect(liquidateAfter).to.equal(true);
-                });
+        //             await savingAccount.liquidate(user2, addressDAI);
+        //             const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
+        //             expect(liquidateBefore).to.equal(true);
+        //             expect(liquidateAfter).to.equal(true);
+        //         });
 
-                it("When user tries to liquidate fully", async () => {
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
-                    // 2. Approve 1000 tokens
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI);
-                    const borrowAmt = new BN(await savingAccount.getCoinToETHRate(1))
-                        .mul(new BN(60))
-                        .div(new BN(100))
-                        .mul(ONE_DAI)
-                        .div(new BN(await savingAccount.getCoinToETHRate(0)));
-                    const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
-                    console.log(accountUSDC.toString());
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
-                    // 3. Change the price.
-                    let DAIprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
-                    // update price of DAI to 70% of it's value
-                    let updatedPrice = BN(DAIprice)
-                        .mul(new BN(7))
-                        .div(new BN(10));
+        //         it("When user tries to liquidate fully", async () => {
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
+        //             // 2. Approve 1000 tokens
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI);
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressDAI, ONE_DAI);
+        //             const borrowAmt = new BN(await savingAccount.getCoinToETHRate(1))
+        //                 .mul(new BN(60))
+        //                 .div(new BN(100))
+        //                 .mul(ONE_DAI)
+        //                 .div(new BN(await savingAccount.getCoinToETHRate(0)));
+        //             const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
+        //             console.log(accountUSDC.toString());
+        //             // 2. Start borrowing.
+        //             await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+        //             // 3. Change the price.
+        //             let DAIprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+        //             // update price of DAI to 70% of it's value
+        //             let updatedPrice = BN(DAIprice)
+        //                 .mul(new BN(7))
+        //                 .div(new BN(10));
 
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                    // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
-                    await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
-                    expect(liquidateBefore).to.equal(true);
-                    expect(liquidateAfter).to.equal(false);
-                });
+        //             // 4. Start liquidation.
+        //             const liquidateBefore = await savingAccount.isAccountLiquidatable(user2);
+        //             await savingAccount.liquidate(user2, addressDAI);
+        //             const liquidateAfter = await savingAccount.isAccountLiquidatable(user2);
+        //             expect(liquidateBefore).to.equal(true);
+        //             expect(liquidateAfter).to.equal(false);
+        //         });
 
-                it("Borrow USDC, when user tries to liquidate partially", async () => {
-                    await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
-                    const borrowAmt = new BN(await savingAccount.getCoinToETHRate(0))
-                        .mul(new BN(60))
-                        .div(new BN(100))
-                        .mul(ONE_USDC)
-                        .div(new BN(await savingAccount.getCoinToETHRate(1)));
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC);
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC.div(new BN(100)));
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
-                    // 3. Change the price.
-                    let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    // update price of DAI to 70% of it's value
-                    let updatedPrice = BN(DAIprice)
-                        .mul(new BN(7))
-                        .div(new BN(10));
+        //         it("Borrow USDC, when user tries to liquidate partially", async () => {
+        //             await mockChainlinkAggregatorforUSDC.updateAnswer(new BN(5309685000000000));
+        //             const borrowAmt = new BN(await savingAccount.getCoinToETHRate(0))
+        //                 .mul(new BN(60))
+        //                 .div(new BN(100))
+        //                 .mul(ONE_USDC)
+        //                 .div(new BN(await savingAccount.getCoinToETHRate(1)));
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC);
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC.div(new BN(100)));
+        //             // 2. Start borrowing.
+        //             await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
+        //             // 3. Change the price.
+        //             let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+        //             // update price of DAI to 70% of it's value
+        //             let updatedPrice = BN(DAIprice)
+        //                 .mul(new BN(7))
+        //                 .div(new BN(10));
 
-                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
-                    await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
-                    expect(liquidateBefore).to.equal(true);
-                    expect(liquidateAfter).to.equal(true);
-                });
+        //             await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+        //             // 4. Start liquidation.
+        //             const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
+        //             await savingAccount.liquidate(user1, addressUSDC);
+        //             const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
+        //             expect(liquidateBefore).to.equal(true);
+        //             expect(liquidateAfter).to.equal(true);
+        //         });
 
-                it("Borrow USDC, When user tries to liquidate fully", async () => {
-                    // 2. Approve 1000 tokens
-                    const borrowAmt = new BN(await savingAccount.getCoinToETHRate(0))
-                        .mul(new BN(60))
-                        .div(new BN(100))
-                        .mul(ONE_USDC)
-                        .div(new BN(await savingAccount.getCoinToETHRate(1)));
-                    await erc20DAI.transfer(user1, ONE_DAI);
-                    await erc20USDC.transfer(user2, ONE_USDC);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await erc20USDC.approve(savingAccount.address, ONE_USDC);
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
-                    await savingAccount.deposit(addressUSDC, ONE_USDC);
-                    const ctokenBal = await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    );
-                    console.log(ctokenBal.toString());
-                    // 2. Start borrowing.
-                    await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
-                    // 3. Change the price.
-                    let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    // update price of DAI to 70% of it's value
-                    let updatedPrice = BN(DAIprice)
-                        .mul(new BN(7))
-                        .div(new BN(10));
+        //         it("Borrow USDC, When user tries to liquidate fully", async () => {
+        //             // 2. Approve 1000 tokens
+        //             const borrowAmt = new BN(await savingAccount.getCoinToETHRate(0))
+        //                 .mul(new BN(60))
+        //                 .div(new BN(100))
+        //                 .mul(ONE_USDC)
+        //                 .div(new BN(await savingAccount.getCoinToETHRate(1)));
+        //             await erc20DAI.transfer(user1, ONE_DAI);
+        //             await erc20USDC.transfer(user2, ONE_USDC);
+        //             await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+        //             await erc20USDC.approve(savingAccount.address, ONE_USDC);
+        //             await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+        //             await savingAccount.deposit(addressUSDC, ONE_USDC);
+        //             const ctokenBal = await cTokenUSDC.balanceOfUnderlying.call(
+        //                 savingAccount.address
+        //             );
+        //             console.log(ctokenBal.toString());
+        //             // 2. Start borrowing.
+        //             await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
+        //             // 3. Change the price.
+        //             let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+        //             // update price of DAI to 70% of it's value
+        //             let updatedPrice = BN(DAIprice)
+        //                 .mul(new BN(7))
+        //                 .div(new BN(10));
 
-                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+        //             await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
-                    // 4. Start liquidation.
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
-                    await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
-                    expect(liquidateBefore).to.equal(true);
-                    expect(liquidateAfter).to.equal(false);
-                });
-            });
-        });
+        //             // 4. Start liquidation.
+        //             const liquidateBefore = await savingAccount.isAccountLiquidatable(user1);
+        //             await savingAccount.liquidate(user1, addressUSDC);
+        //             const liquidateAfter = await savingAccount.isAccountLiquidatable(user1);
+        //             expect(liquidateBefore).to.equal(true);
+        //             expect(liquidateAfter).to.equal(false);
+        //         });
+        //     });
+        // });
 
         context("with ETH", async () => {
             context("should fail", async () => {
@@ -322,6 +322,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .mul(ONE_ETH)
                         .div(new BN(await savingAccount.getCoinToETHRate(9)));
+                    console.log((await savingAccount.getCoinToETHRate(0)).toString());
+                    console.log((await savingAccount.getCoinToETHRate(9)).toString());
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
