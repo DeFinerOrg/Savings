@@ -471,6 +471,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
+                // TODO: ETH not getting deposited on Compound..
                 it("Transfer large amount of balance", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
@@ -489,23 +490,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         value: depositAmount,
                         from: user1,
                     });
-
-                    const ETHbalance1 = await web3.eth.getBalance(
-                        savingAccount.address
-                    );
-
-                    console.log(ETHbalance1.toString())
-
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
                         from: user2,
                     });
-
-                    const ETHbalance2 = await web3.eth.getBalance(
-                        savingAccount.address
-                    );
-
-                    console.log(ETHbalance2.toString())
 
                     // Verify balances of user1 & user2 after deposit
                     let user1BalanceAfterDeposit = await savingAccount.tokenBalance(ETH_ADDRESS, {
