@@ -471,7 +471,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                // TODO: ETH not getting deposited on Compound..
                 it("Transfer large amount of balance", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
