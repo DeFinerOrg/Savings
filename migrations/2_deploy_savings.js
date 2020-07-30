@@ -1,5 +1,7 @@
 var tokenData = require("../test-helpers/tokenData.json");
-// var compound = require("../compound-protocol/networks/development.json");
+var compound = require("../compound-protocol/networks/development.json");
+
+console.log(compound);
 
 const { BN } = require("@openzeppelin/test-helpers");
 
