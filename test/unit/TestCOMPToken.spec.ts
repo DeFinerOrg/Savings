@@ -97,14 +97,14 @@ contract("SavingAccount.COMP", async (accounts) => {
                 await erc20DAI.approve(savingAccount.address, ONE_DAI);
                 await savingAccount.deposit(erc20DAI.address, ONE_DAI);
                 //4. After a while.
-                var beforeAmount = await erc20MKR.balanceOf(savingAccount.address);
+                var beforeAmount = await erc20COMP.balanceOf(savingAccount.address);
                 await savingAccount.fastForward(100000);
-                var afterAmount = await erc20MKR.balanceOf(savingAccount.address);
+                var afterAmount = await erc20COMP.balanceOf(savingAccount.address);
                 console.log("beforeAmount: " + beforeAmount);
                 console.log("afterAmount: " + afterAmount);
                 //5. Withdraw COMP token.
                 await savingAccount.withdrawComp(new BN(afterAmount));
-                var afterAmount1 = await erc20MKR.balanceOf(savingAccount.address);
+                var afterAmount1 = await erc20COMP.balanceOf(savingAccount.address);
                 console.log("afterAmount1: " + afterAmount1);
                 //6. Compare the results..
             });
