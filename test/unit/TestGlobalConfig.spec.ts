@@ -89,6 +89,20 @@ contract("GlobalConfig", async (accounts) => {
                     "LiquidationDiscountRatio is zero"
                 );
             });
+
+            it("When executing updateDeFinerCommunityFund, the input parameter is zero.", async () => {
+                await expectRevert(
+                    globalConfig.updateDeFinerCommunityFund(addressZero),
+                    "deFinerCommunityFund is zero"
+                );
+            });
+
+            it("When executing updateCompoundAddress, the input parameter is zero.", async () => {
+                await expectRevert(
+                    globalConfig.updateCompoundAddress(addressZero),
+                    "compoundAddress is zero"
+                );
+            });
         });
 
         context("should succeed", async () => {
@@ -152,7 +166,7 @@ contract("GlobalConfig", async (accounts) => {
             it("executing updateCompoundAddress", async () => {
                 const beforeCompoundAddress = await globalConfig.compoundAddress();
                 console.log(COMPTokenAddress);
-                await globalConfig.updateMinReserveRatio(COMPTokenAddress);
+                await globalConfig.updateCompoundAddress(COMPTokenAddress);
                 const afterCompoundAddress = await globalConfig.compoundAddress();
                 expect(beforeCompoundAddress).to.equal(addressZero);
                 expect(afterCompoundAddress).to.equal(COMPTokenAddress);
