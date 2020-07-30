@@ -93,7 +93,7 @@ contract("SavingAccount.COMP", async (accounts) => {
                 //2. set COMPToken address.
                 await globalConfig.updateCompoundAddress(COMPTokenAddress);
                 //3. Deposit token.
-                const ONE_DAI = eighteenPrecision.mul(new BN(1));
+                const ONE_DAI = eighteenPrecision.mul(new BN(10000));
                 await erc20DAI.approve(savingAccount.address, ONE_DAI);
                 await savingAccount.deposit(erc20DAI.address, ONE_DAI);
                 //4. After a while.
