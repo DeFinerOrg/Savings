@@ -4,7 +4,6 @@ import { TestEngine } from "../../test-helpers/TestEngine";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../test-helpers/tokenData.json");
-var compoundTokens: any = require("../../compound-protocol/networks/development.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
