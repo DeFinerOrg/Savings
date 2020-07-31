@@ -48,14 +48,12 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressUSDC = tokens[1];
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
-        // Use ERC20 from OZ, import this
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        // Use CERC20, import from Compound
         cDAI = await MockCToken.at(addressCTokenForDAI);
         cUSDC = await MockCToken.at(addressCTokenForUSDC);
     });
