@@ -25,8 +25,8 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressUSDC: any;
     let addressTUSD: any;
     let addressMKR: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
     let erc20DAI: t.ERC20Instance;
@@ -52,10 +52,10 @@ contract("SavingAccount.deposit", async (accounts) => {
         erc20USDC = await ERC20.at(addressUSDC);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        cDAI = await MockCToken.at(addressCTokenForDAI);
-        cUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
     });
 
     context("deposit()", async () => {
@@ -142,9 +142,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             erc20DAI.address
                         );
 
-                        const balCTokenContractBefore = await erc20DAI.balanceOf(
-                            addressCTokenForDAI
-                        );
+                        const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
                         const balCTokensBefore = await cDAI.balanceOf(savingAccount.address);
 
                         // 2. Deposit Token to SavingContract
@@ -175,10 +173,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        // change variable name addressCTokenForDAI --> cDAI_addr
+                        // change variable name cDAI_addr --> cDAI_addr
                         // balanceOfUnderlying -- erc20 token balance
                         // should equal cDAI.balanceOf
-                        const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
+                        const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
                         expect(
                             new BN(balCTokenContractBefore).add(
                                 new BN(expectedTokensAtCTokenContract)
@@ -208,9 +206,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             erc20DAI.address
                         );
 
-                        const balCTokenContractBefore = await erc20DAI.balanceOf(
-                            addressCTokenForDAI
-                        );
+                        const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
 
                         // 2. Deposit Token to SavingContract
                         await savingAccount.deposit(erc20DAI.address, numOfToken);
@@ -240,7 +236,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokenContract = await erc20DAI.balanceOf(addressCTokenForDAI);
+                        const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
                         expect(
                             new BN(balCTokenContractBefore).add(
                                 new BN(expectedTokensAtCTokenContract)
@@ -270,9 +266,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             erc20USDC.address
                         );
 
-                        const balCTokenContractBefore = await erc20USDC.balanceOf(
-                            addressCTokenForUSDC
-                        );
+                        const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
 
                         // 2. Deposit Token to SavingContract
                         await savingAccount.deposit(erc20USDC.address, numOfToken);
@@ -302,7 +296,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
+                        const balCTokenContract = await erc20USDC.balanceOf(cUSDC_addr);
                         expect(
                             new BN(balCTokenContractBefore).add(
                                 new BN(expectedTokensAtCTokenContract)
@@ -330,9 +324,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             erc20USDC.address
                         );
 
-                        const balCTokenContractBefore = await erc20USDC.balanceOf(
-                            addressCTokenForUSDC
-                        );
+                        const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
 
                         // 2. Deposit Token to SavingContract
                         await savingAccount.deposit(erc20USDC.address, numOfToken);
@@ -362,7 +354,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokenContract = await erc20USDC.balanceOf(addressCTokenForUSDC);
+                        const balCTokenContract = await erc20USDC.balanceOf(cUSDC_addr);
                         expect(
                             new BN(balCTokenContractBefore).add(
                                 new BN(expectedTokensAtCTokenContract)
