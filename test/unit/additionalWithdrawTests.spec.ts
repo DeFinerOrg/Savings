@@ -83,7 +83,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
     });
 
     context("Addtional tests for withdraw", async () => {
-
         context("Deposit and withdraw with multiple kinds of tokens.", async () => {
             context("Should succeed", async () => {
                 it("Deposit DAI and USDC, withdraw partially", async () => {

@@ -3,6 +3,7 @@ pragma solidity 0.5.14;
 import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
 
+// This file is only for testing purpose only
 contract SavingAccountWithController  is SavingAccount {
 
     address comptroller;
@@ -46,5 +47,29 @@ contract SavingAccountWithController  is SavingAccount {
      */
     function getBlockNumber() public view returns (uint) {
         return IController(comptroller).getBlockNumber();
+    }
+
+    function newRateIndexCheckpoint(address _token) public {
+        baseVariable.newRateIndexCheckpoint(_token);
+    }
+
+    function getDepositPrincipal(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.depositPrincipal;
+    }
+
+    function getDepositInterest(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.depositInterest;
+    }
+
+    function getBorrowPrincipal(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.borrowPrincipal;
+    }
+
+    function getBorrowInterest(address _token) public view returns (uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
+        return tokenInfo.borrowInterest;
     }
 }
