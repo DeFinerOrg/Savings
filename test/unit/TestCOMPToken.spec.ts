@@ -99,6 +99,7 @@ contract("SavingAccount.COMP", async (accounts) => {
                 //4. After a while.
                 var beforeAmount = await erc20COMP.balanceOf(savingAccount.address);
                 await savingAccount.fastForward(100000);
+                await savingAccount.withdraw(erc20DAI.address, eighteenPrecision);
                 var afterAmount = await erc20COMP.balanceOf(savingAccount.address);
                 console.log("beforeAmount: " + beforeAmount);
                 console.log("afterAmount: " + afterAmount);
