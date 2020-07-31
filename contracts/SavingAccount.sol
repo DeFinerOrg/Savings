@@ -107,13 +107,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token addrss
      * @return the current deposits, loans, and collateral ratio of the token
 	 */
-    function getTokenState(address _token) public view returns (
+    function getTokenStateStore(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral
     )
     {
-        return baseVariable.getTokenState(_token);
+        return baseVariable.getTokenStateStore(_token);
     }
 
 	/**
@@ -192,6 +192,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if there are enough collaterals after withdraw
@@ -210,7 +211,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, lastCheckpoint);
         tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
         // Set the borrow bitmap
@@ -220,8 +221,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
+        baseVariable.updateTotalLoan(_token, lastCheckpoint);
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow);
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
@@ -241,6 +242,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         receive(msg.sender, _amount, _token);
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Sanity check
@@ -250,7 +252,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         );
 
         // Update tokenInfo
-        uint rate = baseVariable.getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
+        uint rate = baseVariable.getBorrowAccruedRate(_token,lastCheckpoint);
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         tokenInfo.repay(amount, rate, this.getBlockNumber());
@@ -262,7 +264,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalLoan(_token, lastCheckpoint);
         baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Repay);
 
         // Send the remain money back
@@ -300,10 +302,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_to].tokenInfos[_token];
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, lastCheckpoint);
         tokenInfo.deposit(_amount, accruedRate, this.getBlockNumber());
 
         // Set the deposit bitmap
@@ -312,8 +315,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
+        baseVariable.updateTotalLoan(_token, lastCheckpoint);
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit);
     }
 
     /**
@@ -341,6 +344,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
@@ -362,7 +366,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, lastCheckpoint);
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
@@ -379,8 +383,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+        baseVariable.updateTotalLoan(_token, lastCheckpoint);
+        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw);
 
         return amount;
     }
