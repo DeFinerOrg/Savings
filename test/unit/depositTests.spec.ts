@@ -373,7 +373,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                 });
             });
 
-            context("Compound unsupported 6 decimals Token", async () => {
+            context("Compound unsupported Token", async () => {
                 context("Should succeed", async () => {
                     // When Compound unsupported tokens are passed
                     it("when TUSD address is passed", async () => {
