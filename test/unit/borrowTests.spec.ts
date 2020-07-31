@@ -365,9 +365,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                /*
-                todo: The amount is too small to recognize LTV.
-                 */
                 it("when user tries to borrow more than initial LTV (ILTV)", async () => {
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
