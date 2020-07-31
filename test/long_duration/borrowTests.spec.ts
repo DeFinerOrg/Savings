@@ -52,8 +52,6 @@ contract("SavingAccount.borrow", async (accounts) => {
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
@@ -117,8 +115,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -166,13 +162,19 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(HALF_DAI);
-                    const compoundBeforeFastForward = BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
+                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                        HALF_DAI
+                    );
+                    const compoundBeforeFastForward = BN(
+                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
-                    const tokenState = await savingAccount.getTokenState(addressDAI, { from: user2 });
+                    const tokenState = await savingAccount.getTokenState(addressDAI, {
+                        from: user2
+                    });
 
                     // Verify that reservation equals to the token in pool's address
                     const reservation = BN(await erc20DAI.balanceOf(savingAccount.address));
@@ -180,19 +182,47 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Verifty that compound equals cToken underlying balance in pool's address
                     // It also verifies that (Deposit = Loan + Compound + Reservation)
-                    const compoundAfterFastForward = BN(await cTokenDAI.balanceOfUnderlying.call(savingAccount.address));
-                    expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);
+                    const compoundAfterFastForward = BN(
+                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    expect(
+                        BN(tokenState[0])
+                            .sub(tokenState[1])
+                            .sub(tokenState[2])
+                    ).to.be.bignumber.equal(compoundAfterFastForward);
 
                     // 3.2 Vefity the ledger of individual users
-                    const user1DepositPrincipal = await savingAccount.getDepositPrincipal(addressDAI, { from: user1 });
-                    const user1DepositInterest = await savingAccount.getDepositInterest(addressDAI, { from: user1 } );
-                    const user2DepositPrincipal = await savingAccount.getDepositPrincipal(addressDAI, { from: user2 });
-                    const user2DepositInterest = await savingAccount.getDepositInterest(addressDAI, { from: user2 });
-                    const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(addressDAI, { from: user1 });
-                    const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, { from: user1 } );
-                    const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(addressDAI, { from: user2 });
-                    const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, { from: user2 });
-                    
+                    const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    const user1DepositInterest = await savingAccount.getDepositInterest(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    const user2DepositPrincipal = await savingAccount.getDepositPrincipal(
+                        addressDAI,
+                        { from: user2 }
+                    );
+                    const user2DepositInterest = await savingAccount.getDepositInterest(
+                        addressDAI,
+                        { from: user2 }
+                    );
+                    const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
+                        from: user1
+                    });
+                    const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                        addressDAI,
+                        { from: user2 }
+                    );
+                    const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
+                        from: user2
+                    });
+
                     // Verify the pricipal
                     expect(user1DepositPrincipal).to.be.bignumber.equal(ONE_DAI);
                     expect(user2DepositPrincipal).to.be.bignumber.equal(ONE_DAI);
@@ -203,16 +233,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(compoundBeforeFastForward);
-                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
-                    
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundBeforeFastForward
+                    );
+                    expect(
+                        BN(totalBorrowInterest).add(totalCompoundInterest)
+                    ).to.be.bignumber.equal(totalDepositInterest);
+
                     // Second, verify the interest rate calculation. Need to fill the value from
                     // the rate simulator. (TODO)
                     expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(0));
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(0));
                 });
-                
+
                 // modified
                 /*
                 it("Deposit DAI & USDC then borrow DAI", async () => {
