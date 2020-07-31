@@ -60,7 +60,6 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockERC20Instance;
 
-
     context("Compound Model Validation", async () => {
         context("Uses WhitePaper Model", async () => {
             before(async () => {
@@ -109,12 +108,16 @@ contract("Integration Tests", async (accounts) => {
             it("Deposit DAI and checkout the output rate", async () => {
                 console.log("-------------------------Initial Value---------------------------");
                 // 1. Check the compound rate before deposit
-                const borrowRateBeforeDeposit = await cTokenZRX.borrowRatePerBlock({from: user1});
-                const depositRateBeforeDeposit = await cTokenZRX.supplyRatePerBlock({from: user1});
-                console.log("Borrow rate ", borrowRateBeforeDeposit.toString())
-                console.log("Deposit rate ", depositRateBeforeDeposit.toString())
+                const borrowRateBeforeDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateBeforeDeposit = await cTokenZRX.supplyRatePerBlock({
+                    from: user1
+                });
+                console.log("Borrow rate ", borrowRateBeforeDeposit.toString());
+                console.log("Deposit rate ", depositRateBeforeDeposit.toString());
 
-                const balCTokenContract = await cTokenZRX.balanceOfUnderlying.call(savingAccount.address);
+                const balCTokenContract = await cTokenZRX.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
                 const balTokenZRX = await erc20ZRX.balanceOf(savingAccount.address);
                 console.log("balCTokenContract = ", balCTokenContract.toString());
                 console.log("balTokenZRX = ", balTokenZRX.toString());
@@ -122,7 +125,9 @@ contract("Integration Tests", async (accounts) => {
                 // 2. User 1 deposits 1 ZRX
                 const numOfZRX = eighteenPrecision;
                 await erc20ZRX.transfer(user1, numOfZRX.mul(new BN(4)));
-                await erc20ZRX.approve(savingAccount.address, numOfZRX.mul(new BN(4)), { from: user1 });
+                await erc20ZRX.approve(savingAccount.address, numOfZRX.mul(new BN(4)), {
+                    from: user1
+                });
                 await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
                 // await erc20DAI.transfer(user2, numOfZRX.mul(new BN(4)));
                 // await erc20DAI.approve(savingAccount.address, numOfZRX.mul(new BN(4)), { from: user2 });
@@ -130,33 +135,43 @@ contract("Integration Tests", async (accounts) => {
                 // await savingAccount.borrow(addressZRX, numOfZRX.div(new BN(2)), { from: user2 });
                 console.log("---------------------------After Deposit---------------------------");
 
-                const balCTokenContract1 = await cTokenZRX.balanceOfUnderlying.call(savingAccount.address);
+                const balCTokenContract1 = await cTokenZRX.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
                 const balTokenZRX1 = await erc20ZRX.balanceOf(savingAccount.address);
                 console.log("balCTokenContract = ", balCTokenContract1.toString());
                 console.log("balTokenZRX = ", balTokenZRX1.toString());
                 // 3. Advance 175,200 blocks, which roughly equals one month
                 const b1 = await savingAccount.getBlockNumber({ from: user1 });
                 console.log("Block number = ", b1.toString());
-                const borrowRateAfterDeposit = await cTokenZRX.borrowRatePerBlock({from: user1});
-                const depositRateAfterDeposit = await cTokenZRX.supplyRatePerBlock({from: user1});
+                const borrowRateAfterDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateAfterDeposit = await cTokenZRX.supplyRatePerBlock({ from: user1 });
                 console.log("Borrow rate ", borrowRateAfterDeposit.toString());
                 console.log("Deposit rate ", depositRateAfterDeposit.toString());
 
                 await savingAccount.fastForward(100000000);
-                console.log("------------------------100000000 blocks later------------------------");
+                console.log(
+                    "------------------------100000000 blocks later------------------------"
+                );
                 const b2 = await savingAccount.getBlockNumber({ from: user1 });
                 console.log("Block number = ", b2.toString());
 
                 // await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
 
-                const balCTokenContract2 = await cTokenZRX.balanceOfUnderlying.call(savingAccount.address);
+                const balCTokenContract2 = await cTokenZRX.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
                 const balTokenZRX2 = await erc20ZRX.balanceOf(savingAccount.address);
                 console.log("balCTokenContract = ", balCTokenContract2.toString());
                 console.log("balTokenZRX = ", balTokenZRX2.toString());
 
                 // 4. Check the compound rate after deposit
-                const borrowRateAfterFastForward = await cTokenZRX.borrowRatePerBlock({from: user1});
-                const depositRateAfterFastForward = await cTokenZRX.supplyRatePerBlock({from: user1});
+                const borrowRateAfterFastForward = await cTokenZRX.borrowRatePerBlock({
+                    from: user1
+                });
+                const depositRateAfterFastForward = await cTokenZRX.supplyRatePerBlock({
+                    from: user1
+                });
                 console.log("Borrow rate ", borrowRateAfterFastForward.toString());
                 console.log("Deposit rate ", depositRateAfterFastForward.toString());
                 /*
@@ -166,6 +181,123 @@ contract("Integration Tests", async (accounts) => {
                 const depositRateAfterBorrow = await cTokenZRX.supplyRatePerBlock({from: user1});
                 console.log("Borrow rate ", borrowRateAfterBorrow.toString());
                 console.log("Deposit rate ", depositRateAfterBorrow.toString());*/
+            });
+
+            it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
+                console.log(
+                    "-------------------------Initial Value Index---------------------------"
+                );
+                const numOfToken = new BN(10).pow(new BN(6));
+
+                // Deposit all tokens
+                for (let i = 0; i < 9; i++) {
+                    tempContractAddress = tokens[i];
+                    erc20contr = await MockERC20.at(tempContractAddress);
+
+                    if (i != 3 && i != 4) {
+                        addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                            tempContractAddress
+                        );
+                        cTokenTemp = await MockCToken.at(addressCTokenTemp);
+                    }
+
+                    await erc20contr.approve(savingAccount.address, numOfToken);
+                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+                    const balCTokenContract = await cTokenTemp.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const balTokenTemp = await erc20contr.balanceOf(savingAccount.address);
+                    console.log("balCTokenContract = ", balCTokenContract.toString());
+                    console.log("balTokenTemp = ", balTokenTemp.toString());
+
+                    console.log("TokenI", i);
+                    await savingAccount.deposit(erc20contr.address, numOfToken);
+
+                    //Verify if deposit was successful
+                    if (i != 3 && i != 4) {
+                        const expectedTokensAtSavingAccountContract = numOfToken
+                            .mul(new BN(15))
+                            .div(new BN(100));
+                        const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                        expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                            balSavingAccount
+                        );
+                    } else {
+                        const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                        expect(numOfToken).to.be.bignumber.equal(balSavingAccount);
+                    }
+
+                    // Validate the total balance on DeFiner after deposit
+                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+
+                    const totalDefinerBalanceChange = new BN(
+                        totalDefinerBalanceAfterDeposit[0]
+                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
+
+                    console.log(
+                        "---------------------------After Deposit Index---------------------------"
+                    );
+
+                    const balCTokenContract1 = await cTokenTemp.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const balTokenTemp1 = await erc20contr.balanceOf(savingAccount.address);
+                    console.log("balCTokenContract = ", balCTokenContract1.toString());
+                    console.log("balTokenZRX = ", balTokenTemp1.toString());
+
+                    const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                    console.log("Block number = ", b1.toString());
+                    const borrowRateAfterDeposit = await cTokenTemp.borrowRatePerBlock({
+                        from: user1
+                    });
+                    const depositRateAfterDeposit = await cTokenTemp.supplyRatePerBlock({
+                        from: user1
+                    });
+                    console.log("Borrow rate ", borrowRateAfterDeposit.toString());
+                    console.log("Deposit rate ", depositRateAfterDeposit.toString());
+
+                    await savingAccount.fastForward(100000000);
+                    console.log(
+                        "------------------------100000000 blocks later------------------------"
+                    );
+                    const b2 = await savingAccount.getBlockNumber({ from: user1 });
+                    console.log("Block number = ", b2.toString());
+
+                    // await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
+
+                    const balCTokenContract2 = await cTokenTemp.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    const balTokenTemp2 = await erc20contr.balanceOf(savingAccount.address);
+                    console.log("balCTokenContract = ", balCTokenContract2.toString());
+                    console.log("balTokenTemp = ", balTokenTemp2.toString());
+                }
+
+                // Advance blocks by 1 week
+
+                for (let j = 0; j < 9; j++) {
+                    console.log("TokenI", j);
+
+                    tempContractAddress = tokens[j];
+                    erc20contr = await MockERC20.at(tempContractAddress);
+
+                    //await savingAccount.withdrawAll(erc20contr.address);
+
+                    //Verify if withdrawAll was successful
+                    const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                    //expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+
+                    // Verify DeFiner balance
+                    const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
+                        erc20contr.address
+                    );
+                    //expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw[0]);
+                }
             });
         });
     });
