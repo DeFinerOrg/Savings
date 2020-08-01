@@ -20,12 +20,12 @@
 
 require("ts-node/register");
 
-// const HDWalletProvider = require("@truffle/hdwallet-provider");
-// const fs = require("fs");
-// const mnemonic = fs
-//   .readFileSync(".secret")
-//   .toString()
-//   .trim();
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const fs = require("fs");
+const mnemonic = fs
+    .readFileSync(".secret")
+    .toString()
+    .trim();
 
 module.exports = {
     // this is required by truffle to find any ts test files
@@ -58,7 +58,7 @@ module.exports = {
             host: "127.0.0.1",
             port: 8546,
             network_id: "*"
-        }
+        },
 
         // rinkeby: {
         //   provider: () =>
@@ -71,6 +71,18 @@ module.exports = {
         //   gas: 6000000,
         //   gasPrice: 15000000000,
         // },
+
+        ropsten: {
+            provider: () =>
+                new HDWalletProvider(
+                    mnemonic,
+                    "https://ropsten.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                ),
+            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            network_id: 3,
+            gas: 6000000,
+            gasPrice: 15000000000,
+        }
     },
 
     plugins: ["solidity-coverage"],

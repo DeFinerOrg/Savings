@@ -15,9 +15,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
                 "aggregatorAddress": "0x037E8F2125bF532F3e228991e051c8A7253B642c",
-                "cTokenAddress": "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff"
+                "cTokenAddress": "0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c"
             }
         },
 
@@ -36,9 +36,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0x0d9c8723b343a8368bebe0b5e89273ff8d712e3c",
                 "aggregatorAddress": "0xE1480303DDe539E2c241bdC527649F37c9cBef7d",
-                "cTokenAddress": "0x20572e4c090f15667cf7378e16fad2ea0e2f3eff"
+                "cTokenAddress": "0x8af93cae804cc220d1a608d4fa54d1b6ca5eb361"
             }
         },
 
@@ -57,9 +57,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0x516de3a7a567d81737e3a46ec4ff9cfd1fcb0136",
                 "aggregatorAddress": "0xC08fe0C4D97ccda6B40649c6dA621761b628c288",
-                "cTokenAddress": "0xb6f7f1901ffbcbadf9cd9831a032395105bc3142"
+                "cTokenAddress": "0x135669c2dcbd63f639582b313883f101a4497f76"
             }
         },
 
@@ -78,7 +78,7 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0xaC4dd0482225A6F5dFeC32d0A82459E7236c17a9",
                 "aggregatorAddress": "0x523AC85618DF56E940534443125eF16DAf785620",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
@@ -99,7 +99,7 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0x324f9f8E9e21ce8a25bf7A6d4f90ADa79fA24B18",
                 "aggregatorAddress": "0x811B1f727F8F4aE899774B568d2e72916D91F392",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
@@ -120,9 +120,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0x443fd8d5766169416ae42b8e050fe9422f628419",
                 "aggregatorAddress": "0xAfd8186C962daf599f171B8600f3e19Af7B52c92",
-                "cTokenAddress": "0xa253295ec2157b8b69c44b2cb35360016daa25b1"
+                "cTokenAddress": "0x9e95c0b2412ce50c37a121622308e7a6177f819d"
             }
         },
 
@@ -141,9 +141,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0xe4c6182ea459e63b8f1be7c428381994ccc2d49c",
                 "aggregatorAddress": "0x1d0052E4ae5b4AE4563cBAc50Edc3627Ca0460d7",
-                "cTokenAddress": "0x3a728dd027ad6f76cdea227d5cf5ba7ce9390a3d"
+                "cTokenAddress": "0x00e02a5200ce3d5b5743f5369deb897946c88121"
             }
         },
 
@@ -162,9 +162,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0x6fd34013cdd2905d8d27b0adad5b97b2345cf2b8",
                 "aggregatorAddress": "0xa949eE9bA80c0F381481f2eaB538bC5547a5aC67",
-                "cTokenAddress": "0x5d4373f8c1af21c391ad7ec755762d8dd3cca809"
+                "cTokenAddress": "0x8f2c8b147a3d316d2b98f32f3864746f034a55a2"
             }
         },
 
@@ -183,9 +183,9 @@
             },
 
             "ropsten": {
-                "tokenAddress": "",
+                "tokenAddress": "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
                 "aggregatorAddress": "0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF",
-                "cTokenAddress": "0x4d15ee7de1f86248c986f5ae7dce855b1c1a8806"
+                "cTokenAddress": "0x58145bc5407d63daf226e4870beeb744c588f149"
             }
         }
     ],
@@ -199,7 +199,7 @@
         },
 
         "ropsten": {
-            "cTokenAddress": "0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff"
+            "cTokenAddress": "0xbe839b6d93e3ea47effcca1f27841c917a8794f3"
         }
     }
 }
