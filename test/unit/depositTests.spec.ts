@@ -173,9 +173,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        // change variable name cDAI_addr --> cDAI_addr
-                        // balanceOfUnderlying -- erc20 token balance
-                        // should equal cDAI.balanceOf
                         const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
                         expect(
                             new BN(balCTokenContractBefore).add(
