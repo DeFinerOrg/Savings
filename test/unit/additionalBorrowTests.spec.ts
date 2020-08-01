@@ -47,15 +47,11 @@ contract("SavingAccount.borrow", async (accounts) => {
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
     let addressCTokenForWBTC: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
@@ -101,7 +97,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
         erc20WBTC = await ERC20.at(addressWBTC);
 
         erc20DAI = await ERC20.at(addressDAI);
@@ -113,13 +109,9 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(

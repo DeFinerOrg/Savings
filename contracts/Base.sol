@@ -339,8 +339,8 @@ library Base {
         uint _previousCheckpoint
     ) internal view returns (uint256) {
         // The current block has to be a checkpoint in order to calculate the compounded rate
-        require(self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] != 0,
-            "No rate checkpoint in this block.");
+        // require(self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] != 0,
+        //     "No rate checkpoint in this block.");
         uint256 depositRate = self.depositeRateIndex[_token][_previousCheckpoint];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         if (depositRate == 0) {

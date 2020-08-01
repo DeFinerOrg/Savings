@@ -52,8 +52,6 @@ contract("SavingAccount.borrow", async (accounts) => {
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
@@ -118,8 +116,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -220,7 +216,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
                 });
-                
+
                 // modified
                 /*
                 it("Deposit DAI & USDC then borrow DAI", async () => {
