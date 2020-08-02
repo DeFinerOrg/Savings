@@ -72,11 +72,23 @@ module.exports = {
         //   gasPrice: 15000000000,
         // },
 
-        ropsten: {
+        // ropsten: {
+        //     provider: () =>
+        //         new HDWalletProvider(
+        //             mnemonic,
+        //             "https://ropsten.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //         ),
+        //     from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+        //     network_id: 3,
+        //     gas: 6000000,
+        //     gasPrice: 15000000000,
+        // }
+
+        kovan: {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://ropsten.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    "https://kovan.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
                 ),
             from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
             network_id: 3,
