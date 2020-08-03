@@ -29,11 +29,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
-    address payable public EMERGENCY_ADDR;
-    address public ETH_ADDR;
-    uint256 public ACCURACY;
-    uint256 public BLOCKS_PER_YEAR;
-    uint256 public UINT_UNIT;
+    address payable public EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
+    address public ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    uint256 public UINT_UNIT = 10 ** 18;
 
     event DepositorOperations(uint256 indexed code, address token, address from, address to, uint256 amount);   
 
@@ -80,18 +78,16 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         symbols.initialize(params.tokenNames(), _tokenAddresses, _chainlinkAddress);
         baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this));
-        for(uint i = 0;i < _tokenAddresses.length;i++) {
-            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
-                baseVariable.approveAll(_tokenAddresses[i]);
-            }
-        }
+        // for(uint i = 0;i < _tokenAddresses.length;i++) {
+        //     if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
+        //         baseVariable.approveAll(_tokenAddresses[i]);
+        //     }
+        // }
 
         //Initialize constants defined in this contract
-        EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
-        ETH_ADDR = 0x000000000000000000000000000000000000000E;
-        ACCURACY = 10**18;
-        BLOCKS_PER_YEAR = 2102400;
-        UINT_UNIT = 10 ** 18;
+        // EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
+        // ETH_ADDR = 0x000000000000000000000000000000000000000E;
+        // UINT_UNIT = 10 ** 18;
     }
 
     /**
@@ -138,9 +134,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     /**
      * Get the total number of suppported tokens
      */
-    function getCoinLength() public view returns(uint256 length) {
-        return symbols.getCoinLength();
-    }
+    // function getCoinLength() public view returns(uint256 length) {
+    //     return symbols.getCoinLength();
+    // }
 
     /**
 	 * Get token balances for the sender's account
@@ -154,9 +150,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         return (baseVariable.getDepositBalance(_token, msg.sender), baseVariable.getBorrowBalance(_token, msg.sender));
     }
 
-    function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
-        return symbols.priceFromIndex(_coinIndex);
-    }
+    // function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
+    //     return symbols.priceFromIndex(_coinIndex);
+    // }
 
     /**
      * Get current block number
