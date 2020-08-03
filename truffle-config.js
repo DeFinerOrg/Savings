@@ -66,7 +66,7 @@ module.exports = {
                     mnemonic,
                     "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
                 ),
-            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
             network_id: 4,
             gas: 6000000,
             gasPrice: 15000000000,
