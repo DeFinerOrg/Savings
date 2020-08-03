@@ -20,7 +20,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 // var compoundTokens: any = require("../compound-protocol/networks/development.json");
 var compoundTokens: any;
-const addressZero: string = "0x0000000000000000000000000000000000000001";
+const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngine {
@@ -68,8 +68,8 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cDAI);
         cTokensCompound.push(compoundTokens.Contracts.cUSDC);
         cTokensCompound.push(compoundTokens.Contracts.cUSDT);
-        cTokensCompound.push(compoundTokens.Contracts.cTUSD);
-        cTokensCompound.push(compoundTokens.Contracts.cMKR);
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cBAT);
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);

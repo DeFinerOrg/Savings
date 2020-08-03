@@ -192,18 +192,9 @@ library Base {
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(BaseVariable storage self, address _token) public {
-        uint balance = self.totalLoans[_token];
-        uint rate = getBorrowAccruedRate(self, _token, self.lastCheckpoint[_token]);
-        if(
-            rate == 0 ||
-            balance == 0 ||
-            SafeDecimalMath.getUNIT() > rate
-        ) {
-            self.totalLoans[_token] = balance;
-        } else {
-            self.totalLoans[_token] = balance.mul(rate).div(SafeDecimalMath.getUNIT());
-        }
+    function updateTotalLoan(BaseVariable storage self, address _token, uint256 _block) public {
+        uint rate = getBorrowAccruedRate(self, _token, _block);
+        self.totalLoans[_token] = self.totalLoans[_token].mul(rate).div(SafeDecimalMath.getUNIT());
     }
 
     /**
@@ -337,7 +328,7 @@ library Base {
     /**
      * Get the cummulative deposit rate in a block interval ending in current block
      * @param _token token address
-     * @param _depositRateRecordStart the start block of the interval
+     * @param _previousCheckpoint the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
      // sichaoy: this function could be more general to have an end checkpoit as a parameter.
@@ -345,14 +336,16 @@ library Base {
     function getDepositAccruedRate(
         BaseVariable storage self,
         address _token,
-        uint _depositRateRecordStart
+        uint _previousCheckpoint
     ) internal view returns (uint256) {
-        uint256 depositRate = self.depositeRateIndex[_token][_depositRateRecordStart];
+        // The current block has to be a checkpoint in order to calculate the compounded rate
+        // require(self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] != 0,
+        //     "No rate checkpoint in this block.");
+        uint256 depositRate = self.depositeRateIndex[_token][_previousCheckpoint];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         if (depositRate == 0) {
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
-            // sichaoy: to check that the current block rate index already exist
             return self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
@@ -388,6 +381,9 @@ library Base {
      */
     function newRateIndexCheckpoint(BaseVariable storage self, address _token) public {
 
+        // Return if the checkpoint on current block already exists. This condition doesn't hold in case
+        // to create the first checkpoint on block 0. However, we assume this will never happen because
+        // the contract will be always deployed after block 0.
         if (IBlockNumber(self.savingAccountAddress).getBlockNumber() == self.lastCheckpoint[_token])
             return;
 
@@ -476,6 +472,8 @@ library Base {
     /**
      * Calculate a token borrow rate of current block
      * @param _token token address
+     * @dev If the current block is check point, return the index value immediately. Otherwise, return
+     *  the estimation of the index value based on the last rate calculation.
      */
     function borrowRateIndexNow(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 lastCheckpoint = self.lastCheckpoint[_token];
@@ -492,7 +490,7 @@ library Base {
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(BaseVariable storage self, address _token) public view returns (
+    function getTokenStateStore(BaseVariable storage self, address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 reservation
@@ -562,9 +560,8 @@ library Base {
     /**
      * Get current borrow balance of a token
      * @param _token token address
-     * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
+     * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance. 
      */
-    // sichaoy: What's the diff of getBorrowBalance with getBorrowAcruedRate?
     function getBorrowBalance(
         BaseVariable storage self,
         address _token,
