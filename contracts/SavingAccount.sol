@@ -175,8 +175,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function transfer(address _to, address _token, uint _amount) public nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        withdraw(msg.sender, _token, _amount);
-        deposit(_to, _token, _amount);
+        baseVariable.withdraw(msg.sender, _token, _amount, tokenRegistry.getTokenIndex(_token), tokenRegistry.getBorrowLTV(_token), symbols);
+        baseVariable.deposit(_to, _token, _amount, tokenRegistry.getTokenIndex(_token));
 
         emit DepositorOperations(5, _token, msg.sender, _to, _amount);
     }
@@ -282,38 +282,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-        deposit(msg.sender, _token, _amount);
+        baseVariable.deposit(msg.sender, _token, _amount, tokenRegistry.getTokenIndex(_token));
 
         emit DepositorOperations(0, _token, msg.sender, address(0), _amount);
-    }
-
-    /**
-     * Deposit the amount of token to the saving pool.
-     * @param _to the account that the token deposit to.
-     * @param _token the address of the deposited token
-     * @param _amount the mount of the deposited token
-     */
-     // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(address _to, address _token, uint256 _amount) internal {
-
-        require(_amount != 0, "Amount is zero");
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_to].tokenInfos[_token];
-
-        // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
-
-        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.deposit(_amount, accruedRate, this.getBlockNumber());
-
-        // Set the deposit bitmap
-        baseVariable.setInDepositBitmap(_to, tokenRegistry.getTokenIndex(_token));
-
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
     }
 
     /**
@@ -323,66 +294,17 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        uint256 amount = withdraw(msg.sender, _token, _amount);
+        uint256 amount = baseVariable.withdraw(
+            msg.sender,
+            _token,
+            _amount,
+            tokenRegistry.getTokenIndex(_token),
+            tokenRegistry.getBorrowLTV(_token),
+            symbols
+            );
         send(msg.sender, amount, _token);
 
         emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
-    }
-
-    /**
-     * Withdraw a token from an address
-     * @param _from address to be withdrawn from
-     * @param _token token address
-     * @param _amount amount to be withdrawn
-     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
-     */
-    function withdraw(address _from, address _token, uint256 _amount) internal returns(uint) {
-
-        require(_amount != 0, "Amount is zero");
-
-        // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
-
-        // Check if withdraw amount is less than user's balance
-        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
-
-        // Check if there are enough collaterals after withdraw
-        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
-        if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
-        }
-        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
-            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
-
-        // sichaoy: all the sanity checks should be before the operations???
-        // Check if there are enough tokens in the pool.
-        address cToken = baseVariable.cTokenAddress[_token];
-        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
-
-        // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
-
-        // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getDepositPrincipal() == 0)
-            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
-
-        // DeFiner takes 10% commission on the interest a user earn
-        // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-        uint256 amount = _amount.sub(commission);
-
-        // Update pool balance
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
-
-        return amount;
     }
 
     /**
@@ -402,7 +324,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         uint amount = tokenInfo.getDepositBalance(accruedRate);
 
-        withdraw(msg.sender, _token, amount);
+        baseVariable.withdraw(msg.sender, _token, amount, tokenRegistry.getTokenIndex(_token), tokenRegistry.getBorrowLTV(_token), symbols);
         send(msg.sender, amount, _token);
 
         emit DepositorOperations(2, _token, msg.sender, address(0), amount);

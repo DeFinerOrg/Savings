@@ -631,6 +631,96 @@ library Base {
         }
         return borrowETH;
     }
+
+    /**
+     * Deposit the amount of token to the saving pool.
+     * @param _to the account that the token deposit to.
+     * @param _token the address of the deposited token
+     * @param _amount the mount of the deposited token
+     */
+     // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
+    function deposit(BaseVariable storage self, address _to, address _token, uint256 _amount, uint8 _index) public {
+
+        require(_amount != 0, "Amount is zero");
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_to].tokenInfos[_token];
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(self, _token);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        uint accruedRate = getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock());
+        tokenInfo.deposit(_amount, accruedRate, IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Set the deposit bitmap
+        setInDepositBitmap(self, _to, _index);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        updateTotalReserve(self, _token, _amount, ActionChoices.Deposit); // Last parameter false means deposit token
+    }
+
+    /**
+     * Withdraw a token from an address
+     * @param _from address to be withdrawn from
+     * @param _token token address
+     * @param _amount amount to be withdrawn
+     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
+     */
+    function withdraw(
+        BaseVariable storage self,
+        address _from,
+        address _token,
+        uint256 _amount,
+        uint8 _index,
+        uint256 _borrowLTV,
+        SymbolsLib.Symbols storage _symbols
+        ) public returns(uint) {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(self, _token);
+
+        // Check if withdraw amount is less than user's balance
+        require(_amount <= getDepositBalance(self, _token, _from), "Insufficient balance.");
+
+        // Check if there are enough collaterals after withdraw
+        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        if(_token != ETH_ADDR) {
+            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
+        }
+        require(getBorrowETH(self, _from, _symbols).mul(100) <= getDepositETH(self, _from, _symbols)
+            .sub(_amount.mul(_symbols.priceFromAddress(_token)).div(divisor)).mul(_borrowLTV), "Insufficient collateral.");
+
+        // sichaoy: all the sanity checks should be before the operations???
+        // Check if there are enough tokens in the pool.
+        require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount, "Lack of liquidity.");
+
+        // Update tokenInfo for the user
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_from].tokenInfos[_token];
+        tokenInfo.withdraw(_amount, getDepositAccruedRate(self, _token, tokenInfo.getLastDepositBlock()), IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Unset deposit bitmap if the deposit is fully withdrawn
+        if(tokenInfo.getDepositPrincipal() == 0)
+            unsetFromDepositBitmap(self, msg.sender, _index);
+
+        // DeFiner takes 10% commission on the interest a user earn
+        // sichaoy: 10 percent is a constant?
+        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        self.deFinerFund[_token] = self.deFinerFund[_token].add(commission);
+        uint256 amount = _amount.sub(commission);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        updateTotalReserve(self, _token, amount, ActionChoices.Withdraw); // Last parameter false means withdraw token
+
+        return amount;
+    }
 }
 
 interface IERC20Extended {
