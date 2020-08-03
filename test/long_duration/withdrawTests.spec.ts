@@ -161,13 +161,27 @@ contract("SavingAccount.borrow", async (accounts) => {
                         erc20DAI.address,
                         { from: user1 }
                     );
+
                     console.log(
-                        "totalDefinerBalanceBeforeDeposit",
-                        totalDefinerBalanceBeforeDeposit.toString()
+                        "---------------------------Before Deposit---------------------------"
                     );
+                    const balCTokenContract = await cTokenDAI.balanceOfUnderlying.call(
+                        savingAccount.address,
+                        { from: user1 }
+                    );
+                    console.log("balCTokenContract = ", balCTokenContract.toString());
 
                     // deposit tokens
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                    console.log(
+                        "---------------------------After Deposit---------------------------"
+                    );
+                    const balCTokenContract1 = await cTokenDAI.balanceOfUnderlying.call(
+                        savingAccount.address,
+                        { from: user1 }
+                    );
+                    console.log("balCTokenContract = ", balCTokenContract1.toString());
 
                     // Validate the total balance on DeFiner after deposit
                     const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
@@ -188,6 +202,12 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
+                    const balCTokenContract2 = await cTokenDAI.balanceOfUnderlying.call(
+                        savingAccount.address,
+                        { from: user1 }
+                    );
+                    console.log("balCTokenContract = ", balCTokenContract2.toString());
+
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
 
@@ -200,6 +220,26 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const reservation = BN(await erc20DAI.balanceOf(savingAccount.address));
                     expect(tokenState[2]).to.be.bignumber.equal(reservation);
 
+                    // Verifty that compound equals cToken underlying balance in pool's address
+                    // It also verifies that (Deposit = Loan + Compound + Reservation)
+                    const compoundAfterFastForward = BN(
+                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const cDAIAfterFastForward = BN(
+                        await cTokenDAI.balanceOf(savingAccount.address)
+                    );
+                    const compoundPrincipal = compoundBeforeFastForward.add(
+                        cDAIAfterFastForward
+                            .sub(cDAIBeforeFastForward)
+                            .mul(BN(await cTokenDAI.exchangeRateCurrent.call()))
+                            .div(eighteenPrecision)
+                    );
+                    expect(
+                        BN(tokenState[0])
+                            .sub(tokenState[1])
+                            .sub(tokenState[2])
+                    ).to.be.bignumber.equal(compoundAfterFastForward);
+
                     //Withdrawing DAI
                     await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
 
@@ -211,6 +251,27 @@ contract("SavingAccount.borrow", async (accounts) => {
                         userBalanceAfterWithdraw
                     );
                     expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
+
+                    // 3.2 Vefity rate
+                    /* const user1DepositPrincipal = await savingAccount.getDepositPrincipal( // 0???
+                        addressDAI,
+                        { from: user1 }
+                    ); */
+                    const user1DepositInterest = await savingAccount.getDepositInterest(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                        addressDAI,
+                        { from: user1 }
+                    );
+                    const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
+                        from: user1
+                    });
+
+                    // Verify the pricipal
+                    //expect(user1DepositPrincipal).to.be.bignumber.equal(TWO_DAIS);
+                    expect(user1BorrowPrincipal).to.be.bignumber.equal(new BN(0));
                 });
             });
         });
