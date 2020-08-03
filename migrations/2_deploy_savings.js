@@ -137,6 +137,8 @@ const getCTokens = async (erc20Tokens) => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.cTokenAddress;
+            } else if (network == "kovan") {
+                addr = token.kovan.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
@@ -165,6 +167,8 @@ const getERC20Tokens = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.tokenAddress;
+            } else if (network == "kovan") {
+                addr = token.kovan.tokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
@@ -186,6 +190,8 @@ const getChainLinkAggregators = async () => {
             let addr;
             if (network == "ropsten") {
                 addr = token.ropsten.aggregatorAddress;
+            } else if (network == "kovan") {
+                addr = token.kovan.aggregatorAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             } else {
