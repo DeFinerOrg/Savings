@@ -60,17 +60,17 @@ module.exports = {
             network_id: "*"
         },
 
-        // rinkeby: {
-        //   provider: () =>
-        //     new HDWalletProvider(
-        //       mnemonic,
-        //       "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
-        //     ),
-        //   from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
-        //   network_id: 4,
-        //   gas: 6000000,
-        //   gasPrice: 15000000000,
-        // },
+        rinkeby: {
+            provider: () =>
+                new HDWalletProvider(
+                    mnemonic,
+                    "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                ),
+            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            network_id: 4,
+            gas: 6000000,
+            gasPrice: 15000000000,
+        },
 
         // ropsten: {
         //     provider: () =>
@@ -84,17 +84,17 @@ module.exports = {
         //     gasPrice: 15000000000,
         // }
 
-        kovan: {
-            provider: () =>
-                new HDWalletProvider(
-                    mnemonic,
-                    "https://kovan.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
-                ),
-            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
-            network_id: 42,
-            gas: 6000000,
-            gasPrice: 15000000000,
-        }
+        // kovan: {
+        //     provider: () =>
+        //         new HDWalletProvider(
+        //             mnemonic,
+        //             "https://kovan.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //         ),
+        //     from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+        //     network_id: 42,
+        //     gas: 6000000,
+        //     gasPrice: 15000000000,
+        // }
     },
 
     plugins: ["solidity-coverage"],

@@ -139,6 +139,8 @@ const getCTokens = async (erc20Tokens) => {
                 addr = token.ropsten.cTokenAddress;
             } else if (network == "kovan") {
                 addr = token.kovan.cTokenAddress;
+            } else if (network == "rinkeby") {
+                addr = token.rinkeby.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
@@ -169,6 +171,8 @@ const getERC20Tokens = async () => {
                 addr = token.ropsten.tokenAddress;
             } else if (network == "kovan") {
                 addr = token.kovan.tokenAddress;
+            }  else if (network == "rinkeby") {
+                addr = token.rinkeby.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
@@ -192,6 +196,8 @@ const getChainLinkAggregators = async () => {
                 addr = token.ropsten.aggregatorAddress;
             } else if (network == "kovan") {
                 addr = token.kovan.aggregatorAddress;
+            }  else if (network == "rinkeby") {
+                addr = token.rinkeby.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             } else {
