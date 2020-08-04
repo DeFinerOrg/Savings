@@ -13,7 +13,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.borrow", async (accounts) => {
+contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -251,7 +251,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     });
 
                     // Verify the pricipal
-                    //expect(user1DepositInterest).to.be.bignumber.equal(TWO_DAIS); // 0???
+                    expect(user1DepositInterest).to.be.bignumber.equal(TWO_DAIS); // 0???
                     expect(user1BorrowInterest).to.be.bignumber.equal(new BN(0));
 
                     const totalCompoundInterest = BN(compoundAfterFastForward).sub(
