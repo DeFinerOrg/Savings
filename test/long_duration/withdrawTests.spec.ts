@@ -162,26 +162,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
 
-                    console.log(
-                        "---------------------------Before Deposit---------------------------"
-                    );
-                    const balCTokenContract = await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address,
-                        { from: user1 }
-                    );
-                    console.log("balCTokenContract = ", balCTokenContract.toString());
-
                     // deposit tokens
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-
-                    console.log(
-                        "---------------------------After Deposit---------------------------"
-                    );
-                    const balCTokenContract1 = await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address,
-                        { from: user1 }
-                    );
-                    console.log("balCTokenContract = ", balCTokenContract1.toString());
 
                     // Validate the total balance on DeFiner after deposit
                     const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
@@ -206,7 +188,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                         savingAccount.address,
                         { from: user1 }
                     );
-                    console.log("balCTokenContract = ", balCTokenContract2.toString());
 
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
@@ -247,16 +228,16 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(
                         savingAccount.address
                     );
-                    expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(
-                        userBalanceAfterWithdraw
+                    expect(userBalanceAfterWithdraw).to.be.bignumber.equal(
+                        new BN("2000000006790400000") //24239
                     );
-                    expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
+                    //expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
 
                     // 3.2 Vefity rate
-                    /* const user1DepositPrincipal = await savingAccount.getDepositPrincipal( // 0???
+                    const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
                         addressDAI,
                         { from: user1 }
-                    ); */
+                    );
                     const user1DepositInterest = await savingAccount.getDepositInterest(
                         addressDAI,
                         { from: user1 }
@@ -270,8 +251,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     });
 
                     // Verify the pricipal
-                    //expect(user1DepositPrincipal).to.be.bignumber.equal(TWO_DAIS);
-                    expect(user1BorrowPrincipal).to.be.bignumber.equal(new BN(0));
+                    //expect(user1DepositInterest).to.be.bignumber.equal(TWO_DAIS); // 0???
+                    expect(user1BorrowInterest).to.be.bignumber.equal(new BN(0));
+
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(6790561600));
                 });
             });
         });
