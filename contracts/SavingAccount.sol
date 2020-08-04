@@ -134,9 +134,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     /**
      * Get the total number of suppported tokens
      */
-    // function getCoinLength() public view returns(uint256 length) {
-    //     return symbols.getCoinLength();
-    // }
+    function getCoinLength() public view returns(uint256 length) {
+        return symbols.getCoinLength();
+    }
 
     /**
 	 * Get token balances for the sender's account
@@ -232,41 +232,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
-
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
-
-        // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
-
-        // Sanity check
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        require(tokenInfo.getBorrowPrincipal() > 0,
-            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
-        );
-
-        // Update tokenInfo
-        uint rate = baseVariable.getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
-        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
-        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        tokenInfo.repay(amount, rate, this.getBlockNumber());
-
-        // Unset borrow bitmap if the balance is fully repaid
-        if(tokenInfo.getBorrowPrincipal() == 0)
-            baseVariable.unsetFromBorrowBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
-
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Repay);
-
-        // Send the remain money back
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
+        uint remain = baseVariable.repay(_token, _amount, tokenRegistry.getTokenIndex(_token));
         if(remain != 0) {
             send(msg.sender, remain, _token);
         }
-
         emit DepositorOperations(4, _token, msg.sender, address(0), _amount.sub(remain));
     }
 

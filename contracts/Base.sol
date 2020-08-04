@@ -661,6 +661,37 @@ library Base {
         updateTotalReserve(self, _token, _amount, ActionChoices.Deposit); // Last parameter false means deposit token
     }
 
+    function repay(BaseVariable storage self, address _token, uint256 _amount, uint8 _index) public returns(uint) {
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(self, _token);
+
+        // Sanity check
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[msg.sender].tokenInfos[_token];
+        require(tokenInfo.getBorrowPrincipal() > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
+
+        // Update tokenInfo
+        uint rate = getBorrowAccruedRate(self, _token,tokenInfo.getLastBorrowBlock());
+        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
+        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
+        tokenInfo.repay(amount, rate, IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Unset borrow bitmap if the balance is fully repaid
+        if(tokenInfo.getBorrowPrincipal() == 0)
+            unsetFromBorrowBitmap(self, msg.sender, _index);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token);
+        updateTotalReserve(self, _token, amount, Base.ActionChoices.Repay);
+
+        // Send the remain money back
+        uint256 remain = _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
+        return remain;
+    }
+
     /**
      * Withdraw a token from an address
      * @param _from address to be withdrawn from
