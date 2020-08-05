@@ -1279,40 +1279,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 );
                 expect(new BN(totalDefinerBalancAfterWithdraw[0])).to.be.bignumber.equal(ZERO);
             });
-
-            it("when tokens are withdrawn with interest", async () => {
-                const depositAmount = new BN(1000);
-                await erc20DAI.approve(savingAccount.address, depositAmount);
-                let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
-                const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                    erc20DAI.address
-                );
-
-                // deposit tokens
-                await savingAccount.deposit(erc20DAI.address, depositAmount, { from: owner });
-
-                // Validate the total balance on DeFiner after deposit
-                const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                    erc20DAI.address
-                );
-                const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit[0]).sub(
-                    new BN(totalDefinerBalanceBeforeDeposit[0])
-                );
-                expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-
-                // Advancing blocks by 150
-                let latestBlock = await web3.eth.getBlock("latest");
-                let targetBlock = new BN(latestBlock.number).add(new BN(150));
-                await time.advanceBlockTo(targetBlock);
-
-                //Withdrawing DAI
-                await savingAccount.withdrawAll(erc20DAI.address, { from: owner });
-
-                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(owner);
-                let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(savingAccount.address);
-                expect(userBalanceBeforeWithdraw).to.be.bignumber.equal(userBalanceAfterWithdraw);
-                expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
-            });
         });
 
         context("should fail", async () => {
