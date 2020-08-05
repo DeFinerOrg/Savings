@@ -258,6 +258,10 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                         compoundPrincipal
                     );
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(6790561600));
+
+                    /* expect(
+                        BN(user1BorrowInterest).add(totalCompoundInterest)
+                    ).to.be.bignumber.equal(user1DepositInterest); */
                 });
             });
         });
