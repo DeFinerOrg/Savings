@@ -194,7 +194,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenStateStore(addressDAI, {
-                        from: user2
+                        from: user1
                     });
 
                     // Verify that reservation equals to the token in pool's address
