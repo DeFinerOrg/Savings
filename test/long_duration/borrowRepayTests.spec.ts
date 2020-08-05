@@ -205,14 +205,62 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 const compoundBeforeFastForward = BN(
                     await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
                 );
-                const cDAIBeforeFastForward = BN(await cTokenDAI.balanceOf(savingAccount.address));
+                const cUSDCBeforeFastForward = BN(
+                    await cTokenUSDC.balanceOf(savingAccount.address)
+                );
 
+                // 3. Fastforward
                 await savingAccount.fastForward(100000);
                 // Deposit an extra token to create a new rate check point
-                await savingAccount.deposit(addressDAI, new BN(100), { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
+                const tokenState = await savingAccount.getTokenStateStore(addressUSDC, {
+                    from: user1
+                });
+
+                // Verify that reservation equals to the token in pool's address
+                const reservation = BN(await erc20USDC.balanceOf(savingAccount.address));
+                expect(tokenState[2]).to.be.bignumber.equal(reservation);
+
+                // Verifty that compound equals cToken underlying balance in pool's address
+                // It also verifies that (Deposit = Loan + Compound + Reservation)
+                const compoundAfterFastForward = BN(
+                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                );
+                const cUSDCAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
+                const compoundPrincipal = compoundBeforeFastForward.add(
+                    cUSDCAfterFastForward
+                        .sub(cUSDCBeforeFastForward)
+                        .mul(BN(await cTokenUSDC.exchangeRateCurrent.call()))
+                        .div(sixPrecision)
+                );
+                expect(
+                    BN(tokenState[0])
+                        .sub(tokenState[1])
+                        .sub(tokenState[2])
+                ).to.be.bignumber.equal(compoundAfterFastForward);
+
+                console.log("deposits", tokenState[0].toString());
+                console.log("loans", tokenState[1].toString());
+                console.log("compound", tokenState[2].toString());
+                console.log("compoundAfterFastForward", compoundAfterFastForward.toString());
 
                 // 3. Start repayment.
                 await savingAccount.repay(addressUSDC, new BN(100), { from: user1 });
+
+                // Verify Compound after repay
+                const tokenStateAfterRepay = await savingAccount.getTokenStateStore(addressUSDC, {
+                    from: user1
+                });
+                const compoundAfterRepay = BN(
+                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                );
+                expect(
+                    BN(tokenStateAfterRepay[0])
+                        .sub(tokenStateAfterRepay[1])
+                        .sub(tokenStateAfterRepay[2])
+                ).to.be.bignumber.equal(compoundAfterRepay);
 
                 // 4. Verify the repay amount.
                 const user1BalanceAfter = await erc20USDC.balanceOf(user1);
