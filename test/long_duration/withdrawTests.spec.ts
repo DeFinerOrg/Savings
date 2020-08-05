@@ -231,7 +231,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     expect(userBalanceAfterWithdraw).to.be.bignumber.greaterThan(
                         userBalanceBeforeWithdraw
                     );
-                    //expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);  //24239 ??
+                    // expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO); //24239 ??
 
                     // 3.2 Vefity rate
                     const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
@@ -251,7 +251,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     });
 
                     // Verify the pricipal
-                    //expect(user1DepositInterest).to.be.bignumber.equal(TWO_DAIS); // 0???
+                    expect(user1DepositPrincipal).to.be.bignumber.equal(ZERO);
                     expect(user1BorrowInterest).to.be.bignumber.equal(new BN(0));
 
                     const totalCompoundInterest = BN(compoundAfterFastForward).sub(
