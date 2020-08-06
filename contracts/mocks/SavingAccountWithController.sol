@@ -60,7 +60,8 @@ contract SavingAccountWithController  is SavingAccount {
 
     function getDepositInterest(address _token) public view returns (uint256) {
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.depositInterest;
+        uint256 accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        return tokenInfo.calculateDepositInterest(accruedRate);
     }
 
     function getBorrowPrincipal(address _token) public view returns (uint256) {
@@ -70,6 +71,7 @@ contract SavingAccountWithController  is SavingAccount {
 
     function getBorrowInterest(address _token) public view returns (uint256) {
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.borrowInterest;
+        uint256 accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        return tokenInfo.calculateBorrowInterest(accruedRate);
     }
 }

@@ -244,13 +244,13 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getTokenState", async () => {
+    context("getTokenStateStore", async () => {
         // Also being called by getMarketState
         context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async () => {
-                let tokenST = await savingAccount.getTokenState(addressDAI);
+                let tokenST = await savingAccount.getTokenStateStore(addressDAI);
                 console.log("marktST", tokenST);
             });
         });
