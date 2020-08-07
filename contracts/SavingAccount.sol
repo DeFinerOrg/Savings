@@ -103,13 +103,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token addrss
      * @return the current deposits, loans, and collateral ratio of the token
 	 */
-    function getTokenState(address _token) public view returns (
+    function getTokenStateStore(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral
     )
     {
-        return baseVariable.getTokenState(_token);
+        return baseVariable.getTokenStateStore(_token);
     }
 
 	/**
@@ -188,6 +188,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if there are enough collaterals after withdraw
@@ -206,7 +207,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, lastCheckpoint);
         tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
         // Set the borrow bitmap
@@ -216,8 +217,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
+        baseVariable.updateTotalLoan(_token, lastCheckpoint);
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow);
 
         // Transfer the token on Ethereum
         send(msg.sender, _amount, _token);
@@ -281,6 +282,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
 
         // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
         baseVariable.newRateIndexCheckpoint(_token);
 
         // Sanity check
@@ -288,7 +290,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
 
         // Get the total amount of token for the account
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, lastCheckpoint);
         uint amount = tokenInfo.getDepositBalance(accruedRate);
 
         baseVariable.withdraw(msg.sender, _token, amount, tokenRegistry.getTokenIndex(_token), tokenRegistry.getBorrowLTV(_token), symbols);
