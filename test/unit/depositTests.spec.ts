@@ -387,9 +387,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
+                        const expectedTokensAtSavingAccountContract = numOfToken;
                         const balSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
                         expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                             balSavingAccount
@@ -421,9 +419,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
+                        const expectedTokensAtSavingAccountContract = numOfToken;
                         const balSavingAccount = await erc20TUSD.balanceOf(savingAccount.address);
                         expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                             balSavingAccount
@@ -453,9 +449,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
+                        const expectedTokensAtSavingAccountContract = numOfToken;
                         const balSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
                         expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                             balSavingAccount
@@ -487,9 +481,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
+                        const expectedTokensAtSavingAccountContract = numOfToken;
                         const balSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
                         expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                             balSavingAccount
