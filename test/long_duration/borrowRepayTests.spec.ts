@@ -239,12 +239,16 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                     BN(tokenState[0])
                         .sub(tokenState[1])
                         .sub(tokenState[2])
-                ).to.be.bignumber.equal(compoundAfterFastForward); // 751 */
+                ).to.be.bignumber.equal(compoundAfterFastForward); // 750 == 751 */
 
                 console.log("deposits", tokenState[0].toString());
                 console.log("loans", tokenState[1].toString());
                 console.log("compound", tokenState[2].toString());
                 console.log("compoundAfterFastForward", compoundAfterFastForward.toString());
+
+                const totalCompoundInterest2 = BN(compoundAfterFastForward).sub(compoundPrincipal);
+
+                console.log("totalCompoundInterest", totalCompoundInterest2.toString());
 
                 // 3. Start repayment.
                 await savingAccount.repay(addressUSDC, new BN(100), { from: user1 });
@@ -303,11 +307,14 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
                 const totalCompoundInterest = BN(compoundAfterFastForward).sub(compoundPrincipal);
 
+                console.log("totalCompoundInterestAfterRepay", totalCompoundInterest.toString());
+
                 // Second, verify the interest rate calculation. Need to compare these value to
                 // the rate simulator.
                 expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(6790400000)); // 6790203501.392125
                 expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
                 //expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
+
                 // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
                 //--849999999999999248
 
