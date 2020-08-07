@@ -247,7 +247,6 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 console.log("compoundAfterFastForward", compoundAfterFastForward.toString());
 
                 const totalCompoundInterest2 = BN(compoundAfterFastForward).sub(compoundPrincipal);
-
                 console.log("totalCompoundInterest", totalCompoundInterest2.toString());
 
                 // 3. Start repayment.
@@ -313,7 +312,7 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 // the rate simulator.
                 expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(6790400000)); // 6790203501.392125
                 expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
-                //expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
+                expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
 
                 // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
                 //--849999999999999248
