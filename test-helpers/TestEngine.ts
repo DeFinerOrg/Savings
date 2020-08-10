@@ -10,6 +10,7 @@ const SavingAccountWithController = artifacts.require("SavingAccountWithControll
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require("child_process");
+const SymbolsLib: t.SymbolsLibContract = artifacts.require("SymbolsLib");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 // Contracts for Upgradability
@@ -29,6 +30,7 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
+    public symbolsLib!: t.SymbolsLibInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -119,10 +121,13 @@ export class TestEngine {
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
         this.globalConfig = await GlobalConfig.new();
+        this.symbolsLib = await SymbolsLib.new();
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
+
+        await this.symbolsLib.initialize(this.erc20Tokens, chainLinkOracle.address);
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
@@ -135,6 +140,7 @@ export class TestEngine {
                 this.erc20Tokens,
                 cTokens,
                 chainLinkOracle.address,
+                this.symbolsLib.address,
                 this.tokenInfoRegistry.address,
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller

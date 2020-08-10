@@ -11,7 +11,6 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard {
-    using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
     using Base for Base.ActionChoices;
@@ -21,11 +20,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     using TokenInfoLib for TokenInfoLib.TokenInfo;
     using BitmapLib for uint128;
 
-    SymbolsLib.Symbols symbols;
     Base.BaseVariable baseVariable;
 
     TokenInfoRegistry public tokenRegistry;
     GlobalConfig public globalConfig;
+    SymbolsLib public symbols;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -65,6 +64,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
         address _chainlinkAddress,
+        SymbolsLib _symbols,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
     )
@@ -77,8 +77,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
+        symbols = _symbols;
 
-        symbols.initialize(params.tokenNames(), _tokenAddresses, _chainlinkAddress);
         baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this));
         for(uint i = 0;i < _tokenAddresses.length;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
@@ -124,8 +124,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function isAccountLiquidatable(address _borrower) public view returns (bool) {
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
         uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        uint256 totalBalance = baseVariable.getBorrowETH(_borrower, symbols);
-        uint256 totalETHValue = baseVariable.getDepositETH(_borrower, symbols);
+        uint256 totalBalance = baseVariable.getBorrowETH(_borrower);
+        uint256 totalETHValue = baseVariable.getDepositETH(_borrower);
         if (
             totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
             totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
@@ -133,13 +133,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Get the total number of suppported tokens
-     */
-    function getCoinLength() public view returns(uint256 length) {
-        return symbols.getCoinLength();
     }
 
     /**
@@ -152,10 +145,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         uint256 borrowBalance
     ) {
         return (baseVariable.getDepositBalance(_token, msg.sender), baseVariable.getBorrowBalance(_token, msg.sender));
-    }
-
-    function getCoinToETHRate(uint256 _coinIndex) public view returns(uint256) {
-        return symbols.priceFromIndex(_coinIndex);
     }
 
     /**
@@ -200,8 +189,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(baseVariable.getBorrowETH(msg.sender).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
+            <= baseVariable.getDepositETH(msg.sender).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -352,7 +341,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
+        require(baseVariable.getBorrowETH(_from).mul(100) <= baseVariable.getDepositETH(_from)
             .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
@@ -441,11 +430,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function liquidate(address _targetAccountAddr, address _targetToken) public nonReentrant {
         require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
         LiquidationVars memory vars;
-        vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr, symbols);
-        vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr, symbols);
+        vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr);
+        vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr);
 
-        vars.msgTotalBorrow = baseVariable.getBorrowETH(msg.sender, symbols);
-        vars.msgTotalCollateral = baseVariable.getDepositETH(msg.sender, symbols);
+        vars.msgTotalBorrow = baseVariable.getBorrowETH(msg.sender);
+        vars.msgTotalCollateral = baseVariable.getDepositETH(msg.sender);
 
         vars.targetTokenBalance = baseVariable.getDepositBalance(_targetToken, msg.sender);
 

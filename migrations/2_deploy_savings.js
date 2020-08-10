@@ -37,22 +37,18 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
     // Deploy Libs
-    await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
 
     // Link Libraries
     await deployer.link(TokenInfoLib, Base);
-    await deployer.link(SymbolsLib, Base);
 
     // Deploy Base library
     await deployer.deploy(Base);
 
     // Link libraries
-    await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
 
-    await deployer.link(SymbolsLib, SavingAccountWithController);
     await deployer.link(TokenInfoLib, SavingAccountWithController);
     await deployer.link(Base, SavingAccountWithController);
 
@@ -74,6 +70,9 @@ module.exports = async function(deployer, network) {
 
     const globalConfig = await deployer.deploy(GlobalConfig);
 
+    const symbols = await deployer.deploy(SymbolsLib);
+    await symbols.initialize(erc20Tokens, chainLinkOracle.address);
+
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
@@ -84,6 +83,7 @@ module.exports = async function(deployer, network) {
         .initialize(
             erc20Tokens,
             cTokens,
+            symbols.address,
             chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address
@@ -93,6 +93,7 @@ module.exports = async function(deployer, network) {
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
+    console.log("SymbolsLib:", symbols.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };

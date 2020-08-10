@@ -40,6 +40,7 @@ library Base {
         address payable deFinerCommunityFund;   // address allowed to withdraw the community fund
         address globalConfigAddress;            // global configuration contract address
         address savingAccountAddress;           // the SavingAccount contract address
+        address symbolsAddress;
         mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
@@ -74,10 +75,17 @@ library Base {
      * @param _globalConfigAddress the global configuration contract address
      * @param _savingAccountAddress the SavingAccount contract address
      */
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens,
-        address _globalConfigAddress, address _savingAccountAddress) public {
+    function initialize(
+        BaseVariable storage self,
+        address[] memory _tokens,
+        address[] memory _cTokens,
+        address _globalConfigAddress,
+        address _savingAccountAddress,
+        address _symbolsAddress
+    ) public {
         self.globalConfigAddress = _globalConfigAddress;
         self.savingAccountAddress = _savingAccountAddress;
+        self.symbolsAddress = _symbolsAddress;
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }
@@ -593,17 +601,16 @@ library Base {
      */
     function getDepositETH(
         BaseVariable storage self,
-        address _accountAddr,
-        SymbolsLib.Symbols storage _symbols
+        address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < _symbols.getCoinLength(); i++) {
+        for(uint i = 0; i < SymbolsLib(self.symbolsAddress).getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
-                address tokenAddress = _symbols.addressFromIndex(i);
+                address tokenAddress = SymbolsLib(self.symbolsAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
                 }
-                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(SymbolsLib(self.symbolsAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -616,17 +623,16 @@ library Base {
     // sichaoy: change name to getTotalBorrowInETH()
     function getBorrowETH(
         BaseVariable storage self,
-        address _accountAddr,
-        SymbolsLib.Symbols storage _symbols
+        address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < _symbols.getCoinLength(); i++) {
+        for(uint i = 0; i < SymbolsLib(self.symbolsAddress).getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
-                address tokenAddress = _symbols.addressFromIndex(i);
+                address tokenAddress = SymbolsLib(self.symbolsAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(SymbolsLib(self.symbolsAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;
