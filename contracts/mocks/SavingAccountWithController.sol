@@ -2,7 +2,6 @@ pragma solidity 0.5.14;
 
 import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
-import "../lib/SymbolsLib.sol";
 
 // This file is only for testing purpose only
 contract SavingAccountWithController  is SavingAccount {
@@ -18,7 +17,6 @@ contract SavingAccountWithController  is SavingAccount {
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _chainlinkAddress chainlink oracle address
      * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      * @param _comptroller Compound controller address
@@ -26,13 +24,11 @@ contract SavingAccountWithController  is SavingAccount {
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
-        SymbolsLib _symbols,
-        address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _chainlinkAddress, _symbols, _tokenRegistry, _globalConfig);
+        super.initialize(_tokenAddresses, _cTokenAddresses, _tokenRegistry, _globalConfig);
         comptroller = _comptroller;
     }
 

@@ -5,7 +5,6 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
-import "./lib/SymbolsLib.sol";
 import "./lib/BitmapLib.sol";
 import "./lib/SafeDecimalMath.sol";
 import "./config/GlobalConfig.sol";
@@ -38,7 +37,6 @@ library Base {
         address payable deFinerCommunityFund;   // address allowed to withdraw the community fund
         address globalConfigAddress;            // global configuration contract address
         address savingAccountAddress;           // the SavingAccount contract address
-        address symbolsAddress;
         address tokenInfoRegistryAddress;
         mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
@@ -76,12 +74,10 @@ library Base {
         BaseVariable storage self,
         address _globalConfigAddress,
         address _savingAccountAddress,
-        address _symbolsAddress,
         address _tokenInfoRegistryAddress
     ) public {
         self.globalConfigAddress = _globalConfigAddress;
         self.savingAccountAddress = _savingAccountAddress;
-        self.symbolsAddress = _symbolsAddress;
         self.tokenInfoRegistryAddress = _tokenInfoRegistryAddress;
     }
 
@@ -596,14 +592,14 @@ library Base {
         BaseVariable storage self,
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < SymbolsLib(self.symbolsAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
-                address tokenAddress = SymbolsLib(self.symbolsAddress).addressFromIndex(i);
+                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(SymbolsLib(self.symbolsAddress).priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -617,14 +613,14 @@ library Base {
         BaseVariable storage self,
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < SymbolsLib(self.symbolsAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
-                address tokenAddress = SymbolsLib(self.symbolsAddress).addressFromIndex(i);
+                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(SymbolsLib(self.symbolsAddress).priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;

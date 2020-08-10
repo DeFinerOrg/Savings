@@ -3,7 +3,6 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
-const SymbolsLib = artifacts.require("SymbolsLib");
 const TokenInfoLib = artifacts.require("TokenInfoLib");
 const Base = artifacts.require("Base");
 
@@ -58,6 +57,7 @@ module.exports = async function(deployer, network) {
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
+
     await initializeTokenInfoRegistry(
         tokenInfoRegistry,
         erc20Tokens,
@@ -68,10 +68,9 @@ module.exports = async function(deployer, network) {
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
 
-    const globalConfig = await deployer.deploy(GlobalConfig);
+    await tokenInfoRegistry.initialize(chainLinkOracle.address);
 
-    const symbols = await deployer.deploy(SymbolsLib);
-    await symbols.initialize(erc20Tokens, chainLinkOracle.address);
+    const globalConfig = await deployer.deploy(GlobalConfig);
 
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
@@ -83,8 +82,6 @@ module.exports = async function(deployer, network) {
         .initialize(
             erc20Tokens,
             cTokens,
-            symbols.address,
-            chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address
         )
@@ -93,7 +90,6 @@ module.exports = async function(deployer, network) {
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
-    console.log("SymbolsLib:", symbols.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };

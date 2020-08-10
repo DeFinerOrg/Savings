@@ -1,8 +1,6 @@
 pragma solidity 0.5.14;
 
-import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
@@ -24,7 +22,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     TokenInfoRegistry public tokenRegistry;
     GlobalConfig public globalConfig;
-    SymbolsLib public symbols;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -56,15 +53,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Initialize function to be called by the Deployer for the first time
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _chainlinkAddress chainlink oracle address
      * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      */
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
-        address _chainlinkAddress,
-        SymbolsLib _symbols,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig
     )
@@ -74,12 +68,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Initialize InitializableReentrancyGuard
         super._initialize();
 
-        SavingAccountParameters params = new SavingAccountParameters();
         tokenRegistry = _tokenRegistry;
         globalConfig = _globalConfig;
-        symbols = _symbols;
 
-        baseVariable.initialize(address(_globalConfig), address(this), address(_symbols), address(_tokenRegistry));
+        baseVariable.initialize(address(_globalConfig), address(this), address(_tokenRegistry));
         for(uint i = 0;i < _tokenAddresses.length;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(_tokenAddresses[i]);
@@ -189,7 +181,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
+        require(baseVariable.getBorrowETH(msg.sender).add(_amount.mul(tokenRegistry.priceFromAddress(_token))).mul(100)
             <= baseVariable.getDepositETH(msg.sender).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
@@ -342,7 +334,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
         require(baseVariable.getBorrowETH(_from).mul(100) <= baseVariable.getDepositETH(_from)
-            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+            .sub(_amount.mul(tokenRegistry.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -477,7 +469,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
 
         // Liquidators need to pay
-        vars.targetTokenPrice = symbols.priceFromAddress(_targetToken);
+        vars.targetTokenPrice = tokenRegistry.priceFromAddress(_targetToken);
         vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
 
         if(
@@ -510,10 +502,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         }
 
         // The collaterals are liquidate in the order of their market liquidity
-        for(uint i = 0; i < symbols.getCoinLength(); i++) {
-            vars.token = symbols.addressFromIndex(i);
+        for(uint i = 0; i < tokenRegistry.getCoinLength(); i++) {
+            vars.token = tokenRegistry.addressFromIndex(i);
             if(baseVariable.isUserHasDeposits(_targetAccountAddr, uint8(i))) {
-                vars.tokenPrice = symbols.priceFromIndex(i);
+                vars.tokenPrice = tokenRegistry.priceFromIndex(i);
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
 
