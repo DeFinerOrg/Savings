@@ -79,7 +79,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig = _globalConfig;
         symbols = _symbols;
 
-        baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this), address(_symbols));
+        baseVariable.initialize(address(_globalConfig), address(this), address(_symbols), address(_tokenRegistry));
         for(uint i = 0;i < _tokenAddresses.length;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(_tokenAddresses[i]);
@@ -194,7 +194,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = baseVariable.cTokenAddress[_token];
+        address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
@@ -346,7 +346,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = baseVariable.cTokenAddress[_token];
+        address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
