@@ -617,7 +617,6 @@ library Base {
 
     /**
      * Get borrowed balance of a token in the uint of Wei
-     * @param _symbols chainlink symbols
      */
     // sichaoy: change name to getTotalBorrowInETH()
     function getBorrowETH(
