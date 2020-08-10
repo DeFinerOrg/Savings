@@ -29,7 +29,6 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
-    public symbolsLib!: t.SymbolsLibInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
