@@ -14,6 +14,7 @@ contract("Integration Tests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -66,6 +67,7 @@ contract("Integration Tests", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -654,10 +656,10 @@ contract("Integration Tests", async (accounts) => {
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
                 const borrowAmount = numOfDAI
                     .mul(sixPrecision)
-                    .mul(await savingAccount.getCoinToETHRate(0))
+                    .mul(await tokenInfoRegistry.priceFromIndex(0))
                     .mul(new BN(60))
                     .div(new BN(100))
-                    .div(await savingAccount.getCoinToETHRate(1))
+                    .div(await tokenInfoRegistry.priceFromIndex(1))
                     .div(eighteenPrecision);
 
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
@@ -1088,10 +1090,10 @@ contract("Integration Tests", async (accounts) => {
                 // Amount that is locked as collateral
                 const collateralLocked = borrowAmount
                     .mul(eighteenPrecision)
-                    .mul(await savingAccount.getCoinToETHRate(1))
+                    .mul(await tokenInfoRegistry.priceFromIndex(1))
                     .mul(new BN(100))
                     .div(new BN(60))
-                    .div(await savingAccount.getCoinToETHRate(0))
+                    .div(await tokenInfoRegistry.priceFromIndex(0))
                     .div(sixPrecision);
 
                 // 3. Verify the loan amount
@@ -1170,10 +1172,10 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
                 const limitAmount = numOfUSDC
                     .mul(eighteenPrecision)
-                    .mul(await savingAccount.getCoinToETHRate(1))
+                    .mul(await tokenInfoRegistry.priceFromIndex(1))
                     .mul(new BN(50))
                     .div(new BN(100))
-                    .div(await savingAccount.getCoinToETHRate(0))
+                    .div(await tokenInfoRegistry.priceFromIndex(0))
                     .div(sixPrecision);
                 await savingAccount.borrow(addressDAI, limitAmount, { from: user1 });
                 let userBalanceAfterBorrow = await erc20DAI.balanceOf(user1);

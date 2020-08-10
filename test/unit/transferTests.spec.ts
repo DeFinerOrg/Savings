@@ -14,6 +14,7 @@ contract("SavingAccount.transfer", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -43,6 +44,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -136,11 +138,11 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // Amount that is locked as collateral
                     const collateralLocked = borrowAmount
-                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(await tokenInfoRegistry.priceFromIndex(1))
                         .mul(eighteenPrecision)
                         .mul(new BN(100))
                         .div(new BN(60))
-                        .div(await savingAccount.getCoinToETHRate(0))
+                        .div(await tokenInfoRegistry.priceFromIndex(0))
                         .div(new BN(sixPrecision));
 
                     // 3. Verify the loan amount

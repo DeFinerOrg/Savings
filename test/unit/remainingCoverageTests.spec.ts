@@ -24,6 +24,7 @@ contract("RemainingCoverage", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let base: t.BaseInstance;
 
@@ -50,6 +51,7 @@ contract("RemainingCoverage", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -122,11 +124,11 @@ contract("RemainingCoverage", async (accounts) => {
                 // 2. Approve 1000 tokens
                 const ONE_DAI = eighteenPrecision;
                 const ONE_USDC = sixPrecision;
-                const borrowAmt = new BN(await savingAccount.getCoinToETHRate(1))
+                const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
                     .mul(new BN(60))
                     .div(new BN(100))
                     .mul(ONE_DAI)
-                    .div(new BN(await savingAccount.getCoinToETHRate(0)));
+                    .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
 
                 await erc20DAI.transfer(user1, ONE_DAI);
                 await erc20USDC.transfer(user2, ONE_USDC);
