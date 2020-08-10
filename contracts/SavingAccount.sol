@@ -79,7 +79,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig = _globalConfig;
         symbols = _symbols;
 
-        baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this));
+        baseVariable.initialize(_tokenAddresses, _cTokenAddresses, address(_globalConfig), address(this), address(_symbols));
         for(uint i = 0;i < _tokenAddresses.length;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 baseVariable.approveAll(_tokenAddresses[i]);

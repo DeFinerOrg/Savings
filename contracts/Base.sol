@@ -18,7 +18,6 @@ library Base {
     using SafeERC20 for IERC20;
     using SignedSafeMath for int256;
     using TokenInfoLib for TokenInfoLib.TokenInfo;
-    using SymbolsLib for SymbolsLib.Symbols;
     using BitmapLib for uint128;
 
     struct BaseVariable {

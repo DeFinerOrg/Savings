@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
+import "../lib/SymbolsLib.sol";
 
 // This file is only for testing purpose only
 contract SavingAccountWithController  is SavingAccount {
@@ -25,12 +26,13 @@ contract SavingAccountWithController  is SavingAccount {
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
+        SymbolsLib _symbols,
         address _chainlinkAddress,
         TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _chainlinkAddress, _tokenRegistry, _globalConfig);
+        super.initialize(_tokenAddresses, _cTokenAddresses, _chainlinkAddress, _tokenRegistry, _globalConfig, _symbols);
         comptroller = _comptroller;
     }
 
