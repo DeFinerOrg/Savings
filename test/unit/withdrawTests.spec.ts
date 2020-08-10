@@ -1180,8 +1180,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when partial ETH withdrawn", async () => {
-                const depositAmount = new BN(100);
-                const withdrawAmount = new BN(20);
+                const depositAmount = new BN(10000);
+                const withdrawAmount = new BN(10);
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
                 );
@@ -1222,7 +1222,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when 1000 whole ETH withdrawn", async () => {
-                const depositAmount = web3.utils.toWei("2000", "ether");
+                const depositAmount = web3.utils.toWei("100000", "ether");
                 const withdrawAmount = web3.utils.toWei("1000", "ether");
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
@@ -1265,7 +1265,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when full ETH withdrawn", async () => {
-                const depositAmount = web3.utils.toWei("100", "ether");
+                const depositAmount = web3.utils.toWei("10000", "ether");
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
                 );
@@ -1285,7 +1285,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount);
+                const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(
+                    expectedTokensAtSavingAccountContract
+                );
 
                 // Withdrawing ETH
                 await savingAccount.withdrawAll(ETH_ADDRESS);
