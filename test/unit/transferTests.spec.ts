@@ -14,6 +14,7 @@ contract("SavingAccount.transfer", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -43,6 +44,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -473,6 +475,9 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                 // TODO: ETH not getting deposited on Compound..
                 it("Transfer large amount of balance", async () => {
+
+                    console.log((await tokenInfoRegistry.getCToken(ETH_ADDRESS)).toString());
+
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
