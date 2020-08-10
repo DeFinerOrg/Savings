@@ -373,7 +373,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // verify deposit
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(new BN(ETHbalanceAfterDeposit)).to.be.bignumber.equal(
-                        new BN(eighteenPrecision).mul(new BN(2))
+                        new BN(eighteenPrecision).mul(new BN(2)).mul(new BN(15)).div(new BN(100))
                     );
 
                     const user2BalanceUSDCBeforeBorrow = await erc20USDC.balanceOf(user2);
@@ -439,7 +439,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // validate savingAccount ETH balance
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal((new BN(2000)).mul(new BN(15)).div(new BN(100)));
 
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
@@ -500,7 +500,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     // validate savingAccount ETH balance
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
-                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(new BN(2000));
+                    expect(ETHbalanceAfterDeposit).to.be.bignumber.equal((new BN(2000)).mul(new BN(15)).div(new BN(100)));
 
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {

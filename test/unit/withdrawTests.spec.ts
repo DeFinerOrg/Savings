@@ -1285,7 +1285,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount);
+                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount.mul(new BN(15)).div(new BN(100)));
 
                 // Withdrawing ETH
                 await savingAccount.withdrawAll(ETH_ADDRESS);
