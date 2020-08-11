@@ -637,4 +637,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
     }
+
+    function getTest() public returns(uint) {
+        return baseVariable.getTest();
+    }
 }
