@@ -359,8 +359,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-//        baseVariable.updateTotalCompound(_token);
-//        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
 //        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
         return amount;
