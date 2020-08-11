@@ -17,6 +17,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -82,6 +83,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -1203,6 +1205,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 //Withdrawing ETH
                 console.log("123")
+                const add = await tokenInfoRegistry.getCToken(ETH_ADDRESS)
+                console.log(add.toString())
+                console.log((await web3.eth.getBalance(add)).toString());
                 await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
                 const test = await savingAccount.getTest();
                 console.log(test.toString())
