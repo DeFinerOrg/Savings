@@ -294,7 +294,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         baseVariable.updateTotalCompound(_token);
         baseVariable.updateTotalLoan(_token);
-//        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
+        baseVariable.updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
     }
 
     /**
