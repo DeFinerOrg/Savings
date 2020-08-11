@@ -305,7 +305,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, _amount, _token);
+//        send(msg.sender, _amount, _token);
 
         emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
     }
@@ -607,22 +607,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     }
 
     function() external payable{}
-
-    function toCompound(address _token, uint _amount) public {
-        address cToken = tokenRegistry.getCToken(_token);
-        if (_token == ETH_ADDR) {
-            ICETH(cToken).mint.value(_amount)();
-        } else {
-            uint256 success = ICToken(cToken).mint(_amount);
-            require(success == 0, "mint failed");
-        }
-    }
-
-    function fromCompound(address _token, uint _amount) public {
-        ICToken cToken = ICToken(tokenRegistry.getCToken(_token));
-        uint256 success = cToken.redeemUnderlying(_amount);
-        require(success == 0, "redeemUnderlying failed");
-    }
 
     /**
      * Check if the token is Ether

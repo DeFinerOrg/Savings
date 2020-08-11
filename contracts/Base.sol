@@ -228,7 +228,7 @@ library Base {
             if (cToken != address(0) &&
                 totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
-                IBlockNumber(self.savingAccountAddress).toCompound(_token, toCompoundAmount);
+                toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount.sub(toCompoundAmount));
             }
@@ -256,13 +256,13 @@ library Base {
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
-                    IBlockNumber(self.savingAccountAddress).fromCompound(_token, self.totalCompound[cToken]);
+                    fromCompound(self, _token, self.totalCompound[cToken]);
                     self.totalCompound[cToken] = 0;
                     self.totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
-                    IBlockNumber(self.savingAccountAddress).fromCompound(_token, self.totalCompound[cToken]-totalInCompound);
+                    fromCompound(self, _token, self.totalCompound[cToken]-totalInCompound);
                     self.totalCompound[cToken] = totalInCompound;
                     self.totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -507,26 +507,26 @@ library Base {
      * @param _token token address
      * @param _amount amount of token
      */
-//    function toCompound(BaseVariable storage self, address _token, uint _amount) public {
-//        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
-//        if (_token == ETH_ADDR) {
-//            ICETH(cToken).mint.value(_amount)();
-//        } else {
-//            uint256 success = ICToken(cToken).mint(_amount);
-//            require(success == 0, "mint failed");
-//        }
-//    }
+    function toCompound(BaseVariable storage self, address _token, uint _amount) public {
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        if (_token == ETH_ADDR) {
+            ICETH(cToken).mint.value(_amount)();
+        } else {
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
+        }
+    }
 
     /**
      * Withdraw token from Compound
      * @param _token token address
      * @param _amount amount of token
      */
-//    function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
-//        ICToken cToken = ICToken(TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token));
-//        uint256 success = cToken.redeemUnderlying(_amount);
-//        require(success == 0, "redeemUnderlying failed");
-//    }
+    function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
+        ICToken cToken = ICToken(TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token));
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
+    }
 
     /**
      * Get current deposit balance of a token
