@@ -608,6 +608,22 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     function() external payable{}
 
+    function toCompound(address _token, uint _amount) public {
+        address cToken = tokenRegistry.getCToken(_token);
+        if (_token == ETH_ADDR) {
+            ICETH(cToken).mint.value(_amount)();
+        } else {
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
+        }
+    }
+
+    function fromCompound(address _token, uint _amount) public {
+        ICToken cToken = ICToken(tokenRegistry.getCToken(_token));
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
+    }
+
     /**
      * Check if the token is Ether
      * @param _token token address
