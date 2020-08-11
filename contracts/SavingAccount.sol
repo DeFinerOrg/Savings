@@ -606,7 +606,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         }
     }
 
-    function() public payable{}
+    function() external payable{}
 
     /**
      * Check if the token is Ether
