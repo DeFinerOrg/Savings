@@ -347,21 +347,21 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getDepositPrincipal() == 0)
-            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
+//        if(tokenInfo.getDepositPrincipal() == 0)
+//            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-        uint256 amount = _amount.sub(commission);
+//        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+//        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+//        uint256 amount = _amount.sub(commission);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
-        // baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+//        baseVariable.updateTotalCompound(_token);
+//        baseVariable.updateTotalLoan(_token);
+//        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
         return amount;
     }
