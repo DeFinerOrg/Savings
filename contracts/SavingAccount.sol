@@ -363,7 +363,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 //        baseVariable.updateTotalLoan(_token);
 //        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
-        return amount;
+        return _amount;
     }
 
     /**
