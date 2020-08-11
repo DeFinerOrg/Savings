@@ -1203,9 +1203,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 //Withdrawing ETH
                 console.log("123")
+                await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
                 const test = await savingAccount.getTest();
                 console.log(test.toString())
-                await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
                 console.log("456")
                 let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
