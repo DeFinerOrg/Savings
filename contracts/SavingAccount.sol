@@ -322,10 +322,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+//        baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
-        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
+//        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
 //        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
