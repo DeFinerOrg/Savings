@@ -625,8 +625,6 @@ library Base {
         }
         return borrowETH;
     }
-
-    function() external payable{}
 }
 
 interface IERC20Extended {
