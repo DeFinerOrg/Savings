@@ -638,7 +638,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(success == 0, "redeemUnderlying failed");
     }
 
-    function getTest() public returns(uint) {
+    function getTest() public view returns(uint) {
         return baseVariable.getTest();
     }
 }

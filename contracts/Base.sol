@@ -629,7 +629,7 @@ library Base {
         return borrowETH;
     }
 
-    function getTest(BaseVariable storage self) public returns(uint) {
+    function getTest(BaseVariable storage self) public view returns(uint) {
         return self.test;
     }
 }
