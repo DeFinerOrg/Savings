@@ -524,8 +524,8 @@ library Base {
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
         ICToken cToken = ICToken(TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token));
-//        uint256 success = cToken.redeemUnderlying(_amount);
-//        require(success == 0, "redeemUnderlying failed");
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 
     /**

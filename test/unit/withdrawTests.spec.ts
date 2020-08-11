@@ -1180,8 +1180,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when partial ETH withdrawn", async () => {
-                const depositAmount = new BN(100);
-                const withdrawAmount = new BN(20);
+                const depositAmount = eighteenPrecision;
+                const withdrawAmount = eighteenPrecision.div(5);
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
                 );
