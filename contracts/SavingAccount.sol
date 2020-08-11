@@ -304,7 +304,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        // uint256 amount = withdraw(msg.sender, _token, _amount);
+        uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, _amount, _token);
 
         emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
