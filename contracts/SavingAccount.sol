@@ -304,8 +304,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, amount, _token);
+        // uint256 amount = withdraw(msg.sender, _token, _amount);
+        send(msg.sender, _amount, _token);
 
         emit DepositorOperations(1, _token, msg.sender, address(0), _amount);
     }
@@ -322,48 +322,48 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
-//        baseVariable.newRateIndexCheckpoint(_token);
+        baseVariable.newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
-//        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
+        require(_amount <= baseVariable.getDepositBalance(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
-//        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-//        uint divisor = SafeDecimalMath.getUINT_UNIT();
-//        if(_token != ETH_ADDR) {
-//            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
-//        }
-//        require(baseVariable.getBorrowETH(_from).mul(100) <= baseVariable.getDepositETH(_from)
-//            .sub(_amount.mul(tokenRegistry.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+        uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
+        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        if(_token != ETH_ADDR) {
+            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
+        }
+        require(baseVariable.getBorrowETH(_from).mul(100) <= baseVariable.getDepositETH(_from)
+            .sub(_amount.mul(tokenRegistry.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-//        address cToken = tokenRegistry.getCToken(_token);
-//        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        address cToken = tokenRegistry.getCToken(_token);
+        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-//        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
-//        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-//        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
+        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-//        if(tokenInfo.getDepositPrincipal() == 0)
-//            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
+        if(tokenInfo.getDepositPrincipal() == 0)
+            baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
-//        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
-//        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
-//        uint256 amount = _amount.sub(commission);
+        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+        uint256 amount = _amount.sub(commission);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-//        baseVariable.updateTotalCompound(_token);
-//        baseVariable.updateTotalLoan(_token);
-//        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+        baseVariable.updateTotalCompound(_token);
+        baseVariable.updateTotalLoan(_token);
+        baseVariable.updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
 
-        return _amount;
+        return amount;
     }
 
     /**
