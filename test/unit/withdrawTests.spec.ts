@@ -1204,6 +1204,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 //Withdrawing ETH
                 console.log("123")
                 console.log(ETHbalanceBeforeWithdraw.toString())
+                console.log(withdrawAmount.toString())
                 await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
                 console.log("456")
                 let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
