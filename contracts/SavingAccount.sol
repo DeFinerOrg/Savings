@@ -606,6 +606,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         }
     }
 
+    function() public payable{}
+
     /**
      * Check if the token is Ether
      * @param _token token address
@@ -636,9 +638,5 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
-    }
-
-    function getTest() public view returns(uint) {
-        return baseVariable.getTest();
     }
 }

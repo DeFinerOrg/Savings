@@ -41,8 +41,6 @@ library Base {
         mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
-
-        uint test;
     }
 
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
@@ -525,10 +523,9 @@ library Base {
      * @param _amount amount of token
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
-        self.test = _amount;
         ICToken cToken = ICToken(TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token));
-//        uint256 success = cToken.redeemUnderlying(_amount);
-//        require(success == 0, "redeemUnderlying failed");
+        uint256 success = cToken.redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
     }
 
     /**
@@ -627,10 +624,6 @@ library Base {
             }
         }
         return borrowETH;
-    }
-
-    function getTest(BaseVariable storage self) public view returns(uint) {
-        return self.test;
     }
 }
 
