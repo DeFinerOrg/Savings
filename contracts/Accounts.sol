@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "./lib/TokenInfoLib.sol";
 import "./lib/BitmapLib.sol";
+import "./config/GlobalConfig.sol";
 
 contract Accounts {
     using TokenInfoLib for TokenInfoLib.TokenInfo;
@@ -9,12 +10,24 @@ contract Accounts {
 
     mapping(address => Account) accounts;
 
+    GlobalConfig globalConfig;
+
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
         mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
         uint128 depositBitmap;
         uint128 borrowBitmap;
+    }
+
+    /**
+     * Initialize the Accounts
+     * @param _globalConfig the global configuration contract
+     */
+    function initialize(
+        GlobalConfig _globalConfig
+    ) public {
+        globalConfig = _globalConfig;
     }
 
     /**
@@ -144,14 +157,14 @@ contract Accounts {
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < TokenInfoRegistry(tokenInfoRegistryAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
-                address tokenAddress = TokenInfoRegistry(tokenInfoRegistryAddress).addressFromIndex(i);
+                address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(TokenInfoRegistry(tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
+                    divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
-                depositETH = depositETH.add(getDepositBalance(tokenAddress, _accountAddr).mul(TokenInfoRegistry(tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -164,14 +177,14 @@ contract Accounts {
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < TokenInfoRegistry(tokenInfoRegistryAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
-                address tokenAddress = TokenInfoRegistry(tokenInfoRegistryAddress).addressFromIndex(i);
+                address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(TokenInfoRegistry(tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
+                    divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(tokenAddress, _accountAddr).mul(TokenInfoRegistry(tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;
