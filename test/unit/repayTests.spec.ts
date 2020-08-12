@@ -298,7 +298,7 @@ contract("SavingAccount", async (accounts) => {
                     });
                     expect(
                         new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
-                    ).to.be.bignumber.equal(new BN(-5));
+                    ).to.be.bignumber.equal(new BN(5));
                 });
 
                 it("when the repayment ETHAmount is greater than the loan amount.", async () => {
@@ -412,10 +412,10 @@ contract("SavingAccount", async (accounts) => {
                     // 4. Verify the repay amount.
                     expect(
                         new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))
-                    ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)).mul(new BN(-1)));
+                    ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)));
                     expect(
                         new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))
-                    ).to.be.bignumber.equal(new BN(-14269406391));
+                    ).to.be.bignumber.equal(new BN(0));
                 });
             });
         });
