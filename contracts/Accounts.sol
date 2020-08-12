@@ -8,7 +8,7 @@ contract Accounts {
     using TokenInfoLib for TokenInfoLib.TokenInfo;
     using BitmapLib for uint128;
 
-    mapping(address => Account) accounts;
+    mapping(address => Account) public accounts;
 
     GlobalConfig globalConfig;
 
