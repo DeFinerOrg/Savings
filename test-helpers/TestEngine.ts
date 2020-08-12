@@ -39,9 +39,10 @@ export class TestEngine {
         const scriptPath = `${compound}/script/scen/${script}`;
         const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
         const log = shell.exec(command);
-        const configFile = "../compound-protocol/networks/development.json";
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
+        const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
-        delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
+        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
         compoundTokens = require(configFile);
 
     }

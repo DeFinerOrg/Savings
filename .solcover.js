@@ -19,7 +19,7 @@ module.exports = {
     },
     silent: false,
     compileCommand: 'yarn prepare',
-    testCommand: 'truffle test',
+    testCommand: 'COVERAGE=TRUE truffle test --network coverage',
     // client: require("ganache-core"),
 
     skipFiles: ["mocks/MockCToken.sol", "mocks/MockChainLinkAggregator.sol", "mocks/MockERC20.sol", "mocks/MockProxyAdmin.sol", "mocks/SavingAccountWithController.sol", "external/strings.sol"]
