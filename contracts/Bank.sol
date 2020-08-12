@@ -11,17 +11,17 @@ import { ICETH } from "./compound/ICompound.sol";
 
 contract Bank {
 
-    mapping(address => uint256) totalLoans;     // amount of lended tokens
-    mapping(address => uint256) totalReserve;   // amount of tokens in reservation
-    mapping(address => uint256) totalCompound;  // amount of tokens in compound
+    mapping(address => uint256) public totalLoans;     // amount of lended tokens
+    mapping(address => uint256) public totalReserve;   // amount of tokens in reservation
+    mapping(address => uint256) public totalCompound;  // amount of tokens in compound
     // Token => block-num => rate
-    mapping(address => mapping(uint => uint)) depositeRateIndex; // the index curve of deposit rate
+    mapping(address => mapping(uint => uint)) public depositeRateIndex; // the index curve of deposit rate
     // Token => block-num => rate
-    mapping(address => mapping(uint => uint)) borrowRateIndex;   // the index curve of borrow rate
+    mapping(address => mapping(uint => uint)) public borrowRateIndex;   // the index curve of borrow rate
     // token address => block number
-    mapping(address => uint) lastCheckpoint;            // last checkpoint on the index curve
+    mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
-    mapping(address => uint) lastCTokenExchangeRate;    // last compound cToken exchange rate
+    mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
     GlobalConfig globalConfig;            // global configuration contract address
@@ -274,7 +274,7 @@ contract Bank {
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
-        address cToken = TokenInfoRegistry(tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = tokenInfoRegistry.getCToken(_token);
 
         // If it is the first check point, initialize the rate index
         if (lastCheckpoint[_token] == 0) {
@@ -363,11 +363,11 @@ contract Bank {
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(address _token) public returns (uint256 deposits, uint256 loans, uint256 collateral){
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
-        totalReserve[_token].add(totalCompound[TokenInfoRegistry(tokenInfoRegistryAddress).getCToken(_token)])
+        totalReserve[_token].add(totalCompound[tokenInfoRegistry.getCToken(_token)])
         );
     }
 
