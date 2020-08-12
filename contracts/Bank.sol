@@ -26,6 +26,11 @@ contract Bank {
 
     enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
 
+    ActionChoices public Deposit = ActionChoices.Deposit;
+    ActionChoices public Withdraw = ActionChoices.Withdraw;
+    ActionChoices public Borrow = ActionChoices.Borrow;
+    ActionChoices public Repay = ActionChoices.Repay;
+
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
         uint capitalRatio;          // the ratio of the capital in third party to the total asset
@@ -95,9 +100,9 @@ contract Bank {
     function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
+        if (_action == Deposit || _action == Repay) {
             // Total amount of token after deposit or repay
-            if (_action == ActionChoices.Deposit)
+            if (_action == Deposit)
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -123,7 +128,7 @@ contract Bank {
             );
 
             // Total amount of token after withdraw or borrow
-            if (_action == ActionChoices.Withdraw)
+            if (_action == Withdraw)
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);

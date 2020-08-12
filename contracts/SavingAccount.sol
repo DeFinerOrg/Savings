@@ -2,23 +2,18 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
-import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
+import "./lib/TokenInfoLib.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard {
-    using Base for Base.BaseVariable;
-    using Base for Base.Account;
-    using Base for Base.ActionChoices;
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
     using TokenInfoLib for TokenInfoLib.TokenInfo;
-    using BitmapLib for uint128;
 
-    Base.BaseVariable baseVariable;
     GlobalConfig public globalConfig;
 
     // Following are the constants, initialized via upgradable proxy contract
@@ -200,7 +195,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
@@ -243,7 +238,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, Base.ActionChoices.Repay);
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay);
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
@@ -294,7 +289,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
 
@@ -362,7 +357,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         return amount;
