@@ -2,11 +2,13 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
-import "./registry/TokenInfoRegistry.sol";
+import "./lib/SafeDecimalMath.sol";
 import "./lib/TokenInfoLib.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
+import { ICToken } from "./compound/ICompound.sol";
+import { ICETH } from "./compound/ICompound.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -46,7 +48,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Initialize function to be called by the Deployer for the first time
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      */
     function initialize(
