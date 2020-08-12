@@ -40,10 +40,10 @@ export class TestEngine {
         const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
         const log = shell.exec(command);
         const configFile = "../compound-protocol/networks/development.json";
-
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/development.json")];
         compoundTokens = require(configFile);
+
     }
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
@@ -85,7 +85,7 @@ export class TestEngine {
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
                 let addr;
-                if (network == "development") {
+                if (network == "development" || "coverage") {
                     addr = (
                         await MockChainLinkAggregator.new(
                             token.decimals,
