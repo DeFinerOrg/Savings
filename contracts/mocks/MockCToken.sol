@@ -25,6 +25,7 @@ contract MockCToken {
     function transferFrom(address sender, address recipient, uint256 amount) public returns (bool);
     function increaseAllowance(address spender, uint256 addedValue) public returns (bool);
     function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool);
+    function name() public view returns (string memory);
 
     function supplyRatePerBlock() external view returns (uint);
     function borrowRatePerBlock() external view returns (uint);
