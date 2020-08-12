@@ -22,5 +22,5 @@ module.exports = {
     testCommand: 'truffle test',
     // client: require("ganache-core"),
 
-    skipFiles: ["mocks/MockCToken.sol", "mocks/MockChainLinkAggregator.sol", "external/strings.sol"]
+    skipFiles: ["mocks/MockCToken.sol", "mocks/MockChainLinkAggregator.sol", "mocks/*", "external/strings.sol"]
 };
