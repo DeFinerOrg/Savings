@@ -36,9 +36,8 @@ contract Bank {
     event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
 
     /**
-     * Initialize the base library
-     * @param _globalConfigAddress the global configuration contract address
-     * @param _savingAccountAddress the SavingAccount contract address
+     * Initialize the Bank
+     * @param _globalConfig the global configuration contract
      */
     function initialize(
         GlobalConfig _globalConfig
