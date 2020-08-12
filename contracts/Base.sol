@@ -34,11 +34,9 @@ library Base {
         mapping(address => uint) lastCTokenExchangeRate;    // last compound cToken exchange rate
         // Store per account info
         mapping(address => Account) accounts;
-        address payable deFinerCommunityFund;   // address allowed to withdraw the community fund
         address globalConfigAddress;            // global configuration contract address
         address savingAccountAddress;           // the SavingAccount contract address
         address tokenInfoRegistryAddress;
-        mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
     }
@@ -625,8 +623,4 @@ library Base {
         }
         return borrowETH;
     }
-}
-
-interface IERC20Extended {
-    function decimals() external view returns (uint8);
 }

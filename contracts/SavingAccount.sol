@@ -640,3 +640,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(success == 0, "redeemUnderlying failed");
     }
 }
+
+interface IERC20Extended {
+    function decimals() external view returns (uint8);
+}
