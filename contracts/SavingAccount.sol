@@ -181,10 +181,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(globalConfig.bank().totalReserve[_token].add(globalConfig.bank().totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(msg.sender).tokenInfos(_token);
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
@@ -220,7 +220,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(msg.sender).tokenInfos(_token);
         require(tokenInfo.getBorrowPrincipal() > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
@@ -274,7 +274,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function deposit(address _to, address _token, uint256 _amount) internal {
 
         require(_amount != 0, "Amount is zero");
-        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[_to].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(_to).tokenInfos(_token);
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
@@ -336,10 +336,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(globalConfig.bank().totalReserve[_token].add(globalConfig.bank().totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[_from].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(_from).tokenInfos(_token);
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
@@ -374,7 +374,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(msg.sender).tokenInfos(_token);
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
 
         // Get the total amount of token for the account
@@ -481,8 +481,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
 
-        TokenInfoLib.TokenInfo storage targetTokenInfo = globalConfig.accounts().accounts[_targetAccountAddr].tokenInfos[_targetToken];
-        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_targetToken];
+        TokenInfoLib.TokenInfo storage targetTokenInfo = globalConfig.accounts().accounts(_targetAccountAddr).tokenInfos(_targetToken);
+        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().accounts(msg.sender).tokenInfos(_targetToken);
         // Target token rate of the liquidator
         vars.msgTargetTokenAccruedRate = globalConfig.bank().getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
         // Target token rate of the user to be liquidated
@@ -507,10 +507,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
 
-                TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[_targetAccountAddr].tokenInfos[vars.token];
+                TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts(_targetAccountAddr).tokenInfos(vars.token);
 
                 if(tokenInfo.getBorrowPrincipal() == 0) {
-                    TokenInfoLib.TokenInfo storage msgTokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[vars.token];
+                    TokenInfoLib.TokenInfo storage msgTokenInfo = globalConfig.accounts().accounts(msg.sender).tokenInfos(vars.token);
                     globalConfig.bank().newRateIndexCheckpoint(vars.token);
 
                     // Token rate of the liquidator
