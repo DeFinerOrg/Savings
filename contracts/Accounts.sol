@@ -9,6 +9,8 @@ contract Accounts {
     using BitmapLib for uint128;
 
     mapping(address => Account) public accounts;
+    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    uint256 public constant INT_UNIT = 10 ** uint256(18);
 
     GlobalConfig globalConfig;
 
@@ -112,12 +114,12 @@ contract Accounts {
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(depositeRateIndex[_token][tokenInfo.getLastDepositBlock()] == 0) {
+            if(globalConfig.bank().depositeRateIndex[_token][tokenInfo.getLastDepositBlock()] == 0) {
                 accruedRate = UNIT;
             } else {
-                accruedRate = depositRateIndexNow(_token)
+                accruedRate = globalConfig.bank().depositRateIndexNow(_token)
                 .mul(UNIT)
-                .div(depositeRateIndex[_token][tokenInfo.getLastDepositBlock()]);
+                .div(globalConfig.bank().depositeRateIndex[_token][tokenInfo.getLastDepositBlock()]);
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -139,12 +141,12 @@ contract Accounts {
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
         } else {
-            if(borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()] == 0) {
+            if(globalConfig.bank().borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()] == 0) {
                 accruedRate = UNIT;
             } else {
-                accruedRate = borrowRateIndexNow(_token)
+                accruedRate = globalConfig.bank().borrowRateIndexNow(_token)
                 .mul(UNIT)
-                .div(borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()]);
+                .div(globalConfig.bank().borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()]);
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
