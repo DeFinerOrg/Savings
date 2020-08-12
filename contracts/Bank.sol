@@ -3,9 +3,7 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./config/GlobalConfig.sol";
-import "./registry/TokenInfoRegistry.sol";
 import "./lib/SafeDecimalMath.sol";
-import { IBlockNumber } from "./ISavingAccount.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
@@ -25,8 +23,6 @@ contract Bank {
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
     GlobalConfig globalConfig;            // global configuration contract address
-    IBlockNumber savingAccount;           // the SavingAccount contract address
-    TokenInfoRegistry tokenInfoRegistry;
 
     enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
 
@@ -45,13 +41,9 @@ contract Bank {
      * @param _savingAccountAddress the SavingAccount contract address
      */
     function initialize(
-        GlobalConfig _globalConfig,
-        IBlockNumber _savingAccount,
-        TokenInfoRegistry _tokenInfoRegistry
+        GlobalConfig _globalConfig
     ) public {
         globalConfig = _globalConfig;
-        savingAccount = _savingAccount;
-        tokenInfoRegistry = _tokenInfoRegistry;
     }
 
     /**
@@ -59,7 +51,7 @@ contract Bank {
      * @param _token token address
      */
     function getTotalDepositStore(address _token) public view returns(uint) {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint256 totalLoans = totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = totalReserve[_token];                    // totalReserve = R
         return totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
@@ -70,9 +62,9 @@ contract Bank {
      * @param _token token address
      */
     function updateTotalCompound(address _token) public {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
-            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(savingAccount));
+            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
         }
     }
 
@@ -103,7 +95,7 @@ contract Bank {
      * @return the actuall amount deposit/withdraw from the saving pool
      */
     function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
@@ -169,7 +161,7 @@ contract Bank {
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
-        if(!tokenInfoRegistry.isSupportedOnCompound(_token))
+        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
         // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
         // sichaoy: move the constant
             return getCapitalUtilizationRatio(_token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
@@ -189,7 +181,7 @@ contract Bank {
     function getDepositRatePerBlock(address _token) public view returns(uint) {
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
         uint256 capitalUtilRatio = getCapitalUtilizationRatio(_token);
-        if(!tokenInfoRegistry.isSupportedOnCompound(_token))
+        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
             return borrowRatePerBlock.mul(capitalUtilRatio).div(SafeDecimalMath.getUNIT());
 
         return borrowRatePerBlock.mul(capitalUtilRatio).add(compoundPool[_token].depositRatePerBlock
@@ -214,7 +206,7 @@ contract Bank {
      * @param _token token address
      */
     function getCapitalCompoundRatio(address _token) public view returns(uint) {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(totalCompound[cToken] == 0 ) {
             return 0;
         } else {
@@ -237,7 +229,7 @@ contract Bank {
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
             // sichaoy: to check that the current block rate index already exist
-            return depositeRateIndex[_token][savingAccount.getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
+            return depositeRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
 
@@ -257,7 +249,7 @@ contract Bank {
             return UNIT;
         } else {
             // rate change
-            return borrowRateIndex[_token][savingAccount.getBlockNumber()].mul(UNIT).div(borrowRate);
+            return borrowRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(borrowRate);
         }
     }
 
@@ -268,13 +260,13 @@ contract Bank {
      */
     function newRateIndexCheckpoint(address _token) public {
 
-        uint blockNumber = savingAccount.getBlockNumber();
+        uint blockNumber = globalConfig.savingAccount().getBlockNumber();
 
         if (blockNumber == lastCheckpoint[_token])
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
         if (lastCheckpoint[_token] == 0) {
@@ -341,7 +333,7 @@ contract Bank {
         uint256 lastDepositeRateIndex = depositeRateIndex[_token][lastCheckpoint];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
-        return lastDepositeRateIndex.mul(savingAccount.getBlockNumber().sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        return lastDepositeRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -356,7 +348,7 @@ contract Bank {
             return UNIT;
         uint256 lastBorrowRateIndex = borrowRateIndex[_token][lastCheckpoint];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
-        return lastBorrowRateIndex.mul(savingAccount.getBlockNumber().sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -367,7 +359,7 @@ contract Bank {
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
-        totalReserve[_token].add(totalCompound[tokenInfoRegistry.getCToken(_token)])
+        totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }
 
@@ -377,7 +369,7 @@ contract Bank {
      * @param _amount amount of token
      */
     function toCompound(address _token, uint _amount) public {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
         } else {
@@ -392,7 +384,7 @@ contract Bank {
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) public {
-        address cToken = tokenInfoRegistry.getCToken(_token);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
     }
