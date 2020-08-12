@@ -93,7 +93,7 @@ contract Bank {
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public {
+    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
@@ -109,7 +109,8 @@ contract Bank {
             if (cToken != address(0) &&
             totalReserveBeforeAdjust > totalAmount.mul(globalConfig.maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
-                toCompound(_token, toCompoundAmount);
+                //toCompound(_token, toCompoundAmount);
+                compoundAmount = toCompoundAmount;
                 totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
                 totalReserve[_token] = totalReserve[_token].add(_amount.sub(toCompoundAmount));
             }
@@ -137,13 +138,15 @@ contract Bank {
                 uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
-                    fromCompound(_token, totalCompound[cToken]);
+                    //fromCompound(_token, totalCompound[cToken]);
+                    compoundAmount = totalCompound[cToken];
                     totalCompound[cToken] = 0;
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
-                    fromCompound(_token, totalCompound[cToken]-totalInCompound);
+                    //fromCompound(_token, totalCompound[cToken]-totalInCompound);
+                    compoundAmount = totalCompound[cToken]-totalInCompound;
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -152,6 +155,7 @@ contract Bank {
                 totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
+        return compoundAmount;
     }
 
     /**
@@ -360,31 +364,5 @@ contract Bank {
         totalLoans[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
-    }
-
-    /**
-     * Deposit token to Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function toCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (_token == ETH_ADDR) {
-            ICETH(cToken).mint.value(_amount)();
-        } else {
-            uint256 success = ICToken(cToken).mint(_amount);
-            require(success == 0, "mint failed");
-        }
-    }
-
-    /**
-     * Withdraw token from Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function fromCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        uint256 success = ICToken(cToken).redeemUnderlying(_amount);
-        require(success == 0, "redeemUnderlying failed");
     }
 }
