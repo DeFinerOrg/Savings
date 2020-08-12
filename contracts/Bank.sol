@@ -51,9 +51,8 @@ contract Bank {
      */
     function getTotalDepositStore(address _token) public view returns(uint) {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        uint256 totalLoans = totalLoans[_token];                        // totalLoans = U
-        uint256 totalReserve = totalReserve[_token];                    // totalReserve = R
-        return totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
+        // totalLoans[_token] = U   totalReserve[_token] = R
+        return totalCompound[cToken].add(totalLoans[_token]).add(totalReserve[_token]); // return totalAmount = C + U + R
     }
 
     /**
@@ -327,16 +326,16 @@ contract Bank {
      * change name to depositRateIndexForward? or EstimateDepositRateIndex?
      */
     function depositRateIndexNow(address _token) public view returns(uint) {
-        uint256 lastCheckpoint = lastCheckpoint[_token];
+        uint256 lcp = lastCheckpoint[_token];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         // If this is the first checkpoint, set the index be 1.
-        if(lastCheckpoint == 0)
+        if(lcp == 0)
             return UNIT;
 
-        uint256 lastDepositeRateIndex = depositeRateIndex[_token][lastCheckpoint];
+        uint256 lastDepositeRateIndex = depositeRateIndex[_token][lcp];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
-        return lastDepositeRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        return lastDepositeRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -344,14 +343,14 @@ contract Bank {
      * @param _token token address
      */
     function borrowRateIndexNow(address _token) public view returns(uint) {
-        uint256 lastCheckpoint = lastCheckpoint[_token];
+        uint256 lcp = lastCheckpoint[_token];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         // If this is the first checkpoint, set the index be 1.
-        if(lastCheckpoint == 0)
+        if(lcp == 0)
             return UNIT;
-        uint256 lastBorrowRateIndex = borrowRateIndex[_token][lastCheckpoint];
+        uint256 lastBorrowRateIndex = borrowRateIndex[_token][lcp];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
-        return lastBorrowRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
