@@ -17,18 +17,16 @@ contract SavingAccountWithController  is SavingAccount {
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      * @param _comptroller Compound controller address
      */
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
-        TokenInfoRegistry _tokenRegistry,
         GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _tokenRegistry, _globalConfig);
+        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig);
         comptroller = _comptroller;
     }
 
