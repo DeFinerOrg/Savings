@@ -171,7 +171,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(globalConfig.accounts().isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
@@ -185,11 +185,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().totalReserve[_token].add(globalConfig.bank().totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
-        uint accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.borrow(_amount, accruedRate, this.getBlockNumber());
 
         // Set the borrow bitmap
@@ -198,8 +198,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
+        globalConfig.bank().updateTotalCompound(_token);
+        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, Base.ActionChoices.Borrow); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
@@ -221,7 +221,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         receive(msg.sender, _amount, _token);
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
         TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
@@ -230,7 +230,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         );
 
         // Update tokenInfo
-        uint rate = baseVariable.getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
+        uint rate = globalConfig.bank().getBorrowAccruedRate(_token,tokenInfo.getLastBorrowBlock());
         uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         tokenInfo.repay(amount, rate, this.getBlockNumber());
@@ -241,8 +241,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
+        globalConfig.bank().updateTotalCompound(_token);
+        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, Base.ActionChoices.Repay);
         toCompound(_token, compoundAmount);
 
@@ -281,10 +281,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[_to].tokenInfos[_token];
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.deposit(_amount, accruedRate, this.getBlockNumber());
 
         // Set the deposit bitmap
@@ -292,8 +292,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
+        globalConfig.bank().updateTotalCompound(_token);
+        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, Base.ActionChoices.Deposit); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
@@ -323,7 +323,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= globalConfig.accounts().getDepositBalance(_token, _from), "Insufficient balance.");
@@ -340,11 +340,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().totalReserve[_token].add(globalConfig.bank().totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
         TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[_from].tokenInfos[_token];
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
@@ -360,8 +360,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        baseVariable.updateTotalCompound(_token);
-        baseVariable.updateTotalLoan(_token);
+        globalConfig.bank().updateTotalCompound(_token);
+        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, Base.ActionChoices.Withdraw); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
@@ -375,14 +375,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
 
         // Add a new checkpoint on the index curve.
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
         TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
         require(tokenInfo.getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
 
         // Get the total amount of token for the account
-        uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         uint amount = tokenInfo.getDepositBalance(accruedRate);
 
         withdraw(msg.sender, _token, amount);
@@ -488,9 +488,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         TokenInfoLib.TokenInfo storage targetTokenInfo = globalConfig.accounts().accounts[_targetAccountAddr].tokenInfos[_targetToken];
         TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_targetToken];
         // Target token rate of the liquidator
-        vars.msgTargetTokenAccruedRate = baseVariable.getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
+        vars.msgTargetTokenAccruedRate = globalConfig.bank().getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
         // Target token rate of the user to be liquidated
-        vars.targetTokenAccruedRate = baseVariable.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
+        vars.targetTokenAccruedRate = globalConfig.bank().getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate, this.getBlockNumber());
@@ -515,17 +515,17 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
                 if(tokenInfo.getBorrowPrincipal() == 0) {
                     TokenInfoLib.TokenInfo storage msgTokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[vars.token];
-                    baseVariable.newRateIndexCheckpoint(vars.token);
+                    globalConfig.bank().newRateIndexCheckpoint(vars.token);
 
                     // Token rate of the liquidator
                     vars.msgTokenAccruedRate =
                     msgTokenInfo.getBorrowPrincipal() > 0 ?
-                    baseVariable.getBorrowAccruedRate(vars.token, msgTokenInfo.getLastBorrowBlock())
+                    globalConfig.bank().getBorrowAccruedRate(vars.token, msgTokenInfo.getLastBorrowBlock())
                     :
-                    baseVariable.getDepositAccruedRate(vars.token, msgTokenInfo.getLastDepositBlock());
+                    globalConfig.bank().getDepositAccruedRate(vars.token, msgTokenInfo.getLastDepositBlock());
 
                     // Token rate of the user to be liquidated
-                    vars.tokenAccruedRate = baseVariable.getDepositAccruedRate(vars.token, tokenInfo.getLastDepositBlock());
+                    vars.tokenAccruedRate = globalConfig.bank().getDepositAccruedRate(vars.token, tokenInfo.getLastDepositBlock());
                     vars.coinValue = tokenInfo.getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
                     if(vars.coinValue > vars.liquidationDebtValue) {
                         vars.coinValue = vars.liquidationDebtValue;
