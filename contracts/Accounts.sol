@@ -104,6 +104,62 @@ contract Accounts {
         account.borrowBitmap = account.borrowBitmap.unsetBit(_index);
     }
 
+    function getDepositPrincipal(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getDepositPrincipal();
+    }
+
+    function getBorrowPrincipal(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getBorrowPrincipal();
+    }
+
+    function getDepositBalance(address _accountAddr, address _token, uint accruedRate) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getDepositBalance(accruedRate);
+    }
+
+    function getBorrowBalance(address _accountAddr, address _token, uint accruedRate) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getBorrowBalance(accruedRate);
+    }
+
+    function getLastDepositBlock(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getLastDepositBlock();
+    }
+
+    function getLastBorrowBlock(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getLastBorrowBlock();
+    }
+
+    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _accruedRate, uint256 _block) public {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        tokenInfo.borrow(_amount, _accruedRate, _block);
+    }
+
+    /**
+     * Update token info for withdraw. The interest will be withdrawn with higher priority.
+     */
+    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _accruedRate, uint256 _block) public {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        tokenInfo.withdraw(_amount, _accruedRate, _block);
+    }
+
+    /**
+     * Update token info for deposit
+     */
+    function deposit(address _accountAddr, address _token, uint256 _amount, uint _accruedRate, uint256 _block) public {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        tokenInfo.deposit(_amount, _accruedRate, _block);
+    }
+
+    function repay(address _accountAddr, address _token, uint256 _amount, uint _accruedRate, uint256 _block) public {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        tokenInfo.repay(_amount, _accruedRate, _block);
+    }
+
     function getDepositBalance(
         address _token,
         address _accountAddr

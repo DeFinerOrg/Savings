@@ -229,7 +229,7 @@ contract Bank {
      */
     // sichaoy: this function could be more general to have an end checkpoit as a parameter.
     // sichaoy: require:what if a index point doesn't exist?
-    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) internal view returns (uint256) {
+    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) public view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         if (depositRate == 0) {
@@ -248,7 +248,7 @@ contract Bank {
      */
     // sichaoy: actually the rate + 1, add a require statement here to make sure
     // the checkpoint for current block exists.
-    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) internal view returns (uint256) {
+    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) public view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         if (borrowRate == 0) {
