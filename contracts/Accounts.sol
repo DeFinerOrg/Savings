@@ -124,6 +124,16 @@ contract Accounts {
         return tokenInfo.getLastBorrowBlock();
     }
 
+    function getDepositInterest(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getDepositInterest();
+    }
+
+    function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        return tokenInfo.getBorrowInterest();
+    }
+
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
@@ -136,7 +146,7 @@ contract Accounts {
     function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, _accruedRate, _block);
+        tokenInfo.withdraw(_amount, accruedRate, _block);
     }
 
     /**
