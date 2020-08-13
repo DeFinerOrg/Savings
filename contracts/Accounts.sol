@@ -151,6 +151,10 @@ contract Accounts {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, _block);
+        if(tokenInfo.getDepositPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            unsetFromDepositBitmap(_accountAddr, tokenIndex);
+        }
     }
 
     /**
@@ -159,6 +163,10 @@ contract Accounts {
     function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        if(tokenInfo.getDepositPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            setInDepositBitmap(_accountAddr, tokenIndex);
+        }
         tokenInfo.deposit(_amount, accruedRate, _block);
     }
 
@@ -166,6 +174,10 @@ contract Accounts {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         tokenInfo.repay(_amount, accruedRate, _block);
+        if(tokenInfo.getBorrowPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            unsetFromBorrowBitmap(_accountAddr, tokenIndex);
+        }
     }
 
     function getDepositBalanceCurrent(
