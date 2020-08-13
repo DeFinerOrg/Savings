@@ -11,7 +11,7 @@
     "coverage": "npx solidity-coverage",
     "coverage-setup": "node_modules/.bin/testrpc-sc --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
-    "ganache": "ganache-cli -p 8545 -l 10000000 -e 10000 --allowUnlimitedContractSize"
+    "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true"
   },
   "repository": {
     "type": "git",
