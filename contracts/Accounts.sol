@@ -20,7 +20,7 @@ contract Accounts is Ownable{
     GlobalConfig globalConfig;
 
     modifier onlySavingAccount() {
-        require(msg.sender == globalConfig.savingAccount(), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
         _;
     }
 
@@ -72,6 +72,46 @@ contract Accounts is Ownable{
     function isUserHasBorrows(address _account, uint8 _index) public view returns (bool) {
         Account storage account = accounts[_account];
         return account.borrowBitmap.isBitSet(_index);
+    }
+
+    /**
+     * Set the deposit bitmap for a token.
+     * @param _account address of the user
+     * @param _index index of the token
+     */
+    function setInDepositBitmap(address _account, uint8 _index) internal {
+        Account storage account = accounts[_account];
+        account.depositBitmap = account.depositBitmap.setBit(_index);
+    }
+
+    /**
+     * Unset the deposit bitmap for a token
+     * @param _account address of the user
+     * @param _index index of the token
+     */
+    function unsetFromDepositBitmap(address _account, uint8 _index) internal {
+        Account storage account = accounts[_account];
+        account.depositBitmap = account.depositBitmap.unsetBit(_index);
+    }
+
+    /**
+     * Set the borrow bitmap for a token.
+     * @param _account address of the user
+     * @param _index index of the token
+     */
+    function setInBorrowBitmap(address _account, uint8 _index) internal {
+        Account storage account = accounts[_account];
+        account.borrowBitmap = account.borrowBitmap.setBit(_index);
+    }
+
+    /**
+     * Unset the borrow bitmap for a token
+     * @param _account address of the user
+     * @param _index index of the token
+     */
+    function unsetFromBorrowBitmap(address _account, uint8 _index) internal {
+        Account storage account = accounts[_account];
+        account.borrowBitmap = account.borrowBitmap.unsetBit(_index);
     }
 
     function getDepositPrincipal(address _accountAddr, address _token) public view returns(uint256) {
