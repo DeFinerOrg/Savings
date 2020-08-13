@@ -20,6 +20,9 @@ contract("Integration Tests", async (accounts) => {
     const user1 = accounts[1];
     const user2 = accounts[2];
     const user3 = accounts[3];
+    const user4 = accounts[4];
+    const user5 = accounts[5];
+    const user6 = accounts[6];
     const dummy = accounts[9];
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
@@ -1154,12 +1157,22 @@ contract("Integration Tests", async (accounts) => {
                     const numOfETH = eighteenPrecision;
                     const numOfDAI = new BN(1000);
                     const numOfUSDC = new BN(1000);
+                    const numOfBAT = new BN(1000);
+                    const numOfZRX = new BN(1000);
+                    const numOfMKR = new BN(1000);
 
                     // 1. Deposit collateral
                     await erc20DAI.transfer(user2, numOfDAI);
                     await erc20USDC.transfer(user3, numOfUSDC);
+                    await erc20BAT.transfer(user4, numOfBAT);
+                    await erc20BAT.transfer(user5, numOfZRX);
+                    await erc20MKR.transfer(user6, numOfMKR);
+
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
                     await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user3 });
+                    await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user4 });
+                    await erc20ZRX.approve(savingAccount.address, numOfZRX, { from: user5 });
+                    await erc20MKR.approve(savingAccount.address, numOfMKR, { from: user6 });
 
                     await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                         from: user1,
@@ -1167,6 +1180,9 @@ contract("Integration Tests", async (accounts) => {
                     });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user3 });
+                    await savingAccount.deposit(addressBAT, numOfBAT, { from: user4 });
+                    await savingAccount.deposit(addressZRX, numOfZRX, { from: user5 });
+                    await savingAccount.deposit(addressMKR, numOfMKR, { from: user6 });
 
                     let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
                     console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
@@ -1174,6 +1190,9 @@ contract("Integration Tests", async (accounts) => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
                     await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+                    await savingAccount.borrow(addressBAT, new BN(100), { from: user1 });
+                    await savingAccount.borrow(addressZRX, new BN(100), { from: user1 });
+                    await savingAccount.borrow(addressMKR, new BN(100), { from: user1 });
 
                     const user1DAIBalance = await savingAccount.tokenBalance(addressDAI, {
                         from: user1
@@ -1181,9 +1200,21 @@ contract("Integration Tests", async (accounts) => {
                     const user1USDCBalance = await savingAccount.tokenBalance(addressUSDC, {
                         from: user1
                     });
+                    const user1BATBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+                    const user1ZRXBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
+                    const user1MKRBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
 
                     expect(new BN(user1DAIBalance[1])).to.be.bignumber.equal(new BN(100));
                     expect(new BN(user1USDCBalance[1])).to.be.bignumber.equal(new BN(100));
+                    expect(new BN(user1BATBalance[1])).to.be.bignumber.equal(new BN(100));
+                    expect(new BN(user1ZRXBalance[1])).to.be.bignumber.equal(new BN(100));
+                    expect(new BN(user1MKRBalance[1])).to.be.bignumber.equal(new BN(100));
                 });
             });
         });
