@@ -285,4 +285,23 @@ contract Accounts {
         }
         return borrowETH;
     }
+
+    /**
+	 * Check if the account is liquidatable
+     * @param _borrower borrower's account
+     * @return true if the account is liquidatable
+	 */
+    function isAccountLiquidatable(address _borrower) public view returns (bool) {
+        uint256 liquidationThreshold = globalConfig.liquidationThreshold();
+        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+        uint256 totalBalance = getBorrowETH(_borrower);
+        uint256 totalETHValue = getDepositETH(_borrower);
+        if (
+            totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
+            totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
+        ) {
+            return true;
+        }
+        return false;
+    }
 }

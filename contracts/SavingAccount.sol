@@ -86,25 +86,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         IERC20(_token).safeApprove(cToken, uint256(-1));
     }
 
-	/**
-	 * Check if the account is liquidatable
-     * @param _borrower borrower's account
-     * @return true if the account is liquidatable
-	 */
-//    function isAccountLiquidatable(address _borrower) public view returns (bool) {
-//        uint256 liquidationThreshold = globalConfig.liquidationThreshold();
-//        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-//        uint256 totalBalance = baseVariable.getBorrowETH(_borrower);
-//        uint256 totalETHValue = baseVariable.getDepositETH(_borrower);
-//        if (
-//            totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
-//            totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
-//        ) {
-//            return true;
-//        }
-//        return false;
-//    }
-
     /**
      * Get current block number
      * @return the current block number
