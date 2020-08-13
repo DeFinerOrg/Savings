@@ -169,7 +169,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
@@ -211,7 +211,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay);
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
@@ -261,7 +261,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit); // Last parameter false means deposit token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
 
@@ -328,7 +328,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         return amount;
@@ -450,12 +450,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 //        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _targetToken);
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
-        if(globalConfig.accounts().getDepositPrincipal(msg.sender, vars.tokenIndex) == 0) {
+        if(globalConfig.accounts().getDepositPrincipal(msg.sender, _targetToken) == 0) {
             globalConfig.accounts().unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
         }
 
         globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
-        if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.tokenIndex) == 0) {
+        if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, _targetToken) == 0) {
             globalConfig.accounts().unsetFromBorrowBitmap(_targetAccountAddr, vars.tokenIndex);
         }
 
@@ -482,11 +482,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
                     }
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
                     globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, this.getBlockNumber());
-                    if(globalConfig.accounts().getDepositPrincipal(_targetAccountAddr, vars.tokenIndex) == 0) {
+                    if(globalConfig.accounts().getDepositPrincipal(_targetAccountAddr, vars.token) == 0) {
                         globalConfig.accounts().unsetFromDepositBitmap(_targetAccountAddr, vars.tokenIndex);
                     }
 
-                    if(globalConfig.accounts().getDepositPrincipal(msg.sender, vars.tokenIndex) == 0 && vars.tokenAmount > 0) {
+                    if(globalConfig.accounts().getDepositPrincipal(msg.sender, vars.token) == 0 && vars.tokenAmount > 0) {
                         globalConfig.accounts().setInDepositBitmap(msg.sender, vars.tokenIndex);
                     }
                     globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, this.getBlockNumber());
