@@ -3,10 +3,14 @@ pragma solidity 0.5.14;
 import "./lib/TokenInfoLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/GlobalConfig.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 contract Accounts {
     using TokenInfoLib for TokenInfoLib.TokenInfo;
     using BitmapLib for uint128;
+    using SafeMath for uint256;
+    using SignedSafeMath for int256;
 
     mapping(address => Account) public accounts;
     address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
@@ -174,12 +178,12 @@ contract Accounts {
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(globalConfig.bank().depositeRateIndex[_token][tokenInfo.getLastDepositBlock()] == 0) {
+            if(globalConfig.bank().depositeRateIndex(_token, tokenInfo.getLastDepositBlock()) == 0) {
                 accruedRate = UNIT;
             } else {
                 accruedRate = globalConfig.bank().depositRateIndexNow(_token)
                 .mul(UNIT)
-                .div(globalConfig.bank().depositeRateIndex[_token][tokenInfo.getLastDepositBlock()]);
+                .div(globalConfig.bank().depositeRateIndex(_token, tokenInfo.getLastDepositBlock()));
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -210,12 +214,12 @@ contract Accounts {
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
         } else {
-            if(globalConfig.bank().borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()] == 0) {
+            if(globalConfig.bank().borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()) == 0) {
                 accruedRate = UNIT;
             } else {
                 accruedRate = globalConfig.bank().borrowRateIndexNow(_token)
                 .mul(UNIT)
-                .div(globalConfig.bank().borrowRateIndex[_token][tokenInfo.getLastBorrowBlock()]);
+                .div(globalConfig.bank().borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()));
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
