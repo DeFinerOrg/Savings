@@ -11,6 +11,8 @@ const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
+const Bank: t.BankContract = artifacts.require("Bank");
+const Accounts: t.AccountsContract = artifacts.require("Accounts");
 
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
@@ -29,6 +31,8 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
+    public bank!: t.BankInstance;
+    public accounts!: t.AccountsInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -115,10 +119,16 @@ export class TestEngine {
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
+        this.globalConfig = await GlobalConfig.new();
+
+        this.bank = await Bank.new();
+        await this.bank.initialize(this.globalConfig.address);
+
+        this.accounts = await Accounts.new();
+        await this.accounts.initialize(this.globalConfig.address);
+
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
-
-        this.globalConfig = await GlobalConfig.new();
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
@@ -148,6 +158,14 @@ export class TestEngine {
         );
 
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+
+        await this.globalConfig.initialize(
+            this.bank.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            this.accounts.address
+        );
+
         return proxy;
 
         /*
