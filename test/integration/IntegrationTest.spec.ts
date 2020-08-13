@@ -1,3 +1,4 @@
+import { TokenInfoRegistryContract } from "./../../types/truffle-contracts/index.d";
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
 
@@ -1054,11 +1055,136 @@ contract("Integration Tests", async (accounts) => {
 
         context("with ETH", async () => {
             context("should succeed", async () => {
-                it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async () => {});
+                it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async () => {
+                    const numOfETH = eighteenPrecision;
+                    const numOfDAI = new BN(1000);
+                    const numOfUSDC = new BN(1000);
 
-                it("should deposit ETH, borrow more than reserve if collateral is sufficient", async () => {});
+                    // 1. Deposit collateral
+                    await erc20DAI.transfer(user2, numOfDAI);
+                    await erc20USDC.transfer(user3, numOfUSDC);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
+                    await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user3 });
 
-                it("should deposit ETH, borrow different tokens deposited by multiple users", async () => {});
+                    await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
+                        from: user1,
+                        value: numOfETH
+                    });
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+                    await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user3 });
+
+                    let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
+                    console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
+
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
+                    await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+
+                    const user1DAIBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+                    const user1USDCBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
+
+                    expect(new BN(user1DAIBalance[1])).to.be.bignumber.equal(new BN(100));
+                    expect(new BN(user1USDCBalance[1])).to.be.bignumber.equal(new BN(100));
+
+                    // amount locked as collateral
+                    const lockedAmountDAI = new BN(100)
+                        .mul(await savingAccount.getCoinToETHRate(0))
+                        .mul(new BN(100))
+                        .div(new BN(60));
+
+                    const lockedAmountUSDC = new BN(100)
+                        .mul(await savingAccount.getCoinToETHRate(1))
+                        .mul(sixPrecision)
+                        .mul(new BN(100))
+                        .div(new BN(60))
+                        .div(eighteenPrecision);
+
+                    const totalLockedAmount = new BN(lockedAmountDAI).add(new BN(lockedAmountUSDC));
+                    const totalAmountLeft = new BN(ETHbalanceBeforeBorrow).sub(
+                        new BN(totalLockedAmount)
+                    );
+                    let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
+
+                    console.log("lockedAmountDAI", lockedAmountDAI.toString());
+                    console.log("lockedAmountUSDC", lockedAmountUSDC.toString());
+                    console.log("totalLockedAmount", totalLockedAmount.toString());
+                    console.log("ETHbalanceBeforeWithdraw", ETHbalanceBeforeWithdraw.toString());
+                    console.log("totalAmountLeft", totalAmountLeft.toString());
+
+                    // 4. Withdraw remaining ETH
+                    await savingAccount.withdraw(ETH_ADDRESS, totalAmountLeft, { from: user1 });
+
+                    let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
+                    let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
+                        new BN(ETHbalanceAfterWithdraw)
+                    );
+                    // validate savingAccount ETH balance
+                    expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft);
+                });
+
+                it("should deposit ETH, borrow more than reserve if collateral is sufficient", async () => {
+                    const numOfETH = eighteenPrecision;
+                    const numOfDAI = new BN(1000);
+
+                    // 1. Deposit collateral
+                    await erc20DAI.transfer(user2, numOfDAI);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
+
+                    await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
+                        from: user1,
+                        value: numOfETH
+                    });
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(addressDAI, new BN(200), { from: user1 });
+
+                    const user1DAIBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+
+                    expect(new BN(user1DAIBalance[1])).to.be.bignumber.equal(new BN(200));
+                });
+
+                it("should deposit ETH, borrow different tokens deposited by multiple users", async () => {
+                    const numOfETH = eighteenPrecision;
+                    const numOfDAI = new BN(1000);
+                    const numOfUSDC = new BN(1000);
+
+                    // 1. Deposit collateral
+                    await erc20DAI.transfer(user2, numOfDAI);
+                    await erc20USDC.transfer(user3, numOfUSDC);
+                    await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
+                    await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user3 });
+
+                    await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
+                        from: user1,
+                        value: numOfETH
+                    });
+                    await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+                    await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user3 });
+
+                    let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
+                    console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
+
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
+                    await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+
+                    const user1DAIBalance = await savingAccount.tokenBalance(addressDAI, {
+                        from: user1
+                    });
+                    const user1USDCBalance = await savingAccount.tokenBalance(addressUSDC, {
+                        from: user1
+                    });
+
+                    expect(new BN(user1DAIBalance[1])).to.be.bignumber.equal(new BN(100));
+                    expect(new BN(user1USDCBalance[1])).to.be.bignumber.equal(new BN(100));
+                });
             });
         });
     });
