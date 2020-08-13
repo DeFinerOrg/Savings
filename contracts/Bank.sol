@@ -28,7 +28,7 @@ contract Bank is Ownable{
     GlobalConfig globalConfig;            // global configuration contract address
 
     modifier onlySavingAccount() {
-        require(msg.sender == globalConfig.savingAccount(), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
         _;
     }
 
