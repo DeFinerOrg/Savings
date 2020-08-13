@@ -797,6 +797,8 @@ contract("Integration Tests", async (accounts) => {
                     expect(userBalanceDiff).to.be.bignumber.equal(borrowAmount);
                 }
             });
+
+            it("When user deposits, borrows, tries to deposit borrowed tokens", async () => {});
         });
         context("should fail", async () => {
             it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async () => {
@@ -939,8 +941,10 @@ contract("Integration Tests", async (accounts) => {
                 );
                 expect(totalDefinerBalanceAfterRepayUSDCUser1[1]).to.be.bignumber.equal(ZERO);
             });
+
+            it("User deposits, borrows, deposits again, borrows again, then repays", async () => {
         });
-        context("should fail", async () => { });
+        context("should fail", async () => {});
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -1034,6 +1038,28 @@ contract("Integration Tests", async (accounts) => {
                     collateralLocked
                 );
             });
+        });
+    });
+
+    context("Deposit, Borrow and liquidate", async () => {
+        it("");
+    });
+
+    context("Deposit, Borrow, Repay and liquidate", async () => {
+        it("");
+    });
+
+    context("Deposit, Borrow, Repay, Withdraw and liquidate", async () => {
+        it("");
+    });
+
+    context("with ETH", async () => {
+        context("should succeed", async () => {
+            it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async () => {});
+
+            it("should deposit ETH, borrow more than reserve if collateral is sufficient", async () => {});
+
+            it("should deposit ETH, borrow different tokens deposited by multiple users", async () => {});
         });
     });
 });
