@@ -22,10 +22,11 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const mnemonic = fs
-    .readFileSync(".secret")
-    .toString()
-    .trim();
+// const mnemonic = fs
+//     .readFileSync(".secret")
+//     .toString()
+//     .trim();
+const menmonic = " ";
 
 module.exports = {
     // this is required by truffle to find any ts test files
