@@ -6,8 +6,9 @@ import "./config/GlobalConfig.sol";
 import "./lib/SafeDecimalMath.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Bank {
+contract Bank is Ownable{
     using SafeMath for uint256;
     using SignedSafeMath for int256;
 
@@ -25,6 +26,11 @@ contract Bank {
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
     GlobalConfig globalConfig;            // global configuration contract address
+
+    modifier onlySavingAccount() {
+        require(msg.sender == globalConfig.savingAccount(), "Insufficient power");
+        _;
+    }
 
     enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
 
@@ -48,7 +54,7 @@ contract Bank {
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public {
+    ) public onlyOwner {
         globalConfig = _globalConfig;
     }
 
@@ -66,7 +72,7 @@ contract Bank {
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public {
+    function updateTotalCompound(address _token) public onlySavingAccount{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -77,7 +83,7 @@ contract Bank {
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(address _token) public {
+    function updateTotalLoan(address _token) public onlySavingAccount{
         uint balance = totalLoans[_token];
         uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
         if(
@@ -99,7 +105,7 @@ contract Bank {
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == Deposit || _action == Repay) {
@@ -267,7 +273,7 @@ contract Bank {
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public {
+    function newRateIndexCheckpoint(address _token) public onlySavingAccount{
 
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
 

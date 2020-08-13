@@ -66,7 +66,7 @@ contract TokenInfoRegistry is Ownable {
     /**
      *  initializes the symbols structure
      */
-    function initialize(ChainLinkOracle _chainLink) public {
+    function initialize(ChainLinkOracle _chainLink) public onlyOwner{
         chainLink = _chainLink;
     }
 
