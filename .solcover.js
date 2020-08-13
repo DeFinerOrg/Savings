@@ -1,7 +1,7 @@
 module.exports = {
     // client: require("ganache-cli"),
-    port: 8545,
-    testrpcOptions: '-p 8545 --gasLimit 0xfffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true',
+    port: 8546,
+    testrpcOptions: '-p 8546 --gasLimit 0xfffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true',
     norpc: true,
     // copyNodeModules: true,
     providerOptions: {
@@ -10,7 +10,7 @@ module.exports = {
         "allowUnlimitedContractSize": true
     },
     silent: false,
-    compileCommand: 'yarn prepare',
+    compileCommand: 'truffle compile',
     testCommand: 'COVERAGE=TRUE truffle test --network coverage',
     skipFiles: ["mocks/MockCToken.sol", "mocks/MockChainLinkAggregator.sol", "mocks/MockERC20.sol", "mocks/MockProxyAdmin.sol", "mocks/SavingAccountWithController.sol", "external/strings.sol"]
 };

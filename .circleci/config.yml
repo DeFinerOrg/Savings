@@ -30,11 +30,6 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      - run: 
-          name: "Update submodule"
-          command: |
-            cd ./compound-protocol
-            git checkout definer/compound
 
       - restore_cache:
           keys:
@@ -73,6 +68,8 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
+      
+      - run: yarn coverage-setup
+      - run: yarn coverage
       - run: yarn generate # Generate typings
       - run: yarn test # triggers truffle test

@@ -37,7 +37,8 @@ export class TestEngine {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
-        const command = `PROVIDER="http://localhost:8545/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+        const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
         const log = shell.exec(command);
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
         const configFile = "../compound-protocol/networks/" + fileName;

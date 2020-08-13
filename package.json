@@ -8,8 +8,8 @@
     "test": "yarn prepare && truffle test",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
-    "coverage": "npx solidity-coverage",
-    "coverage-setup": "node_modules/.bin/testrpc-sc --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
+    "coverage": "yarn prepare && npx solidity-coverage",
+    "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
     "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true"
   },
