@@ -159,8 +159,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update tokenInfo for the user
 //        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _token);
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, globalConfig.accounts().getLastDepositBlock());
-        globalConfig.accounts().borrow(_amount, accruedRate, this.getBlockNumber());
+        globalConfig.accounts().borrow(msg.sender, _token, _amount, this.getBlockNumber());
 
         // Set the borrow bitmap
         globalConfig.accounts().setInBorrowBitmap(msg.sender, globalConfig.tokenInfoRegistry().getTokenIndex(_token));
@@ -195,18 +194,17 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Sanity check
 //        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _token);
-        require(globalConfig.accounts().getBorrowPrincipal() > 0,
+        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
 
         // Update tokenInfo
-        uint rate = globalConfig.bank().getBorrowAccruedRate(_token, globalConfig.accounts().getLastBorrowBlock());
-        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalance(rate);
+        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(amount, rate, this.getBlockNumber());
+        globalConfig.accounts().repay(msg.sender, _token, amount, this.getBlockNumber());
 
         // Unset borrow bitmap if the balance is fully repaid
-        if(globalConfig.accounts().getBorrowPrincipal() == 0)
+        if(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) == 0)
             globalConfig.accounts().unsetFromBorrowBitmap(msg.sender, globalConfig.tokenInfoRegistry().getTokenIndex(_token));
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -254,8 +252,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, globalConfig.accounts().getLastDepositBlock(_to, _token));
-        globalConfig.accounts().deposit(_to, _token, _amount, accruedRate, this.getBlockNumber());
+        globalConfig.accounts().deposit(_to, _token, _amount, this.getBlockNumber());
 
         // Set the deposit bitmap
         globalConfig.accounts().setInDepositBitmap(_to, globalConfig.tokenInfoRegistry().getTokenIndex(_token));
@@ -296,7 +293,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
-        require(_amount <= globalConfig.accounts().getDepositBalance(_token, _from), "Insufficient balance.");
+        require(_amount <= globalConfig.accounts().getDepositBalanceCurrent(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
@@ -314,11 +311,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Update tokenInfo for the user
 //        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().getTokenInfo(_from, _token);
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, globalConfig.accounts().getLastDepositBlock());
-        globalConfig.accounts().withdraw(_amount, accruedRate, this.getBlockNumber());
+        globalConfig.accounts().withdraw(_from, _token, _amount, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-        if(globalConfig.accounts().getDepositPrincipal() == 0)
+        if(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) == 0)
             globalConfig.accounts().unsetFromDepositBitmap(msg.sender, globalConfig.tokenInfoRegistry().getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
@@ -349,11 +345,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Sanity check
 //        TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _token);
-        require(globalConfig.accounts().getDepositPrincipal() > 0, "Token depositPrincipal must be greater than 0");
+        require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
 
         // Get the total amount of token for the account
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, globalConfig.accounts().getLastDepositBlock());
-        uint amount = globalConfig.accounts().getDepositBalance(accruedRate);
+        uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
         withdraw(msg.sender, _token, amount);
         send(msg.sender, amount, _token);
@@ -371,16 +366,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         uint256 liquidationDebtValue;
         uint256 targetTokenPrice;
         uint256 paymentOfLiquidationValue;
-        uint256 msgTargetTokenAccruedRate;
-        uint256 targetTokenAccruedRate;
         address token;
         uint256 tokenPrice;
-        uint256 tokenAccruedRate;
         uint256 coinValue;
         uint256 targetTokenAmount;
         uint256 tokenAmount;
         uint256 tokenDivisor;
-        uint256 msgTokenAccruedRate;
 
         uint8 tokenIndex;
         uint borrowLTV;
@@ -400,7 +391,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
         vars.msgTotalCollateral = globalConfig.accounts().getDepositETH(msg.sender);
 
-        vars.targetTokenBalance = globalConfig.accounts().getDepositBalance(_targetToken, msg.sender);
+        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
 
         uint liquidationThreshold =  globalConfig.liquidationThreshold();
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
@@ -455,21 +446,16 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
 
-        TokenInfoLib.TokenInfo storage targetTokenInfo = globalConfig.accounts().getTokenInfo(_targetAccountAddr, _targetToken);
-        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _targetToken);
-        // Target token rate of the liquidator
-        vars.msgTargetTokenAccruedRate = globalConfig.bank().getDepositAccruedRate(_targetToken, msgTargetTokenInfo.getLastDepositBlock());
-        // Target token rate of the user to be liquidated
-        vars.targetTokenAccruedRate = globalConfig.bank().getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
-
+//        TokenInfoLib.TokenInfo storage targetTokenInfo = globalConfig.accounts().getTokenInfo(_targetAccountAddr, _targetToken);
+//        TokenInfoLib.TokenInfo storage msgTargetTokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, _targetToken);
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate, this.getBlockNumber());
-        if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
+        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
+        if(globalConfig.accounts().getDepositPrincipal(msg.sender, vars.tokenIndex) == 0) {
             globalConfig.accounts().unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
         }
 
-        targetTokenInfo.repay(vars.targetTokenAmount, vars.targetTokenAccruedRate, this.getBlockNumber());
-        if(targetTokenInfo.getBorrowPrincipal() == 0) {
+        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
+        if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.tokenIndex) == 0) {
             globalConfig.accounts().unsetFromBorrowBitmap(_targetAccountAddr, vars.tokenIndex);
         }
 
@@ -483,20 +469,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
 //                TokenInfoLib.TokenInfo storage tokenInfo = globalConfig.accounts().getTokenInfo(_targetAccountAddr, vars.token);
 
-                if(globalConfig.accounts().getBorrowPrincipal() == 0) {
-                    TokenInfoLib.TokenInfo storage msgTokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, vars.token);
+                if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.token) == 0) {
+//                    TokenInfoLib.TokenInfo storage msgTokenInfo = globalConfig.accounts().getTokenInfo(msg.sender, vars.token);
                     globalConfig.bank().newRateIndexCheckpoint(vars.token);
 
-                    // Token rate of the liquidator
-                    vars.msgTokenAccruedRate =
-                    msgTokenInfo.getBorrowPrincipal() > 0 ?
-                    globalConfig.bank().getBorrowAccruedRate(vars.token, msgTokenInfo.getLastBorrowBlock())
-                    :
-                    globalConfig.bank().getDepositAccruedRate(vars.token, msgTokenInfo.getLastDepositBlock());
-
-                    // Token rate of the user to be liquidated
-                    vars.tokenAccruedRate = globalConfig.bank().getDepositAccruedRate(vars.token, globalConfig.accounts().getLastDepositBlock());
-                    vars.coinValue = globalConfig.accounts().getDepositBalance(vars.tokenAccruedRate).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                    vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
                     if(vars.coinValue > vars.liquidationDebtValue) {
                         vars.coinValue = vars.liquidationDebtValue;
                         vars.liquidationDebtValue = 0;
@@ -504,15 +481,15 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
                         vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                     }
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    globalConfig.accounts().withdraw(vars.tokenAmount, vars.tokenAccruedRate, this.getBlockNumber());
-                    if(globalConfig.accounts().getDepositPrincipal() == 0) {
+                    globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, this.getBlockNumber());
+                    if(globalConfig.accounts().getDepositPrincipal(_targetAccountAddr, vars.tokenIndex) == 0) {
                         globalConfig.accounts().unsetFromDepositBitmap(_targetAccountAddr, vars.tokenIndex);
                     }
 
-                    if(msgTokenInfo.getDepositPrincipal() == 0 && vars.tokenAmount > 0) {
+                    if(globalConfig.accounts().getDepositPrincipal(msg.sender, vars.tokenIndex) == 0 && vars.tokenAmount > 0) {
                         globalConfig.accounts().setInDepositBitmap(msg.sender, vars.tokenIndex);
                     }
-                    msgTokenInfo.deposit(vars.tokenAmount, vars.msgTokenAccruedRate, this.getBlockNumber());
+                    globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, this.getBlockNumber());
                 }
             }
 

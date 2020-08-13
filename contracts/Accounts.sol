@@ -114,16 +114,6 @@ contract Accounts {
         return tokenInfo.getBorrowPrincipal();
     }
 
-    function getDepositBalance(address _accountAddr, address _token, uint accruedRate) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        return tokenInfo.getDepositBalance(accruedRate);
-    }
-
-    function getBorrowBalance(address _accountAddr, address _token, uint accruedRate) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        return tokenInfo.getBorrowBalance(accruedRate);
-    }
-
     function getLastDepositBlock(address _accountAddr, address _token) public view returns(uint256) {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getLastDepositBlock();
@@ -134,33 +124,37 @@ contract Accounts {
         return tokenInfo.getLastBorrowBlock();
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _accruedRate, uint256 _block) public {
+    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        tokenInfo.borrow(_amount, _accruedRate, _block);
+        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.borrow(_amount, accruedRate, _block);
     }
 
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _accruedRate, uint256 _block) public {
+    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, _accruedRate, _block);
     }
 
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount, uint _accruedRate, uint256 _block) public {
+    function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        tokenInfo.deposit(_amount, _accruedRate, _block);
+        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.deposit(_amount, accruedRate, _block);
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount, uint _accruedRate, uint256 _block) public {
+    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        tokenInfo.repay(_amount, _accruedRate, _block);
+        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        tokenInfo.repay(_amount, accruedRate, _block);
     }
 
-    function getDepositBalance(
+    function getDepositBalanceCurrent(
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
@@ -181,13 +175,22 @@ contract Accounts {
         }
     }
 
+    function getDepositBalanceStore(
+        address _token,
+        address _accountAddr
+    ) public view returns (uint256 depositBalance) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        return tokenInfo.getDepositBalance(accruedRate);
+    }
+
     /**
      * Get current borrow balance of a token
      * @param _token token address
      * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
      */
     // sichaoy: What's the diff of getBorrowBalance with getBorrowAcruedRate?
-    function getBorrowBalance(
+    function getBorrowBalanceCurrent(
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
@@ -208,6 +211,15 @@ contract Accounts {
         }
     }
 
+    function getBorrowBalanceStore(
+        address _token,
+        address _accountAddr
+    ) public view returns (uint256 borrowBalance) {
+        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        return tokenInfo.getBorrowBalance(accruedRate);
+    }
+
     /**
      * Get current deposit balance of a token
      * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
@@ -222,7 +234,7 @@ contract Accounts {
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
-                depositETH = depositETH.add(getDepositBalance(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -242,7 +254,7 @@ contract Accounts {
                 if(tokenAddress != ETH_ADDR) {
                     divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;
