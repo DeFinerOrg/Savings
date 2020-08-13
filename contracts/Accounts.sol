@@ -5,8 +5,9 @@ import "./lib/BitmapLib.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Accounts {
+contract Accounts is Ownable{
     using TokenInfoLib for TokenInfoLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
@@ -17,6 +18,11 @@ contract Accounts {
     uint256 public constant INT_UNIT = 10 ** uint256(18);
 
     GlobalConfig globalConfig;
+
+    modifier onlySavingAccount() {
+        require(msg.sender == globalConfig.savingAccount(), "Insufficient power");
+        _;
+    }
 
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
@@ -32,7 +38,7 @@ contract Accounts {
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public {
+    ) public onlyOwner {
         globalConfig = _globalConfig;
     }
 
@@ -98,7 +104,7 @@ contract Accounts {
         return tokenInfo.getBorrowInterest();
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
+    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.borrow(_amount, accruedRate, _block);
@@ -107,7 +113,7 @@ contract Accounts {
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
+    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, _block);
@@ -120,7 +126,7 @@ contract Accounts {
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
+    function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -130,7 +136,7 @@ contract Accounts {
         tokenInfo.deposit(_amount, accruedRate, _block);
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public {
+    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         tokenInfo.repay(_amount, accruedRate, _block);
