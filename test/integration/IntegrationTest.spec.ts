@@ -1023,7 +1023,87 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterRepayUSDCUser1[1]).to.be.bignumber.equal(ZERO);
             });
 
-            it("User deposits, borrows, deposits again, borrows again, then repays", async () => {});
+            it("User deposits DAI , borrows USDC, deposits DAI again, borrows USDC again and then repays", async () => {
+                // 1. Initiate deposit
+                const numOfDAI = eighteenPrecision;
+                const numOfUSDC = sixPrecision;
+                const depositAmount = numOfDAI.div(new BN(2));
+                const borrowAmount = numOfUSDC.div(new BN(2));
+
+                const totalDefinerBalanceBeforeDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceBeforeDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+
+                await erc20DAI.transfer(user1, numOfDAI);
+                await erc20USDC.transfer(user2, numOfUSDC);
+                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+
+                // Validate the total balance on DeFiner after deposit
+                const totalDefinerBalanceAfterDepositDAI = await savingAccount.tokenBalance(
+                    erc20DAI.address,
+                    { from: user1 }
+                );
+                const totalDefinerBalanceChangeDAI = new BN(
+                    totalDefinerBalanceAfterDepositDAI[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositDAI[0]));
+                expect(totalDefinerBalanceChangeDAI).to.be.bignumber.equal(depositAmount);
+
+                const totalDefinerBalanceAfterDepositUSDC = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user2 }
+                );
+                const totalDefinerBalanceChangeUSDC = new BN(
+                    totalDefinerBalanceAfterDepositUSDC[0]
+                ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC[0]));
+                expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
+
+                const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
+
+                // 2. Start borrowing.
+                await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
+
+                const totalDefinerBalanceAfterBorrowUSDCUser1 = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user1 }
+                );
+                expect(totalDefinerBalanceAfterBorrowUSDCUser1[1]).to.be.bignumber.equal(
+                    new BN(100)
+                );
+
+                // Deposit and borrow again
+                await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+
+                const user1BalanceBeforeRepay = await erc20USDC.balanceOf(user1);
+                console.log("user1BalanceBeforeRepay", user1BalanceBeforeRepay.toString());
+
+                // 3. Start repayment.
+                // TODO:
+                // savingAccount.repay(addressUSDC, new BN(200), { from: user1 });
+                //-- Reason given: SafeERC20: low-level call failed.
+
+                // 4. Verify the repay amount.
+                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
+                expect(
+                    new BN(user1BalanceBeforeRepay).sub(new BN(user1BalanceBeforeBorrow))
+                ).to.be.bignumber.equal(new BN(200));
+
+                const totalDefinerBalanceAfterRepayUSDCUser1 = await savingAccount.tokenBalance(
+                    erc20USDC.address,
+                    { from: user1 }
+                );
+                expect(totalDefinerBalanceAfterRepayUSDCUser1[1]).to.be.bignumber.equal(ZERO);
+            });
+
             context("should fail", async () => {});
         });
 
