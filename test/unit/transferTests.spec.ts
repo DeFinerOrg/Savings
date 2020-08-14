@@ -85,11 +85,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                         numOfToken
                     );
 
-                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -98,11 +98,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
                     // Verify balances of user1 & user2 after deposit
-                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -199,11 +199,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                         numOfToken
                     );
 
-                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -212,11 +212,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
                     // Verify balances of user1 & user2 after deposit
-                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -233,11 +233,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
 
                     // Verify balances of user1 & user2 after transfer
-                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -273,11 +273,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                         numOfToken
                     );
 
-                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -286,11 +286,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
                     // Verify balances of user1 & user2 after deposit
-                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -307,11 +307,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
 
                     // Verify balances of user1 & user2 after transfer
-                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user1
                     );
-                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
                     );
@@ -425,11 +425,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
-                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
                     );
-                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceStore(
+                    let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
@@ -444,11 +444,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
 
                     // Verify balances of user1 & user2 after deposit
-                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
                     );
-                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
@@ -470,11 +470,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
-                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
                     );
-                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
@@ -510,11 +510,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
 
                     // Verify balances of user1 & user2 after deposit
-                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
                     );
-                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
@@ -535,11 +535,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
-                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
                     );
-                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceStore(
+                    let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
