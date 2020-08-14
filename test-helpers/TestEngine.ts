@@ -119,27 +119,37 @@ export class TestEngine {
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
+        conosle.log("==================1===============")
         this.globalConfig = await GlobalConfig.new();
 
+        conosle.log("==================2===============")
         this.bank = await Bank.new();
+        conosle.log("==================3===============")
         await this.bank.initialize(this.globalConfig.address);
+        conosle.log("==================4===============")
 
         this.accounts = await Accounts.new();
+        conosle.log("==================5===============")
         await this.accounts.initialize(this.globalConfig.address);
+        conosle.log("==================6===============")
 
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
+        conosle.log("==================7===============")
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
+        conosle.log("==================8===============")
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
 
+        conosle.log("==================9===============")
         await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+        conosle.log("==================10===============")
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
-
+        conosle.log("==================11===============")
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
@@ -155,15 +165,16 @@ export class TestEngine {
             proxyAdmin.address,
             initialize_data
         );
-
+        conosle.log("==================1===============")
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-
+        conosle.log("==================1===============")
         await this.globalConfig.initialize(
             this.bank.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             this.accounts.address
         );
+        conosle.log("==================1===============")
 
         return proxy;
 
