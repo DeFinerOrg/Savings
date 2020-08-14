@@ -478,11 +478,11 @@ contract("Integration Tests", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
                     erc20DAI.address,
-                    { from: user1 }
+                    user1
                 );
                 const totalDefinerBalanceBeforeDepositUSDC = await accountsContract.getDepositBalanceCurrent(
                     erc20USDC.address,
-                    { from: user2 }
+                    user2
                 );
 
                 // 1. Deposit $1 million
