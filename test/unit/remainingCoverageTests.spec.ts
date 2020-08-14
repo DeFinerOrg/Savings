@@ -1,4 +1,3 @@
-import { BaseContract, BaseInstance } from "../../types/truffle-contracts/index.d";
 import * as t from "../../types/truffle-contracts/index";
 import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
 import { TestEngine } from "../../test-helpers/TestEngine";
@@ -26,7 +25,7 @@ contract("RemainingCoverage", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenInfoRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
-    let base: t.BaseInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -52,6 +51,7 @@ contract("RemainingCoverage", async (accounts) => {
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -160,7 +160,7 @@ contract("RemainingCoverage", async (accounts) => {
 
                 await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable(user2);
                 expect(isAccountLiquidatableStr).equal(true);
                 // should return "True"
             });
@@ -190,44 +190,44 @@ contract("RemainingCoverage", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
-                let isAccountLiquidatableStr = await savingAccount.isAccountLiquidatable(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable(user2);
                 // should return "false"
                 //expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
 
-    context("recycleCommunityFund", async () => {
-        context("should fail", async () => {
-            it("when user's address is not same as definerCommunityFund", async () => {
-                await expectRevert(
-                    savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
-                    "Unauthorized call"
-                );
-            });
-            // definerCommunityFund?
-        });
+    // context("recycleCommunityFund", async () => {
+    //     context("should fail", async () => {
+    //         it("when user's address is not same as definerCommunityFund", async () => {
+    //             await expectRevert(
+    //                 savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
+    //                 "Unauthorized call"
+    //             );
+    //         });
+    //         // definerCommunityFund?
+    //     });
+    //
+    //     context("should succeed", async () => {
+    //         it("when valid token address is passed", async () => {});
+    //         // verify deFinerFund == 0, transfer()
+    //     });
+    // });
 
-        context("should succeed", async () => {
-            it("when valid token address is passed", async () => {});
-            // verify deFinerFund == 0, transfer()
-        });
-    });
-
-    context("setDeFinerCommunityFund", async () => {
-        context("should fail", async () => {
-            it("when user's address is not same as definerCommunityFund", async () => {
-                await expectRevert(
-                    savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
-                    "Unauthorized call"
-                );
-            });
-        });
-
-        context("should succeed", async () => {
-            // verify if self.deFinerCommunityFund has been updated with the new address
-        });
-    });
+    // context("setDeFinerCommunityFund", async () => {
+    //     context("should fail", async () => {
+    //         it("when user's address is not same as definerCommunityFund", async () => {
+    //             await expectRevert(
+    //                 savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
+    //                 "Unauthorized call"
+    //             );
+    //         });
+    //     });
+    //
+    //     context("should succeed", async () => {
+    //         // verify if self.deFinerCommunityFund has been updated with the new address
+    //     });
+    // });
 
     context("emergencyWithdraw", async () => {
         context("should fail", async () => {
