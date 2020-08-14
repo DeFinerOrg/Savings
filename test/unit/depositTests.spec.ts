@@ -27,8 +27,10 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressMKR: any;
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
+    let addressCETH: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
     let erc20DAI: t.ERC20Instance;
     let erc20USDC: t.ERC20Instance;
     let erc20TUSD: t.ERC20Instance;
@@ -54,8 +56,11 @@ contract("SavingAccount.deposit", async (accounts) => {
         erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        addressCETH = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
         cDAI = await MockCToken.at(addressCTokenForDAI);
         cUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cETH = await MockCToken.at(addressCETH);
+        //console.log("addressCETH", addressCETH);
     });
 
     context("deposit()", async () => {
@@ -341,7 +346,7 @@ contract("SavingAccount.deposit", async (accounts) => {
             });
 
             it("when ETH address is passed", async () => {
-                const depositAmount = new BN(10);
+                const depositAmount = new BN(100);
                 const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
@@ -366,6 +371,20 @@ contract("SavingAccount.deposit", async (accounts) => {
                     new BN(totalDefinerBalanceBeforeDeposit[0])
                 );
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                // Some tokens are sent to Compound contract
+                /* const expectedTokensAtCETHContract = depositAmount.mul(new BN(85)).div(new BN(100));
+                const balCTokenContract = await web3.eth.getBalance(addressCETH);
+                expect(new BN(expectedTokensAtCETHContract)).to.be.bignumber.equal(
+                    balCTokenContract
+                );
+
+                // cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = depositAmount
+                    .mul(new BN(85))
+                    .div(new BN(100));
+                const balCTokens = await cETH.balanceOf(savingAccount.address);
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens); */
             });
 
             it("when 1000 whole ETH are deposited", async () => {
