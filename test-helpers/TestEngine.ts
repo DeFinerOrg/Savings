@@ -119,39 +119,29 @@ export class TestEngine {
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
-        console.log("==================1===============")
         this.globalConfig = await GlobalConfig.new();
 
-        console.log("==================2===============")
         this.bank = await Bank.new();
-        console.log("==================3===============")
         await this.bank.initialize(this.globalConfig.address);
-        console.log("==================4===============")
 
         this.accounts = await Accounts.new();
-        console.log("==================5===============")
         await this.accounts.initialize(this.globalConfig.address);
-        console.log("==================6===============")
 
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
-        console.log("==================7===============")
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
-        console.log("==================8===============")
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
         );
 
-        console.log("==================9===============")
         await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
-        console.log("==================10===============")
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
-        console.log("==================11===============")
+        console.log("==================1===============")
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
-
+        console.log("==================2===============")
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
@@ -160,21 +150,22 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+        console.log("==================3===============")
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-        console.log("==================12===============")
+        console.log("==================4===============")
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        console.log("==================13===============")
+        console.log("==================5===============")
         await this.globalConfig.initialize(
             this.bank.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             this.accounts.address
         );
-        console.log("==================14===============")
+        console.log("==================6===============")
 
         return proxy;
 
