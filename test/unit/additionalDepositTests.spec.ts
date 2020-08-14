@@ -20,6 +20,7 @@ contract("SavingAccount.deposit", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -81,6 +82,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -154,12 +156,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 DAI and 1 USDC
                      */
-                    const userDAIBalanceBefore = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
-                    });
-                    const userUSDCBalanceBefore = await savingAccount.tokenBalance(addressUSDC, {
-                        from: user1
-                    });
+                    const userDAIBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user1
+                    );
+                    const userUSDCBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
                     const savingAccountDAITokenBefore = await erc20DAI.balanceOf(
                         savingAccount.address
                     );
@@ -196,12 +200,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userDAIBalance = await savingAccount.tokenBalance(addressDAI, {
-                        from: user1
-                    });
-                    const userUSDCBalance = await savingAccount.tokenBalance(addressUSDC, {
-                        from: user1
-                    });
+                    const userDAIBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user1
+                    );
+                    const userUSDCBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
                     const savingAccountDAIToken = await erc20DAI.balanceOf(savingAccount.address);
                     const savingAccountUSDCToken = await erc20USDC.balanceOf(savingAccount.address);
                     const savingAccountCDAIToken = await cTokenDAI.balanceOfUnderlying.call(
@@ -213,10 +219,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     // verify 1.
                     expect(
-                        BN(userDAIBalance[0]).sub(BN(userDAIBalanceBefore[0]))
+                        BN(userDAIBalance).sub(BN(userDAIBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                     expect(
-                        BN(userUSDCBalance[0]).sub(BN(userUSDCBalanceBefore[0]))
+                        BN(userUSDCBalance).sub(BN(userUSDCBalanceBefore))
                     ).to.be.bignumber.equals(sixPrecision);
                     // verify 2.
                     expect(
@@ -238,12 +244,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 WBTC and 1 TUSD
                      */
-                    const userWBTCBalanceBefore = await savingAccount.tokenBalance(addressWBTC, {
-                        from: user1
-                    });
-                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, {
-                        from: user1
-                    });
+                    const userWBTCBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressWBTC,
+                        user1
+                    );
+                    const userTUSDBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressTUSD,
+                        user1
+                    );
                     const savingAccountWBTCTokenBefore = await erc20WBTC.balanceOf(
                         savingAccount.address
                     );
@@ -280,12 +288,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userWBTCBalance = await savingAccount.tokenBalance(addressWBTC, {
-                        from: user1
-                    });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, {
-                        from: user1
-                    });
+                    const userWBTCBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressWBTC,
+                        user1
+                    );
+                    const userTUSDBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressTUSD,
+                        user1
+                    );
                     const savingAccountWBTCToken = await erc20WBTC.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
                     const savingAccountCWBTCToken = await cTokenWBTC.balanceOfUnderlying.call(
@@ -297,10 +307,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     // verify 1.
                     expect(
-                        BN(userWBTCBalance[0]).sub(BN(userWBTCBalanceBefore[0]))
+                        BN(userWBTCBalance).sub(BN(userWBTCBalanceBefore))
                     ).to.be.bignumber.equals(eightPrecision);
                     expect(
-                        BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))
+                        BN(userTUSDBalance).sub(BN(userTUSDBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
                     expect(
@@ -322,12 +332,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 MKR and 1 TUSD
                      */
-                    const userMKRBalanceBefore = await savingAccount.tokenBalance(addressMKR, {
-                        from: user1
-                    });
-                    const userTUSDBalanceBefore = await savingAccount.tokenBalance(addressTUSD, {
-                        from: user1
-                    });
+                    const userMKRBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressMKR,
+                        user1
+                    );
+                    const userTUSDBalanceBefore = await accountsContract.getDepositBalanceCurrent(
+                        addressTUSD,
+                        user1
+                    );
                     const savingAccountMKRTokenBefore = await erc20MKR.balanceOf(
                         savingAccount.address
                     );
@@ -366,12 +378,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    const userMKRBalance = await savingAccount.tokenBalance(addressMKR, {
-                        from: user1
-                    });
-                    const userTUSDBalance = await savingAccount.tokenBalance(addressTUSD, {
-                        from: user1
-                    });
+                    const userMKRBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressMKR,
+                        user1
+                    );
+                    const userTUSDBalance = await accountsContract.getDepositBalanceCurrent(
+                        addressTUSD,
+                        user1
+                    );
                     const savingAccountMKRToken = await erc20MKR.balanceOf(savingAccount.address);
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
                     const savingAccountCMKRToken = await cTokenMKR.balanceOfUnderlying.call(
@@ -383,10 +397,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     // verify 1.
                     expect(
-                        BN(userMKRBalance[0]).sub(BN(userMKRBalanceBefore[0]))
+                        BN(userMKRBalance).sub(BN(userMKRBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                     expect(
-                        BN(userTUSDBalance[0]).sub(BN(userTUSDBalanceBefore[0]))
+                        BN(userTUSDBalance).sub(BN(userTUSDBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                     // verify 2.
                     expect(
