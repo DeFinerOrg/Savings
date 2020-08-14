@@ -147,6 +147,10 @@ contract Accounts is Ownable{
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        if(tokenInfo.getBorrowPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            setInBorrowBitmap(_accountAddr, tokenIndex);
+        }
         tokenInfo.borrow(_amount, accruedRate, _block);
     }
 

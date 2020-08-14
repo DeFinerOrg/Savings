@@ -463,6 +463,32 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 //    }
 
     /**
+     * Deposit token to Compound
+     * @param _token token address
+     * @param _amount amount of token
+     */
+    function toCompound(address _token, uint _amount) public {
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if (_token == ETH_ADDR) {
+            ICETH(cToken).mint.value(_amount)();
+        } else {
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
+        }
+    }
+
+    /**
+     * Withdraw token from Compound
+     * @param _token token address
+     * @param _amount amount of token
+     */
+    function fromCompound(address _token, uint _amount) public {
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        uint256 success = ICToken(cToken).redeemUnderlying(_amount);
+        require(success == 0, "redeemUnderlying failed");
+    }
+
+    /**
      * Receive the amount of token from msg.sender
      * @param _from from address
      * @param _amount amount of token
@@ -523,32 +549,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
     function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
         uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
-        require(success == 0, "redeemUnderlying failed");
-    }
-
-    /**
-     * Deposit token to Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function toCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (_token == ETH_ADDR) {
-            ICETH(cToken).mint.value(_amount)();
-        } else {
-            uint256 success = ICToken(cToken).mint(_amount);
-            require(success == 0, "mint failed");
-        }
-    }
-
-    /**
-     * Withdraw token from Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function fromCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
     }
 }
