@@ -15,6 +15,7 @@ contract("SavingAccount.repay", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -58,6 +59,7 @@ contract("SavingAccount.repay", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -222,27 +224,28 @@ contract("SavingAccount.repay", async (accounts) => {
                 });
                 it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async () => {
                     const quaterOfDAI = numOfDAI.div(new BN(4));
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(addressDAI, {
-                        from: user2
-                    });
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(
+                    const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfDAI.div(new BN(2))
                     );
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
-                    const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
+                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressDAI,
-                        { from: user2 }
+                        user2
                     );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(
+                    expect(BN(userBalanceAfterFirstRepay)).to.be.bignumber.equal(
                         numOfDAI.div(new BN(4))
                     );
                     await savingAccount.repay(addressDAI, quaterOfDAI, { from: user2 });
 
-                    const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
+                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressDAI,
-                        { from: user2 }
+                        user2
                     );
-                    expect(BN(userBalanceAfterSecondRepay[1])).to.be.bignumber.equal(ZERO);
+                    expect(BN(userBalanceAfterSecondRepay)).to.be.bignumber.equal(ZERO);
                 });
             });
             context("Use USDC, should succeed", async () => {
@@ -267,29 +270,30 @@ contract("SavingAccount.repay", async (accounts) => {
                 it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async () => {
                     const quaterOfUSDC = numOfUSDC.div(new BN(4));
                     const USDCBalance = await erc20USDC.balanceOf(user1);
-                    const userBalanceBeforeRepay = await savingAccount.tokenBalance(addressUSDC, {
-                        from: user1
-                    });
+                    const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
 
-                    expect(BN(userBalanceBeforeRepay[1])).to.be.bignumber.equal(
+                    expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfUSDC.div(new BN(2))
                     );
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
-                    const userBalanceAfterFirstRepay = await savingAccount.tokenBalance(
+                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressUSDC,
-                        { from: user1 }
+                        user1
                     );
-                    expect(BN(userBalanceAfterFirstRepay[1])).to.be.bignumber.equal(
+                    expect(BN(userBalanceAfterFirstRepay)).to.be.bignumber.equal(
                         numOfUSDC.div(new BN(4))
                     );
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
 
-                    const userBalanceAfterSecondRepay = await savingAccount.tokenBalance(
+                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressUSDC,
-                        { from: user1 }
+                        user1
                     );
 
-                    expect(BN(userBalanceAfterSecondRepay[1])).to.be.bignumber.equal(ZERO);
+                    expect(BN(userBalanceAfterSecondRepay)).to.be.bignumber.equal(ZERO);
                 });
             });
         });
