@@ -300,17 +300,17 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-    context("getTokenState", async () => {
-        // Also being called by getMarketState
-        context("should fail", async () => {});
-
-        context("should succeed", async () => {
-            it("when all conditions are satisfied", async () => {
-                let tokenST = await savingAccount.getTokenState(addressDAI);
-                console.log("marktST", tokenST);
-            });
-        });
-    });
+    // context("getTokenState", async () => {
+    //     // Also being called by getMarketState
+    //     context("should fail", async () => {});
+    //
+    //     context("should succeed", async () => {
+    //         it("when all conditions are satisfied", async () => {
+    //             let tokenST = await savingAccount.getTokenState(addressDAI);
+    //             console.log("marktST", tokenST);
+    //         });
+    //     });
+    // });
     /*
     context("getBalances", async () => {
         context("should fail", async () => { });
@@ -330,16 +330,16 @@ contract("RemainingCoverage", async (accounts) => {
     });
     */
 
-    context("getDeFinerCommunityFund", async () => {
-        context("should fail", async () => {
-            //await savingAccount.getDeFinerCommunityFund(dummy);
-        });
-        // invalid token address?
-
-        context("should succeed", async () => {
-            it("when valid token address is passed", async () => {
-                await savingAccount.getDeFinerCommunityFund(addressDAI);
-            });
-        });
-    });
+    // context("getDeFinerCommunityFund", async () => {
+    //     context("should fail", async () => {
+    //         //await savingAccount.getDeFinerCommunityFund(dummy);
+    //     });
+    //     // invalid token address?
+    //
+    //     context("should succeed", async () => {
+    //         it("when valid token address is passed", async () => {
+    //             await savingAccount.getDeFinerCommunityFund(addressDAI);
+    //         });
+    //     });
+    // });
 });
