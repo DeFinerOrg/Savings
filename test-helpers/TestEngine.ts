@@ -146,7 +146,6 @@ export class TestEngine {
             .initialize(
                 this.erc20Tokens,
                 cTokens,
-                this.tokenInfoRegistry.address,
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
             )
