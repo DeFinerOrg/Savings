@@ -23,7 +23,7 @@ contract GlobalConfig is Ownable {
             return;
 
         require(_communityFundRatio > 0 && _communityFundRatio < 100,
-            "Invaid community fund ratio.");
+            "Invalid community fund ratio.");
         communityFundRatio = _communityFundRatio;
     }
 
