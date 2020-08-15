@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../oracle/ChainLinkOracle.sol";
 
 /**
  * @dev Token Info Registry to manage Token information
@@ -46,6 +47,7 @@ contract TokenInfoRegistry is Ownable {
     mapping (address => TokenInfo) public tokenInfo;
     // TokenAddress array
     address[] public tokens;
+    ChainLinkOracle public chainLink;
 
     /**
      */
@@ -59,6 +61,13 @@ contract TokenInfoRegistry is Ownable {
     modifier whenTokenExists(address _token) {
         require(isTokenExist(_token), "Token not exists");
         _;
+    }
+
+    /**
+     *  initializes the symbols structure
+     */
+    function initialize(ChainLinkOracle _chainLink) public {
+        chainLink = _chainLink;
     }
 
     /**
@@ -251,5 +260,35 @@ contract TokenInfoRegistry is Ownable {
 
     function getBorrowLTV(address _token) external view returns (uint256) {
         return tokenInfo[_token].borrowLTV;
+    }
+
+    function getCoinLength() public view returns (uint256 length) {
+        return tokens.length;
+    }
+
+    function addressFromIndex(uint index) public view returns(address) {
+        require(index < tokens.length, "coinIndex must be smaller than the coins length.");
+        return tokens[index];
+    }
+
+    function priceFromIndex(uint index) public view returns(uint256) {
+        require(index < tokens.length, "coinIndex must be smaller than the coins length.");
+        address tokenAddress = tokens[index];
+        // Temp fix
+        if(_isETH(tokenAddress)) {
+            return 1e18;
+        }
+        return uint256(chainLink.getLatestAnswer(tokenAddress));
+    }
+
+    function priceFromAddress(address tokenAddress) public view returns(uint256) {
+        if(_isETH(tokenAddress)) {
+            return 1e18;
+        }
+        return uint256(chainLink.getLatestAnswer(tokenAddress));
+    }
+
+    function _isETH(address _token) internal pure returns (bool) {
+        return address(0x000000000000000000000000000000000000000E) == _token;
     }
 }
