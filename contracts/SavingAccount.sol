@@ -173,7 +173,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public nonReentrant {
+    function transfer(address _to, address _token, uint _amount) public onlyEnabled(_token) nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
