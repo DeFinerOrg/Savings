@@ -289,6 +289,6 @@ contract TokenInfoRegistry is Ownable {
     }
 
     function _isETH(address _token) internal pure returns (bool) {
-        return address(0x000000000000000000000000000000000000000E) == _token;
+        return ETH_ADDR == _token;
     }
 }

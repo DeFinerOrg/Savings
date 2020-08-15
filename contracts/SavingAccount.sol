@@ -58,6 +58,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     {
         // Initialize InitializableReentrancyGuard
         super._initialize();
+        initConstants();
 
         globalConfig = _globalConfig;
 
@@ -67,6 +68,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             }
         }
 
+        
+    }
+
+    // TODO These constants should be segrigated into Constants.sol / GlobalCofig.sol
+    function initConstants() private {
         //Initialize constants defined in this contract
         EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
         ETH_ADDR = 0x000000000000000000000000000000000000000E;
@@ -136,7 +142,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        globalConfig.accounts().borrow(msg.sender, _token, _amount, this.getBlockNumber());
+        globalConfig.accounts().borrow(msg.sender, _token, _amount, getBlockNumber());
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -174,7 +180,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Update tokenInfo
         uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(msg.sender, _token, amount, this.getBlockNumber());
+        globalConfig.accounts().repay(msg.sender, _token, amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -209,7 +215,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Deposit the amount of token to the saving pool.
      * @param _to the account that the token deposit to.
      * @param _token the address of the deposited token
-     * @param _amount the mount of the deposited token
+     * @param _amount the amount of the deposited token
      */
      // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
     function deposit(address _to, address _token, uint256 _amount) internal {
@@ -220,7 +226,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        globalConfig.accounts().deposit(_to, _token, _amount, this.getBlockNumber());
+        globalConfig.accounts().deposit(_to, _token, _amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -275,7 +281,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
         // Update tokenInfo for the user
-        globalConfig.accounts().withdraw(_from, _token, _amount, this.getBlockNumber());
+        globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
@@ -404,8 +410,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         }
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
-        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, this.getBlockNumber());
+        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
+        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
@@ -425,8 +431,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
                         vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                     }
                     vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, this.getBlockNumber());
-                    globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, this.getBlockNumber());
+                    globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
+                    globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
                 }
             }
 

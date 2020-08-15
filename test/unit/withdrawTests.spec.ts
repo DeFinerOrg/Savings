@@ -938,9 +938,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     owner
                 );
                 expect(ZERO).to.be.bignumber.equal(
-                    BN(totalDefinerBalancAfterWithdraw).sub(
-                        BN(totalDefinerBalanceBeforeDeposit)
-                    )
+                    BN(totalDefinerBalancAfterWithdraw).sub(BN(totalDefinerBalanceBeforeDeposit))
                 );
 
                 // Verify Compound balance
@@ -1004,9 +1002,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     owner
                 );
                 expect(ZERO).to.be.bignumber.equal(
-                    BN(totalDefinerBalancAfterWithdraw).sub(
-                        BN(totalDefinerBalancBeforeWithdraw)
-                    )
+                    BN(totalDefinerBalancAfterWithdraw).sub(BN(totalDefinerBalancBeforeWithdraw))
                 );
 
                 // Verify Compound balance
@@ -1068,9 +1064,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     owner
                 );
                 expect(ZERO).to.be.bignumber.equal(
-                    BN(totalDefinerBalancAfterWithdraw).sub(
-                        BN(totalDefinerBalanceBeforeWithdraw)
-                    )
+                    BN(totalDefinerBalancAfterWithdraw).sub(BN(totalDefinerBalanceBeforeWithdraw))
                 );
 
                 // Verify Compound balance
@@ -1133,9 +1127,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     owner
                 );
                 expect(ZERO).to.be.bignumber.equal(
-                    BN(totalDefinerBalancAfterWithdraw).sub(
-                        BN(totalDefinerBalancBeforeWithdraw)
-                    )
+                    BN(totalDefinerBalancAfterWithdraw).sub(BN(totalDefinerBalancBeforeWithdraw))
                 );
 
                 // Verify Compound balance
@@ -1342,7 +1334,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal((new BN(depositAmount)).mul(new BN(15)).div(new BN(100)));
+                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(
+                    new BN(depositAmount).mul(new BN(15)).div(new BN(100))
+                );
 
                 // Withdrawing ETH
                 await savingAccount.withdrawAll(ETH_ADDRESS);

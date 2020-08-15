@@ -4,7 +4,7 @@ import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
 
 // This file is only for testing purpose only
-contract SavingAccountWithController  is SavingAccount {
+contract SavingAccountWithController is SavingAccount {
 
     address comptroller;
 
