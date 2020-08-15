@@ -443,8 +443,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public nonReentrant {
-        require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlySupported(_targetToken) nonReentrant {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr, symbols);
         vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr, symbols);
