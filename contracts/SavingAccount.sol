@@ -177,12 +177,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
-        if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
-        }
+
         require(baseVariable.getBorrowETH(msg.sender).add(_amount.mul(tokenRegistry.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+            <= baseVariable.getDepositETH(msg.sender).mul(baseVariable.getTokenDivisor(_token)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -329,12 +326,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = tokenRegistry.getBorrowLTV(_token);
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
-        if(_token != ETH_ADDR) {
-            divisor = 10 ** uint256(IERC20Extended(_token).decimals());
-        }
         require(baseVariable.getBorrowETH(_from).mul(100) <= baseVariable.getDepositETH(_from)
-            .sub(_amount.mul(tokenRegistry.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+            .sub(_amount.mul(tokenRegistry.priceFromAddress(_token)).div(baseVariable.getTokenDivisor(_token))).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -461,8 +454,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             "The account amount must be greater than zero."
         );
 
-        uint divisor = _targetToken == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(_targetToken).decimals());
-
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
             vars.totalCollateral.mul(vars.borrowLTV).div(100)
@@ -470,7 +461,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
 
         // Liquidators need to pay
         vars.targetTokenPrice = tokenRegistry.priceFromAddress(_targetToken);
-        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
+        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(baseVariable.getTokenDivisor(_targetToken));
 
         if(
             vars.msgTotalBorrow != 0 &&
@@ -490,7 +481,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         // Target token rate of the user to be liquidated
         vars.targetTokenAccruedRate = baseVariable.getBorrowAccruedRate(_targetToken, targetTokenInfo.getLastBorrowBlock());
 
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        vars.targetTokenAmount = vars.liquidationDebtValue.mul(baseVariable.getTokenDivisor(_targetToken)).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         msgTargetTokenInfo.withdraw(vars.targetTokenAmount, vars.msgTargetTokenAccruedRate, this.getBlockNumber());
         if(msgTargetTokenInfo.getDepositPrincipal() == 0) {
             baseVariable.unsetFromDepositBitmap(msg.sender, vars.tokenIndex);
@@ -507,7 +498,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
             if(baseVariable.isUserHasDeposits(_targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = tokenRegistry.priceFromIndex(i);
 
-                vars.tokenDivisor = vars.token == ETH_ADDR ? UINT_UNIT : 10**uint256(IERC20Extended(vars.token).decimals());
+                vars.tokenDivisor = baseVariable.getTokenDivisor(vars.token);
 
                 TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_targetAccountAddr].tokenInfos[vars.token];
 

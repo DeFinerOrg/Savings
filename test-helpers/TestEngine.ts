@@ -172,14 +172,12 @@ export class TestEngine {
         await Promise.all(
             tokenData.tokens.map(async (token: any, i: number) => {
                 const tokenAddr = this.erc20Tokens[i];
-                const decimals = token.decimals;
                 const isTransferFeeEnabled = token.isFeeEnabled;
                 const isSupportedOnCompound = true;
                 const cToken = cTokens[i];
                 const chainLinkAggregator = aggregators[i];
                 await this.tokenInfoRegistry.addToken(
                     tokenAddr,
-                    decimals,
                     isTransferFeeEnabled,
                     isSupportedOnCompound,
                     cToken,
@@ -189,7 +187,6 @@ export class TestEngine {
         );
         await this.tokenInfoRegistry.addToken(
             ETH_ADDR,
-            18,
             false,
             true,
             cTokens[9],

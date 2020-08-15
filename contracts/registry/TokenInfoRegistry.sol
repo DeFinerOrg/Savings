@@ -73,7 +73,6 @@ contract TokenInfoRegistry is Ownable {
     /**
      * @dev Add a new token to registry
      * @param _token ERC20 Token address
-     * @param _decimals Token's decimals
      * @param _isTransferFeeEnabled Is token changes transfer fee
      * @param _isSupportedOnCompound Is token supported on Compound
      * @param _cToken cToken contract address
@@ -81,7 +80,6 @@ contract TokenInfoRegistry is Ownable {
      */
     function addToken(
         address _token,
-        uint8 _decimals,
         bool _isTransferFeeEnabled,
         bool _isSupportedOnCompound,
         address _cToken,
@@ -97,7 +95,7 @@ contract TokenInfoRegistry is Ownable {
 
         TokenInfo storage storageTokenInfo = tokenInfo[_token];
         storageTokenInfo.index = uint8(tokens.length);
-        storageTokenInfo.decimals = _decimals;
+        storageTokenInfo.decimals = (_isETH(_token) ? 18 : IERC20Extended(_token).decimals());
         storageTokenInfo.enabled = true;
         storageTokenInfo.isTransferFeeEnabled = _isTransferFeeEnabled;
         storageTokenInfo.isSupportedOnCompound = _isSupportedOnCompound;
@@ -291,4 +289,8 @@ contract TokenInfoRegistry is Ownable {
     function _isETH(address _token) internal pure returns (bool) {
         return address(0x000000000000000000000000000000000000000E) == _token;
     }
+}
+
+interface IERC20Extended {
+    function decimals() external view returns (uint8);
 }

@@ -103,14 +103,12 @@ const initializeTokenInfoRegistry = async (
     await Promise.all(
         tokenData.tokens.map(async (token, i) => {
             const tokenAddr = erc20Tokens[i];
-            const decimals = token.decimals;
             const isTransferFeeEnabled = token.isFeeEnabled;
             const isSupportedOnCompound = true;
             const cToken = cTokens[i];
             const chainLinkAggregator = chainLinkAggregators[i];
             await tokenInfoRegistry.addToken(
                 tokenAddr,
-                decimals,
                 isTransferFeeEnabled,
                 isSupportedOnCompound,
                 cToken,
@@ -120,7 +118,7 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, ZERO_ADDRESS, DEAD_ADDR);
+    await tokenInfoRegistry.addToken(ETH_ADDR, false, true, ZERO_ADDRESS, DEAD_ADDR);
 };
 
 const getCTokens = async (erc20Tokens) => {

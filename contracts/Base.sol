@@ -625,8 +625,11 @@ library Base {
         }
         return borrowETH;
     }
-}
 
-interface IERC20Extended {
-    function decimals() external view returns (uint8);
+    function getTokenDivisor(BaseVariable storage self, address _token) public view returns (uint256) {
+        if(_token == ETH_ADDR)
+            return INT_UNIT;
+        else
+            return 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(_token));
+    }
 }
