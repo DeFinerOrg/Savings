@@ -140,9 +140,20 @@ export class TestEngine {
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
+
+        // Global Config initialize
+        await this.globalConfig.initialize(
+            this.bank.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            this.accounts.address
+        );
+
         console.log("==================1===============");
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         console.log("==================2===============");
+        // console.log("ERC20", this.erc20Tokens);
+        // console.log("cTokens", cTokens);
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
