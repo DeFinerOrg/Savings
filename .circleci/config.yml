@@ -69,11 +69,11 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       
-      - run:
-          name: "Coverage environment"
-          background: true
-          command: yarn coverage-setup
+      # - run:
+      #     name: "Coverage environment"
+      #     background: true
+      #     command: yarn coverage-setup
 
-      - run: yarn coverage
+      # - run: yarn coverage
       - run: yarn generate # Generate typings
       - run: yarn test # triggers truffle test
