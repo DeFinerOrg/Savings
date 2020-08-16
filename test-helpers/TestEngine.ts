@@ -11,6 +11,7 @@ const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
+const Constant: t.ConstantContract = artifacts.require("Constant");
 const Bank: t.BankContract = artifacts.require("Bank");
 const Accounts: t.AccountsContract = artifacts.require("Accounts");
 
@@ -31,6 +32,7 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
+    public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
 
@@ -121,6 +123,7 @@ export class TestEngine {
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
         this.globalConfig = await GlobalConfig.new();
+        this.constant = await Constant.new();
 
         this.bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
@@ -146,7 +149,8 @@ export class TestEngine {
             this.bank.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
-            this.accounts.address
+            this.accounts.address,
+            this.constant.address
         );
 
         console.log("==================1===============");

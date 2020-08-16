@@ -13,6 +13,7 @@ const SavingAccountWithController = artifacts.require("SavingAccountWithControll
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
+const Constant = artifacts.require("Constant");
 
 // Upgradablility contracts
 const ProxyAdmin = artifacts.require("ProxyAdmin");
@@ -55,6 +56,7 @@ module.exports = async function(deployer, network) {
     const cTokens = await getCTokens(erc20Tokens);
 
     const globalConfig = await deployer.deploy(GlobalConfig);
+    const constant = await deployer.deploy(Constant);
 
     const accounts = await deployer.deploy(Accounts);
     await accounts.initialize(globalConfig.address);
@@ -85,7 +87,8 @@ module.exports = async function(deployer, network) {
         bank.address,
         savingAccountProxy.address,
         tokenInfoRegistry.address,
-        accounts.address
+        accounts.address,
+        constant.address
     );
 
     // Deploy SavingAccount contract

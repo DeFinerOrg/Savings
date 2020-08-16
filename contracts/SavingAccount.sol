@@ -58,7 +58,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     {
         // Initialize InitializableReentrancyGuard
         super._initialize();
-        initConstants();
 
         globalConfig = _globalConfig;
 
