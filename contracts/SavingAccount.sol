@@ -580,8 +580,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function recycleCommunityFund(address _token) public {
         require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
-        baseVariable.deFinerFund[_token] == 0;
+        uint256 amount = baseVariable.deFinerFund[_token];
+        if (amount > 0) {
+            baseVariable.deFinerFund[_token] = 0;
+            send(baseVariable.deFinerCommunityFund, amount, _token);
+        }
     }
 
     /**
