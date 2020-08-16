@@ -10,7 +10,7 @@ const Bank = artifacts.require("Bank");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 
-const ChainLinkOracle = artifacts.require("ChainLinkOracle");
+const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 const Constant = artifacts.require("Constant");
@@ -52,7 +52,7 @@ module.exports = async function(deployer, network) {
     // await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
-    const chainLinkAggregators = await getChainLinkAggregators();
+    const chainLinkOracles = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
 
     const globalConfig = await deployer.deploy(GlobalConfig);
@@ -71,11 +71,11 @@ module.exports = async function(deployer, network) {
         tokenInfoRegistry,
         erc20Tokens,
         cTokens,
-        chainLinkAggregators
+        chainLinkOracles
     );
 
-    // Configure ChainLinkOracle
-    const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
+    // Configure ChainLinkAggregator
+    const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
 
     await tokenInfoRegistry.initialize(chainLinkOracle.address);
 
@@ -106,7 +106,7 @@ module.exports = async function(deployer, network) {
     console.log("Accounts:", accounts.address);
     console.log("Bank:", bank.address);
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
-    console.log("ChainLinkOracle:", chainLinkOracle.address);
+    console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };
 
@@ -114,7 +114,7 @@ const initializeTokenInfoRegistry = async (
     tokenInfoRegistry,
     erc20Tokens,
     cTokens,
-    chainLinkAggregators
+    chainLinkOracles
 ) => {
     await Promise.all(
         tokenData.tokens.map(async (token, i) => {
@@ -123,14 +123,14 @@ const initializeTokenInfoRegistry = async (
             const isTransferFeeEnabled = token.isFeeEnabled;
             const isSupportedOnCompound = true;
             const cToken = cTokens[i];
-            const chainLinkAggregator = chainLinkAggregators[i];
+            const chainLinkOracle = chainLinkOracles[i];
             await tokenInfoRegistry.addToken(
                 tokenAddr,
                 decimals,
                 isTransferFeeEnabled,
                 isSupportedOnCompound,
                 cToken,
-                chainLinkAggregator
+                chainLinkOracle
             );
         })
     );

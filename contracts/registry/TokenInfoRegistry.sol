@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../oracle/ChainLinkOracle.sol";
+import "../oracle/ChainLinkAggregator.sol";
 
 /**
  * @dev Token Info Registry to manage Token information
@@ -31,7 +31,7 @@ contract TokenInfoRegistry is Ownable {
         // cToken address on Compound
         address cToken;
         // Chain Link Aggregator address for TOKEN/ETH pair
-        address chainLinkAggregator;
+        address chainLinkOracle;
         // Borrow LTV, by default 60%
         uint256 borrowLTV;
     }
@@ -47,7 +47,7 @@ contract TokenInfoRegistry is Ownable {
     mapping (address => TokenInfo) public tokenInfo;
     // TokenAddress array
     address[] public tokens;
-    ChainLinkOracle public chainLink;
+    ChainLinkAggregator public chainLink;
 
     /**
      */
@@ -66,7 +66,7 @@ contract TokenInfoRegistry is Ownable {
     /**
      *  initializes the symbols structure
      */
-    function initialize(ChainLinkOracle _chainLink) public onlyOwner{
+    function initialize(ChainLinkAggregator _chainLink) public onlyOwner{
         chainLink = _chainLink;
     }
 
@@ -77,7 +77,7 @@ contract TokenInfoRegistry is Ownable {
      * @param _isTransferFeeEnabled Is token changes transfer fee
      * @param _isSupportedOnCompound Is token supported on Compound
      * @param _cToken cToken contract address
-     * @param _chainLinkAggregator Chain Link Aggregator address to get TOKEN/ETH rate
+     * @param _chainLinkOracle Chain Link Aggregator address to get TOKEN/ETH rate
      */
     function addToken(
         address _token,
@@ -85,14 +85,14 @@ contract TokenInfoRegistry is Ownable {
         bool _isTransferFeeEnabled,
         bool _isSupportedOnCompound,
         address _cToken,
-        address _chainLinkAggregator
+        address _chainLinkOracle
     )
         public
         onlyOwner
     {
         require(_token != address(0), "Token address is zero");
         require(!isTokenExist(_token), "Token already exist");
-        require(_chainLinkAggregator != address(0), "ChainLinkAggregator address is zero");
+        require(_chainLinkOracle != address(0), "ChainLinkAggregator address is zero");
         require(tokens.length <= MAX_TOKENS, "Max token limit reached");
 
         TokenInfo storage storageTokenInfo = tokenInfo[_token];
@@ -102,7 +102,7 @@ contract TokenInfoRegistry is Ownable {
         storageTokenInfo.isTransferFeeEnabled = _isTransferFeeEnabled;
         storageTokenInfo.isSupportedOnCompound = _isSupportedOnCompound;
         storageTokenInfo.cToken = _cToken;
-        storageTokenInfo.chainLinkAggregator = _chainLinkAggregator;
+        storageTokenInfo.chainLinkOracle = _chainLinkOracle;
         // Default values
         storageTokenInfo.borrowLTV = 60; //6e7; // 60%
 
@@ -171,16 +171,16 @@ contract TokenInfoRegistry is Ownable {
 
     /**
      */
-    function updateChainLinkAggregator(
+    function updateChainLinkOracle(
         address _token,
-        address _chainLinkAggregator
+        address _chainLinkOracle
     )
         external
         onlyOwner
         whenTokenExists(_token)
         notZero(_token)
     {
-        tokenInfo[_token].chainLinkAggregator = _chainLinkAggregator;
+        tokenInfo[_token].chainLinkOracle = _chainLinkOracle;
         emit TokenUpdated(_token);
     }
 
@@ -211,7 +211,7 @@ contract TokenInfoRegistry is Ownable {
      * @return Returns `true` when token registered, otherwise `false`
      */
     function isTokenExist(address _token) public view returns (bool isExist) {
-        isExist = tokenInfo[_token].chainLinkAggregator != address(0);
+        isExist = tokenInfo[_token].chainLinkOracle != address(0);
     }
 
     function getTokens() external view returns (address[] memory) {
@@ -254,8 +254,8 @@ contract TokenInfoRegistry is Ownable {
         return tokenInfo[_token].cToken;
     }
 
-    function getChainLinkAggregator(address _token) external view returns (address) {
-        return tokenInfo[_token].chainLinkAggregator;
+    function getChainLinkOracle(address _token) external view returns (address) {
+        return tokenInfo[_token].chainLinkOracle;
     }
 
     function getBorrowLTV(address _token) external view returns (uint256) {

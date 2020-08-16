@@ -7,7 +7,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
-const ChainLinkOracle = artifacts.require("ChainLinkOracle");
+const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -134,7 +134,7 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenInfoRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
             this.tokenInfoRegistry.address
         );
 
@@ -211,14 +211,14 @@ export class TestEngine {
                 const isTransferFeeEnabled = token.isFeeEnabled;
                 const isSupportedOnCompound = true;
                 const cToken = cTokens[i];
-                const chainLinkAggregator = aggregators[i];
+                const chainLinkOracle = aggregators[i];
                 await this.tokenInfoRegistry.addToken(
                     tokenAddr,
                     decimals,
                     isTransferFeeEnabled,
                     isSupportedOnCompound,
                     cToken,
-                    chainLinkAggregator
+                    chainLinkOracle
                 );
             })
         );

@@ -5,7 +5,7 @@ import "../registry/TokenInfoRegistry.sol";
 
 /**
  */
-contract ChainLinkOracle {
+contract ChainLinkAggregator {
 
     TokenInfoRegistry public tokenRegistry;
 
@@ -18,11 +18,11 @@ contract ChainLinkOracle {
     }
 
     /**
-     * Get latest update from the aggregator
+     * Get latest update from the oracle
      * @param _token token address
      */
     function getLatestAnswer(address _token) public view returns (int256) {
-        return getAggregator(_token).latestAnswer();
+        return getOracle(_token).latestAnswer();
     }
 
     /**
@@ -30,7 +30,7 @@ contract ChainLinkOracle {
      * @param _token token address
      */
     function getLatestTimestamp(address _token) public view returns (uint256) {
-        return getAggregator(_token).latestTimestamp();
+        return getOracle(_token).latestTimestamp();
     }
 
     /**
@@ -39,10 +39,10 @@ contract ChainLinkOracle {
      * @param _back the position of the answer if counting back from the latest
      */
     function getPreviousAnswer(address _token, uint256 _back) public view returns (int256) {
-        AggregatorInterface aggregator = getAggregator(_token);
-        uint256 latest = aggregator.latestRound();
+        AggregatorInterface oracle = getOracle(_token);
+        uint256 latest = oracle.latestRound();
         require(_back <= latest, "Not enough history");
-        return aggregator.getAnswer(latest - _back);
+        return oracle.getAnswer(latest - _back);
     }
 
     /**
@@ -51,17 +51,17 @@ contract ChainLinkOracle {
      * @param _back the position of the answer if counting back from the latest
      */
     function getPreviousTimestamp(address _token, uint256 _back) public view returns (uint256) {
-        AggregatorInterface aggregator = getAggregator(_token);
-        uint256 latest = aggregator.latestRound();
+        AggregatorInterface oracle = getOracle(_token);
+        uint256 latest = oracle.latestRound();
         require(_back <= latest, "Not enough history");
-        return aggregator.getTimestamp(latest - _back);
+        return oracle.getTimestamp(latest - _back);
     }
 
     /**
-     * Get the aggregator address
+     * Get the oracle address
      * @param _token token address
      */
-    function getAggregator(address _token) internal view returns (AggregatorInterface) {
-        return AggregatorInterface(tokenRegistry.getChainLinkAggregator(_token));
+    function getOracle(address _token) internal view returns (AggregatorInterface) {
+        return AggregatorInterface(tokenRegistry.getChainLinkOracle(_token));
     }
 }
