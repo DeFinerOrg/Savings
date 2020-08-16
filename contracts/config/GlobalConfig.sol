@@ -42,7 +42,6 @@ contract GlobalConfig is Ownable {
     event SavingAccountUpdated(address indexed savingAccount);
     event TokenInfoRegistryUpdated(address indexed tokenInfoRegistry);
     event AccountsUpdated(address indexed accounts);
-    event ConstantUpdated(address indexed constants);
 
 
     function initialize(
@@ -145,12 +144,6 @@ contract GlobalConfig is Ownable {
         rateCurveConstant = _rateCurveConstant;
 
         emit rateCurveConstantUpdated(_rateCurveConstant);
-    }
-
-    function updateConstant(Constant _constants) external onlyOwner{
-        constants = _constants;
-
-        emit ConstantUpdated(_constants);
     }
 
     function updateBank(Bank _bank) external onlyOwner{
