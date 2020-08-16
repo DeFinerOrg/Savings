@@ -74,7 +74,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when all conditions are satisfied", async () => {
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
                 // Approve all ERC20 tokens
-                for (let i = 0; i < ERC20TokenAddresses.length; i++) {
+                for (let i = 0; i < ERC20TokenAddresses.length-1; i++) {
                     //console.log("tokens", ERC20TokenAddresses[i]);
                     await savingAccount.approveAll(ERC20TokenAddresses[i]);
                     // Verification for approve?
