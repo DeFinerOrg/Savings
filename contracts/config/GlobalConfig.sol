@@ -7,6 +7,7 @@ import "../registry/TokenInfoRegistry.sol";
 import "../SavingAccount.sol";
 import "../Bank.sol";
 import "../Accounts.sol";
+import "./Constant.sol";
 
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;
@@ -16,22 +17,46 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
+    uint256 public compoundSupplyRateWeights = 4;
+    uint256 public compoundBorrowRateWeights = 6;
+    uint256 public rateCurveSlope = 15 * 10 ** 16;
+    uint256 public rateCurveConstant = 3 * 10 ** 16;
 
     Bank public bank;                               // the Bank contract
     SavingAccount public savingAccount;             // the SavingAccount contract
     TokenInfoRegistry public tokenInfoRegistry;     // the TokenInfoRegistry contract
     Accounts public accounts;                       // the Accounts contract
+    Constant public constants;
+
+    event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
+    event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
+    event MaxReserveRatioUpdated(uint256 indexed maxReserveRatio);
+    event LiquidationThresholdUpdated(uint256 indexed liquidationThreshold);
+    event LiquidationDiscountRatioUpdated(uint256 indexed liquidationDiscountRatio);
+    event CompoundSupplyRateWeightsUpdated(uint256 indexed compoundSupplyRateWeights);
+    event CompoundBorrowRateWeightsUpdated(uint256 indexed compoundBorrowRateWeights);
+    event rateCurveSlopeUpdated(uint256 indexed rateCurveSlope);
+    event rateCurveConstantUpdated(uint256 indexed rateCurveConstant);
+    event ConstantUpdated(address indexed constants);
+    event BankUpdated(address indexed bank);
+    event SavingAccountUpdated(address indexed savingAccount);
+    event TokenInfoRegistryUpdated(address indexed tokenInfoRegistry);
+    event AccountsUpdated(address indexed accounts);
+    event ConstantUpdated(address indexed constants);
+
 
     function initialize(
         Bank _bank,
         SavingAccount _savingAccount,
         TokenInfoRegistry _tokenInfoRegistry,
-        Accounts _accounts
+        Accounts _accounts,
+        Constant _constants
     ) public onlyOwner {
         bank = _bank;
         savingAccount = _savingAccount;
         tokenInfoRegistry = _tokenInfoRegistry;
         accounts = _accounts;
+        constants = _constants;
     }
 
     /**
@@ -41,6 +66,8 @@ contract GlobalConfig is Ownable {
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
         require(_communityFundRatio != 0, "Community fund is zero");
         communityFundRatio = _communityFundRatio;
+
+        emit CommunityFundRatioUpdated(_communityFundRatio);
     }
 
     /**
@@ -51,6 +78,8 @@ contract GlobalConfig is Ownable {
         require(_minReserveRatio != 0, "Min Reserve Ratio is zero");
         require(_minReserveRatio < maxReserveRatio, "Min reserve greater or equal to Max reserve");
         minReserveRatio = _minReserveRatio;
+
+        emit MinReserveRatioUpdated(_minReserveRatio);
     }
 
     /**
@@ -61,6 +90,8 @@ contract GlobalConfig is Ownable {
         require(_maxReserveRatio != 0, "Max Reserve Ratio is zero");
         require(_maxReserveRatio > minReserveRatio, "Max reserve less than or equal to Min reserve");
         maxReserveRatio = _maxReserveRatio;
+
+        emit MaxReserveRatioUpdated(_maxReserveRatio);
     }
 
     /**
@@ -70,6 +101,8 @@ contract GlobalConfig is Ownable {
     function updateLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
         require(_liquidationThreshold != 0, "LiquidationThreshold is zero");
         liquidationThreshold = _liquidationThreshold;
+
+        emit LiquidationThresholdUpdated(_liquidationThreshold);
     }
 
     /**
@@ -79,6 +112,8 @@ contract GlobalConfig is Ownable {
     function updateLiquidationDiscountRatio(uint256 _liquidationDiscountRatio) external onlyOwner {
         require(_liquidationDiscountRatio != 0, "LiquidationDiscountRatio is zero");
         liquidationDiscountRatio = _liquidationDiscountRatio;
+
+        emit LiquidationDiscountRatioUpdated(_liquidationDiscountRatio);
     }
 
     /**
@@ -88,20 +123,64 @@ contract GlobalConfig is Ownable {
         return minReserveRatio.add(maxReserveRatio).div(2);
     }
 
+    function updateCompoundSupplyRateWeights(uint256 _compoundSupplyRateWeights) external onlyOwner{
+        compoundSupplyRateWeights = _compoundSupplyRateWeights;
+
+        emit CompoundSupplyRateWeightsUpdated(_compoundSupplyRateWeights);
+    }
+
+    function updateCompoundBorrowRateWeights(uint256 _compoundBorrowRateWeights) external onlyOwner{
+        compoundBorrowRateWeights = _compoundBorrowRateWeights;
+
+        emit CompoundBorrowRateWeightsUpdated(_compoundBorrowRateWeights);
+    }
+
+    function updaterateCurveSlope(uint256 _rateCurveSlope) external onlyOwner{
+        rateCurveSlope = _rateCurveSlope;
+
+        emit rateCurveSlopeUpdated(_rateCurveSlope);
+    }
+
+    function updaterateCurveConstant(uint256 _rateCurveConstant) external onlyOwner{
+        rateCurveConstant = _rateCurveConstant;
+
+        emit rateCurveConstantUpdated(_rateCurveConstant);
+    }
+
+    function updateConstant(Constant _constants) external onlyOwner{
+        constants = _constants;
+
+        emit ConstantUpdated(_constants);
+    }
+
     function updateBank(Bank _bank) external onlyOwner{
         bank = _bank;
+
+        emit BankUpdated(_bank);
     }
 
     function updateSavingAccount(SavingAccount _savingAccount) external onlyOwner{
         savingAccount = _savingAccount;
+
+        emit SavingAccountUpdated(_savingAccount);
     }
 
     function updateTokenInfoRegistry(TokenInfoRegistry _tokenInfoRegistry) external onlyOwner{
         tokenInfoRegistry = _tokenInfoRegistry;
+
+        emit TokenInfoRegistryUpdated(_tokenInfoRegistry);
     }
 
     function updateAccounts(Accounts _accounts) external onlyOwner{
         accounts = _accounts;
+
+        emit AccountsUpdated(_accounts);
+    }
+
+    function updateConstant(Constant _constants) external onlyOwner{
+        constants = _constants;
+
+        emit ConstantUpdated(_constants);
     }
 
 }

@@ -179,11 +179,11 @@ contract Bank is Ownable{
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
         // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
         // sichaoy: move the constant
-            return getCapitalUtilizationRatio(_token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
+            return getCapitalUtilizationRatio(_token).mul(globalConfig.constants().rateCurveSlope()).add(globalConfig.constants().rateCurveConstant()).div(globalConfig.constants().BLOCKS_PER_YEAR()).div(SafeDecimalMath.getUNIT());
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        return (compoundPool[_token].depositRatePerBlock).mul(4).
-        add((compoundPool[_token].borrowRatePerBlock).mul(6)).div(10);
+        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.constants().compoundSupplyRateWeights()).
+        add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.constants().compoundBorrowRateWeights())).div(10);
     }
 
     /**
