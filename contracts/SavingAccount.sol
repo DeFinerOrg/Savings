@@ -4,13 +4,14 @@ import "./lib/SymbolsLib.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./params/SavingAccountParameters.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
     using SymbolsLib for SymbolsLib.Symbols;
     using Base for Base.BaseVariable;
     using Base for Base.Account;
@@ -173,7 +174,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public onlyValidToken(_token) nonReentrant {
+    function transfer(address _to, address _token, uint _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
@@ -187,7 +188,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
+    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
@@ -327,7 +328,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
+    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, amount, _token);
@@ -400,7 +401,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlyValidToken(_token) nonReentrant {
+    function withdrawAll(address _token) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -449,7 +450,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) nonReentrant {
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr, symbols);
         vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr, symbols);
