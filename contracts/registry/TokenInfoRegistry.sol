@@ -51,13 +51,6 @@ contract TokenInfoRegistry is Ownable {
 
     /**
      */
-    modifier notZero(address _addr) {
-        require(_addr != address(0), "Address is zero");
-        _;
-    }
-
-    /**
-     */
     modifier whenTokenExists(address _token) {
         require(isTokenExist(_token), "Token not exists");
         _;
@@ -163,7 +156,6 @@ contract TokenInfoRegistry is Ownable {
         external
         onlyOwner
         whenTokenExists(_token)
-        notZero(_token)
     {
         tokenInfo[_token].cToken = _cToken;
         emit TokenUpdated(_token);
@@ -178,7 +170,6 @@ contract TokenInfoRegistry is Ownable {
         external
         onlyOwner
         whenTokenExists(_token)
-        notZero(_token)
     {
         tokenInfo[_token].chainLinkAggregator = _chainLinkAggregator;
         emit TokenUpdated(_token);
