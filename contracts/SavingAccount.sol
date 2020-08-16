@@ -108,7 +108,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token addrss
      * @return the current deposits, loans, and collateral ratio of the token
 	 */
-    function getTokenState(address _token) public returns (
+    function getTokenState(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral
@@ -201,8 +201,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(msg.sender, symbols).add(
+                _amount.mul(symbols.priceFromAddress(_token)).div(divisor)
+            ).mul(100)
+            <=
+            baseVariable.getDepositETH(msg.sender, symbols).mul(borrowLTV),
+            "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
