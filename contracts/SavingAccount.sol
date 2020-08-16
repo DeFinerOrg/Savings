@@ -366,18 +366,23 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         address cToken = baseVariable.cTokenAddress[_token];
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
-        // Update tokenInfo for the user
+        // Record the deposit principal
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
+
+        // Update tokenInfo for the user
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getDepositPrincipal() == 0)
+        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
+        if(principalAfterWithdraw == 0)
             baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
-        // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        // If princpal doesn't change after withdraw, then _amount is the interest withdrawn.
+        // Otherwise, _amount minus the principal difference is the interest withdrawn.
+        uint256 commission = _amount.sub(principalAfterWithdraw.sub(principalBeforeWithdraw)).div(10);
         baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 
