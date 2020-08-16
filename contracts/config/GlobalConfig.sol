@@ -26,7 +26,7 @@ contract GlobalConfig is Ownable {
     SavingAccount public savingAccount;             // the SavingAccount contract
     TokenInfoRegistry public tokenInfoRegistry;     // the TokenInfoRegistry contract
     Accounts public accounts;                       // the Accounts contract
-    Constant public constants;
+    Constant public constants;                      // the constants contract
 
     event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
     event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
@@ -149,31 +149,31 @@ contract GlobalConfig is Ownable {
     function updateBank(Bank _bank) external onlyOwner{
         bank = _bank;
 
-        emit BankUpdated(_bank);
+        emit BankUpdated(address(_bank));
     }
 
     function updateSavingAccount(SavingAccount _savingAccount) external onlyOwner{
         savingAccount = _savingAccount;
 
-        emit SavingAccountUpdated(_savingAccount);
+        emit SavingAccountUpdated(address(_savingAccount));
     }
 
     function updateTokenInfoRegistry(TokenInfoRegistry _tokenInfoRegistry) external onlyOwner{
         tokenInfoRegistry = _tokenInfoRegistry;
 
-        emit TokenInfoRegistryUpdated(_tokenInfoRegistry);
+        emit TokenInfoRegistryUpdated(address(_tokenInfoRegistry));
     }
 
     function updateAccounts(Accounts _accounts) external onlyOwner{
         accounts = _accounts;
 
-        emit AccountsUpdated(_accounts);
+        emit AccountsUpdated(address(_accounts));
     }
 
     function updateConstant(Constant _constants) external onlyOwner{
         constants = _constants;
 
-        emit ConstantUpdated(_constants);
+        emit ConstantUpdated(address(_constants));
     }
 
 }

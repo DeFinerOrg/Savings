@@ -179,7 +179,8 @@ export class TestEngine {
             this.bank.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
-            this.accounts.address
+            this.accounts.address,
+            this.constant.address
         );
         console.log("==================6===============");
 

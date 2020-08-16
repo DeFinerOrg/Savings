@@ -182,8 +182,8 @@ contract Bank is Ownable{
             return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).add(globalConfig.rateCurveConstant()).div(globalConfig.constants().BLOCKS_PER_YEAR()).div(SafeDecimalMath.getUNIT());
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.constants().compoundSupplyRateWeights()).
-        add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.constants().compoundBorrowRateWeights())).div(10);
+        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
+            add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).div(10);
     }
 
     /**
