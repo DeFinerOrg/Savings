@@ -33,19 +33,4 @@ contract("SavingAccount", async (accounts) => {
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
     });
-
-    context("constructor", async () => {
-        context("should fail", async () => {
-            it("when ...<describe the context>");
-        });
-
-        context("should succeed", async () => {
-            it("deployed and state variables initialized", async () => {
-                expect(await savingAccount.EMERGENCY_ADDR()).to.equal(EMERGENCY_ADDRESS);
-                expect(await savingAccount.ETH_ADDR()).equal(ETH_ADDRESS);
-            });
-
-            it("when all parameters are valid");
-        });
-    });
 });
