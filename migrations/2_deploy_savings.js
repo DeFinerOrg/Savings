@@ -10,7 +10,7 @@ const Bank = artifacts.require("Bank");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 
-const ChainLinkOracle = artifacts.require("ChainLinkOracle");
+const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 const Constant = artifacts.require("Constant");
@@ -74,8 +74,8 @@ module.exports = async function(deployer, network) {
         chainLinkAggregators
     );
 
-    // Configure ChainLinkOracle
-    const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
+    // Configure ChainLinkAggregator
+    const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
 
     await tokenInfoRegistry.initialize(chainLinkOracle.address);
 
@@ -106,7 +106,7 @@ module.exports = async function(deployer, network) {
     console.log("Accounts:", accounts.address);
     console.log("Bank:", bank.address);
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
-    console.log("ChainLinkOracle:", chainLinkOracle.address);
+    console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };
 
@@ -123,14 +123,14 @@ const initializeTokenInfoRegistry = async (
             const isTransferFeeEnabled = token.isFeeEnabled;
             const isSupportedOnCompound = true;
             const cToken = cTokens[i];
-            const chainLinkAggregator = chainLinkAggregators[i];
+            const chainLinkOracle = chainLinkAggregators[i];
             await tokenInfoRegistry.addToken(
                 tokenAddr,
                 decimals,
                 isTransferFeeEnabled,
                 isSupportedOnCompound,
                 cToken,
-                chainLinkAggregator
+                chainLinkOracle
             );
         })
     );

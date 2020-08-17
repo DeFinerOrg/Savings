@@ -5,7 +5,7 @@ import "../registry/TokenInfoRegistry.sol";
 
 /**
  */
-contract ChainLinkOracle {
+contract ChainLinkAggregator {
 
     TokenInfoRegistry public tokenRegistry;
 

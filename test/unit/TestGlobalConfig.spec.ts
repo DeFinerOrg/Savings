@@ -10,7 +10,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
+const ChainLinkAggregator: t.ChainLinkOracleContract = artifacts.require("ChainLinkAggregator");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("GlobalConfig", async (accounts) => {
