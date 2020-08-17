@@ -270,14 +270,6 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 /* expect(balSavingAccountDAI).to.be.bignumber.equal(
                     collateralLocked.mul(new BN(15)).div(new BN(100))
                 ); */
-
-                const totalDefinerBalanceAfterWithdrawDAIUser1 = await savingAccount.tokenBalance(
-                    erc20DAI.address,
-                    { from: user1 }
-                );
-                expect(totalDefinerBalanceAfterWithdrawDAIUser1[0]).to.be.bignumber.equal(
-                    collateralLocked
-                );
             });
         });
     });
