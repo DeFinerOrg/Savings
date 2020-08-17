@@ -56,7 +56,7 @@ library Base {
         uint128 borrowBitmap;
     }
 
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
+    enum ActionChoices { Deposit, Withdraw, Borrow, Repay, Transfer, Liquidate }
 
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
@@ -205,7 +205,7 @@ library Base {
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
+    function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public returns(uint256) {
         address cToken = self.cTokenAddress[_token];
         uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
@@ -221,12 +221,17 @@ library Base {
             if (self.cTokenAddress[_token] != address(0) &&
                 totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
-                toCompoundAmount = toCompound(self, _token, toCompoundAmount);
-                self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
+                toCompound(self, _token, toCompoundAmount);
+                // The actual token deposited to compound could be slightly less than the
+                // requested amount because of the precision issue.
+                uint256 actualToCompoundAmount = ICToken(cToken).balanceOfUnderlying(address(this)) - self.totalCompound[cToken];
+                self.totalCompound[cToken] = self.totalCompound[cToken].add(actualToCompoundAmount);
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount.sub(toCompoundAmount));
+                return _amount.sub(toCompoundAmount.sub(actualToCompoundAmount));
             }
             else {
                 self.totalReserve[_token] = self.totalReserve[_token].add(_amount);
+                return _amount;
             }
         } else {
             require(
@@ -262,6 +267,7 @@ library Base {
             } else {
                 self.totalReserve[_token] = self.totalReserve[_token].sub(_amount);
             }
+            return _amount;
         }
     }
 
@@ -516,6 +522,8 @@ library Base {
             ICETH(cToken).mint.value(_amount)();
             return _amount;
         } else {
+            // Important: The amount of minted token may not exactly equals to _amount,
+            // expecially when the cToken exchange rate is too high.
             uint256 preBla = IERC20(_token).balanceOf(cToken);
             uint256 success = ICToken(cToken).mint(_amount);
             require(success == 0, "mint failed");
@@ -610,11 +618,8 @@ library Base {
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
-                }
-                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr)
+                    .mul(_symbols.priceFromIndex(i)).div(getDivisor(tokenAddress)));
             }
         }
         return depositETH;
@@ -633,14 +638,123 @@ library Base {
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
-                }
-                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).
+                    mul(_symbols.priceFromIndex(i)).div(getDivisor(tokenAddress)));
             }
         }
         return borrowETH;
+    }
+
+    /**
+     * Deposit the amount of token to the saving pool.
+     * @param _to the account that the token deposit to.
+     * @param _token the address of the deposited token
+     * @param _amount the mount of the deposited token
+     */
+     // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
+    function deposit(BaseVariable storage self, address _to, address _token, uint256 _amount, uint8 _index) public {
+
+        require(_amount != 0, "Amount is zero");
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_to].tokenInfos[_token];
+
+        // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = self.lastCheckpoint[_token];
+        newRateIndexCheckpoint(self, _token);
+
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token, lastCheckpoint);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        uint accruedRate = getDepositAccruedRate(self, _token, lastCheckpoint);
+        tokenInfo.deposit(_amount, accruedRate, IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Set the deposit bitmap
+        setInDepositBitmap(self, _to, _index);
+    }
+
+    function repay(BaseVariable storage self, address _to, address _token, uint256 _amount, uint8 _index) public returns(uint) {
+        // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = self.lastCheckpoint[_token];
+        newRateIndexCheckpoint(self, _token);
+
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token, lastCheckpoint);
+
+        // Sanity check
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_to].tokenInfos[_token];
+        require(tokenInfo.getBorrowPrincipal() > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
+
+        // Update tokenInfo
+        uint rate = getBorrowAccruedRate(self, _token, lastCheckpoint);
+        uint256 amountOwedWithInterest = tokenInfo.getBorrowBalance(rate);
+        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
+        tokenInfo.repay(amount, rate, IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Unset borrow bitmap if the balance is fully repaid
+        if(tokenInfo.getBorrowPrincipal() == 0)
+            unsetFromBorrowBitmap(self, _to, _index);
+
+        // Send the remain money back
+        return amount;
+    }
+
+    function getDivisor(address _token) public view returns(uint256) {
+        // Check if there are enough collaterals after withdraw
+        if(_token != ETH_ADDR) {
+            return 10 ** uint256(IERC20Extended(_token).decimals());
+        } else {
+            return SafeDecimalMath.getUINT_UNIT();
+        }
+    }
+
+    /**
+     * Withdraw a token from an address
+     * @param _from address to be withdrawn from
+     * @param _token token address
+     * @param _amount amount to be withdrawn
+     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
+     */
+    function withdraw( BaseVariable storage self, address _from, address _token, uint256 _amount, uint8 _index,
+        uint256 _borrowLTV, SymbolsLib.Symbols storage _symbols, ActionChoices _action ) public {
+
+        require(_amount != 0, "Amount is zero");
+        require(_action == ActionChoices.Withdraw || _action == ActionChoices.Transfer
+            || _action == ActionChoices.Liquidate, "Invalid action");
+
+        // Add a new checkpoint on the index curve.
+        uint256 lastCheckpoint = self.lastCheckpoint[_token];
+        newRateIndexCheckpoint(self, _token);
+
+        // Update the balance in compound and loans
+        updateTotalCompound(self, _token);
+        updateTotalLoan(self, _token, lastCheckpoint);
+
+        // Check if withdraw amount is less than user's balance
+        require(_amount <= getDepositBalance(self, _token, _from), "Insufficient balance.");
+
+        // Check if the new LTV is below BORROW_LTV. For liquidation, the LTV is already above the BORROW_LTV before
+        // withdraw, so we should skip the LTV check.
+        if(_action != ActionChoices.Liquidate)
+            require(getBorrowETH(self, _from, _symbols).mul(100) <= getDepositETH(self, _from, _symbols)
+                .sub(_amount.mul(_symbols.priceFromAddress(_token)).div(getDivisor(_token))).mul(_borrowLTV),
+                "Insufficient collateral.");
+
+        // Check if there are enough tokens in the pool. For transfer and liquidation, the total number of tokens
+        // will not change in the pool, so we should skip the liquidity check.
+        if(_action != ActionChoices.Transfer && _action != ActionChoices.Liquidate)
+            require(self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]) >= _amount,
+                "Lack of liquidity.");
+
+        // Update tokenInfo for the user
+        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_from].tokenInfos[_token];
+        tokenInfo.withdraw(_amount, getDepositAccruedRate(self, _token, lastCheckpoint),
+            IBlockNumber(self.savingAccountAddress).getBlockNumber());
+
+        // Unset deposit bitmap if the deposit is fully withdrawn
+        if(tokenInfo.getDepositPrincipal() == 0)
+            unsetFromDepositBitmap(self, msg.sender, _index);
     }
 }
 
