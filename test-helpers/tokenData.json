@@ -10,7 +10,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x6b175474e89094c44da98b954eedeac495271d0f",
-                "aggregatorAddress": "0x037E8F2125bF532F3e228991e051c8A7253B642c",
+                "aggregatorAddress": "0x773616E4d11A78F511299002da57A0a94577F1f4",
                 "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
             },
 
@@ -31,7 +31,7 @@
 
             "mainnet": {
                 "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                "aggregatorAddress": "0xdE54467873c3BCAA76421061036053e371721708",
+                "aggregatorAddress": "0x986b5E1e1755e3C2440e960477f25201B0a8bbD4",
                 "cTokenAddress": "0x39aa39c021dfbae8fac545936693ac917d5e7563"
             },
 
@@ -52,7 +52,7 @@
 
             "mainnet": {
                 "tokenAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-                "aggregatorAddress": "0xa874fe207DF445ff19E7482C746C4D3fD0CB9AcE",
+                "aggregatorAddress": "0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46",
                 "cTokenAddress": "0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9"
             },
 
@@ -73,7 +73,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x0000000000085d4780B73119b644AE5ecd22b376",
-                "aggregatorAddress": "0x73ead35fd6A572EF763B13Be65a9db96f7643577",
+                "aggregatorAddress": "0x3886BA987236181D98F2401c507Fb8BeA7871dF2",
                 "cTokenAddress": "0x0000000000000000000000000000000000000001"
             },
 
@@ -94,7 +94,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-                "aggregatorAddress": "0xDa3d675d50fF6C555973C4f0424964e1F6A4e7D3",
+                "aggregatorAddress": "0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2",
                 "cTokenAddress": "0x0000000000000000000000000000000000000002"
             },
 
@@ -115,7 +115,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
-                "aggregatorAddress": "0x9b4e2579895efa2b4765063310Dc4109a7641129",
+                "aggregatorAddress": "0x0d16d4528239e9ee52fa531af613AcdB23D88c94",
                 "cTokenAddress": "0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e"
             },
 
@@ -136,7 +136,7 @@
 
             "mainnet": {
                 "tokenAddress": "0xe41d2489571d322189246dafa5ebde1f4699f498",
-                "aggregatorAddress": "0xA0F9D94f060836756FFC84Db4C78d097cA8C23E8",
+                "aggregatorAddress": "0x2Da4983a622a8498bb1a21FaE9D8F6C664939962",
                 "cTokenAddress": "0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407"
             },
 
@@ -157,7 +157,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
-                "aggregatorAddress": "0xb8b513d9cf440C1b6f5C7142120d611C94fC220c",
+                "aggregatorAddress": "0xD4CE430C3b67b3E2F7026D86E7128588629e2455",
                 "cTokenAddress": "0x158079ee67fce2f58472a96584a73c7ab9ac95c1"
             },
 
@@ -178,7 +178,7 @@
 
             "mainnet": {
                 "tokenAddress": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-                "aggregatorAddress": "0x0133Aa47B6197D0BA090Bf2CD96626Eb71fFd13c",
+                "aggregatorAddress": "0xdeb288F737066589598e9214E782fa5A8eD689e8",
                 "cTokenAddress": "0xc11b1268c1a384e55c48c2391d8d480264a3a7f4"
             },
 
