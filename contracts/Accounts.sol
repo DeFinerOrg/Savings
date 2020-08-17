@@ -14,8 +14,6 @@ contract Accounts is Ownable{
     using SignedSafeMath for int256;
 
     mapping(address => Account) public accounts;
-    address public constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
-    uint256 public constant INT_UNIT = 10 ** uint256(18);
 
     GlobalConfig globalConfig;
 
@@ -266,8 +264,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
+                uint divisor = globalConfig.constants().INT_UNIT();
+                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
                     divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 depositETH = depositETH.add(getDepositBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
@@ -286,8 +284,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
+                uint divisor = globalConfig.constants().INT_UNIT();
+                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
                     divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 borrowETH = borrowETH.add(getBorrowBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
