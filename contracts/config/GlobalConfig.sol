@@ -15,7 +15,8 @@ contract GlobalConfig is Ownable {
     uint256 public liquidationDiscountRatio = 95;
     address payable public deFinerCommunityFund;
     address public compoundAddress;
-
+    mapping(address => bool) public isTokenFeeCharged;
+    
     /**
      * Update the community fund (commision fee) ratio.
      * @param _communityFundRatio the new ratio
@@ -78,6 +79,10 @@ contract GlobalConfig is Ownable {
     function updateCompoundAddress(address _compoundAddress) external onlyOwner {
         require(_compoundAddress != address(0x0), "compoundAddress is zero");
         compoundAddress = _compoundAddress;
+    }
+
+    function updateTokenFeeCharged(address _token, bool _tokenFeeCharged) external onlyOwner {
+        isTokenFeeCharged[_token] = _tokenFeeCharged;
     }
 
 }

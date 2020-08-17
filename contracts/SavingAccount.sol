@@ -201,8 +201,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(msg.sender, symbols).add(_amount.mul(symbols.priceFromAddress(_token))).mul(100) <=
+            baseVariable.getDepositETH(msg.sender, symbols).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -239,7 +240,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        if(globalConfig.isTokenFeeCharged(_token)) {
+            uint prevBal = IERC20(_token).balanceOf(address(this));
+            receive(msg.sender, _amount, _token);
+            uint newBal = IERC20(_token).balanceOf(address(this));
+            _amount = newBal.sub(prevBal);
+        } else {
+            receive(msg.sender, _amount, _token);
+        }
 
         // Add a new checkpoint on the index curve.
         uint256 lastCheckpoint = baseVariable.lastCheckpoint[_token];
@@ -283,7 +291,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        if(globalConfig.isTokenFeeCharged(_token)) {
+            uint prevBal = IERC20(_token).balanceOf(address(this));
+            receive(msg.sender, _amount, _token);
+            uint newBal = IERC20(_token).balanceOf(address(this));
+            _amount = newBal.sub(prevBal);
+        } else {
+            receive(msg.sender, _amount, _token);
+        }
         deposit(msg.sender, _token, _amount);
 
         emit DepositorOperations(0, _token, msg.sender, address(0), _amount);
@@ -356,8 +371,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
-            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(_from, symbols).mul(100) <= baseVariable.getDepositETH(_from, symbols)
+            .sub(_amount.mul(symbols.priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral."
+            );
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
