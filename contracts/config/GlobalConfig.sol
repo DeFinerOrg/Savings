@@ -44,6 +44,8 @@ contract GlobalConfig is Ownable {
     event SavingAccountUpdated(address indexed savingAccount);
     event TokenInfoRegistryUpdated(address indexed tokenInfoRegistry);
     event AccountsUpdated(address indexed accounts);
+    event DeFinerCommunityFundUpdated(address indexed deFinerCommunityFund);
+    event DeFinerRateUpdated(uint256 indexed deFinerRate);
 
 
     function initialize(
@@ -198,11 +200,15 @@ contract GlobalConfig is Ownable {
 
     function updatedeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner{
         deFinerCommunityFund = _deFinerCommunityFund;
+
+        emit DeFinerCommunityFundUpdated(_deFinerCommunityFund);
     }
 
     function updatedeFinerRate(uint256 _deFinerRate) external onlyOwner{
         require(_deFinerRate <= 100,"_deFinerRate cannot exceed 100");
         deFinerRate = _deFinerRate;
+
+        emit DeFinerRateUpdated(_deFinerRate);
     }
 
 }

@@ -26,6 +26,7 @@ contract("RemainingCoverage", async (accounts) => {
     let tokenInfoRegistry: t.TokenInfoRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let accountsContract: t.AccountsInstance;
+    let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -52,6 +53,7 @@ contract("RemainingCoverage", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
+        globalConfig = await testEngine.globalConfig;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -214,25 +216,15 @@ contract("RemainingCoverage", async (accounts) => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
                     globalConfig.updatedeFinerCommunityFund(user1, { from: user1 }),
-                    "Ownable: caller is not the owner."
+                    "Unauthorized call"
                 );
             });
         });
 
-    // context("setDeFinerCommunityFund", async () => {
-    //     context("should fail", async () => {
-    //         it("when user's address is not same as definerCommunityFund", async () => {
-    //             await expectRevert(
-    //                 savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
-    //                 "Unauthorized call"
-    //             );
-    //         });
-    //     });
-    //
-    //     context("should succeed", async () => {
-    //         // verify if self.deFinerCommunityFund has been updated with the new address
-    //     });
-    // });
+        context("should succeed", async () => {
+            // verify if self.deFinerCommunityFund has been updated with the new address
+        });
+    });
 
     context("emergencyWithdraw", async () => {
         context("should fail", async () => {
