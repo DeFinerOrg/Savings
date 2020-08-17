@@ -118,6 +118,9 @@ contract TokenInfoRegistry is Ownable {
         onlyOwner
         whenTokenExists(_token)
     {
+        if (tokenInfo[_token].borrowLTV == _borrowLTV)
+            return;
+
         require(_borrowLTV != 0, "Borrow LTV is zero");
         require(_borrowLTV < SCALE, "Borrow LTV must be less than Scale");
         // require(liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
@@ -136,6 +139,9 @@ contract TokenInfoRegistry is Ownable {
         onlyOwner
         whenTokenExists(_token)
     {
+        if (tokenInfo[_token].isTransferFeeEnabled == _isTransfeFeeEnabled)
+            return;
+
         tokenInfo[_token].isTransferFeeEnabled = _isTransfeFeeEnabled;
         emit TokenUpdated(_token);
     }
@@ -150,6 +156,9 @@ contract TokenInfoRegistry is Ownable {
         onlyOwner
         whenTokenExists(_token)
     {
+        if (tokenInfo[_token].isSupportedOnCompound == _isSupportedOnCompound)
+            return;
+
         tokenInfo[_token].isSupportedOnCompound = _isSupportedOnCompound;
         emit TokenUpdated(_token);
     }
@@ -165,6 +174,9 @@ contract TokenInfoRegistry is Ownable {
         whenTokenExists(_token)
         notZero(_token)
     {
+        if (tokenInfo[_token].cToken == _cToken)
+            return;
+
         tokenInfo[_token].cToken = _cToken;
         emit TokenUpdated(_token);
     }
@@ -180,6 +192,9 @@ contract TokenInfoRegistry is Ownable {
         whenTokenExists(_token)
         notZero(_token)
     {
+        if (tokenInfo[_token].chainLinkAggregator == _chainLinkAggregator)
+            return;
+
         tokenInfo[_token].chainLinkAggregator = _chainLinkAggregator;
         emit TokenUpdated(_token);
     }

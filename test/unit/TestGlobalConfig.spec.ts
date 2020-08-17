@@ -37,49 +37,49 @@ contract("GlobalConfig", async (accounts) => {
             it("When executing updateCommunityFundRatio, the input parameter is zero.", async () => {
                 await expectRevert(
                     globalConfig.updateCommunityFundRatio(new BN(0)),
-                    "Community fund is zero"
+                    "Invalid community fund ratio."
                 );
             });
 
             it("When executing updateMinReserveRatio, the input parameter is zero.", async () => {
                 await expectRevert(
                     globalConfig.updateMinReserveRatio(new BN(0)),
-                    "Min Reserve Ratio is zero"
+                    "Invalid min reserve ratio."
                 );
             });
 
             it("When executing updateMinReserveRatio, the input parameter is greater than maxReserveRatio.", async () => {
                 await expectRevert(
                     globalConfig.updateMinReserveRatio(new BN(21)),
-                    "Min reserve greater or equal to Max reserve"
+                    "Invalid min reserve ratio."
                 );
             });
 
             it("When executing updateMaxReserveRatio, the input parameter is zero.", async () => {
                 await expectRevert(
                     globalConfig.updateMaxReserveRatio(new BN(0)),
-                    "Max Reserve Ratio is zero"
+                    "Invalid max reserve ratio."
                 );
             });
 
             it("When executing updateMaxReserveRatio, the input parameter is less than minReserveRatio.", async () => {
                 await expectRevert(
                     globalConfig.updateMaxReserveRatio(new BN(9)),
-                    "Max reserve less than or equal to Min reserve"
+                    "Invalid max reserve ratio."
                 );
             });
 
             it("When executing updateLiquidationThreshold, the input parameter is zero.", async () => {
                 await expectRevert(
                     globalConfig.updateLiquidationThreshold(new BN(0)),
-                    "LiquidationThreshold is zero"
+                    "Invalid liquidation threshold."
                 );
             });
 
             it("When executing updateLiquidationDiscountRatio, the input parameter is zero.", async () => {
                 await expectRevert(
                     globalConfig.updateLiquidationDiscountRatio(new BN(0)),
-                    "LiquidationDiscountRatio is zero"
+                    "Invalid liquidation discount ratio."
                 );
             });
         });
@@ -119,6 +119,7 @@ contract("GlobalConfig", async (accounts) => {
 
             it("executing updateLiquidationDiscountRatio", async () => {
                 const beforeLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
+                await globalConfig.updateLiquidationThreshold(new BN(10));
                 await globalConfig.updateLiquidationDiscountRatio(new BN(20));
                 const afterLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
                 expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(95));

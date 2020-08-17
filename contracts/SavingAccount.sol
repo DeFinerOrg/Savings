@@ -38,10 +38,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         _;
     }
 
-    modifier onlySupported(address _token) {
+    modifier onlyValidToken(address _token) {
         if(!_isETH(_token)) {
             require(tokenRegistry.isTokenExist(_token), "Unsupported token");
         }
+        require(tokenRegistry.isTokenEnabled(_token), "The token is not enabled");
         _;
     }
 
@@ -99,7 +100,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token addrss
      * @return the current deposits, loans, and collateral ratio of the token
 	 */
-    function getTokenState(address _token) public returns (
+    function getTokenState(address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral
@@ -167,7 +168,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
+    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
@@ -181,8 +182,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(IERC20Extended(_token).decimals());
         }
-        require(baseVariable.getBorrowETH(msg.sender).add(_amount.mul(tokenRegistry.priceFromAddress(_token))).mul(100)
-            <= baseVariable.getDepositETH(msg.sender).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            baseVariable.getBorrowETH(msg.sender).add(
+                _amount.mul(tokenRegistry.priceFromAddress(_token)).div(divisor)
+            ).mul(100)
+            <=
+            baseVariable.getDepositETH(msg.sender).mul(borrowLTV),
+            "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -216,7 +222,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
+    function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
@@ -260,7 +266,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
+    function deposit(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
@@ -302,7 +308,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
+    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, _amount, _token);
@@ -370,7 +376,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
+    function withdrawAll(address _token) public onlyValidToken(_token) nonReentrant {
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -419,8 +425,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public nonReentrant {
-        require(tokenRegistry.isTokenExist(_targetToken), "Unsupported token");
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) nonReentrant {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr);
         vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr);

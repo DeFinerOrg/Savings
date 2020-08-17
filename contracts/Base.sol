@@ -489,7 +489,7 @@ library Base {
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(BaseVariable storage self, address _token) public returns (
+    function getTokenState(BaseVariable storage self, address _token) public view returns (
         uint256 deposits,
         uint256 loans,
         uint256 collateral
