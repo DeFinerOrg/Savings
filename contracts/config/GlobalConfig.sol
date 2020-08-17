@@ -16,6 +16,7 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
+    address payable public deFinerCommunityFund = msg.sender;
 
     Bank public bank;                               // the Bank contract
     SavingAccount public savingAccount;             // the SavingAccount contract
@@ -120,6 +121,10 @@ contract GlobalConfig is Ownable {
 
     function updateAccounts(Accounts _accounts) external onlyOwner{
         accounts = _accounts;
+    }
+
+    function updatedeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner{
+        deFinerCommunityFund = _deFinerCommunityFund;
     }
 
 }

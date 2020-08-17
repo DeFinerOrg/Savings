@@ -17,6 +17,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     using SignedSafeMath for int256;
 
     GlobalConfig public globalConfig;
+    mapping(address => uint256) public deFinerFund;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -297,7 +298,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
         uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).div(10);
-        // baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
+        deFinerFund[_token] = deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 
         // Update pool balance
@@ -456,30 +457,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * Withdraw the community fund (commission fee)
      * @param _token token address
      */
-    // function recycleCommunityFund(address _token) public {
-    //     require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-    //     uint256 amount = baseVariable.deFinerFund[_token];
-    //     if (amount > 0) {
-    //         baseVariable.deFinerFund[_token] = 0;
-    //         send(baseVariable.deFinerCommunityFund, amount, _token);
-    //     }
-    // }
-
-    /**
-     * Change the communitiy fund address
-     * @param _DeFinerCommunityFund the new community fund address
-     */
-//    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-//        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-//        baseVariable.deFinerCommunityFund = _DeFinerCommunityFund;
-//    }
-
-    /**
-     * The current community fund address
-     */
-//    function getDeFinerCommunityFund( address _token) public view returns(uint256){
-//        return baseVariable.deFinerFund[_token];
-//    }
+     function recycleCommunityFund(address _token) public {
+         require(msg.sender == globalConfig.deFinerCommunityFund(), "Unauthorized call");
+         uint256 amount = deFinerFund[_token];
+         if (amount > 0) {
+             deFinerFund[_token] = 0;
+             send(globalConfig.deFinerCommunityFund(), amount, _token);
+         }
+     }
 
     /**
      * Deposit token to Compound
