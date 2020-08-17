@@ -1,7 +1,6 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
@@ -9,7 +8,6 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Bank is Ownable{
     using SafeMath for uint256;
-    using SignedSafeMath for int256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
     mapping(address => uint256) public totalReserve;   // amount of tokens in reservation

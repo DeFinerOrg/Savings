@@ -1,12 +1,10 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 // This is for per user
 library AccountTokenLib {
     using SafeMath for uint256;
-    using SignedSafeMath for int256;
     struct TokenInfo {
         // Deposit info
         uint256 depositPrincipal;   // total deposit principal of ther user

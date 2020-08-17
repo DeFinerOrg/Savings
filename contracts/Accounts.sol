@@ -4,14 +4,12 @@ import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Accounts is Ownable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
-    using SignedSafeMath for int256;
 
     mapping(address => Account) public accounts;
 

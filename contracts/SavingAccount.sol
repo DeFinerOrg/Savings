@@ -1,7 +1,6 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./registry/TokenRegistry.sol";
 import "./config/GlobalConfig.sol";
@@ -13,7 +12,6 @@ import { ICETH } from "./compound/ICompound.sol";
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    using SignedSafeMath for int256;
 
     GlobalConfig public globalConfig;
     mapping(address => uint256) public deFinerFund;
