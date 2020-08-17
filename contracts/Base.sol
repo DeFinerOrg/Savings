@@ -37,7 +37,7 @@ library Base {
         mapping(address => uint) lastCTokenExchangeRate;    // last compound cToken exchange rate
         // Store per account info
         mapping(address => Account) accounts;
-        address payable deFinerCommunityFund;   // address allowed to withdraw the community fund
+
         address globalConfigAddress;            // global configuration contract address
         address savingAccountAddress;           // the SavingAccount contract address
         mapping(address => uint) deFinerFund;   // Definer community fund for the tokens

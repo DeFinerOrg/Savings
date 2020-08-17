@@ -574,32 +574,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
     }
 
     /**
-     * Withdraw the community fund (commission fee)
-     * @param _token token address
-     */
-    function recycleCommunityFund(address _token) public {
-        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
-        baseVariable.deFinerFund[_token] == 0;
-    }
-
-    /**
-     * Change the communitiy fund address
-     * @param _DeFinerCommunityFund the new community fund address
-     */
-    function setDeFinerCommunityFund(address payable _DeFinerCommunityFund) public {
-        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-        baseVariable.deFinerCommunityFund = _DeFinerCommunityFund;
-    }
-
-    /**
-     * The current community fund address
-     */
-    function getDeFinerCommunityFund( address _token) public view returns(uint256){
-        return baseVariable.deFinerFund[_token];
-    }
-
-    /**
      * Receive the amount of token from msg.sender
      * @param _from from address
      * @param _amount amount of token
@@ -636,6 +610,30 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function _isETH(address _token) internal view returns (bool) {
         return ETH_ADDR == _token;
+    }
+
+    function withdrawComp(uint _compAmount) public {
+        address payable deFinerCommunityFund = globalConfig.deFinerCommunityFund();
+        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
+        send(deFinerCommunityFund, _compAmount, globalConfig.compoundAddress());
+    }
+
+    /**
+     * Withdraw the community fund (commission fee)
+     * @param _token token address
+     */
+    function recycleCommunityFund(address _token) public {
+        address payable deFinerCommunityFund = globalConfig.deFinerCommunityFund();
+        require(msg.sender == deFinerCommunityFund, "Unauthorized call");
+        send(deFinerCommunityFund, baseVariable.deFinerFund[_token], _token);
+        baseVariable.deFinerFund[_token] == 0;
+    }
+
+    /**
+     * The current community fund address
+     */
+    function getDeFinerCommunityFund(address _token) public view returns(uint256) {
+        return baseVariable.deFinerFund[_token];
     }
 
     // ============================================

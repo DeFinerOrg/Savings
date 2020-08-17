@@ -13,6 +13,8 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
+    address payable public deFinerCommunityFund;
+    address public compoundAddress;
 
     /**
      * Update the community fund (commision fee) ratio.
@@ -66,6 +68,16 @@ contract GlobalConfig is Ownable {
      */
     function midReserveRatio() public view returns(uint256){
         return minReserveRatio.add(maxReserveRatio).div(2);
+    }
+
+    function updateDeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner {
+        require(_deFinerCommunityFund != address(0x0), "deFinerCommunityFund is zero");
+        deFinerCommunityFund = _deFinerCommunityFund;
+    }
+
+    function updateCompoundAddress(address _compoundAddress) external onlyOwner {
+        require(_compoundAddress != address(0x0), "compoundAddress is zero");
+        compoundAddress = _compoundAddress;
     }
 
 }
