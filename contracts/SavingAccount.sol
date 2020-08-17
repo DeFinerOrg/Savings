@@ -297,7 +297,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
-        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).div(10);
+        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
         deFinerFund[_token] = deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 

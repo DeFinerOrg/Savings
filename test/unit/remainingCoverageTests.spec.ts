@@ -85,27 +85,22 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    // context("updateDefinerRate", async () => {
-    //     context("should fail", async () => {
-    //         it("when unsupported token address is passed");
-    //     });
+    context("updateDefinerRate", async () => {
+        context("should fail", async () => {
+            it("when unsupported token address is passed");
+        });
 
-    //     context("should succeed", async () => {
-    //         it("when supported token address is passed", async () => {
-    //             const ERC20TokenAddresses = testEngine.erc20Tokens;
-    //             // Update the rate of the first token
-    //             await savingAccount.updateDefinerRate(ERC20TokenAddresses[0]);
+        context("should succeed", async () => {
+            it("when supported token address is passed", async () => {
+                await globalConfig.updatedeFinerRate(50);
+            });
 
-    //             // Deposit & borrow Rate for verification, getBlockIntervalDepositRateRecord, getBlockIntervalBorrowRateRecord?
-    //             //const borrowRateAfter = await base.getBlockIntervalBorrowRateRecord;
-    //         });
+            it("when borrowRateLMBN is zero");
+            // cases of `depositRateIndexNow`, line 261 Base.sol
 
-    //         it("when borrowRateLMBN is zero");
-    //         // cases of `depositRateIndexNow`, line 261 Base.sol
-
-    //         it("when borrowRateLMBN is equal to block number");
-    //     });
-    // });
+            it("when borrowRateLMBN is equal to block number");
+        });
+    });
 
     context("isAccountLiquidatable", async () => {
         context("should fail", async () => {});

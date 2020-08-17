@@ -16,6 +16,7 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
+    uint256 public deFinerRate = 10;
     address payable public deFinerCommunityFund = msg.sender;
 
     Bank public bank;                               // the Bank contract
@@ -125,6 +126,11 @@ contract GlobalConfig is Ownable {
 
     function updatedeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner{
         deFinerCommunityFund = _deFinerCommunityFund;
+    }
+
+    function updatedeFinerRate(uint256 _deFinerRate) external onlyOwner{
+        require(_deFinerRate <= 100,"_deFinerRate cannot exceed 100");
+        deFinerRate = _deFinerRate;
     }
 
 }
