@@ -21,6 +21,8 @@ contract GlobalConfig is Ownable {
     uint256 public compoundBorrowRateWeights = 6;
     uint256 public rateCurveSlope = 15 * 10 ** 16;
     uint256 public rateCurveConstant = 3 * 10 ** 16;
+    uint256 public deFinerRate = 10;
+    address payable public deFinerCommunityFund = msg.sender;
 
     Bank public bank;                               // the Bank contract
     SavingAccount public savingAccount;             // the SavingAccount contract
@@ -192,6 +194,15 @@ contract GlobalConfig is Ownable {
         constants = _constants;
 
         emit ConstantUpdated(address(_constants));
+    }
+
+    function updatedeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner{
+        deFinerCommunityFund = _deFinerCommunityFund;
+    }
+
+    function updatedeFinerRate(uint256 _deFinerRate) external onlyOwner{
+        require(_deFinerRate <= 100,"_deFinerRate cannot exceed 100");
+        deFinerRate = _deFinerRate;
     }
 
 }
