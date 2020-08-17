@@ -63,7 +63,11 @@ contract GlobalConfig is Ownable {
      * @param _communityFundRatio the new ratio
      */
     function updateCommunityFundRatio(uint256 _communityFundRatio) external onlyOwner {
-        require(_communityFundRatio != 0, "Community fund is zero");
+        if (_communityFundRatio == communityFundRatio)
+            return;
+
+        require(_communityFundRatio > 0 && _communityFundRatio < 100,
+            "Invalid community fund ratio.");
         communityFundRatio = _communityFundRatio;
 
         emit CommunityFundRatioUpdated(_communityFundRatio);
@@ -74,8 +78,11 @@ contract GlobalConfig is Ownable {
      * @param _minReserveRatio the new value of the minimum reservation ratio
      */
     function updateMinReserveRatio(uint256 _minReserveRatio) external onlyOwner {
-        require(_minReserveRatio != 0, "Min Reserve Ratio is zero");
-        require(_minReserveRatio < maxReserveRatio, "Min reserve greater or equal to Max reserve");
+        if (_minReserveRatio == minReserveRatio)
+            return;
+
+        require(_minReserveRatio > 0 && _minReserveRatio < maxReserveRatio,
+            "Invalid min reserve ratio.");
         minReserveRatio = _minReserveRatio;
 
         emit MinReserveRatioUpdated(_minReserveRatio);
@@ -86,8 +93,11 @@ contract GlobalConfig is Ownable {
      * @param _maxReserveRatio the new value of the maximum reservation ratio
      */
     function updateMaxReserveRatio(uint256 _maxReserveRatio) external onlyOwner {
-        require(_maxReserveRatio != 0, "Max Reserve Ratio is zero");
-        require(_maxReserveRatio > minReserveRatio, "Max reserve less than or equal to Min reserve");
+        if (_maxReserveRatio == maxReserveRatio)
+            return;
+
+        require(_maxReserveRatio > minReserveRatio && _maxReserveRatio < 100,
+            "Invalid max reserve ratio.");
         maxReserveRatio = _maxReserveRatio;
 
         emit MaxReserveRatioUpdated(_maxReserveRatio);
@@ -98,7 +108,11 @@ contract GlobalConfig is Ownable {
      * @param _liquidationThreshold the new threshhold value
      */
     function updateLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
-        require(_liquidationThreshold != 0, "LiquidationThreshold is zero");
+        if (_liquidationThreshold == liquidationThreshold)
+            return;
+
+        require(_liquidationThreshold > 0 && _liquidationThreshold < liquidationDiscountRatio,
+            "Invalid liquidation threshold.");
         liquidationThreshold = _liquidationThreshold;
 
         emit LiquidationThresholdUpdated(_liquidationThreshold);
@@ -109,7 +123,11 @@ contract GlobalConfig is Ownable {
      * @param _liquidationDiscountRatio the new liquidation discount
      */
     function updateLiquidationDiscountRatio(uint256 _liquidationDiscountRatio) external onlyOwner {
-        require(_liquidationDiscountRatio != 0, "LiquidationDiscountRatio is zero");
+        if (_liquidationDiscountRatio == liquidationDiscountRatio)
+            return;
+
+        require(_liquidationDiscountRatio > liquidationThreshold && _liquidationDiscountRatio < 100,
+            "Invalid liquidation discount ratio.");
         liquidationDiscountRatio = _liquidationDiscountRatio;
 
         emit LiquidationDiscountRatioUpdated(_liquidationDiscountRatio);
