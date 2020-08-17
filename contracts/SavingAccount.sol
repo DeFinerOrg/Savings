@@ -2,13 +2,14 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./Base.sol";
 import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
     using Base for Base.BaseVariable;
     using Base for Base.Account;
     using Base for Base.ActionChoices;
@@ -154,7 +155,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public nonReentrant {
+    function transfer(address _to, address _token, uint _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
@@ -168,7 +169,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
+    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         require(baseVariable.isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
@@ -308,7 +309,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) nonReentrant {
+    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
         send(msg.sender, _amount, _token);
@@ -347,18 +348,23 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         address cToken = tokenRegistry.getCToken(_token);
         require(baseVariable.totalReserve[_token].add(baseVariable.totalCompound[cToken]) >= _amount, "Lack of liquidity.");
 
-        // Update tokenInfo for the user
+        // Record the deposit principal
         TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[_from].tokenInfos[_token];
+        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
+
+        // Update tokenInfo for the user
         uint accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, this.getBlockNumber());
 
         // Unset deposit bitmap if the deposit is fully withdrawn
-        if(tokenInfo.getDepositPrincipal() == 0)
+        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
+        if(principalAfterWithdraw == 0)
             baseVariable.unsetFromDepositBitmap(msg.sender, tokenRegistry.getTokenIndex(_token));
 
         // DeFiner takes 10% commission on the interest a user earn
-        // sichaoy: 10 percent is a constant?
-        uint256 commission = tokenInfo.depositInterest <= _amount ? tokenInfo.depositInterest.div(10) : _amount.div(10);
+        // If princpal doesn't change after withdraw, then _amount is the interest withdrawn.
+        // Otherwise, _amount minus the principal difference is the interest withdrawn.
+        uint256 commission = _amount.sub(principalAfterWithdraw.sub(principalBeforeWithdraw)).div(10);
         baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 
@@ -376,7 +382,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlyValidToken(_token) nonReentrant {
+    function withdrawAll(address _token) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         // Add a new checkpoint on the index curve.
         baseVariable.newRateIndexCheckpoint(_token);
@@ -425,7 +431,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) nonReentrant {
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
         LiquidationVars memory vars;
         vars.totalBorrow = baseVariable.getBorrowETH(_targetAccountAddr);
         vars.totalCollateral = baseVariable.getDepositETH(_targetAccountAddr);
@@ -561,8 +567,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      */
     function recycleCommunityFund(address _token) public {
         require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
-        baseVariable.deFinerFund[_token] == 0;
+        uint256 amount = baseVariable.deFinerFund[_token];
+        if (amount > 0) {
+            baseVariable.deFinerFund[_token] = 0;
+            send(baseVariable.deFinerCommunityFund, amount, _token);
+        }
     }
 
     /**
