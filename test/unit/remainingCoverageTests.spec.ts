@@ -26,6 +26,7 @@ contract("RemainingCoverage", async (accounts) => {
     let tokenInfoRegistry: t.TokenInfoRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
     let accountsContract: t.AccountsInstance;
+    let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -52,6 +53,7 @@ contract("RemainingCoverage", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
+        globalConfig = await testEngine.globalConfig;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -74,7 +76,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when all conditions are satisfied", async () => {
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
                 // Approve all ERC20 tokens
-                for (let i = 0; i < ERC20TokenAddresses.length; i++) {
+                for (let i = 0; i < ERC20TokenAddresses.length-1; i++) {
                     //console.log("tokens", ERC20TokenAddresses[i]);
                     await savingAccount.approveAll(ERC20TokenAddresses[i]);
                     // Verification for approve?
@@ -83,27 +85,22 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    // context("updateDefinerRate", async () => {
-    //     context("should fail", async () => {
-    //         it("when unsupported token address is passed");
-    //     });
+    context("updateDefinerRate", async () => {
+        context("should fail", async () => {
+            it("when unsupported token address is passed");
+        });
 
-    //     context("should succeed", async () => {
-    //         it("when supported token address is passed", async () => {
-    //             const ERC20TokenAddresses = testEngine.erc20Tokens;
-    //             // Update the rate of the first token
-    //             await savingAccount.updateDefinerRate(ERC20TokenAddresses[0]);
+        context("should succeed", async () => {
+            it("when supported token address is passed", async () => {
+                await globalConfig.updatedeFinerRate(50);
+            });
 
-    //             // Deposit & borrow Rate for verification, getBlockIntervalDepositRateRecord, getBlockIntervalBorrowRateRecord?
-    //             //const borrowRateAfter = await base.getBlockIntervalBorrowRateRecord;
-    //         });
+            it("when borrowRateLMBN is zero");
+            // cases of `depositRateIndexNow`, line 261 Base.sol
 
-    //         it("when borrowRateLMBN is zero");
-    //         // cases of `depositRateIndexNow`, line 261 Base.sol
-
-    //         it("when borrowRateLMBN is equal to block number");
-    //     });
-    // });
+            it("when borrowRateLMBN is equal to block number");
+        });
+    });
 
     context("isAccountLiquidatable", async () => {
         context("should fail", async () => {});
@@ -197,37 +194,37 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    // context("recycleCommunityFund", async () => {
-    //     context("should fail", async () => {
-    //         it("when user's address is not same as definerCommunityFund", async () => {
-    //             await expectRevert(
-    //                 savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
-    //                 "Unauthorized call"
-    //             );
-    //         });
-    //         // definerCommunityFund?
-    //     });
-    //
-    //     context("should succeed", async () => {
-    //         it("when valid token address is passed", async () => {});
-    //         // verify deFinerFund == 0, transfer()
-    //     });
-    // });
+    context("recycleCommunityFund", async () => {
+        context("should fail", async () => {
+            it("when user's address is not same as definerCommunityFund", async () => {
+                await expectRevert(
+                    savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
+                    "Unauthorized call"
+                );
+            });
+            // definerCommunityFund?
+        });
 
-    // context("setDeFinerCommunityFund", async () => {
-    //     context("should fail", async () => {
-    //         it("when user's address is not same as definerCommunityFund", async () => {
-    //             await expectRevert(
-    //                 savingAccount.setDeFinerCommunityFund(user1, { from: user1 }),
-    //                 "Unauthorized call"
-    //             );
-    //         });
-    //     });
-    //
-    //     context("should succeed", async () => {
-    //         // verify if self.deFinerCommunityFund has been updated with the new address
-    //     });
-    // });
+        context("should succeed", async () => {
+            it("when valid token address is passed", async () => {});
+            // verify deFinerFund == 0, transfer()
+        });
+    });
+
+    context("setDeFinerCommunityFund", async () => {
+        context("should fail", async () => {
+            it("when user's address is not same as definerCommunityFund", async () => {
+                await expectRevert(
+                    globalConfig.updatedeFinerCommunityFund(user1, { from: user1 }),
+                    "Unauthorized call"
+                );
+            });
+        });
+
+        context("should succeed", async () => {
+            // verify if self.deFinerCommunityFund has been updated with the new address
+        });
+    });
 
     context("emergencyWithdraw", async () => {
         context("should fail", async () => {
@@ -330,16 +327,16 @@ contract("RemainingCoverage", async (accounts) => {
     });
     */
 
-    // context("getDeFinerCommunityFund", async () => {
-    //     context("should fail", async () => {
-    //         //await savingAccount.getDeFinerCommunityFund(dummy);
-    //     });
-    //     // invalid token address?
-    //
-    //     context("should succeed", async () => {
-    //         it("when valid token address is passed", async () => {
-    //             await savingAccount.getDeFinerCommunityFund(addressDAI);
-    //         });
-    //     });
-    // });
+    context("getDeFinerCommunityFund", async () => {
+        context("should fail", async () => {
+            //await savingAccount.getDeFinerCommunityFund(dummy);
+        });
+        // invalid token address?
+
+        context("should succeed", async () => {
+            it("when valid token address is passed", async () => {
+                await savingAccount.deFinerFund(addressDAI);
+            });
+        });
+    });
 });
