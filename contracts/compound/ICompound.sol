@@ -15,3 +15,8 @@ interface ICToken {
 interface ICETH{
     function mint() external payable;
 }
+
+interface IController {
+    function fastForward(uint blocks) external returns (uint);
+    function getBlockNumber() external view returns (uint);
+}

@@ -1,27 +1,22 @@
-## Generate deployable smart contract
+## Compile the contract and run the tests:
 
-```
-make rinkeby
-make mainnet
-```
+**1)** Download the compound-protocol as a submodule & install dependencies:
 
-## _Run the tests:_
+**`cd Savings && git submodule init && git submodule update`**
 
-**1)** Enter this directory & install dependencies:
+**`cd compound-prototol && npm i`**
 
-**`cd saving-pool-contract && npm i`**
+**2)** Install dependencies:
 
-**2)** Launch the Truffle development console:
+**`cd Savings && yarn`**
 
-**`npx truffle develop`**
+**3)** Launch ganache-cli:
 
-**3)** Open a _new_ console in the same directory & spool up the ethereum-bridge:
+**`ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true`**
 
-**`npx ethereum-bridge -a 9 -H 127.0.0.1 -p 9545 --dev`**
+**4)** Run test scripts
 
-**4)** Once the bridge is ready & listening, go back to the first console with Truffle running & set the tests going!
-
-**`truffle(develop)> test`**
+**`yarn test`**
 
 ## Passing Tests:
 
@@ -36,19 +31,3 @@ make mainnet
     etc..
 
 ```
-
-# New Test Setup
-
-`yarn`
-
-`ganache-cli -p 8546 -l 10000000 -e 10000`
-
-`make all`
-
-`yarn compile`
-
-`truffle migrate --reset`
-
-`yarn prepare`
-
-`yarn test`

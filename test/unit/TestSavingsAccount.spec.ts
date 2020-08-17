@@ -1,14 +1,14 @@
-import * as t from "../types/truffle-contracts/index";
-import { TestEngine } from "../test-helpers/TestEngine";
+import * as t from "../../types/truffle-contracts/index";
+import { TestEngine } from "../../test-helpers/TestEngine";
 
 var chai = require("chai");
 var expect = chai.expect;
-var tokenData = require("../test-helpers/tokenData.json");
+var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkOracle: t.ChainLinkOracleContract = artifacts.require("ChainLinkOracle");
 
@@ -17,7 +17,7 @@ contract("SavingAccount", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountInstance;
+    let savingAccount: t.SavingAccountWithControllerInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -27,6 +27,7 @@ contract("SavingAccount", async (accounts) => {
     before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
+        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {

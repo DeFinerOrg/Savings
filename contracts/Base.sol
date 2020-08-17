@@ -11,6 +11,7 @@ import "./lib/SafeDecimalMath.sol";
 import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
+import { IBlockNumber } from "./ISavingAccount.sol";
 
 library Base {
     using SafeMath for uint256;
@@ -27,18 +28,19 @@ library Base {
         mapping(address => uint256) totalCompound;  // amount of tokens in compound
         mapping(address => address) cTokenAddress;  // cToken addresses
         // Token => block-num => rate
-        mapping(address => mapping(uint => uint)) depositeRateIndex;
+        mapping(address => mapping(uint => uint)) depositeRateIndex; // the index curve of deposit rate
         // Token => block-num => rate
-        mapping(address => mapping(uint => uint)) borrowRateIndex;
+        mapping(address => mapping(uint => uint)) borrowRateIndex;   // the index curve of borrow rate
         // token address => block number
         mapping(address => uint) lastCheckpoint;            // last checkpoint on the index curve
         // cToken address => rate
         mapping(address => uint) lastCTokenExchangeRate;    // last compound cToken exchange rate
         // Store per account info
         mapping(address => Account) accounts;
-        address payable deFinerCommunityFund;
-        address globalConfigAddress;
-        mapping(address => uint) deFinerFund;
+
+        address globalConfigAddress;            // global configuration contract address
+        address savingAccountAddress;           // the SavingAccount contract address
+        mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
     }
@@ -63,66 +65,100 @@ library Base {
         uint borrowRatePerBlock;    // the borrow rate of the token in third party
     }
 
+    event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
+
     /**
-     * Initialize
+     * Initialize the base library
+     * @param _tokens list of supported token addresses
+     * @param _cTokens list of cToken addresses. Zero if the token is not supported in Compound.
+     * @param _globalConfigAddress the global configuration contract address
+     * @param _savingAccountAddress the SavingAccount contract address
      */
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens, address _globalConfigAddress) public {
+    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens,
+        address _globalConfigAddress, address _savingAccountAddress) public {
         self.globalConfigAddress = _globalConfigAddress;
+        self.savingAccountAddress = _savingAccountAddress;
         for(uint i = 0;i < _tokens.length;i++) {
             self.cTokenAddress[_tokens[i]] = _cTokens[i];
         }
     }
 
-//    function getDepositBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.depositBitmap;
-//    }
-
+    /**
+     * Check if the user has deposit for any tokens
+     * @param _account address of the user
+     * @return true if the user has positive deposit balance
+     */
     function isUserHasAnyDeposits(BaseVariable storage self, address _account) public view returns (bool) {
         Account storage account = self.accounts[_account];
         return account.depositBitmap > 0;
     }
 
+    /**
+     * Check if the user has deposit for a token
+     * @param _account address of the user
+     * @param _index index of the token
+     * @return true if the user has positive deposit balance for the token
+     */
     function isUserHasDeposits(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
         return account.depositBitmap.isBitSet(_index);
     }
 
-//    function getBorrowBitmap(BaseVariable storage self, address _account) public view returns (uint128) {
-//        Account storage account = self.accounts[_account];
-//        return account.borrowBitmap;
-//    }
-
-    // function isUserHasAnyBorrows(BaseVariable storage self, address _account) public view returns (bool) {
-    //     Account storage account = self.accounts[_account];
-    //     return account.borrowBitmap > 0;
-    // }
-
+    /**
+     * Check if the user has borrowed a token
+     * @param _account address of the user
+     * @param _index index of the token
+     * @return true if the user has borrowed the token
+     */
     function isUserHasBorrows(BaseVariable storage self, address _account, uint8 _index) public view returns (bool) {
         Account storage account = self.accounts[_account];
         return account.borrowBitmap.isBitSet(_index);
     }
 
+    /**
+     * Set the deposit bitmap for a token.
+     * @param _account address of the user
+     * @param _index index of the token
+     */
     function setInDepositBitmap(BaseVariable storage self, address _account, uint8 _index) public {
         Account storage account = self.accounts[_account];
         account.depositBitmap = account.depositBitmap.setBit(_index);
     }
 
+    /**
+     * Unset the deposit bitmap for a token
+     * @param _account address of the user
+     * @param _index index of the token
+     */
     function unsetFromDepositBitmap(BaseVariable storage self, address _account, uint8 _index) public {
         Account storage account = self.accounts[_account];
         account.depositBitmap = account.depositBitmap.unsetBit(_index);
     }
 
+    /**
+     * Set the borrow bitmap for a token.
+     * @param _account address of the user
+     * @param _index index of the token
+     */
     function setInBorrowBitmap(BaseVariable storage self, address _account, uint8 _index) public {
         Account storage account = self.accounts[_account];
         account.borrowBitmap = account.borrowBitmap.setBit(_index);
     }
 
+    /**
+     * Unset the borrow bitmap for a token
+     * @param _account address of the user
+     * @param _index index of the token
+     */
     function unsetFromBorrowBitmap(BaseVariable storage self, address _account, uint8 _index) public {
         Account storage account = self.accounts[_account];
         account.borrowBitmap = account.borrowBitmap.unsetBit(_index);
     }
 
+    /**
+     * Approve transfer of all available tokens
+     * @param _token token address
+     */
     function approveAll(BaseVariable storage self, address _token) public {
         address cToken = self.cTokenAddress[_token];
         require(cToken != address(0x0), "cToken address is zero");
@@ -131,26 +167,15 @@ library Base {
     }
 
     /**
-     * Total amount of the token in Saving Pool
-     * sichaoy: This is not right since the cToken rate has changed
+     * Total amount of the token in Saving account
      * @param _token token address
      */
-    function getTotalDepositsNow(BaseVariable storage self, address _token) public view returns(uint) {
+    function getTotalDepositStore(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = self.cTokenAddress[_token];
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
-        // TODO Are all of these variables are in same token decimals?
     }
-
-    /**
-     * Total amount of available tokens for withdraw and borrow
-     */
-    // function getTotalAvailableNow(BaseVariable storage self, address _token) public view returns(uint) {
-    //     address cToken = self.cTokenAddress[_token];
-    //     uint256 totalReserve = self.totalReserve[_token];
-    //     return self.totalCompound[cToken].add(totalReserve);
-    // }
 
     /**
      * Update total amount of token in Compound as the cToken price changed
@@ -167,31 +192,24 @@ library Base {
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(BaseVariable storage self, address _token) public {
-        uint balance = self.totalLoans[_token];
-        uint rate = getBorrowAccruedRate(self, _token, self.lastCheckpoint[_token]);
-        if(
-            rate == 0 ||
-            balance == 0 ||
-            SafeDecimalMath.getUNIT() > rate
-        ) {
-            self.totalLoans[_token] = balance;
-        } else {
-            self.totalLoans[_token] = balance.mul(rate).div(SafeDecimalMath.getUNIT());
-        }
+    function updateTotalLoan(BaseVariable storage self, address _token, uint256 _block) public {
+        uint rate = getBorrowAccruedRate(self, _token, _block);
+        self.totalLoans[_token] = self.totalLoans[_token].mul(rate).div(SafeDecimalMath.getUNIT());
     }
 
     /**
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
      * by calling updateTotalCompound. Otherwise, self.totalCompound may not equal to the exact amount of the
      * token in Compound.
+     * @param _token token address
+     * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
         address cToken = self.cTokenAddress[_token];
+        uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
-            uint totalAmount = getTotalDepositsNow(self, _token);
             if (_action == ActionChoices.Deposit)
                 totalAmount = totalAmount.add(_amount);
             else
@@ -201,7 +219,7 @@ library Base {
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
             if (self.cTokenAddress[_token] != address(0) &&
-                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) { // sichaoy: 20 and 15 should be defined as constants
+                totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                 toCompoundAmount = toCompound(self, _token, toCompoundAmount);
                 self.totalCompound[cToken] = self.totalCompound[cToken].add(toCompoundAmount);
@@ -217,7 +235,6 @@ library Base {
                 );
 
             // Total amount of token after withdraw or borrow
-            uint totalAmount = getTotalDepositsNow(self, _token);
             if (_action == ActionChoices.Withdraw)
                 totalAmount = totalAmount.sub(_amount);
             else
@@ -248,26 +265,6 @@ library Base {
         }
     }
 
-    // sichaoy: these two functions should be moved to a seperate library
-    /**
-     * Get compound supply rate.
-     * @param _cToken cToken address
-     */
-    function getCompoundSupplyRatePerBlock(BaseVariable storage self, address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        // return cToken.exchangeRateCurrent().mul(SafeDecimalMath.getUNIT()).div(self.lastCTokenExchangeRate[_cToken]);
-        return cToken.supplyRatePerBlock();
-    }
-
-    /**
-     * Get compound borrow rate.
-     * @param _cToken cToken adress
-     */
-    function getCompoundBorrowRatePerBlock(address _cToken) public view returns(uint) {
-        ICToken cToken = ICToken(_cToken);
-        return cToken.borrowRatePerBlock();
-    }
-
     /**
      * Get the borrowing interest rate Borrowing interest rate.
      * @param _token token address
@@ -280,7 +277,6 @@ library Base {
             return getCapitalUtilizationRatio(self, _token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        // sichaoy: confirm the formula
         return (self.compoundPool[_token].depositRatePerBlock).mul(4).
             add((self.compoundPool[_token].borrowRatePerBlock).mul(6)).div(10);
     }
@@ -307,7 +303,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalUtilizationRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        uint256 totalDepositsNow = getTotalDepositsNow(self, _token);
+        uint256 totalDepositsNow = getTotalDepositStore(self, _token);
         if(totalDepositsNow == 0) {
             return 0;
         } else {
@@ -317,29 +313,21 @@ library Base {
 
     /**
      * Ratio of the capital in Compound
+     * @param _token token address
      */
     function getCapitalCompoundRatio(BaseVariable storage self, address _token) public view returns(uint) {
         address cToken = self.cTokenAddress[_token];
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositsNow(self, _token)));
+            return uint(self.totalCompound[cToken].mul(SafeDecimalMath.getUINT_UNIT()).div(getTotalDepositStore(self, _token)));
         }
     }
-
-    //    //准备金率 R  The scaling is 10 ** 18
-    //    function getCapitalReserveRate(BaseVariable storage self, address tokenAddress) public returns(int) {
-    //        if(self.totalReserve[tokenAddress] == 0) {
-    //            return 0;
-    //        } else {
-    //            return self.totalReserve[tokenAddress].mul(10**18).div(getTotalDepositsNow(self, tokenAddress));
-    //        }
-    //    }
 
     /**
      * Get the cummulative deposit rate in a block interval ending in current block
      * @param _token token address
-     * @param _depositRateRecordStart the start block of the interval
+     * @param _previousCheckpoint the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
      // sichaoy: this function could be more general to have an end checkpoit as a parameter.
@@ -347,15 +335,17 @@ library Base {
     function getDepositAccruedRate(
         BaseVariable storage self,
         address _token,
-        uint _depositRateRecordStart
+        uint _previousCheckpoint
     ) internal view returns (uint256) {
-        uint256 depositRate = self.depositeRateIndex[_token][_depositRateRecordStart];
+        // The current block has to be a checkpoint in order to calculate the compounded rate
+        // require(self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] != 0,
+        //     "No rate checkpoint in this block.");
+        uint256 depositRate = self.depositeRateIndex[_token][_previousCheckpoint];
         uint256 UNIT = SafeDecimalMath.getUNIT();
         if (depositRate == 0) {
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
-            // sichaoy: to check that the current block rate index already exist
-            return self.depositeRateIndex[_token][block.number].mul(UNIT).div(depositRate); // index(current block)/index(start block)
+            return self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
 
@@ -379,56 +369,91 @@ library Base {
             return UNIT;
         } else {
             // rate change
-            return self.borrowRateIndex[_token][block.number].mul(UNIT).div(borrowRate);
+            return self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()].mul(UNIT).div(borrowRate);
         }
     }
 
     /**
+     * Set a new rate index checkpoint.
+     * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
     function newRateIndexCheckpoint(BaseVariable storage self, address _token) public {
 
-        if (block.number == self.lastCheckpoint[_token])
+        // Return if the checkpoint on current block already exists. This condition doesn't hold in case
+        // to create the first checkpoint on block 0. However, we assume this will never happen because
+        // the contract will be always deployed after block 0.
+        if (IBlockNumber(self.savingAccountAddress).getBlockNumber() == self.lastCheckpoint[_token])
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
 
         // If it is the first check point, initialize the rate index
         if (self.lastCheckpoint[_token] == 0) {
-            self.borrowRateIndex[_token][block.number] = UNIT;
-            self.depositeRateIndex[_token][block.number] = UNIT;
+            address cToken = self.cTokenAddress[_token];
+            if(cToken == address(0)) {
+                self.compoundPool[_token].supported = false;
+
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
+            }
+            else {
+                self.compoundPool[_token].supported = true;
+                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
+
+                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
+                // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
+                self.compoundPool[_token].capitalRatio = getCapitalCompoundRatio(self, _token);
+                self.compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
+                self.compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
+
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = UNIT;
+
+                // Update the last checkpoint
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
+                self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+            }
+
         } else {
             address cToken = self.cTokenAddress[_token];
             if(cToken == address(0)) {
                 self.compoundPool[_token].supported = false;
 
-                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
-                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = depositRateIndexNow(self, _token);
 
                 // Update the last checkpoint
-                self.lastCheckpoint[_token] = block.number;
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
             } else {
                 self.compoundPool[_token].supported = true;
                 uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
-                // Get the curretn cToken exchange rate in Compound
+
+                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 self.compoundPool[_token].capitalRatio = getCapitalCompoundRatio(self, _token);
                 self.compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 self.compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(self.lastCTokenExchangeRate[cToken])
-                    .sub(UNIT).div(block.number.sub(self.lastCheckpoint[_token]));
+                    .sub(UNIT).div(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(self.lastCheckpoint[_token]));
 
-                self.borrowRateIndex[_token][block.number] = borrowRateIndexNow(self, _token);
-                self.depositeRateIndex[_token][block.number] = depositRateIndexNow(self, _token);
+                self.borrowRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = borrowRateIndexNow(self, _token);
+                self.depositeRateIndex[_token][IBlockNumber(self.savingAccountAddress).getBlockNumber()] = depositRateIndexNow(self, _token);
 
                 // Update the last checkpoint
-                self.lastCheckpoint[_token] = block.number;
+                self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
                 self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
             }
         }
+        emit UpdateIndex(_token, self.depositeRateIndex[_token][block.number], self.borrowRateIndex[_token][block.number]);
     }
 
     /**
      * Calculate a token deposite rate of current block
      * @param _token token address
+     * @dev This is an looking forward estimation from last checkpoint and not the exactly rate that the user will pay or earn.
+     * change name to depositRateIndexForward? or EstimateDepositRateIndex?
      */
     function depositRateIndexNow(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 lastCheckpoint = self.lastCheckpoint[_token];
@@ -436,14 +461,18 @@ library Base {
         // If this is the first checkpoint, set the index be 1.
         if(lastCheckpoint == 0)
             return UNIT;
+
         uint256 lastDepositeRateIndex = self.depositeRateIndex[_token][lastCheckpoint];
         uint256 depositRatePerBlock = getDepositRatePerBlock(self, _token);
-        return lastDepositeRateIndex.mul(block.number.sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
+        return lastDepositeRateIndex.mul(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(lastCheckpoint).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
      * Calculate a token borrow rate of current block
      * @param _token token address
+     * @dev If the current block is check point, return the index value immediately. Otherwise, return
+     *  the estimation of the index value based on the last rate calculation.
      */
     function borrowRateIndexNow(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 lastCheckpoint = self.lastCheckpoint[_token];
@@ -453,26 +482,23 @@ library Base {
             return UNIT;
         uint256 lastBorrowRateIndex = self.borrowRateIndex[_token][lastCheckpoint];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, _token);
-        return lastBorrowRateIndex.mul(block.number.sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(IBlockNumber(self.savingAccountAddress).getBlockNumber().sub(lastCheckpoint).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
-    /*
+    /**
 	 * Get the state of the given token
+     * @param _token token address
 	 */
-    function getTokenState(BaseVariable storage self, address _token) public view returns (
+    function getTokenStateStore(BaseVariable storage self, address _token) public view returns (
         uint256 deposits,
         uint256 loans,
-        uint256 collateral,
-        uint256 depositRatePerBlock,
-        uint256 borrowRatePerBlock
+        uint256 reservation
     )
     {
         return (
-        getTotalDepositsNow(self, _token),
-        self.totalLoans[_token],
-        self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]]),
-        getDepositRatePerBlock(self, _token),
-        getBorrowRatePerBlock(self, _token)
+            getTotalDepositStore(self, _token),
+            self.totalLoans[_token],
+            self.totalReserve[_token]
         );
     }
 
@@ -484,13 +510,15 @@ library Base {
     function toCompound(BaseVariable storage self, address _token, uint _amount) public returns(uint256){
         address cToken = self.cTokenAddress[_token];
         if (_token == ETH_ADDR) {
+
             // TODO Why we need to put gas here?
             // TODO Without gas tx was failing? Even when gas is 100000 it was failing.
-            ICETH(cToken).mint.value(_amount).gas(250000)();
+            ICETH(cToken).mint.value(_amount)();
             return _amount;
         } else {
             uint256 preBla = IERC20(_token).balanceOf(cToken);
-            ICToken(cToken).mint(_amount);
+            uint256 success = ICToken(cToken).mint(_amount);
+            require(success == 0, "mint failed");
             uint256 newBla = IERC20(_token).balanceOf(cToken);
             return newBla.sub(preBla);
         }
@@ -508,7 +536,8 @@ library Base {
             return _amount;
         } else {
             uint256 preBla = IERC20(_token).balanceOf(address(this));
-            cToken.redeemUnderlying(_amount);
+            uint256 success = cToken.redeemUnderlying(_amount);
+            require(success == 0, "redeemUnderlying failed");
             uint256 newBla = IERC20(_token).balanceOf(address(this));
             return newBla.sub(preBla);
         }
@@ -525,7 +554,6 @@ library Base {
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        // TODO Why need storage
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
@@ -546,15 +574,13 @@ library Base {
     /**
      * Get current borrow balance of a token
      * @param _token token address
-     * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
+     * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance. 
      */
-    // sichaoy: What's the diff of getBorrowBalance with getBorrowAcruedRate?
     function getBorrowBalance(
         BaseVariable storage self,
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        // TODO Why need storage
         TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
@@ -581,7 +607,6 @@ library Base {
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
     ) public view returns (uint256 depositETH) {
-        //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
@@ -605,7 +630,6 @@ library Base {
         address _accountAddr,
         SymbolsLib.Symbols storage _symbols
     ) public view returns (uint256 borrowETH) {
-        //TODO Why need to pass symbols ?
         for(uint i = 0; i < _symbols.getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
                 address tokenAddress = _symbols.addressFromIndex(i);
@@ -617,21 +641,6 @@ library Base {
             }
         }
         return borrowETH;
-    }
-
-    function recycleCommunityFund(BaseVariable storage self, address _token) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund.transfer(uint256(self.deFinerFund[_token]));
-        self.deFinerFund[_token] == 0;
-    }
-
-    function setDeFinerCommunityFund(BaseVariable storage self, address payable _DeFinerCommunityFund) public {
-        require(msg.sender == self.deFinerCommunityFund, "Unauthorized call");
-        self.deFinerCommunityFund = _DeFinerCommunityFund;
-    }
-
-    function getDeFinerCommunityFund(BaseVariable storage self, address _token) public view returns(uint256){
-        return self.deFinerFund[_token];
     }
 }
 

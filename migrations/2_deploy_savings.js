@@ -1,4 +1,5 @@
 var tokenData = require("../test-helpers/tokenData.json");
+// var compound = require("../compound-protocol/networks/development.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
@@ -7,9 +8,15 @@ const TokenInfoLib = artifacts.require("TokenInfoLib");
 const Base = artifacts.require("Base");
 
 const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccountWithController = artifacts.require("SavingAccountWithController");
+
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
 const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
+
+// Upgradablility contracts
+const ProxyAdmin = artifacts.require("ProxyAdmin");
+const SavingAccountProxy = artifacts.require("SavingAccountProxy");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -45,6 +52,10 @@ module.exports = async function(deployer, network) {
     await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
 
+    await deployer.link(SymbolsLib, SavingAccountWithController);
+    await deployer.link(TokenInfoLib, SavingAccountWithController);
+    await deployer.link(Base, SavingAccountWithController);
+
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
@@ -63,20 +74,27 @@ module.exports = async function(deployer, network) {
 
     const globalConfig = await deployer.deploy(GlobalConfig);
 
+    // Deploy Upgradability
+    const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
+    const proxyAdmin = await deployer.deploy(ProxyAdmin);
+
     // Deploy SavingAccount contract
-    const savingAccount = await deployer.deploy(
-        SavingAccount,
-        erc20Tokens,
-        cTokens,
-        chainLinkOracle.address,
-        tokenInfoRegistry.address,
-        globalConfig.address
-    );
+    const savingAccount = await deployer.deploy(SavingAccount);
+    const initialize_data = savingAccount.contract.methods
+        .initialize(
+            erc20Tokens,
+            cTokens,
+            chainLinkOracle.address,
+            tokenInfoRegistry.address,
+            globalConfig.address
+        )
+        .encodeABI();
+    await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
 
     console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
-    console.log("SavingAccount:", savingAccount.address);
+    console.log("SavingAccount:", savingAccountProxy.address);
 };
 
 const initializeTokenInfoRegistry = async (
@@ -90,7 +108,6 @@ const initializeTokenInfoRegistry = async (
             const tokenAddr = erc20Tokens[i];
             const decimals = token.decimals;
             const isTransferFeeEnabled = token.isFeeEnabled;
-            // TODO When PR merged fix this, by default set to `true`
             const isSupportedOnCompound = true;
             const cToken = cTokens[i];
             const chainLinkAggregator = chainLinkAggregators[i];
@@ -129,7 +146,7 @@ const getCTokens = async (erc20Tokens) => {
                     erc20Address = ZERO_ADDRESS;
                 }
                 // Create MockCToken for given ERC20 token address
-                addr = (await MockCToken.new(erc20Address)).address;
+                addr = ZERO_ADDRESS;
             }
             cTokens.push(addr);
         })
