@@ -1212,7 +1212,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(ETHbalanceAfterWithdraw)
                 );
                 // Validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+                expect(accountBalanceDiff).to.be.bignumber.equal((new BN(withdrawAmount)).mul(new BN(15)).div(new BN(100)));
 
                 // Validate DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
@@ -1255,7 +1255,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(ETHbalanceAfterWithdraw)
                 );
                 // validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+                expect(accountBalanceDiff).to.be.bignumber.equal((new BN(withdrawAmount)).mul(new BN(15)).div(new BN(100)));
 
                 // Validate DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
