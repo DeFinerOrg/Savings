@@ -3,13 +3,15 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./lib/SafeDecimalMath.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "./registry/TokenInfoRegistry.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
@@ -31,10 +33,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         _;
     }
 
-    modifier onlySupported(address _token) {
+    modifier onlyValidToken(address _token) {
         if(!_isETH(_token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
+        require(globalConfig.tokenInfoRegistry().isTokenEnabled(_token), "The token is not enabled");
         _;
     }
 
@@ -106,7 +109,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public nonReentrant {
+    function transfer(address _to, address _token, uint _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
         withdraw(msg.sender, _token, _amount);
@@ -120,7 +123,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
+    function borrow(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
+
         require(_amount != 0, "Amount is zero");
         require(globalConfig.accounts().isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
@@ -133,8 +137,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
         }
-        require(globalConfig.accounts().getBorrowETH(msg.sender).add(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))).mul(100)
-            <= globalConfig.accounts().getDepositETH(msg.sender).mul(divisor).mul(borrowLTV), "Insufficient collateral.");
+        require(
+            globalConfig.accounts().getBorrowETH(msg.sender).add(
+                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
+            ).mul(100)
+            <=
+            globalConfig.accounts().getDepositETH(msg.sender).mul(borrowLTV),
+            "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -164,7 +173,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
+    function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
@@ -203,7 +212,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupported(_token) nonReentrant {
+    function deposit(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
         deposit(msg.sender, _token, _amount);
@@ -241,10 +250,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlySupported(_token) nonReentrant {
+    function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, amount, _token);
+        send(msg.sender, _amount, _token);
 
         emit DepositorOperations(1, _token, msg.sender, address(0), amount);
     }
@@ -280,12 +289,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
-        // Update tokenInfo for the user
+        // Withdraw from the account
+        uint256 principalBeforeWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
         globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
+        uint256 principalAfterWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
 
         // DeFiner takes 10% commission on the interest a user earn
         // sichaoy: 10 percent is a constant?
-        uint256 commission = globalConfig.accounts().getDepositInterest(msg.sender, _token) <= _amount ? globalConfig.accounts().getDepositInterest(msg.sender, _token).div(10) : _amount.div(10);
+        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).div(10);
         // baseVariable.deFinerFund[_token] = baseVariable.deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 
@@ -304,7 +315,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupported(_token) nonReentrant {
+    function withdrawAll(address _token) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
@@ -346,8 +357,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public nonReentrant {
-        require(globalConfig.tokenInfoRegistry().isTokenExist(_targetToken), "Unsupported token");
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
         LiquidationVars memory vars;
         vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
         vars.totalCollateral = globalConfig.accounts().getDepositETH(_targetAccountAddr);
@@ -446,11 +456,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard {
      * Withdraw the community fund (commission fee)
      * @param _token token address
      */
-//    function recycleCommunityFund(address _token) public {
-//        require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
-//        baseVariable.deFinerCommunityFund.transfer(uint256(baseVariable.deFinerFund[_token]));
-//        baseVariable.deFinerFund[_token] == 0;
-//    }
+    // function recycleCommunityFund(address _token) public {
+    //     require(msg.sender == baseVariable.deFinerCommunityFund, "Unauthorized call");
+    //     uint256 amount = baseVariable.deFinerFund[_token];
+    //     if (amount > 0) {
+    //         baseVariable.deFinerFund[_token] = 0;
+    //         send(baseVariable.deFinerCommunityFund, amount, _token);
+    //     }
+    // }
 
     /**
      * Change the communitiy fund address
