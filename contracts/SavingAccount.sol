@@ -2,7 +2,6 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
-import "./lib/SafeDecimalMath.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./registry/TokenRegistry.sol";
 import "./config/GlobalConfig.sol";
@@ -123,7 +122,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        uint divisor = globalConfig.constants().INT_UNIT();
         if(_token != globalConfig.constants().ETH_ADDR()) {
             divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
         }
@@ -267,7 +266,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = SafeDecimalMath.getUINT_UNIT();
+        uint divisor = globalConfig.constants().INT_UNIT();
         if(_token != globalConfig.constants().ETH_ADDR()) {
             divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
         }

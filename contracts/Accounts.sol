@@ -193,7 +193,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = SafeDecimalMath.getUNIT();
+        uint UNIT = globalConfig.constants().INT_UNIT();
         uint accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
@@ -229,7 +229,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = SafeDecimalMath.getUNIT();
+        uint UNIT = globalConfig.constants().INT_UNIT();
         uint accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
