@@ -11,7 +11,7 @@ const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
-const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
+const TokenRegistry = artifacts.require("TokenRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 
 // Upgradablility contracts
@@ -63,9 +63,9 @@ module.exports = async function(deployer, network) {
     await bank.initialize(globalConfig.address);
 
     // Deploy TokenRegistry
-    const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
+    const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
 
-    await initializeTokenInfoRegistry(
+    await initializeTokenRegistry(
         tokenInfoRegistry,
         erc20Tokens,
         cTokens,
@@ -102,12 +102,12 @@ module.exports = async function(deployer, network) {
     console.log("GlobalConfig:", globalConfig.address);
     console.log("Accounts:", accounts.address);
     console.log("Bank:", bank.address);
-    console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
+    console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };
 
-const initializeTokenInfoRegistry = async (
+const initializeTokenRegistry = async (
     tokenInfoRegistry,
     erc20Tokens,
     cTokens,

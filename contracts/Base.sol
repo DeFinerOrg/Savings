@@ -158,7 +158,7 @@ library Base {
      * @param _token token address
      */
     function approveAll(BaseVariable storage self, address _token) public {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         require(cToken != address(0x0), "cToken address is zero");
         IERC20(_token).safeApprove(cToken, 0);
         IERC20(_token).safeApprove(cToken, uint256(-1));
@@ -169,7 +169,7 @@ library Base {
      * @param _token token address
      */
     function getTotalDepositStore(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
@@ -180,7 +180,7 @@ library Base {
      * @param _token token address
      */
     function updateTotalCompound(BaseVariable storage self, address _token) public {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if(cToken != address(0)) {
             self.totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(this));
         }
@@ -213,7 +213,7 @@ library Base {
      * @return the actuall amount deposit/withdraw from the saving pool
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
@@ -279,7 +279,7 @@ library Base {
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(BaseVariable storage self, address _token) public view returns(uint) {
-        if(!TokenInfoRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
+        if(!TokenRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
             // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
             // sichaoy: move the constant
             return getCapitalUtilizationRatio(self, _token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
@@ -299,7 +299,7 @@ library Base {
     function getDepositRatePerBlock(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, _token);
         uint256 capitalUtilRatio = getCapitalUtilizationRatio(self, _token);
-        if(!TokenInfoRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
+        if(!TokenRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
             return borrowRatePerBlock.mul(capitalUtilRatio).div(SafeDecimalMath.getUNIT());
 
         return borrowRatePerBlock.mul(capitalUtilRatio).add(self.compoundPool[_token].depositRatePerBlock
@@ -324,7 +324,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalCompoundRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
@@ -390,7 +390,7 @@ library Base {
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
 
         // If it is the first check point, initialize the rate index
         if (self.lastCheckpoint[_token] == 0) {
@@ -498,7 +498,7 @@ library Base {
         return (
         getTotalDepositStore(self, _token),
         self.totalLoans[_token],
-        self.totalReserve[_token].add(self.totalCompound[TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token)])
+        self.totalReserve[_token].add(self.totalCompound[TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token)])
         );
     }
 
@@ -508,7 +508,7 @@ library Base {
      * @param _amount amount of token
      */
     function toCompound(BaseVariable storage self, address _token, uint _amount) public {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
         } else {
@@ -523,7 +523,7 @@ library Base {
      * @param _amount amount of token
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
-        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        address cToken = TokenRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
     }
@@ -592,14 +592,14 @@ library Base {
         BaseVariable storage self,
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < TokenRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
-                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
+                address tokenAddress = TokenRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
+                    divisor = 10**uint256(TokenRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(TokenRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -613,14 +613,14 @@ library Base {
         BaseVariable storage self,
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
+        for(uint i = 0; i < TokenRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
-                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
+                address tokenAddress = TokenRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
+                    divisor = 10**uint256(TokenRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(TokenRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;

@@ -3,7 +3,7 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../registry/TokenInfoRegistry.sol";
+import "../registry/TokenRegistry.sol";
 import "../SavingAccount.sol";
 import "../Bank.sol";
 import "../Accounts.sol";
@@ -19,13 +19,13 @@ contract GlobalConfig is Ownable {
 
     Bank public bank;                               // the Bank contract
     SavingAccount public savingAccount;             // the SavingAccount contract
-    TokenInfoRegistry public tokenInfoRegistry;     // the TokenInfoRegistry contract
+    TokenRegistry public tokenInfoRegistry;     // the TokenRegistry contract
     Accounts public accounts;                       // the Accounts contract
 
     function initialize(
         Bank _bank,
         SavingAccount _savingAccount,
-        TokenInfoRegistry _tokenInfoRegistry,
+        TokenRegistry _tokenInfoRegistry,
         Accounts _accounts
     ) public onlyOwner {
         bank = _bank;
@@ -114,7 +114,7 @@ contract GlobalConfig is Ownable {
         savingAccount = _savingAccount;
     }
 
-    function updateTokenInfoRegistry(TokenInfoRegistry _tokenInfoRegistry) external onlyOwner{
+    function updateTokenRegistry(TokenRegistry _tokenInfoRegistry) external onlyOwner{
         tokenInfoRegistry = _tokenInfoRegistry;
     }
 

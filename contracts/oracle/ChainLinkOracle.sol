@@ -1,19 +1,19 @@
 pragma solidity 0.5.14;
 
 import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
-import "../registry/TokenInfoRegistry.sol";
+import "../registry/TokenRegistry.sol";
 
 /**
  */
 contract ChainLinkOracle {
 
-    TokenInfoRegistry public tokenRegistry;
+    TokenRegistry public tokenRegistry;
 
     /**
      * Constructor
      */
-    constructor(TokenInfoRegistry _tokenRegistry) public {
-        require(address(_tokenRegistry) != address(0), "TokenInfoRegistry address is zero");
+    constructor(TokenRegistry _tokenRegistry) public {
+        require(address(_tokenRegistry) != address(0), "TokenRegistry address is zero");
         tokenRegistry = _tokenRegistry;
     }
 

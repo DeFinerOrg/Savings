@@ -8,7 +8,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const ChainLinkOracle = artifacts.require("ChainLinkOracle");
-const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Bank: t.BankContract = artifacts.require("Bank");
@@ -29,7 +29,7 @@ export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
-    public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
+    public tokenInfoRegistry!: t.TokenRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
@@ -129,8 +129,8 @@ export class TestEngine {
         this.accounts = await Accounts.new();
         await this.accounts.initialize(this.globalConfig.address);
 
-        this.tokenInfoRegistry = await TokenInfoRegistry.new();
-        await this.initializeTokenInfoRegistry(cTokens, aggregators);
+        this.tokenInfoRegistry = await TokenRegistry.new();
+        await this.initializeTokenRegistry(cTokens, aggregators);
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
             this.tokenInfoRegistry.address
@@ -196,7 +196,7 @@ export class TestEngine {
         return savingAccount;*/
     }
 
-    private async initializeTokenInfoRegistry(
+    private async initializeTokenRegistry(
         cTokens: Array<string>,
         aggregators: Array<string>
     ): Promise<void> {

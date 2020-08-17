@@ -8,7 +8,7 @@ import "../oracle/ChainLinkOracle.sol";
  * @dev Token Info Registry to manage Token information
  *      The Owner of the contract allowed to update the information
  */
-contract TokenInfoRegistry is Ownable {
+contract TokenRegistry is Ownable {
 
     using SafeMath for uint256;
 
