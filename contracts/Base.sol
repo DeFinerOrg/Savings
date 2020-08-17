@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "./lib/TokenInfoLib.sol";
+import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./lib/SafeDecimalMath.sol";
 import "./config/GlobalConfig.sol";
@@ -16,7 +16,7 @@ library Base {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using SignedSafeMath for int256;
-    using TokenInfoLib for TokenInfoLib.TokenInfo;
+    using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
 
     struct BaseVariable {
@@ -49,7 +49,7 @@ library Base {
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
-        mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
+        mapping(address => AccountTokenLib.TokenInfo) tokenInfos;
         uint128 depositBitmap;
         uint128 borrowBitmap;
     }
@@ -539,7 +539,7 @@ library Base {
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -567,7 +567,7 @@ library Base {
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = self.accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {

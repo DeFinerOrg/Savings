@@ -3,7 +3,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
-const TokenInfoLib = artifacts.require("TokenInfoLib");
+const AccountTokenLib = artifacts.require("AccountTokenLib");
 const Accounts = artifacts.require("Accounts");
 const Bank = artifacts.require("Bank");
 
@@ -37,17 +37,17 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
     // Deploy Libs
-    await deployer.deploy(TokenInfoLib);
-    await deployer.link(TokenInfoLib, Accounts);
+    await deployer.deploy(AccountTokenLib);
+    await deployer.link(AccountTokenLib, Accounts);
 
     // Deploy Base library
     //await deployer.deploy(Base);
 
     // Link libraries
-    // await deployer.link(TokenInfoLib, SavingAccount);
+    // await deployer.link(AccountTokenLib, SavingAccount);
     // await deployer.link(Base, SavingAccount);
     //
-    // await deployer.link(TokenInfoLib, SavingAccountWithController);
+    // await deployer.link(AccountTokenLib, SavingAccountWithController);
     // await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
