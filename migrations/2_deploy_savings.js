@@ -18,6 +18,8 @@ const Constant = artifacts.require("Constant");
 // Upgradablility contracts
 const ProxyAdmin = artifacts.require("ProxyAdmin");
 const SavingAccountProxy = artifacts.require("SavingAccountProxy");
+const AccountsProxies = artifacts.require("AccountsProxies");
+const BankProxies = artifacts.require("BankProxies");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -58,11 +60,21 @@ module.exports = async function(deployer, network) {
     const globalConfig = await deployer.deploy(GlobalConfig);
     const constant = await deployer.deploy(Constant);
 
+    const accountsProxies = await deployer.deploy(AccountsProxies);
     const accounts = await deployer.deploy(Accounts);
-    await accounts.initialize(globalConfig.address);
+    const accounts_initialize_data = accounts.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
 
+    const bankProxies = await deployer.deploy(BankProxies);
     const bank = await deployer.deploy(Bank);
-    await bank.initialize(globalConfig.address);
+    const bank_initialize_data = bank.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
@@ -100,11 +112,14 @@ module.exports = async function(deployer, network) {
             globalConfig.address
         )
         .encodeABI();
+
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
+    await accountsProxies.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
+    await bankProxies.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
 
     console.log("GlobalConfig:", globalConfig.address);
-    console.log("Accounts:", accounts.address);
-    console.log("Bank:", bank.address);
+    console.log("Accounts:", accountsProxies.address);
+    console.log("Bank:", bankProxies.address);
     console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);

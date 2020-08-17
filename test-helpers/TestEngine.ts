@@ -18,6 +18,8 @@ const Accounts: t.AccountsContract = artifacts.require("Accounts");
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+const AccountsProxies: t.AccountsProxiesContract = artifacts.require("AccountsProxies");
+const BankProxies: t.BankProxiesContract = artifacts.require("BankProxies");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -126,10 +128,10 @@ export class TestEngine {
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
 
-        this.bank = await Bank.new();
+        const bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
 
-        this.accounts = await Accounts.new();
+        const accounts = await Accounts.new();
         await this.accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
@@ -144,6 +146,8 @@ export class TestEngine {
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
+        this.accounts = await AccountsProxies.new();
+        this.bank = await BankProxies.new();
 
         // Global Config initialize
         await this.globalConfig.initialize(
@@ -167,11 +171,35 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+
+        const accounts_initialize_data = bank.contract.methods
+            .initialize(
+                this.globalConfig.address
+            )
+            .encodeABI();
+
+        const bank_initialize_data = accounts.contract.methods
+            .initialize(
+                this.globalConfig.address
+            )
+            .encodeABI();
         console.log("==================3===============");
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
+        );
+
+        await this.accounts.initialize(
+            accounts.address,
+            proxyAdmin.address,
+            accounts_initialize_data
+        );
+
+        await this.bank.initialize(
+            bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
         );
         console.log("==================4===============");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
