@@ -359,7 +359,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         uint liquidationThreshold =  globalConfig.liquidationThreshold();
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
-        require(_targetToken != address(0), "Token address is zero");
         vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
