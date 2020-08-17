@@ -4,7 +4,8 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN } = require("@openzeppelin/test-helpers");
 
 const TokenInfoLib = artifacts.require("TokenInfoLib");
-const Base = artifacts.require("Base");
+const Accounts = artifacts.require("Accounts");
+const Bank = artifacts.require("Bank");
 
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
@@ -37,23 +38,29 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(TokenInfoLib);
-
-    // Link Libraries
-    await deployer.link(TokenInfoLib, Base);
+    await deployer.link(TokenInfoLib, Accounts);
 
     // Deploy Base library
-    await deployer.deploy(Base);
+    //await deployer.deploy(Base);
 
     // Link libraries
-    await deployer.link(TokenInfoLib, SavingAccount);
-    await deployer.link(Base, SavingAccount);
-
-    await deployer.link(TokenInfoLib, SavingAccountWithController);
-    await deployer.link(Base, SavingAccountWithController);
+    // await deployer.link(TokenInfoLib, SavingAccount);
+    // await deployer.link(Base, SavingAccount);
+    //
+    // await deployer.link(TokenInfoLib, SavingAccountWithController);
+    // await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
+
+    const globalConfig = await deployer.deploy(GlobalConfig);
+
+    const accounts = await deployer.deploy(Accounts);
+    await accounts.initialize(globalConfig.address);
+
+    const bank = await deployer.deploy(Bank);
+    await bank.initialize(globalConfig.address);
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
@@ -70,11 +77,16 @@ module.exports = async function(deployer, network) {
 
     await tokenInfoRegistry.initialize(chainLinkOracle.address);
 
-    const globalConfig = await deployer.deploy(GlobalConfig);
-
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
+
+    await globalConfig.initialize(
+        bank.address,
+        savingAccountProxy.address,
+        tokenInfoRegistry.address,
+        accounts.address
+    );
 
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(SavingAccount);
@@ -82,14 +94,15 @@ module.exports = async function(deployer, network) {
         .initialize(
             erc20Tokens,
             cTokens,
-            tokenInfoRegistry.address,
             globalConfig.address
         )
         .encodeABI();
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
 
-    console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("GlobalConfig:", globalConfig.address);
+    console.log("Accounts:", accounts.address);
+    console.log("Bank:", bank.address);
+    console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkOracle:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };

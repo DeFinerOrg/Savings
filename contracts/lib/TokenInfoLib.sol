@@ -45,6 +45,14 @@ library TokenInfoLib {
         return self.lastBorrowBlock;
     }
 
+    function getDepositInterest(TokenInfo storage self) public view returns(uint256) {
+        return self.depositInterest;
+    }
+
+    function getBorrowInterest(TokenInfo storage self) public view returns(uint256) {
+        return self.borrowInterest;
+    }
+
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {
         newBorrowCheckpoint(self, accruedRate, _block);
         self.borrowPrincipal = self.borrowPrincipal.add(amount);

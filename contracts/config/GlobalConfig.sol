@@ -4,6 +4,9 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../registry/TokenInfoRegistry.sol";
+import "../SavingAccount.sol";
+import "../Bank.sol";
+import "../Accounts.sol";
 
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;
@@ -13,6 +16,25 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
+    uint256 public deFinerRate = 10;
+    address payable public deFinerCommunityFund = msg.sender;
+
+    Bank public bank;                               // the Bank contract
+    SavingAccount public savingAccount;             // the SavingAccount contract
+    TokenInfoRegistry public tokenInfoRegistry;     // the TokenInfoRegistry contract
+    Accounts public accounts;                       // the Accounts contract
+
+    function initialize(
+        Bank _bank,
+        SavingAccount _savingAccount,
+        TokenInfoRegistry _tokenInfoRegistry,
+        Accounts _accounts
+    ) public onlyOwner {
+        bank = _bank;
+        savingAccount = _savingAccount;
+        tokenInfoRegistry = _tokenInfoRegistry;
+        accounts = _accounts;
+    }
 
     /**
      * Update the community fund (commision fee) ratio.
@@ -84,6 +106,31 @@ contract GlobalConfig is Ownable {
      */
     function midReserveRatio() public view returns(uint256){
         return minReserveRatio.add(maxReserveRatio).div(2);
+    }
+
+    function updateBank(Bank _bank) external onlyOwner{
+        bank = _bank;
+    }
+
+    function updateSavingAccount(SavingAccount _savingAccount) external onlyOwner{
+        savingAccount = _savingAccount;
+    }
+
+    function updateTokenInfoRegistry(TokenInfoRegistry _tokenInfoRegistry) external onlyOwner{
+        tokenInfoRegistry = _tokenInfoRegistry;
+    }
+
+    function updateAccounts(Accounts _accounts) external onlyOwner{
+        accounts = _accounts;
+    }
+
+    function updatedeFinerCommunityFund(address payable _deFinerCommunityFund) external onlyOwner{
+        deFinerCommunityFund = _deFinerCommunityFund;
+    }
+
+    function updatedeFinerRate(uint256 _deFinerRate) external onlyOwner{
+        require(_deFinerRate <= 100,"_deFinerRate cannot exceed 100");
+        deFinerRate = _deFinerRate;
     }
 
 }

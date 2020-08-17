@@ -18,3 +18,8 @@ coverage.json
 
 # compound related
 /compound-protocol
+node_modules
+
+#Buidler files
+cache
+artifacts
