@@ -125,6 +125,8 @@ export class TestEngine {
             this.tokenInfoRegistry.address
         );
 
+        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
@@ -135,7 +137,6 @@ export class TestEngine {
             .initialize(
                 this.erc20Tokens,
                 cTokens,
-                chainLinkOracle.address,
                 this.tokenInfoRegistry.address,
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller

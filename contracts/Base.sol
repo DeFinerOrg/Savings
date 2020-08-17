@@ -5,7 +5,6 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/TokenInfoLib.sol";
-import "./lib/SymbolsLib.sol";
 import "./lib/BitmapLib.sol";
 import "./lib/SafeDecimalMath.sol";
 import "./config/GlobalConfig.sol";
@@ -18,7 +17,6 @@ library Base {
     using SafeERC20 for IERC20;
     using SignedSafeMath for int256;
     using TokenInfoLib for TokenInfoLib.TokenInfo;
-    using SymbolsLib for SymbolsLib.Symbols;
     using BitmapLib for uint128;
 
     struct BaseVariable {
@@ -26,7 +24,6 @@ library Base {
         mapping(address => uint256) totalLoans;     // amount of lended tokens
         mapping(address => uint256) totalReserve;   // amount of tokens in reservation
         mapping(address => uint256) totalCompound;  // amount of tokens in compound
-        mapping(address => address) cTokenAddress;  // cToken addresses
         // Token => block-num => rate
         mapping(address => mapping(uint => uint)) depositeRateIndex; // the index curve of deposit rate
         // Token => block-num => rate
@@ -40,6 +37,7 @@ library Base {
         address payable deFinerCommunityFund;   // address allowed to withdraw the community fund
         address globalConfigAddress;            // global configuration contract address
         address savingAccountAddress;           // the SavingAccount contract address
+        address tokenInfoRegistryAddress;
         mapping(address => uint) deFinerFund;   // Definer community fund for the tokens
         // Third Party Pools
         mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
@@ -69,18 +67,18 @@ library Base {
 
     /**
      * Initialize the base library
-     * @param _tokens list of supported token addresses
-     * @param _cTokens list of cToken addresses. Zero if the token is not supported in Compound.
      * @param _globalConfigAddress the global configuration contract address
      * @param _savingAccountAddress the SavingAccount contract address
      */
-    function initialize(BaseVariable storage self, address[] memory _tokens, address[] memory _cTokens,
-        address _globalConfigAddress, address _savingAccountAddress) public {
+    function initialize(
+        BaseVariable storage self,
+        address _globalConfigAddress,
+        address _savingAccountAddress,
+        address _tokenInfoRegistryAddress
+    ) public {
         self.globalConfigAddress = _globalConfigAddress;
         self.savingAccountAddress = _savingAccountAddress;
-        for(uint i = 0;i < _tokens.length;i++) {
-            self.cTokenAddress[_tokens[i]] = _cTokens[i];
-        }
+        self.tokenInfoRegistryAddress = _tokenInfoRegistryAddress;
     }
 
     /**
@@ -160,7 +158,7 @@ library Base {
      * @param _token token address
      */
     function approveAll(BaseVariable storage self, address _token) public {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         require(cToken != address(0x0), "cToken address is zero");
         IERC20(_token).safeApprove(cToken, 0);
         IERC20(_token).safeApprove(cToken, uint256(-1));
@@ -171,7 +169,7 @@ library Base {
      * @param _token token address
      */
     function getTotalDepositStore(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint256 totalLoans = self.totalLoans[_token];                        // totalLoans = U
         uint256 totalReserve = self.totalReserve[_token];                    // totalReserve = R
         return self.totalCompound[cToken].add(totalLoans).add(totalReserve); // return totalAmount = C + U + R
@@ -182,7 +180,7 @@ library Base {
      * @param _token token address
      */
     function updateTotalCompound(BaseVariable storage self, address _token) public {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if(cToken != address(0)) {
             self.totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(this));
         }
@@ -215,7 +213,7 @@ library Base {
      * @return the actuall amount deposit/withdraw from the saving pool
      */
     function updateTotalReserve(BaseVariable storage self, address _token, uint _amount, ActionChoices _action) public {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         uint totalAmount = getTotalDepositStore(self, _token);
         if (_action == ActionChoices.Deposit || _action == ActionChoices.Repay) {
             // Total amount of token after deposit or repay
@@ -227,7 +225,7 @@ library Base {
             // Expected total amount of token in reservation after deposit or repay
             uint totalReserveBeforeAdjust = self.totalReserve[_token].add(_amount);
 
-            if (self.cTokenAddress[_token] != address(0) &&
+            if (cToken != address(0) &&
                 totalReserveBeforeAdjust > totalAmount.mul(GlobalConfig(self.globalConfigAddress).maxReserveRatio()).div(100)) {
                 uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(GlobalConfig(self.globalConfigAddress).midReserveRatio()).div(100);
                 toCompound(self, _token, toCompoundAmount);
@@ -252,7 +250,7 @@ library Base {
             uint totalReserveBeforeAdjust = self.totalReserve[_token] > _amount ? self.totalReserve[_token].sub(_amount) : 0;
 
             // Trigger fromCompound if the new reservation ratio is less than 10%
-            if(self.cTokenAddress[_token] != address(0) &&
+            if(cToken != address(0) &&
                 (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(GlobalConfig(self.globalConfigAddress).minReserveRatio()).div(100))) {
 
                 uint totalAvailable = self.totalReserve[_token].add(self.totalCompound[cToken]).sub(_amount);
@@ -281,7 +279,7 @@ library Base {
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(BaseVariable storage self, address _token) public view returns(uint) {
-        if(!self.compoundPool[_token].supported)
+        if(!TokenInfoRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
             // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
             // sichaoy: move the constant
             return getCapitalUtilizationRatio(self, _token).mul(15*10**16).add(3*10**16).div(2102400).div(SafeDecimalMath.getUNIT());
@@ -301,7 +299,7 @@ library Base {
     function getDepositRatePerBlock(BaseVariable storage self, address _token) public view returns(uint) {
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(self, _token);
         uint256 capitalUtilRatio = getCapitalUtilizationRatio(self, _token);
-        if(!self.compoundPool[_token].supported)
+        if(!TokenInfoRegistry(self.tokenInfoRegistryAddress).isSupportedOnCompound(_token))
             return borrowRatePerBlock.mul(capitalUtilRatio).div(SafeDecimalMath.getUNIT());
 
         return borrowRatePerBlock.mul(capitalUtilRatio).add(self.compoundPool[_token].depositRatePerBlock
@@ -326,7 +324,7 @@ library Base {
      * @param _token token address
      */
     function getCapitalCompoundRatio(BaseVariable storage self, address _token) public view returns(uint) {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if(self.totalCompound[cToken] == 0 ) {
             return 0;
         } else {
@@ -392,10 +390,10 @@ library Base {
             return;
 
         uint256 UNIT = SafeDecimalMath.getUNIT();
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
 
         // If it is the first check point, initialize the rate index
         if (self.lastCheckpoint[_token] == 0) {
-            address cToken = self.cTokenAddress[_token];
             if(cToken == address(0)) {
                 self.compoundPool[_token].supported = false;
 
@@ -420,11 +418,10 @@ library Base {
 
                 // Update the last checkpoint
                 self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
-                self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+                self.lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
             }
 
         } else {
-            address cToken = self.cTokenAddress[_token];
             if(cToken == address(0)) {
                 self.compoundPool[_token].supported = false;
 
@@ -448,7 +445,7 @@ library Base {
 
                 // Update the last checkpoint
                 self.lastCheckpoint[_token] = IBlockNumber(self.savingAccountAddress).getBlockNumber();
-                self.lastCTokenExchangeRate[self.cTokenAddress[_token]] = cTokenExchangeRate;
+                self.lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
             }
         }
         emit UpdateIndex(_token, self.depositeRateIndex[_token][block.number], self.borrowRateIndex[_token][block.number]);
@@ -501,7 +498,7 @@ library Base {
         return (
         getTotalDepositStore(self, _token),
         self.totalLoans[_token],
-        self.totalReserve[_token].add(self.totalCompound[self.cTokenAddress[_token]])
+        self.totalReserve[_token].add(self.totalCompound[TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token)])
         );
     }
 
@@ -511,7 +508,7 @@ library Base {
      * @param _amount amount of token
      */
     function toCompound(BaseVariable storage self, address _token, uint _amount) public {
-        address cToken = self.cTokenAddress[_token];
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
         if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
         } else {
@@ -526,8 +523,8 @@ library Base {
      * @param _amount amount of token
      */
     function fromCompound(BaseVariable storage self, address _token, uint _amount) public {
-        ICToken cToken = ICToken(self.cTokenAddress[_token]);
-        uint256 success = cToken.redeemUnderlying(_amount);
+        address cToken = TokenInfoRegistry(self.tokenInfoRegistryAddress).getCToken(_token);
+        uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
     }
 
@@ -593,17 +590,16 @@ library Base {
      */
     function getDepositETH(
         BaseVariable storage self,
-        address _accountAddr,
-        SymbolsLib.Symbols storage _symbols
+        address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < _symbols.getCoinLength(); i++) {
+        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasDeposits(self, _accountAddr, uint8(i))) {
-                address tokenAddress = _symbols.addressFromIndex(i);
+                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                    divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                depositETH = depositETH.add(getDepositBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return depositETH;
@@ -611,22 +607,20 @@ library Base {
 
     /**
      * Get borrowed balance of a token in the uint of Wei
-     * @param _symbols chainlink symbols
      */
     // sichaoy: change name to getTotalBorrowInETH()
     function getBorrowETH(
         BaseVariable storage self,
-        address _accountAddr,
-        SymbolsLib.Symbols storage _symbols
+        address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < _symbols.getCoinLength(); i++) {
+        for(uint i = 0; i < TokenInfoRegistry(self.tokenInfoRegistryAddress).getCoinLength(); i++) {
             if(isUserHasBorrows(self, _accountAddr, uint8(i))) {
-                address tokenAddress = _symbols.addressFromIndex(i);
+                address tokenAddress = TokenInfoRegistry(self.tokenInfoRegistryAddress).addressFromIndex(i);
                 uint divisor = INT_UNIT;
                 if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(IERC20Extended(tokenAddress).decimals());
+                    divisor = 10**uint256(TokenInfoRegistry(self.tokenInfoRegistryAddress).getTokenDecimals(tokenAddress));
                 }
-                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(_symbols.priceFromIndex(i)).div(divisor));
+                borrowETH = borrowETH.add(getBorrowBalance(self, tokenAddress, _accountAddr).mul(TokenInfoRegistry(self.tokenInfoRegistryAddress).priceFromIndex(i)).div(divisor));
             }
         }
         return borrowETH;

@@ -3,7 +3,6 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
-const SymbolsLib = artifacts.require("SymbolsLib");
 const TokenInfoLib = artifacts.require("TokenInfoLib");
 const Base = artifacts.require("Base");
 
@@ -37,22 +36,18 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
     // Deploy Libs
-    await deployer.deploy(SymbolsLib);
     await deployer.deploy(TokenInfoLib);
 
     // Link Libraries
     await deployer.link(TokenInfoLib, Base);
-    await deployer.link(SymbolsLib, Base);
 
     // Deploy Base library
     await deployer.deploy(Base);
 
     // Link libraries
-    await deployer.link(SymbolsLib, SavingAccount);
     await deployer.link(TokenInfoLib, SavingAccount);
     await deployer.link(Base, SavingAccount);
 
-    await deployer.link(SymbolsLib, SavingAccountWithController);
     await deployer.link(TokenInfoLib, SavingAccountWithController);
     await deployer.link(Base, SavingAccountWithController);
 
@@ -62,6 +57,7 @@ module.exports = async function(deployer, network) {
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
+
     await initializeTokenInfoRegistry(
         tokenInfoRegistry,
         erc20Tokens,
@@ -71,6 +67,8 @@ module.exports = async function(deployer, network) {
 
     // Configure ChainLinkOracle
     const chainLinkOracle = await deployer.deploy(ChainLinkOracle, tokenInfoRegistry.address);
+
+    await tokenInfoRegistry.initialize(chainLinkOracle.address);
 
     const globalConfig = await deployer.deploy(GlobalConfig);
 
@@ -84,7 +82,6 @@ module.exports = async function(deployer, network) {
         .initialize(
             erc20Tokens,
             cTokens,
-            chainLinkOracle.address,
             tokenInfoRegistry.address,
             globalConfig.address
         )

@@ -47,6 +47,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let addressCTokenForTUSD: any;
     let addressCTokenForMKR: any;
     let addressCTokenForWBTC: any;
+    let addressCTokenForETH: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
@@ -54,6 +55,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cTokenTUSD: t.MockCTokenInstance;
     let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
+    let cTokenETH: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
     let erc20USDC: t.ERC20Instance;
@@ -113,12 +115,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
         addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
+        addressCTokenForETH = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
         cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
         cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cTokenETH = await MockCToken.at(addressCTokenForETH);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -1180,8 +1184,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             it("when partial ETH withdrawn", async () => {
-                const depositAmount = new BN(100);
-                const withdrawAmount = new BN(20);
+                const depositAmount = eighteenPrecision;
+                const withdrawAmount = eighteenPrecision.div(new BN(5));
                 const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
                     ETH_ADDRESS
                 );
@@ -1203,13 +1207,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 //Withdrawing ETH
                 await savingAccount.withdraw(ETH_ADDRESS, withdrawAmount);
-
                 let ETHbalanceAfterWithdraw = await web3.eth.getBalance(savingAccount.address);
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdraw).sub(
                     new BN(ETHbalanceAfterWithdraw)
                 );
                 // Validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+                expect(accountBalanceDiff).to.be.bignumber.equal((new BN(withdrawAmount)).mul(new BN(15)).div(new BN(100)));
 
                 // Validate DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
@@ -1252,7 +1255,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     new BN(ETHbalanceAfterWithdraw)
                 );
                 // validate savingAccount ETH balance
-                expect(accountBalanceDiff).to.be.bignumber.equal(withdrawAmount);
+                expect(accountBalanceDiff).to.be.bignumber.equal((new BN(withdrawAmount)).mul(new BN(15)).div(new BN(100)));
 
                 // Validate DeFiner balance
                 const totalDefinerBalancAfterWithdraw = await savingAccount.tokenBalance(
@@ -1285,7 +1288,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
-                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(depositAmount);
+                expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal((new BN(depositAmount)).mul(new BN(15)).div(new BN(100)));
 
                 // Withdrawing ETH
                 await savingAccount.withdrawAll(ETH_ADDRESS);
