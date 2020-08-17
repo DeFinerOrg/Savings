@@ -3,7 +3,7 @@ var tokenData = require("../test-helpers/tokenData.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
 
-const TokenInfoLib = artifacts.require("TokenInfoLib");
+const AccountTokenLib = artifacts.require("AccountTokenLib");
 const Accounts = artifacts.require("Accounts");
 const Bank = artifacts.require("Bank");
 
@@ -11,7 +11,7 @@ const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenInfoRegistry = artifacts.require("TokenInfoRegistry");
+const TokenRegistry = artifacts.require("TokenRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 const Constant = artifacts.require("Constant");
 
@@ -38,17 +38,17 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
     // Deploy Libs
-    await deployer.deploy(TokenInfoLib);
-    await deployer.link(TokenInfoLib, Accounts);
+    await deployer.deploy(AccountTokenLib);
+    await deployer.link(AccountTokenLib, Accounts);
 
     // Deploy Base library
     //await deployer.deploy(Base);
 
     // Link libraries
-    // await deployer.link(TokenInfoLib, SavingAccount);
+    // await deployer.link(AccountTokenLib, SavingAccount);
     // await deployer.link(Base, SavingAccount);
     //
-    // await deployer.link(TokenInfoLib, SavingAccountWithController);
+    // await deployer.link(AccountTokenLib, SavingAccountWithController);
     // await deployer.link(Base, SavingAccountWithController);
 
     const erc20Tokens = await getERC20Tokens();
@@ -65,7 +65,7 @@ module.exports = async function(deployer, network) {
     await bank.initialize(globalConfig.address);
 
     // Deploy TokenRegistry
-    const tokenInfoRegistry = await deployer.deploy(TokenInfoRegistry);
+    const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
 
     await initializeTokenInfoRegistry(
         tokenInfoRegistry,
@@ -105,7 +105,7 @@ module.exports = async function(deployer, network) {
     console.log("GlobalConfig:", globalConfig.address);
     console.log("Accounts:", accounts.address);
     console.log("Bank:", bank.address);
-    console.log("TokenInfoRegistry:", tokenInfoRegistry.address);
+    console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };

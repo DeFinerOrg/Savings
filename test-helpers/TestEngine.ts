@@ -8,7 +8,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+const TokenRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
@@ -132,7 +132,7 @@ export class TestEngine {
         this.accounts = await Accounts.new();
         await this.accounts.initialize(this.globalConfig.address);
 
-        this.tokenInfoRegistry = await TokenInfoRegistry.new();
+        this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
         const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkAggregator.new(

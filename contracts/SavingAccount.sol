@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "./lib/SafeDecimalMath.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
-import "./registry/TokenInfoRegistry.sol";
+import "./registry/TokenRegistry.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";

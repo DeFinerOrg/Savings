@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-import "./lib/TokenInfoLib.sol";
+import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Accounts is Ownable{
-    using TokenInfoLib for TokenInfoLib.TokenInfo;
+    using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
     using SignedSafeMath for int256;
@@ -25,7 +25,7 @@ contract Accounts is Ownable{
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
-        mapping(address => TokenInfoLib.TokenInfo) tokenInfos;
+        mapping(address => AccountTokenLib.TokenInfo) tokenInfos;
         uint128 depositBitmap;
         uint128 borrowBitmap;
     }
@@ -113,37 +113,37 @@ contract Accounts is Ownable{
     }
 
     function getDepositPrincipal(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getDepositPrincipal();
     }
 
     function getBorrowPrincipal(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getBorrowPrincipal();
     }
 
     function getLastDepositBlock(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getLastDepositBlock();
     }
 
     function getLastBorrowBlock(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getLastBorrowBlock();
     }
 
     function getDepositInterest(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getDepositInterest();
     }
 
     function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getBorrowInterest();
     }
 
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -156,7 +156,7 @@ contract Accounts is Ownable{
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
     function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, _block);
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -169,7 +169,7 @@ contract Accounts is Ownable{
      * Update token info for deposit
      */
     function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -179,7 +179,7 @@ contract Accounts is Ownable{
     }
 
     function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         tokenInfo.repay(_amount, accruedRate, _block);
         if(tokenInfo.getBorrowPrincipal() == 0) {
@@ -192,7 +192,7 @@ contract Accounts is Ownable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -213,7 +213,7 @@ contract Accounts is Ownable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         return tokenInfo.getDepositBalance(accruedRate);
     }
@@ -228,7 +228,7 @@ contract Accounts is Ownable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint UNIT = SafeDecimalMath.getUNIT();
         uint accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {
@@ -249,7 +249,7 @@ contract Accounts is Ownable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        TokenInfoLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         return tokenInfo.getBorrowBalance(accruedRate);
     }
