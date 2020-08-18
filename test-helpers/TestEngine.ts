@@ -7,10 +7,13 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
-const ChainLinkOracle = artifacts.require("ChainLinkOracle");
-const TokenInfoRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenInfoRegistry");
+const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
+const TokenRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
+const Constant: t.ConstantContract = artifacts.require("Constant");
+const Bank: t.BankContract = artifacts.require("Bank");
+const Accounts: t.AccountsContract = artifacts.require("Accounts");
 
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
@@ -29,6 +32,9 @@ export class TestEngine {
     public mockChainlinkAggregators: Array<string> = new Array();
     public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
+    public constant!: t.ConstantInstance;
+    public bank!: t.BankInstance;
+    public accounts!: t.AccountsInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -59,6 +65,7 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(ETH_ADDR);
 
         return erc20TokensFromCompound;
     }
@@ -116,38 +123,68 @@ export class TestEngine {
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
-        this.tokenInfoRegistry = await TokenInfoRegistry.new();
+        this.globalConfig = await GlobalConfig.new();
+        this.constant = await Constant.new();
+
+        this.bank = await Bank.new();
+        await this.bank.initialize(this.globalConfig.address);
+
+        this.accounts = await Accounts.new();
+        await this.accounts.initialize(this.globalConfig.address);
+
+        this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        this.globalConfig = await GlobalConfig.new();
-
-        const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkOracle.new(
+        const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkAggregator.new(
             this.tokenInfoRegistry.address
         );
+
+        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
 
-        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        // Global Config initialize
+        await this.globalConfig.initialize(
+            this.bank.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            this.accounts.address,
+            this.constant.address
+        );
 
+        console.log("==================1===============");
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        console.log("==================2===============");
+        // console.log("ERC20", this.erc20Tokens);
+        // console.log("cTokens", cTokens);
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
                 cTokens,
-                chainLinkOracle.address,
-                this.tokenInfoRegistry.address,
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+        console.log("==================3===============");
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-
+        console.log("==================4===============");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        console.log("==================5===============");
+        await this.globalConfig.initialize(
+            this.bank.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            this.accounts.address,
+            this.constant.address
+        );
+        console.log("==================6===============");
+
         return proxy;
 
         /*
@@ -175,14 +212,14 @@ export class TestEngine {
                 const isTransferFeeEnabled = token.isFeeEnabled;
                 const isSupportedOnCompound = true;
                 const cToken = cTokens[i];
-                const chainLinkAggregator = aggregators[i];
+                const chainLinkOracle = aggregators[i];
                 await this.tokenInfoRegistry.addToken(
                     tokenAddr,
                     decimals,
                     isTransferFeeEnabled,
                     isSupportedOnCompound,
                     cToken,
-                    chainLinkAggregator
+                    chainLinkOracle
                 );
             })
         );

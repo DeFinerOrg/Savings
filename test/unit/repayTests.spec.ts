@@ -17,6 +17,7 @@ contract("SavingAccount", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -44,6 +45,7 @@ contract("SavingAccount", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -293,14 +295,17 @@ contract("SavingAccount", async (accounts) => {
         //                 value: new BN(5)
         //             });
         //             // 4. Verify the repay amount.
-        //             const user2ETHValue = await savingAccount.tokenBalance(
+        //             const user2ETHValueD = await accountsContract.getDepositBalanceCurrent(
         //                 ETH_ADDRESS,
-        //                 {
-        //                     from: user2
-        //                 }
+        //                 user2
+        //             );
+
+        //              const user2ETHValueB = await accountsContract.getBorrowBalanceCurrent(
+        //                 ETH_ADDRESS,
+        //                 user2
         //             );
         //             expect(
-        //                 new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+        //                 new BN(user2ETHValueD).add(new BN(user2ETHValueB))
         //             ).to.be.bignumber.equal(new BN(-5));
         //         });
         //
@@ -311,14 +316,18 @@ contract("SavingAccount", async (accounts) => {
         //                 value: new BN(20)
         //             });
         //             // 4. Verify the repay amount.
-        //             const user2ETHValue = await savingAccount.tokenBalance(
+        //             const user2ETHValueD = await accountsContract.getDepositBalanceCurrent(
         //                 ETH_ADDRESS,
-        //                 {
-        //                     from: user2
-        //                 }
+        //                 user2
         //             );
+
+        //              const user2ETHValueB = await accountsContract.getBorrowBalanceCurrent(
+        //                 ETH_ADDRESS,
+        //                 user2
+        //             );
+
         //             expect(
-        //                 new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+        //                 new BN(user2ETHValueD).add(new BN(user2ETHValueB))
         //             ).to.be.bignumber.equal(new BN(0));
         //         });
         //     });
@@ -405,29 +414,33 @@ contract("SavingAccount", async (accounts) => {
                 //     await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                 //         from: user1
                 //     });
-                //     const user1ETHValueBefore = await savingAccount.tokenBalance(
+                //     const user1ETHValueBeforeD = await accountsContract.getDepositBalanceCurrent(
                 //         ETH_ADDRESS,
-                //         {
-                //             from: user1
-                //         }
+                //         user1
+                //     );
+                //     const user1ETHValueBeforeB = await accountsContract.getBorrowBalanceCurrent(
+                //         ETH_ADDRESS,
+                //         user1
                 //     );
                 //     // 3. Start repayment.
                 //     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                 //         from: user1,
                 //         value: ETHNumOfToken.div(new BN(10))
                 //     });
-                //     const user1ETHValueAfter = await savingAccount.tokenBalance(
+                //     const user1ETHValueAfterD = await accountsContract.getDepositBalanceCurrent(
                 //         ETH_ADDRESS,
-                //         {
-                //             from: user1
-                //         }
+                //         user1
+                //     );
+                //     const user1ETHValueAfterB = await accountsContract.getBorrowBalanceCurrent(
+                //         ETH_ADDRESS,
+                //         user1
                 //     );
                 //     // 4. Verify the repay amount.
                 //     expect(
-                //         new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))
-                //     ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)).mul(new BN(-1)));
+                //         new BN(user1ETHValueBeforeD).add(new BN(user1ETHValueBeforeB))
+                //     ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)));
                 //     expect(
-                //         new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))
+                //         new BN(user1ETHValueAfterD).add(new BN(user1ETHValueAfterB))
                 //     ).to.be.bignumber.equal(new BN(-14269406391));
                 // });
             });
