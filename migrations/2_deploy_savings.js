@@ -96,10 +96,10 @@ module.exports = async function(deployer, network) {
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
 
     await globalConfig.initialize(
-        bank.address,
+        bankProxies.address,
         savingAccountProxy.address,
         tokenInfoRegistry.address,
-        accounts.address,
+        accountsProxies.address,
         constant.address
     );
 

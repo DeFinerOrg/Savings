@@ -5,8 +5,9 @@ import "./lib/BitmapLib.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract Accounts is Ownable{
+contract Accounts is Ownable, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
@@ -34,7 +35,7 @@ contract Accounts is Ownable{
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public onlyOwner {
+    ) public onlyOwner initializer {
         globalConfig = _globalConfig;
     }
 
