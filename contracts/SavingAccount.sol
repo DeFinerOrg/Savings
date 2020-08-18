@@ -137,9 +137,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
+//        globalConfig.bank().updateTotalCompound(_token);
+//        globalConfig.bank().updateTotalLoan(_token);
+//        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Borrow());
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
@@ -174,9 +175,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Repay());
+//        globalConfig.bank().updateTotalCompound(_token);
+//        globalConfig.bank().updateTotalLoan(_token);
+//        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Repay());
+        uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
@@ -220,9 +222,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
+//        globalConfig.bank().updateTotalCompound(_token);
+//        globalConfig.bank().updateTotalLoan(_token);
+//        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
+        uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Deposit());
         toCompound(_token, compoundAmount);
     }
 
@@ -280,9 +283,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
+//        globalConfig.bank().updateTotalCompound(_token);
+//        globalConfig.bank().updateTotalLoan(_token);
+//        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Withdraw());
         fromCompound(_token, compoundAmount);
 
         return amount;
@@ -293,9 +297,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _token the address of the withdrawn token
      */
     function withdrawAll(address _token) public onlyValidToken(_token) whenNotPaused nonReentrant {
-
-        // Add a new checkpoint on the index curve.
-        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");

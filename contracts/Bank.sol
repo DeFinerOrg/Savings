@@ -69,7 +69,7 @@ contract Bank is Ownable{
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public onlySavingAccount{
+    function updateTotalCompound(address _token) internal{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -80,7 +80,7 @@ contract Bank is Ownable{
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(address _token) public onlySavingAccount{
+    function updateTotalLoan(address _token) internal{
         uint balance = totalLoans[_token];
         uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
         if(
@@ -102,7 +102,7 @@ contract Bank is Ownable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == Deposit || _action == Repay) {
@@ -164,6 +164,13 @@ contract Bank is Ownable{
                 totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
+        return compoundAmount;
+    }
+
+    function update (address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount) {
+        updateTotalCompound(_token);
+        updateTotalLoan(_token);
+        compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }
 
