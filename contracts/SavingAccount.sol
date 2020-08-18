@@ -318,6 +318,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         uint256 tokenPrice;
         uint256 coinValue;
         uint256 targetTokenAmount;
+        uint256 liquidationDebtValue;
         uint256 tokenAmount;
         uint256 tokenDivisor;
     }
