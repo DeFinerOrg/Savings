@@ -338,6 +338,70 @@ contract Accounts is Ownable{
         return false;
     }
 
+    function liquidateLogic(address _accountAddr, address _targetAccountAddr, address _targetToken) public view returns (uint, uint) {
+        uint totalBorrow = getBorrowETH(_targetAccountAddr);
+        uint totalCollateral = getDepositETH(_targetAccountAddr);
+
+        uint msgTotalBorrow = getBorrowETH(_accountAddr);
+        uint msgTotalCollateral = getDepositETH(_accountAddr);
+
+        uint targetTokenBalance = getDepositBalanceCurrent(_targetToken, _accountAddr);
+
+        uint liquidationThreshold =  globalConfig.liquidationThreshold();
+        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+
+        uint borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
+
+        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+        require(
+            totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold),
+            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+        );
+
+        // The value of discounted collateral should be never less than the borrow amount.
+        // We assume this will never happen as the market will not drop extreamly fast so that
+        // the LTV changes from 85% to 95%, an 10% drop within one block.
+        require(
+            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+            "Collateral is not sufficient to be liquidated."
+        );
+
+        require(
+            msgTotalBorrow.mul(100) < msgTotalCollateral.mul(borrowLTV),
+            "No extra funds are used for liquidation."
+        );
+
+        require(
+            targetTokenBalance > 0,
+            "The account amount must be greater than zero."
+        );
+
+        uint divisor = getDivisor(_targetToken);
+
+        // Amount of assets that need to be liquidated
+        uint liquidationDebtValue = totalBorrow.sub(
+            totalCollateral.mul(borrowLTV).div(100)
+        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
+
+        // Liquidators need to pay
+        uint paymentOfLiquidationValue = targetTokenBalance.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).div(divisor);
+
+        if(
+            msgTotalBorrow != 0 &&
+            paymentOfLiquidationValue > (msgTotalCollateral).mul(borrowLTV).div(100).sub(msgTotalBorrow)
+        ) {
+            paymentOfLiquidationValue = (msgTotalCollateral).mul(borrowLTV).div(100).sub(msgTotalBorrow);
+        }
+
+        if(paymentOfLiquidationValue.mul(100) < liquidationDebtValue.mul(liquidationDiscountRatio)) {
+            liquidationDebtValue = paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+        }
+
+        uint targetTokenAmount = liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(liquidationDiscountRatio).div(100);
+
+        return (liquidationDebtValue, targetTokenAmount);
+    }
+
     function _isETH(address _token) internal view returns (bool) {
         return globalConfig.constants().ETH_ADDR() == _token;
     }

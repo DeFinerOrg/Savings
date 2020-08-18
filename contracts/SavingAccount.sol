@@ -340,66 +340,67 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      */
     function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
         LiquidationVars memory vars;
-        vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
-        vars.totalCollateral = globalConfig.accounts().getDepositETH(_targetAccountAddr);
-
-        vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
-        vars.msgTotalCollateral = globalConfig.accounts().getDepositETH(msg.sender);
-
-        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
-
-        uint liquidationThreshold =  globalConfig.liquidationThreshold();
-        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-
-        vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
-
-        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-        );
-
-        // The value of discounted collateral should be never less than the borrow amount.
-        // We assume this will never happen as the market will not drop extreamly fast so that
-        // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
-
-        require(
-            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
-            "No extra funds are used for liquidation."
-        );
-
-        require(
-            vars.targetTokenBalance > 0,
-            "The account amount must be greater than zero."
-        );
-
-        uint divisor = getDivisor(_targetToken);
-
-        // Amount of assets that need to be liquidated
-        vars.liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(vars.borrowLTV).div(100)
-        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
-
-        // Liquidators need to pay
-        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
-        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
-
-        if(
-            vars.msgTotalBorrow != 0 &&
-            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
-         ) {
-            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
-        }
-
-        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
-            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
-        }
-
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+//        vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
+//        vars.totalCollateral = globalConfig.accounts().getDepositETH(_targetAccountAddr);
+//
+//        vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
+//        vars.msgTotalCollateral = globalConfig.accounts().getDepositETH(msg.sender);
+//
+//        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
+//
+//        uint liquidationThreshold =  globalConfig.liquidationThreshold();
+//        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+//
+//        vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
+//
+//        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+//        require(
+//            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
+//            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
+//        );
+//
+//        // The value of discounted collateral should be never less than the borrow amount.
+//        // We assume this will never happen as the market will not drop extreamly fast so that
+//        // the LTV changes from 85% to 95%, an 10% drop within one block.
+//        require(
+//            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
+//            "Collateral is not sufficient to be liquidated."
+//        );
+//
+//        require(
+//            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
+//            "No extra funds are used for liquidation."
+//        );
+//
+//        require(
+//            vars.targetTokenBalance > 0,
+//            "The account amount must be greater than zero."
+//        );
+//
+//        uint divisor = getDivisor(_targetToken);
+//
+//        // Amount of assets that need to be liquidated
+//        vars.liquidationDebtValue = vars.totalBorrow.sub(
+//            vars.totalCollateral.mul(vars.borrowLTV).div(100)
+//        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
+//
+//        // Liquidators need to pay
+//        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
+//        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
+//
+//        if(
+//            vars.msgTotalBorrow != 0 &&
+//            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
+//         ) {
+//            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
+//        }
+//
+//        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
+//            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+//        }
+//
+//        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        (vars.liquidationDebtValue, vars.targetTokenAmount) = globalConfig.accounts().liquidateLogic(msg.sender, _targetAccountAddr, _targetToken);
         globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
         globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
 
