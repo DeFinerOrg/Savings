@@ -346,6 +346,9 @@ contract Accounts is Ownable{
 
         uint256 targetTokenBalance;
         uint256 liquidationDebtValue;
+        uint256 liquidationThreshold;
+        uint256 liquidationDiscountRatio;
+        uint256 borrowLTV;
         uint256 paymentOfLiquidationValue;
     }
 
@@ -366,7 +369,7 @@ contract Accounts is Ownable{
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
+            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(vars.liquidationThreshold),
             "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
         );
 
@@ -374,12 +377,12 @@ contract Accounts is Ownable{
         // We assume this will never happen as the market will not drop extreamly fast so that
         // the LTV changes from 85% to 95%, an 10% drop within one block.
         require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
+            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(vars.liquidationDiscountRatio),
             "Collateral is not sufficient to be liquidated."
         );
 
         require(
-            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
+            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
             "No extra funds are used for liquidation."
         );
 
@@ -392,24 +395,24 @@ contract Accounts is Ownable{
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(borrowLTV).div(100)
-        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
+            vars.totalCollateral.mul(vars.borrowLTV).div(100)
+        ).mul(vars.liquidationDiscountRatio).div(vars.liquidationDiscountRatio - vars.borrowLTV);
 
         // Liquidators need to pay
         vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).div(divisor);
 
         if(
             vars.msgTotalBorrow != 0 &&
-            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow)
+            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
         ) {
-            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow);
+            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
         }
 
-        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
-            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(vars.liquidationDiscountRatio)) {
+            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(vars.liquidationDiscountRatio);
         }
 
-        uint targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(liquidationDiscountRatio).div(100);
+        uint targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(vars.liquidationDiscountRatio).div(100);
 
         return (vars.liquidationDebtValue, targetTokenAmount);
     }
