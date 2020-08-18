@@ -141,6 +141,17 @@ contract Accounts is Ownable{
     }
 
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
+        require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
+        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+        uint divisor = getDivisor(_token);
+        require(
+            getBorrowETH(_accountAddr).add(
+                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
+            ).mul(100)
+            <=
+            getDepositETH(_accountAddr).mul(borrowLTV),
+            "Insufficient collateral."
+        );
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getBorrowPrincipal() == 0) {
@@ -153,14 +164,23 @@ contract Accounts is Ownable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
+    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount returns(uint256){
+        // Check if withdraw amount is less than user's balance
+        require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+        uint divisor = getDivisor(_token);
+        require(getBorrowETH(_accountAddr).mul(100) <= getDepositETH(_accountAddr)
+        .sub(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         tokenInfo.withdraw(_amount, accruedRate, _block);
+        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
+        return _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw));
     }
 
     /**
@@ -176,14 +196,21 @@ contract Accounts is Ownable{
         tokenInfo.deposit(_amount, accruedRate, _block);
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
+    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount returns(uint256){
+        // Update tokenInfo
+        uint256 amountOwedWithInterest = getBorrowBalanceStore(_token, _accountAddr);
+        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
+        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        // Sanity check
+        require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.repay(_amount, accruedRate, _block);
+        tokenInfo.repay(amount, accruedRate, _block);
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
         }
+        return remain;
     }
 
     function getDepositBalanceCurrent(
@@ -309,5 +336,14 @@ contract Accounts is Ownable{
             return true;
         }
         return false;
+    }
+
+    function _isETH(address _token) internal view returns (bool) {
+        return globalConfig.constants().ETH_ADDR() == _token;
+    }
+
+    function getDivisor(address _token) internal view returns (uint256) {
+        if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
+        return 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
     }
 }

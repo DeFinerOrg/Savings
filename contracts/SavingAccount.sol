@@ -110,21 +110,21 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     function borrow(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
 
         require(_amount != 0, "Amount is zero");
-        require(globalConfig.accounts().isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
+//        require(globalConfig.accounts().isUserHasAnyDeposits(msg.sender), "The user doesn't have any deposits.");
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Check if there are enough collaterals after withdraw
-        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = getDivisor(_token);
-        require(
-            globalConfig.accounts().getBorrowETH(msg.sender).add(
-                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
-            ).mul(100)
-            <=
-            globalConfig.accounts().getDepositETH(msg.sender).mul(borrowLTV),
-            "Insufficient collateral.");
+//        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+//        uint divisor = getDivisor(_token);
+//        require(
+//            globalConfig.accounts().getBorrowETH(msg.sender).add(
+//                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
+//            ).mul(100)
+//            <=
+//            globalConfig.accounts().getDepositETH(msg.sender).mul(borrowLTV),
+//            "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -163,24 +163,24 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
-            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
-        );
+//        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
+//            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+//        );
 
         // Update tokenInfo
-        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
-        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(msg.sender, _token, amount, getBlockNumber());
+//        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
+//        uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
+        uint256 remain = globalConfig.accounts().repay(msg.sender, _token, _amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
+//        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         if(remain != 0) {
             send(msg.sender, remain, _token);
         }
@@ -254,13 +254,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Check if withdraw amount is less than user's balance
-        require(_amount <= globalConfig.accounts().getDepositBalanceCurrent(_token, _from), "Insufficient balance.");
+//        require(_amount <= globalConfig.accounts().getDepositBalanceCurrent(_token, _from), "Insufficient balance.");
 
         // Check if there are enough collaterals after withdraw
-        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = getDivisor(_token);
-        require(globalConfig.accounts().getBorrowETH(_from).mul(100) <= globalConfig.accounts().getDepositETH(_from)
-            .sub(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
+//        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+//        uint divisor = getDivisor(_token);
+//        require(globalConfig.accounts().getBorrowETH(_from).mul(100) <= globalConfig.accounts().getDepositETH(_from)
+//            .sub(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
@@ -268,12 +268,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
 
         // Withdraw from the account
-        uint256 principalBeforeWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
-        globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
-        uint256 principalAfterWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
+//        uint256 principalBeforeWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
+        uint interest = globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
+//        uint256 principalAfterWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
 
         // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
+        uint256 commission = interest.mul(globalConfig.deFinerRate()).div(100);
         deFinerFund[_token] = deFinerFund[_token].add(commission);
         uint256 amount = _amount.sub(commission);
 
