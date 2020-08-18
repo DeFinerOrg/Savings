@@ -314,23 +314,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     }
 
     struct LiquidationVars {
-        uint256 totalBorrow;
-        uint256 totalCollateral;
-        uint256 msgTotalBorrow;
-        uint256 msgTotalCollateral;
-
-        uint256 targetTokenBalance;
-        uint256 liquidationDebtValue;
-        uint256 targetTokenPrice;
-        uint256 paymentOfLiquidationValue;
         address token;
         uint256 tokenPrice;
         uint256 coinValue;
         uint256 targetTokenAmount;
         uint256 tokenAmount;
         uint256 tokenDivisor;
-
-        uint borrowLTV;
     }
 
     /**

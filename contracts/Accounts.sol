@@ -338,23 +338,35 @@ contract Accounts is Ownable{
         return false;
     }
 
+    struct LiquidationVars {
+        uint256 totalBorrow;
+        uint256 totalCollateral;
+        uint256 msgTotalBorrow;
+        uint256 msgTotalCollateral;
+
+        uint256 targetTokenBalance;
+        uint256 liquidationDebtValue;
+        uint256 paymentOfLiquidationValue;
+    }
+
     function liquidateLogic(address _accountAddr, address _targetAccountAddr, address _targetToken) public view returns (uint, uint) {
-        uint totalBorrow = getBorrowETH(_targetAccountAddr);
-        uint totalCollateral = getDepositETH(_targetAccountAddr);
+        LiquidationVars memory vars;
+        vars.totalBorrow = getBorrowETH(_targetAccountAddr);
+        vars.totalCollateral = getDepositETH(_targetAccountAddr);
 
-        uint msgTotalBorrow = getBorrowETH(_accountAddr);
-        uint msgTotalCollateral = getDepositETH(_accountAddr);
+        vars.msgTotalBorrow = getBorrowETH(_accountAddr);
+        vars.msgTotalCollateral = getDepositETH(_accountAddr);
 
-        uint targetTokenBalance = getDepositBalanceCurrent(_targetToken, _accountAddr);
+        vars.targetTokenBalance = getDepositBalanceCurrent(_targetToken, _accountAddr);
 
-        uint liquidationThreshold =  globalConfig.liquidationThreshold();
-        uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+        vars.liquidationThreshold =  globalConfig.liquidationThreshold();
+        vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
-        uint borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
+        vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         require(
-            totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold),
+            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
             "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
         );
 
@@ -362,44 +374,44 @@ contract Accounts is Ownable{
         // We assume this will never happen as the market will not drop extreamly fast so that
         // the LTV changes from 85% to 95%, an 10% drop within one block.
         require(
-            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
             "Collateral is not sufficient to be liquidated."
         );
 
         require(
-            msgTotalBorrow.mul(100) < msgTotalCollateral.mul(borrowLTV),
+            vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(borrowLTV),
             "No extra funds are used for liquidation."
         );
 
         require(
-            targetTokenBalance > 0,
+            vars.targetTokenBalance > 0,
             "The account amount must be greater than zero."
         );
 
         uint divisor = getDivisor(_targetToken);
 
         // Amount of assets that need to be liquidated
-        uint liquidationDebtValue = totalBorrow.sub(
-            totalCollateral.mul(borrowLTV).div(100)
+        vars.liquidationDebtValue = vars.totalBorrow.sub(
+            vars.totalCollateral.mul(borrowLTV).div(100)
         ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - borrowLTV);
 
         // Liquidators need to pay
-        uint paymentOfLiquidationValue = targetTokenBalance.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).div(divisor);
+        vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).div(divisor);
 
         if(
-            msgTotalBorrow != 0 &&
-            paymentOfLiquidationValue > (msgTotalCollateral).mul(borrowLTV).div(100).sub(msgTotalBorrow)
+            vars.msgTotalBorrow != 0 &&
+            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow)
         ) {
-            paymentOfLiquidationValue = (msgTotalCollateral).mul(borrowLTV).div(100).sub(msgTotalBorrow);
+            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(borrowLTV).div(100).sub(vars.msgTotalBorrow);
         }
 
-        if(paymentOfLiquidationValue.mul(100) < liquidationDebtValue.mul(liquidationDiscountRatio)) {
-            liquidationDebtValue = paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
+        if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
+            vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
 
-        uint targetTokenAmount = liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(liquidationDiscountRatio).div(100);
+        uint targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(liquidationDiscountRatio).div(100);
 
-        return (liquidationDebtValue, targetTokenAmount);
+        return (vars.liquidationDebtValue, targetTokenAmount);
     }
 
     function _isETH(address _token) internal view returns (bool) {
