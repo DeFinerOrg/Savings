@@ -12,6 +12,7 @@ contract Accounts is Ownable{
     using SafeMath for uint256;
 
     mapping(address => Account) public accounts;
+    mapping(address => uint256) public deFinerFund;
 
     GlobalConfig globalConfig;
 
@@ -180,7 +181,9 @@ contract Accounts is Ownable{
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
-        return _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw));
+        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
+        deFinerFund[_token] = deFinerFund[_token].add(commission);
+        return _amount.sub(commission);
     }
 
     /**
@@ -415,6 +418,10 @@ contract Accounts is Ownable{
         uint targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken)).mul(vars.liquidationDiscountRatio).div(100);
 
         return (vars.liquidationDebtValue, targetTokenAmount);
+    }
+
+    function clearDeFinerFund(address _token) public onlySavingAccount{
+        deFinerFund[_token] = 0;
     }
 
     function _isETH(address _token) internal view returns (bool) {

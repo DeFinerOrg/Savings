@@ -380,4 +380,8 @@ contract Bank is Ownable{
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }
+
+    function getPoolAmount(address _token) public view returns(uint) {
+        return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
+    }
 }

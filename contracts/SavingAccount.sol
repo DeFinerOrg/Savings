@@ -13,7 +13,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
-    mapping(address => uint256) public deFinerFund;
+    // mapping(address => uint256) public deFinerFund;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -128,8 +128,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
+        // address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        // require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(globalConfig.tokenInfoRegistry().getCToken(_token))) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
+
 
         // Update tokenInfo for the user
         globalConfig.accounts().borrow(msg.sender, _token, _amount, getBlockNumber());
@@ -267,18 +269,19 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // sichaoy: all the sanity checks should be before the operations???
         // Check if there are enough tokens in the pool.
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(cToken)) >= _amount, "Lack of liquidity.");
+        // address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        // require(globalConfig.bank().totalReserve(_token).add(globalConfig.bank().totalCompound(globalConfig.tokenInfoRegistry().getCToken(_token))) >= _amount, "Lack of liquidity.");
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
 
         // Withdraw from the account
 //        uint256 principalBeforeWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
-        uint interest = globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
+        uint amount = globalConfig.accounts().withdraw(_from, _token, _amount, getBlockNumber());
 //        uint256 principalAfterWithdraw = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
 
         // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = interest.mul(globalConfig.deFinerRate()).div(100);
-        deFinerFund[_token] = deFinerFund[_token].add(commission);
-        uint256 amount = _amount.sub(commission);
+        // uint256 commission = interest.mul(globalConfig.deFinerRate()).div(100);
+        // deFinerFund[_token] = deFinerFund[_token].add(commission);
+        // uint256 amount = _amount.sub(commission);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
@@ -429,9 +432,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      */
      function recycleCommunityFund(address _token) public {
          require(msg.sender == globalConfig.deFinerCommunityFund(), "Unauthorized call");
-         uint256 amount = deFinerFund[_token];
+         uint256 amount = globalConfig.accounts().deFinerFund(_token);
          if (amount > 0) {
-             deFinerFund[_token] = 0;
+             globalConfig.accounts().clearDeFinerFund(_token);
              send(globalConfig.deFinerCommunityFund(), amount, _token);
          }
      }
@@ -446,8 +449,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         if (_isETH(_token)) {
             ICETH(cToken).mint.value(_amount)();
         } else {
-            uint256 success = ICToken(cToken).mint(_amount);
-            require(success == 0, "mint failed");
+            // uint256 success = ICToken(cToken).mint(_amount);
+            require(ICToken(cToken).mint(_amount) == 0, "mint failed");
         }
     }
 
@@ -457,9 +460,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        uint256 success = ICToken(cToken).redeemUnderlying(_amount);
-        require(success == 0, "redeemUnderlying failed");
+        // address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        // uint256 success = ICToken(cToken).redeemUnderlying(_amount);
+        require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
     }
 
     /**
@@ -513,21 +516,26 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     // Needs to be removed when final version deployed
     // ============================================
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(_isETH(_token)) {
+            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
+            require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
             globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
         } else {
-            uint256 amount = IERC20(_token).balanceOf(address(this));
-            require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), amount), "transfer failed");
+            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
+            require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
+            // uint256 amount = IERC20(_token).balanceOf(address(this));
+            require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), IERC20(_token).balanceOf(address(this))), "transfer failed");
         }
     }
 
-    function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        uint256 success = ICToken(_cToken).redeem(_amount);
-        require(success == 0, "redeem failed");
-    }
+    // function emergencyRedeem(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+    //     uint256 success = ICToken(_cToken).redeem(_amount);
+    //     require(success == 0, "redeem failed");
+    // }
 
-    function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
-        uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
-        require(success == 0, "redeemUnderlying failed");
-    }
+    // function emergencyRedeemUnderlying(address _cToken, uint256 _amount) external onlyEmergencyAddress {
+    //     uint256 success = ICToken(_cToken).redeemUnderlying(_amount);
+    //     require(success == 0, "redeemUnderlying failed");
+    // }
 }
