@@ -8,7 +8,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenRegistry");
+const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
@@ -30,7 +30,7 @@ export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
-    public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
+    public tokenInfoRegistry!: t.TokenRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
@@ -135,7 +135,7 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkAggregator.new(
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
             this.tokenInfoRegistry.address
         );
 
@@ -154,9 +154,7 @@ export class TestEngine {
             this.constant.address
         );
 
-        console.log("==================1===============");
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
-        console.log("==================2===============");
         // console.log("ERC20", this.erc20Tokens);
         // console.log("cTokens", cTokens);
         const initialize_data = savingAccount.contract.methods
@@ -167,15 +165,12 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
-        console.log("==================3===============");
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-        console.log("==================4===============");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        console.log("==================5===============");
         await this.globalConfig.initialize(
             this.bank.address,
             savingAccountProxy.address,
@@ -183,7 +178,6 @@ export class TestEngine {
             this.accounts.address,
             this.constant.address
         );
-        console.log("==================6===============");
 
         return proxy;
 
