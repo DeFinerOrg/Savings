@@ -4,7 +4,7 @@
 
 **`cd Savings && git submodule init && git submodule update`**
 
-**`cd compound-prototol && npm i`**
+**`cd compound-protocol && git checkout definer/compound && npm i`**
 
 **2)** Install dependencies:
 

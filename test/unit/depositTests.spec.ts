@@ -14,6 +14,7 @@ contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -42,6 +43,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -67,8 +69,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            ETH_ADDRESS
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            ETH_ADDRESS,
+                            owner
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -85,12 +88,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            ETH_ADDRESS
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            ETH_ADDRESS,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
                     });
 
@@ -99,8 +103,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            ETH_ADDRESS
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            ETH_ADDRESS,
+                            owner
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -119,12 +124,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(userBalanceDiff).to.be.bignumber.equal(depositAmount);
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            ETH_ADDRESS
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            ETH_ADDRESS,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
                     });
                 });
@@ -138,8 +144,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20DAI.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20DAI.address,
+                            owner
                         );
 
                         const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
@@ -159,12 +166,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20DAI.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20DAI.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                         // 3.2 SavingAccount variables are changed
@@ -199,8 +207,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("1000").mul(ONE_DAI);
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20DAI.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20DAI.address,
+                            owner
                         );
 
                         const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
@@ -219,12 +228,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20DAI.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20DAI.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                         // 3.2 SavingAccount variables are changed
@@ -259,8 +269,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("100");
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20USDC.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20USDC.address,
+                            owner
                         );
 
                         const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
@@ -279,12 +290,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20USDC.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20USDC.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                         // 3.2 SavingAccount variables are changed
@@ -317,8 +329,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("1000").mul(ONE_USDC);
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20USDC.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20USDC.address,
+                            owner
                         );
 
                         const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
@@ -337,12 +350,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20USDC.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20USDC.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                         // 3.2 SavingAccount variables are changed
@@ -378,8 +392,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN(1000);
                         await erc20TUSD.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20TUSD.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20TUSD.address,
+                            owner
                         );
 
                         // 2. Deposit Token to SavingContract
@@ -394,20 +409,22 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20TUSD.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20TUSD.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
                     it("G4: when 1000 whole TUSD tokens are deposited", async () => {
                         const ONE_TUSD = new BN(10).pow(new BN(18));
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20TUSD.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20TUSD.address,
+                            owner
                         );
 
                         // 1. Approve 1000 tokens
@@ -426,12 +443,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20TUSD.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20TUSD.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
@@ -440,8 +458,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN(1000);
                         await erc20MKR.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20MKR.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20MKR.address,
+                            owner
                         );
 
                         // 2. Deposit Token to SavingContract
@@ -456,12 +475,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20MKR.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20MKR.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
@@ -472,8 +492,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("1000").mul(ONE_MKR);
                         await erc20MKR.approve(savingAccount.address, numOfToken);
 
-                        const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
-                            erc20MKR.address
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20MKR.address,
+                            owner
                         );
 
                         // 2. Deposit Token to SavingContract
@@ -488,12 +509,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
-                            erc20MKR.address
+                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20MKR.address,
+                            owner
                         );
                         const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit[0]
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                            totalDefinerBalanceAfterDeposit
+                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
                 });

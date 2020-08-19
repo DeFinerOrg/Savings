@@ -1,12 +1,10 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/drafts/SignedSafeMath.sol";
 
 // This is for per user
-library TokenInfoLib {
+library AccountTokenLib {
     using SafeMath for uint256;
-    using SignedSafeMath for int256;
     struct TokenInfo {
         // Deposit info
         uint256 depositPrincipal;   // total deposit principal of ther user
@@ -43,6 +41,14 @@ library TokenInfoLib {
 
     function getLastBorrowBlock(TokenInfo storage self) public view returns(uint256) {
         return self.lastBorrowBlock;
+    }
+
+    function getDepositInterest(TokenInfo storage self) public view returns(uint256) {
+        return self.depositInterest;
+    }
+
+    function getBorrowInterest(TokenInfo storage self) public view returns(uint256) {
+        return self.borrowInterest;
     }
 
     function borrow(TokenInfo storage self, uint256 amount, uint256 accruedRate, uint256 _block) public {

@@ -19,6 +19,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -70,6 +71,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -1115,9 +1117,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDT, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1186,9 +1188,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1263,9 +1265,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1340,9 +1342,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1413,9 +1415,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1486,9 +1488,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1569,9 +1571,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1654,9 +1656,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidateBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
@@ -1728,9 +1730,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const rateChangeBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const rateChangeBefore = await accountsContract.isAccountLiquidatable(user1);
                     testEngine.globalConfig.updateLiquidationThreshold(90);
-                    const rateChangeAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const rateChangeAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
                     await expectRevert(
@@ -1805,13 +1807,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(80))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const rateChangeBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const rateChangeBefore = await accountsContract.isAccountLiquidatable(user1);
                     testEngine.globalConfig.updateLiquidationThreshold(70);
-                    const rateChangeAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const rateChangeAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;
                     await savingAccount.liquidate(user1, addressUSDT, { from: user2 });
-                    const liquidateAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
                     expect(liquidateAfter).to.be.false;
                 });
             });
@@ -1880,10 +1882,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
-                    const liquidatableAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfter = await accountsContract.isAccountLiquidatable(user1);
 
                     // verify 1.
                     expect(liquidatableBefore).to.be.true;
@@ -1950,10 +1952,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
-                    const liquidatableAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfter = await accountsContract.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.false;
@@ -2015,10 +2017,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
-                    const liquidatableAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfter = await accountsContract.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.true;
@@ -2093,10 +2095,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBefore = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableBefore = await accountsContract.isAccountLiquidatable(user1);
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
 
-                    const liquidatableAfter = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfter = await accountsContract.isAccountLiquidatable(user1);
                     // verify 1.
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.false;
@@ -2165,11 +2167,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableBeforeFirst = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable(
+                        user1
+                    );
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
@@ -2180,7 +2184,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         from: user2
                     });
                     await savingAccount.liquidate(user1, addressDAI, { from: user2 });
-                    const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableAfterSecond = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     // verify 1.
@@ -2247,11 +2251,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableBeforeFirst = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
-                    const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable(
+                        user1
+                    );
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
@@ -2262,7 +2268,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         from: user2
                     });
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
-                    const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableAfterSecond = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     // verify 1.
@@ -2330,11 +2336,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(70))
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBeforeFirst = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableBeforeFirst = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidatableAfterFirst = await savingAccount.isAccountLiquidatable.call(user1);
+                    const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable(
+                        user1
+                    );
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
@@ -2345,7 +2353,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         from: user2
                     });
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
-                    const liquidatableAfterSecond = await savingAccount.isAccountLiquidatable.call(
+                    const liquidatableAfterSecond = await accountsContract.isAccountLiquidatable(
                         user1
                     );
                     // verify 1.
