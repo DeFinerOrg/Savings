@@ -20,12 +20,6 @@ contract("GlobalConfig", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let globalConfig: t.GlobalConfigInstance;
-    let COMPTokenAddress: string;
-
-    const owner = accounts[0];
-    const user1 = accounts[1];
-    const user2 = accounts[2];
-    const dummy = accounts[9];
 
     before(async () => {
         // Things to initialize before all test
@@ -36,7 +30,6 @@ contract("GlobalConfig", async (accounts) => {
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
-        COMPTokenAddress = await testEngine.getCOMPTokenAddress();
     });
 
     context("constructor", async () => {
@@ -87,20 +80,6 @@ contract("GlobalConfig", async (accounts) => {
                 await expectRevert(
                     globalConfig.updateLiquidationDiscountRatio(new BN(0)),
                     "Invalid liquidation discount ratio."
-                );
-            });
-
-            it("When executing updateDeFinerCommunityFund, the input parameter is zero.", async () => {
-                await expectRevert(
-                    globalConfig.updateDeFinerCommunityFund(addressZero),
-                    "deFinerCommunityFund is zero"
-                );
-            });
-
-            it("When executing updateCompoundAddress, the input parameter is zero.", async () => {
-                await expectRevert(
-                    globalConfig.updateCompoundAddress(addressZero),
-                    "compoundAddress is zero"
                 );
             });
         });
@@ -154,23 +133,6 @@ contract("GlobalConfig", async (accounts) => {
                 const afterLiquidationDiscountRatio = await globalConfig.midReserveRatio();
                 expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(15));
                 expect(afterLiquidationDiscountRatio).to.be.bignumber.equal(new BN(20));
-            });
-
-            it("executing updateDeFinerCommunityFund", async () => {
-                const beforeDeFinerCommunityFund = await globalConfig.deFinerCommunityFund();
-                await globalConfig.updateDeFinerCommunityFund(owner);
-                const afterDeFinerCommunityFund = await globalConfig.deFinerCommunityFund();
-                expect(beforeDeFinerCommunityFund).to.equal(addressZero);
-                expect(afterDeFinerCommunityFund).to.equal(owner);
-            });
-
-            it("executing updateCompoundAddress", async () => {
-                const beforeCompoundAddress = await globalConfig.compoundAddress();
-                console.log(COMPTokenAddress);
-                await globalConfig.updateCompoundAddress(COMPTokenAddress);
-                const afterCompoundAddress = await globalConfig.compoundAddress();
-                expect(beforeCompoundAddress).to.equal(addressZero);
-                expect(afterCompoundAddress).to.equal(COMPTokenAddress);
             });
         });
     });
