@@ -22,10 +22,10 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const mnemonic = fs
+/* const mnemonic = fs
     .readFileSync(".secret")
     .toString()
-    .trim();
+    .trim(); */
 
 module.exports = {
     // this is required by truffle to find any ts test files
@@ -100,7 +100,7 @@ module.exports = {
             from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
-            gasPrice: 15000000000,
+            gasPrice: 15000000000
         }
     },
 
