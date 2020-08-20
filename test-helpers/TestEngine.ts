@@ -146,14 +146,14 @@ export class TestEngine {
         const savingAccountProxy = await SavingAccountProxy.new();
 
         // Global Config initialize
-        await this.globalConfig.initialize(
-            this.bank.address,
-            savingAccountProxy.address,
-            this.tokenInfoRegistry.address,
-            this.accounts.address,
-            this.constant.address,
-            chainLinkOracle.address
-        );
+        // await this.globalConfig.initialize(
+        //     this.bank.address,
+        //     savingAccountProxy.address,
+        //     this.tokenInfoRegistry.address,
+        //     this.accounts.address,
+        //     this.constant.address,
+        //     chainLinkOracle.address
+        // );
 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         // console.log("ERC20", this.erc20Tokens);
@@ -177,7 +177,8 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             this.accounts.address,
-            this.constant.address
+            this.constant.address,
+            chainLinkOracle.address
         );
 
         return proxy;
