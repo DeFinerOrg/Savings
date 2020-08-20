@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../oracle/ChainLinkAggregator.sol";
+import "../config/GlobalConfig.sol";
 
 /**
  * @dev Token Info Registry to manage Token information
@@ -47,7 +47,7 @@ contract TokenRegistry is Ownable {
     mapping (address => TokenInfo) public tokenInfo;
     // TokenAddress array
     address[] public tokens;
-    ChainLinkAggregator public chainLink;
+    GlobalConfig public globalConfig;
 
     /**
      */
@@ -59,8 +59,8 @@ contract TokenRegistry is Ownable {
     /**
      *  initializes the symbols structure
      */
-    function initialize(ChainLinkAggregator _chainLink) public onlyOwner{
-        chainLink = _chainLink;
+    function initialize(GlobalConfig _globalConfig) public onlyOwner{
+        globalConfig = _globalConfig;
     }
 
     /**
@@ -242,7 +242,7 @@ contract TokenRegistry is Ownable {
         }
     }
 
-    function getTokenDecimals(address _token) external view returns (uint8) {
+    function getTokenDecimals(address _token) public view returns (uint8) {
         return tokenInfo[_token].decimals;
     }
 
@@ -284,17 +284,22 @@ contract TokenRegistry is Ownable {
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(chainLink.getLatestAnswer(tokenAddress));
+        return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(address tokenAddress) public view returns(uint256) {
         if(_isETH(tokenAddress)) {
             return 1e18;
         }
-        return uint256(chainLink.getLatestAnswer(tokenAddress));
+        return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
     }
 
-    function _isETH(address _token) internal pure returns (bool) {
-        return ETH_ADDR == _token;
+    function _isETH(address _token) public view returns (bool) {
+        return globalConfig.constants().ETH_ADDR() == _token;
+    }
+
+    function getDivisor(address _token) public view returns (uint256) {
+        if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
+        return 10 ** uint256(getTokenDecimals(_token));
     }
 }

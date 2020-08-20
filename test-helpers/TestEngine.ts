@@ -139,7 +139,7 @@ export class TestEngine {
             this.tokenInfoRegistry.address
         );
 
-        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+        await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
@@ -151,7 +151,8 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             this.accounts.address,
-            this.constant.address
+            this.constant.address,
+            chainLinkOracle.address
         );
 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();

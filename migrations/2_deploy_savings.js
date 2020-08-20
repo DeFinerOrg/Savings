@@ -77,7 +77,7 @@ module.exports = async function(deployer, network) {
     // Configure ChainLinkAggregator
     const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
 
-    await tokenInfoRegistry.initialize(chainLinkOracle.address);
+    await tokenInfoRegistry.initialize(globalConfig.address);
 
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
@@ -88,7 +88,8 @@ module.exports = async function(deployer, network) {
         savingAccountProxy.address,
         tokenInfoRegistry.address,
         accounts.address,
-        constant.address
+        constant.address,
+        chainLinkOracle.address
     );
 
     // Deploy SavingAccount contract

@@ -31,7 +31,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     }
 
     modifier onlyValidToken(address _token) {
-        if(!_isETH(_token)) {
+        if(!globalConfig.tokenInfoRegistry()._isETH(_token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         require(globalConfig.tokenInfoRegistry().isTokenEnabled(_token), "The token is not enabled");
@@ -62,7 +62,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         globalConfig = _globalConfig;
 
         for(uint i = 0;i < _tokenAddresses.length;i++) {
-            if(_cTokenAddresses[i] != address(0x0) &&  !_isETH(_tokenAddresses[i])) {
+            if(_cTokenAddresses[i] != address(0x0) &&  !globalConfig.tokenInfoRegistry()._isETH(_tokenAddresses[i])) {
                 approveAll(_tokenAddresses[i]);
             }
         }
@@ -403,7 +403,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
             if(globalConfig.accounts().isUserHasDeposits(_targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = globalConfig.tokenInfoRegistry().priceFromIndex(i);
 
-                vars.tokenDivisor = getDivisor(vars.token);
+                vars.tokenDivisor = globalConfig.tokenInfoRegistry().getDivisor(vars.token);
 
                 if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.token) == 0) {
                     globalConfig.bank().newRateIndexCheckpoint(vars.token);
@@ -446,7 +446,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      */
     function toCompound(address _token, uint _amount) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (_isETH(_token)) {
+        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
             ICETH(cToken).mint.value(_amount)();
         } else {
             // uint256 success = ICToken(cToken).mint(_amount);
@@ -472,7 +472,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _token token address
      */
     function receive(address _from, uint256 _amount, address _token) private {
-        if (_isETH(_token)) {
+        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
@@ -488,7 +488,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _token token address
      */
     function send(address _to, uint256 _amount, address _token) private {
-        if (_isETH(_token)) {
+        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(_to, _amount);
@@ -502,14 +502,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _token token address
      * @return true if the token is Ether
      */
-    function _isETH(address _token) internal view returns (bool) {
-        return globalConfig.constants().ETH_ADDR() == _token;
-    }
+    // function _isETH(address _token) internal view returns (bool) {
+    //     return globalConfig.constants().ETH_ADDR() == _token;
+    // }
 
-    function getDivisor(address _token) internal view returns (uint256) {
-        if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
-        return 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
-    }
+    // function getDivisor(address _token) internal view returns (uint256) {
+    //     if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
+    //     return 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
+    // }
 
     // ============================================
     // EMERGENCY WITHDRAWAL FUNCTIONS
@@ -517,7 +517,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     // ============================================
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if(_isETH(_token)) {
+        if(globalConfig.tokenInfoRegistry()._isETH(_token)) {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
             globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);

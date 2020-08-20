@@ -144,7 +144,7 @@ contract Accounts is Ownable{
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = getDivisor(_token);
+        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_token);
         require(
             getBorrowETH(_accountAddr).add(
                 _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
@@ -169,7 +169,7 @@ contract Accounts is Ownable{
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = getDivisor(_token);
+        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_token);
         require(getBorrowETH(_accountAddr).mul(100) <= getDepositETH(_accountAddr)
         .sub(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -394,7 +394,7 @@ contract Accounts is Ownable{
             "The account amount must be greater than zero."
         );
 
-        uint divisor = getDivisor(_targetToken);
+        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_targetToken);
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
@@ -424,12 +424,12 @@ contract Accounts is Ownable{
         deFinerFund[_token] = 0;
     }
 
-    function _isETH(address _token) internal view returns (bool) {
-        return globalConfig.constants().ETH_ADDR() == _token;
-    }
+    // function _isETH(address _token) internal view returns (bool) {
+    //     return globalConfig.constants().ETH_ADDR() == _token;
+    // }
 
-    function getDivisor(address _token) internal view returns (uint256) {
-        if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
-        return 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
-    }
+    // function getDivisor(address _token) internal view returns (uint256) {
+    //     if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
+    //     return 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
+    // }
 }
