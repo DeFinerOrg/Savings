@@ -3,6 +3,7 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./config/GlobalConfig.sol";
+import "./lib/SavingLib.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
@@ -143,10 +144,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 //        globalConfig.bank().updateTotalLoan(_token);
 //        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
         uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Borrow());
-        fromCompound(_token, compoundAmount);
+        SavingLib.fromCompound(globalConfig, _token, compoundAmount);
 
         // Transfer the token on Ethereum
-        send(msg.sender, _amount, _token);
+        SavingLib.send(globalConfig, _amount, _token);
 
         emit Borrow(_token, msg.sender, _amount);
     }
@@ -160,7 +161,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
 
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        SavingLib.receive(globalConfig, _amount, _token);
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
@@ -181,12 +182,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 //        globalConfig.bank().updateTotalLoan(_token);
 //        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Repay());
         uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Repay());
-        toCompound(_token, compoundAmount);
+        SavingLib.toCompound(globalConfig, _token, compoundAmount);
 
         // Send the remain money back
 //        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         if(remain != 0) {
-            send(msg.sender, remain, _token);
+            SavingLib.send(globalConfig, remain, _token);
         }
 
         emit Repay(_token, msg.sender, _amount.sub(remain));
@@ -199,7 +200,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      */
     function deposit(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        SavingLib.receive(globalConfig, _amount, _token);
         deposit(msg.sender, _token, _amount);
 
         emit Deposit(_token, msg.sender, _amount);
@@ -228,7 +229,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 //        globalConfig.bank().updateTotalLoan(_token);
 //        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
         uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Deposit());
-        toCompound(_token, compoundAmount);
+        SavingLib.toCompound(globalConfig, _token, compoundAmount);
     }
 
     /**
@@ -239,7 +240,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, _amount, _token);
+        SavingLib.send(globalConfig, _amount, _token);
 
         emit Withdraw(_token, msg.sender, amount);
     }
@@ -290,7 +291,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 //        globalConfig.bank().updateTotalLoan(_token);
 //        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
         uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Withdraw());
-        fromCompound(_token, compoundAmount);
+        SavingLib.fromCompound(globalConfig, _token, compoundAmount);
 
         return amount;
     }
@@ -311,7 +312,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
         withdraw(msg.sender, _token, amount);
-        send(msg.sender, amount, _token);
+        SavingLib.send(globalConfig, amount, _token);
 
         emit WithdrawAll(_token, msg.sender, amount);
     }
@@ -435,65 +436,46 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
          uint256 amount = globalConfig.accounts().deFinerFund(_token);
          if (amount > 0) {
              globalConfig.accounts().clearDeFinerFund(_token);
-             send(globalConfig.deFinerCommunityFund(), amount, _token);
+             SavingLib.send(globalConfig, amount, _token);
          }
      }
 
-    /**
-     * Deposit token to Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function toCompound(address _token, uint _amount) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
-            ICETH(cToken).mint.value(_amount)();
-        } else {
-            // uint256 success = ICToken(cToken).mint(_amount);
-            require(ICToken(cToken).mint(_amount) == 0, "mint failed");
-        }
-    }
+    // function toCompound(address _token, uint _amount) public {
+    //     address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+    //     if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
+    //         ICETH(cToken).mint.value(_amount)();
+    //     } else {
+    //         // uint256 success = ICToken(cToken).mint(_amount);
+    //         require(ICToken(cToken).mint(_amount) == 0, "mint failed");
+    //     }
+    // }
+    
+    // function fromCompound(address _token, uint _amount) public {
+    //     // address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+    //     // uint256 success = ICToken(cToken).redeemUnderlying(_amount);
+    //     require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
+    // }
 
-    /**
-     * Withdraw token from Compound
-     * @param _token token address
-     * @param _amount amount of token
-     */
-    function fromCompound(address _token, uint _amount) public {
-        // address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        // uint256 success = ICToken(cToken).redeemUnderlying(_amount);
-        require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
-    }
+    
+    // function receive(address _from, uint256 _amount, address _token) private {
+    //     if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
+    //         require(msg.value == _amount, "The amount is not sent from address.");
+    //     } else {
+    //         //When only tokens received, msg.value must be 0
+    //         require(msg.value == 0, "msg.value must be 0 when receiving tokens");
+    //         IERC20(_token).safeTransferFrom(_from, address(this), _amount);
+    //     }
+    // }
 
-    /**
-     * Receive the amount of token from msg.sender
-     * @param _from from address
-     * @param _amount amount of token
-     * @param _token token address
-     */
-    function receive(address _from, uint256 _amount, address _token) private {
-        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
-            require(msg.value == _amount, "The amount is not sent from address.");
-        } else {
-            //When only tokens received, msg.value must be 0
-            require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-            IERC20(_token).safeTransferFrom(_from, address(this), _amount);
-        }
-    }
-
-    /**
-     * Send the amount of token to an address
-     * @param _to address of the token receiver
-     * @param _amount amount of token
-     * @param _token token address
-     */
-    function send(address _to, uint256 _amount, address _token) private {
-        if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
-            msg.sender.transfer(_amount);
-        } else {
-            IERC20(_token).safeTransfer(_to, _amount);
-        }
-    }
+    
+     
+    // function send(address _to, uint256 _amount, address _token) private {
+    //     if (globalConfig.tokenInfoRegistry()._isETH(_token)) {
+    //         msg.sender.transfer(_amount);
+    //     } else {
+    //         IERC20(_token).safeTransfer(_to, _amount);
+    //     }
+    // }
 
     function() external payable{}
 
