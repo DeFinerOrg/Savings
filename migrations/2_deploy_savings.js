@@ -43,14 +43,14 @@ module.exports = async function(deployer, network) {
     await deployer.deploy(AccountTokenLib);
     await deployer.link(AccountTokenLib, Accounts);
 
-    await deployer.deploy(SavingLib);
-    await deployer.link(SavingLib, SavingAccount);
-
     await deployer.deploy(Utils);
     await deployer.link(Utils, SavingLib);
     await deployer.link(Utils, SavingAccount);
     await deployer.link(Utils, Accounts);
     await deployer.link(Utils, TokenRegistry);
+
+    await deployer.deploy(SavingLib);
+    await deployer.link(SavingLib, SavingAccount);
 
     // Deploy Base library
     //await deployer.deploy(Base);
