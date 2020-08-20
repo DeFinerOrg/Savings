@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
+import "./lib/Utils.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -144,7 +145,7 @@ contract Accounts is Ownable{
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_token);
+        uint divisor = Utils.getDivisor(address(globalConfig), _token);
         require(
             getBorrowETH(_accountAddr).add(
                 _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)
@@ -169,7 +170,7 @@ contract Accounts is Ownable{
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_token);
+        uint divisor = Utils.getDivisor(address(globalConfig), _token);
         require(getBorrowETH(_accountAddr).mul(100) <= getDepositETH(_accountAddr)
         .sub(_amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token)).div(divisor)).mul(borrowLTV), "Insufficient collateral.");
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -394,7 +395,7 @@ contract Accounts is Ownable{
             "The account amount must be greater than zero."
         );
 
-        uint divisor = globalConfig.tokenInfoRegistry().getDivisor(_targetToken);
+        uint divisor = Utils.getDivisor(address(globalConfig), _targetToken);
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
