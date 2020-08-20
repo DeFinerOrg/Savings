@@ -163,15 +163,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                         it("Deposits WBTC, borrows TUSD and the collateral is not enough", async () => {
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
-                             * Account1: deposits 1 WBTC
+                             * Account1: deposits 0.01 WBTC
                              * Account2: deposits 100 TUSD
                              */
-                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)).div(new BN(100)));
                             await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
                             await erc20WBTC.approve(
                                 savingAccount.address,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1)).div(new BN(100)),
                                 { from: user1 }
                             );
                             await erc20TUSD.approve(
@@ -182,7 +182,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             await savingAccount.deposit(
                                 addressWBTC,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1)).div(new BN(100)),
                                 { from: user1 }
                             );
                             await savingAccount.deposit(
@@ -198,7 +198,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                              */
                             let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                             let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                            let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
+                            let borrow = new BN(90);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
                                 "Insufficient collateral."
