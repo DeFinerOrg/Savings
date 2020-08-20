@@ -4,6 +4,8 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN } = require("@openzeppelin/test-helpers");
 
 const AccountTokenLib = artifacts.require("AccountTokenLib");
+const SavingLib = artifacts.require("SavingLib");
+const Utils = artifacts.require("Utils");
 const Accounts = artifacts.require("Accounts");
 const Bank = artifacts.require("Bank");
 
@@ -40,6 +42,15 @@ module.exports = async function(deployer, network) {
     // Deploy Libs
     await deployer.deploy(AccountTokenLib);
     await deployer.link(AccountTokenLib, Accounts);
+
+    await deployer.deploy(SavingLib);
+    await deployer.link(SavingLib, SavingAccount);
+
+    await deployer.deploy(Utils);
+    await deployer.link(Utils, SavingLib);
+    await deployer.link(Utils, SavingAccount);
+    await deployer.link(Utils, Accounts);
+    await deployer.link(Utils, TokenRegistry);
 
     // Deploy Base library
     //await deployer.deploy(Base);
