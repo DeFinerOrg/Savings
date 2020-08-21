@@ -84,8 +84,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
     });
 
     beforeEach(async () => {
+        console.log("======================1===================");
         savingAccount = await testEngine.deploySavingAccount();
+        console.log("======================2===================");
         accountsContract = await testEngine.accounts;
+        console.log("======================3===================");
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;

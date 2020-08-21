@@ -75,5 +75,5 @@ jobs:
       #     command: yarn coverage-setup
 
       # - run: yarn coverage
-      - run: yarn generate # Generate typings
-      - run: yarn test # triggers truffle test
+      - run: yarn generate # Generate typings@
+      - run: yarn test test/unit/withdrawTests.spec.ts # triggers truffle test
