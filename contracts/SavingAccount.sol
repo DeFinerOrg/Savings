@@ -182,7 +182,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 //        globalConfig.bank().updateTotalCompound(_token);
 //        globalConfig.bank().updateTotalLoan(_token);
 //        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Repay());
-        uint compoundAmount = globalConfig.bank().update(_token, _amount, globalConfig.bank().Repay());
+
+        uint compoundAmount = globalConfig.bank().update(_token,  _amount.sub(remain), globalConfig.bank().Repay());
         SavingLib.toCompound(globalConfig, _token, compoundAmount);
 
         // Send the remain money back
