@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
+import "../Accounts.sol";
 //import { TokenRegistry } from "../registry/TokenRegistry.sol";
 //import { Bank } from "../Bank.sol";
 //import "../config/GlobalConfig.sol";
@@ -9,6 +10,7 @@ import { IController } from "../compound/ICompound.sol";
 // This file is only for testing purpose only
 contract SavingAccountWithController is SavingAccount {
 
+    Accounts.Account public accountVariable;
     //GlobalConfig public globalConfig;
     TokenRegistry.TokenInfo symbols;
     address comptroller;
@@ -60,19 +62,18 @@ contract SavingAccountWithController is SavingAccount {
         return globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
     }
 
-    /* function getDepositInterest(address _token) public view returns (uint256) {
-        //TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+    function getDepositInterest(address _token) public view returns (uint256) {
+        /* TokenRegistry.TokenInfo storage tokenInfo = accountVariable.tokenInfos[_token];
         uint256 lastDepositBlock = globalConfig.accounts().getLastDepositBlock(msg.sender, _token);
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
-        return tokenInfo.calculateDepositInterest(accruedRate);
-    } */
+        return tokenInfo.calculateDepositInterest(accruedRate); */
+    }
 
     function getDepositBalance(address _token, address _accountAddr) public view returns (uint256) {
         return globalConfig.accounts().getDepositBalanceCurrent(_token, _accountAddr);
     }
 
     function getBorrowPrincipal(address _token) public view returns (uint256) {
-        //globalConfig.accounts().Account storage accountVariable;
         //TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
         return globalConfig.accounts().getBorrowPrincipal(msg.sender, _token);
     }
