@@ -155,14 +155,9 @@ export class TestEngine {
         //     chainLinkOracle.address
         // );
 
-        console.log("======================1===================");
-
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         // console.log("ERC20", this.erc20Tokens);
         // console.log("cTokens", cTokens);
-
-        console.log("======================2===================");
-
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
@@ -171,21 +166,12 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
-
-            console.log("======================3===================");
-
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-
-        console.log("======================4===================");
-
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-
-        console.log("======================5===================");
-
         await this.globalConfig.initialize(
             this.bank.address,
             savingAccountProxy.address,
@@ -194,8 +180,6 @@ export class TestEngine {
             this.constant.address,
             chainLinkOracle.address
         );
-
-        console.log("======================6===================");
 
         return proxy;
 
