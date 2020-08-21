@@ -202,15 +202,17 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1[1]).to.be.bignumber.equal(
                     new BN(100)
                 );
-                const compoundBeforeFastForward = BN(
-                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+
+                const compoundBeforeFastForwardUSDC = BN(
+                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
                 );
                 const cUSDCBeforeFastForward = BN(
                     await cTokenUSDC.balanceOf(savingAccount.address)
                 );
-                // const cUSDCBeforeFastForward = BN(
-                //     await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
-                // );
+                const compoundBeforeFastForwardDAI = BN(
+                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                );
+                const cDAIBeforeFastForward = BN(await cTokenDAI.balanceOf(savingAccount.address));
 
                 // 3. Fastforward
                 await savingAccount.fastForward(100000);
@@ -228,11 +230,15 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
 
                 // Verifty that compound equals cToken underlying balance in pool's address
                 // It also verifies that (Deposit = Loan + Compound + Reservation)
-                const compoundAfterFastForward = BN(
+                const compoundAfterFastForwardUSDC = BN(
                     await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                );
+                const compoundAfterFastForwardDAI = BN(
+                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
                 );
 
                 const cUSDCAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
+                const cDAIAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
 
                 // Yichun:
                 // compoundBeforeFastForward meaning: DAI tokens in compound before fastforward
@@ -242,25 +248,36 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 // cUSDCBeforeFastForward meaning: USDC tokens in compound after fastforward
                 // should be 750 + 1 = 751 atthis point, unit: 10^-6 USDC
 
-                const compoundPrincipal = compoundBeforeFastForward.add(
+                const compoundPrincipalUSDC = compoundBeforeFastForwardUSDC.add(
                     cUSDCAfterFastForward
                         .sub(cUSDCBeforeFastForward)
                         .mul(BN(await cTokenUSDC.exchangeRateCurrent.call()))
                         .div(sixPrecision)
                 );
+                const compoundPrincipalDAI = compoundBeforeFastForwardDAI.add(
+                    cDAIAfterFastForward
+                        .sub(cDAIBeforeFastForward)
+                        .mul(BN(await cTokenDAI.exchangeRateCurrent.call()))
+                        .div(eighteenPrecision)
+                );
                 /* expect(
                     BN(tokenState[0])
                         .sub(tokenState[1])
                         .sub(tokenState[2])
-                ).to.be.bignumber.equal(compoundAfterFastForward); // 750 == 751 */
+                ).to.be.bignumber.equal(compoundAfterFastForwardUSDC); // 750 == 751 */
 
                 console.log("deposits", tokenState[0].toString());
                 console.log("loans", tokenState[1].toString());
                 console.log("compound", tokenState[2].toString());
-                console.log("compoundAfterFastForward", compoundAfterFastForward.toString());
+                console.log(
+                    "compoundAfterFastForwardUSDC",
+                    compoundAfterFastForwardUSDC.toString()
+                );
+                console.log("compoundAfterFastForwardDAI", compoundAfterFastForwardDAI.toString());
 
-
-                const totalCompoundInterest2 = BN(compoundAfterFastForward).sub(compoundPrincipal);
+                const totalCompoundInterest2 = BN(compoundAfterFastForwardUSDC).sub(
+                    compoundPrincipalUSDC
+                );
                 console.log("totalCompoundInterest", totalCompoundInterest2.toString());
 
                 // 3. Start repayment.
@@ -327,15 +344,29 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 // Yichun:
                 // compoundAfterFastForward meaning: USDC tokens in compound after fastforward unit: 10^-16
                 // compoundPrincipal: Please check at line 237
-                const totalCompoundInterest = BN(compoundAfterFastForward).sub(compoundPrincipal);
+                const totalCompoundInterestUSDC = BN(compoundAfterFastForwardUSDC).sub(
+                    compoundPrincipalUSDC
+                );
+                const totalCompoundInterestDAI = BN(compoundAfterFastForwardDAI).sub(
+                    compoundPrincipalDAI
+                );
 
-                console.log("totalCompoundInterestAfterRepay", totalCompoundInterest.toString());
+                console.log(
+                    "totalCompoundInterestAfterRepay",
+                    totalCompoundInterestUSDC.toString()
+                );
+                console.log(
+                    "totalCompoundInterestAfterRepayDAI",
+                    totalCompoundInterestDAI.toString()
+                );
 
                 // Second, verify the interest rate calculation. Need to compare these value to
                 // the rate simulator.
-                expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(6790400000)); // 6790203501.392125
-                expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
-                expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
+                expect(BN(user1DepositInterest)).to.be.bignumber.equal(new BN(6790400000)); // 6790203501.392125
+                expect(BN(user2DepositInterest)).to.be.bignumber.equal(ZERO);
+                expect(BN(user1BorrowInterest)).to.be.bignumber.equal(ZERO);
+                expect(BN(user2BorrowInterest)).to.be.bignumber.equal(ZERO);
+                expect(BN(totalCompoundInterestUSDC)).to.be.bignumber.equal(new BN(1));
 
                 // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
