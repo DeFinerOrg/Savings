@@ -146,14 +146,14 @@ export class TestEngine {
         const savingAccountProxy = await SavingAccountProxy.new();
 
         // Global Config initialize
-        // await this.globalConfig.initialize(
-        //     this.bank.address,
-        //     savingAccountProxy.address,
-        //     this.tokenInfoRegistry.address,
-        //     this.accounts.address,
-        //     this.constant.address,
-        //     chainLinkOracle.address
-        // );
+        await this.globalConfig.initialize(
+            this.bank.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            this.accounts.address,
+            this.constant.address,
+            chainLinkOracle.address
+        );
         console.log("1");
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         console.log("2");
@@ -176,15 +176,15 @@ export class TestEngine {
         console.log("4");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         console.log("5");
-        await this.globalConfig.initialize(
-            this.bank.address,
-            savingAccountProxy.address,
-            this.tokenInfoRegistry.address,
-            this.accounts.address,
-            this.constant.address,
-            chainLinkOracle.address
-        );
-        console.log("6");
+        // await this.globalConfig.initialize(
+        //     this.bank.address,
+        //     savingAccountProxy.address,
+        //     this.tokenInfoRegistry.address,
+        //     this.accounts.address,
+        //     this.constant.address,
+        //     chainLinkOracle.address
+        // );
+        // console.log("6");
 
         return proxy;
 
