@@ -119,32 +119,33 @@ export class TestEngine {
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
+        console.log("======================1===================");
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
         const cTokens: Array<string> = await this.getCompoundAddresses();
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
-
+        console.log("======================2===================");
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
-
+        console.log("======================3===================");
         this.bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
-
+        console.log("======================4===================");
         this.accounts = await Accounts.new();
         await this.accounts.initialize(this.globalConfig.address);
-
+        console.log("======================5===================");
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
-
+        console.log("======================6===================");
         const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
             this.tokenInfoRegistry.address
         );
-
+        console.log("======================7===================");
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
-
+        console.log("======================8===================");
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
-
+        console.log("======================9===================");
         // Global Config initialize
         // await this.globalConfig.initialize(
         //     this.bank.address,
@@ -171,6 +172,7 @@ export class TestEngine {
             proxyAdmin.address,
             initialize_data
         );
+        console.log("======================10===================");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         await this.globalConfig.initialize(
             this.bank.address,
@@ -180,6 +182,7 @@ export class TestEngine {
             this.constant.address,
             chainLinkOracle.address
         );
+        console.log("======================11===================");
 
         return proxy;
 
