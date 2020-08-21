@@ -167,14 +167,15 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+            console.log("3");
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-        console.log("3");
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         console.log("4");
+        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        console.log("5");
         await this.globalConfig.initialize(
             this.bank.address,
             savingAccountProxy.address,
@@ -183,7 +184,7 @@ export class TestEngine {
             this.constant.address,
             chainLinkOracle.address
         );
-        console.log("5");
+        console.log("6");
 
         return proxy;
 
