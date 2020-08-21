@@ -1412,7 +1412,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdraw(erc20DAI.address, withdraws),
-                    "Insufficient balance."
+                    "Lack of liquidity."
                 );
             });
 
@@ -1440,7 +1440,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const withdraws = new BN(20);
                 await expectRevert(
                     savingAccount.withdraw(ETH_ADDRESS, withdraws),
-                    "Insufficient balance."
+                    "Lack of liquidity."
                 );
             });
             it("when user tries to withdraw tokens which are used as collateral by the user");
