@@ -22,20 +22,18 @@ contract SavingAccountWithController is SavingAccount {
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _chainlinkAddress chainlink oracle address
-     * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      * @param _comptroller Compound controller address
      */
     function initialize(
         address[] memory _tokenAddresses,
-        address[] memory _cTokenAddresses,
-        TokenRegistry _tokenRegistry,
-        GlobalConfig _globalConfig,
+        address[] memory _cTokenAddresses, 
+        //TokenRegistry _tokenRegistry, // can remove
+        GlobalConfig _globalConfig,  // is chainlinkAddress required?
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig);
-        comptroller = _comptroller;
+        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig); // expected 3 passed 5 args
+        comptroller = _comptroller; // chainlinkAddress here?
     }
 
     /**
@@ -58,44 +56,46 @@ contract SavingAccountWithController is SavingAccount {
     }
 
     function getDepositPrincipal(address _token) public view returns (uint256) {
-        TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.depositPrincipal;
+        //TokenRegistry.TokenInfo storage tokenInfo.depositPrincipal = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);  // is this correct?
+        return globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
     }
 
-    function getDepositInterest(address _token) public view returns (uint256) {
-        TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+    /* function getDepositInterest(address _token) public view returns (uint256) {
+        //TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        uint256 lastDepositBlock = globalConfig.accounts().getLastDepositBlock(msg.sender, _token);
+        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
         return tokenInfo.calculateDepositInterest(accruedRate);
-    }
+    } */
 
     function getDepositBalance(address _token, address _accountAddr) public view returns (uint256) {
         return globalConfig.accounts().getDepositBalanceCurrent(_token, _accountAddr);
     }
 
     function getBorrowPrincipal(address _token) public view returns (uint256) {
-        TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.borrowPrincipal;
+        //globalConfig.accounts().Account storage accountVariable;
+        //TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        return globalConfig.accounts().getBorrowPrincipal(msg.sender, _token);
     }
 
-    function getBorrowInterest(address _token) public view returns (uint256) {
+    /* function getBorrowInterest(address _token) public view returns (uint256) {
         TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         return tokenInfo.calculateBorrowInterest(accruedRate);
-    }
+    } */
 
     function getBorrowBalance(address _token, address _accountAddr) public view returns (uint256) {
         return globalConfig.accounts().getBorrowBalanceCurrent(_token, _accountAddr);
     }
 
     function getBorrowETH(address _account) public view returns (uint256) {
-        return globalConfig.accounts().getBorrowETH(_account, symbols);
+        return globalConfig.accounts().getBorrowETH(_account);
     }
 
     function getDepositETH(address _account) public view returns (uint256) {
-        return globalConfig.accounts().getDepositETH(_account, symbols);
+        return globalConfig.accounts().getDepositETH(_account);
     }
 
     function getTokenPrice(address _token) public view returns (uint256) {
-        return symbols.priceFromAddress(_token);
+        return globalConfig.tokenInfoRegistry().priceFromAddress(_token);
     }
 }
