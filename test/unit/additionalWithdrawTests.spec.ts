@@ -563,7 +563,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20USDC.address, doubleOfUSDCs, { from: user1 }),
-                        "Insufficient balance."
+                        "Lack of liquidity."
                     );
                 });
                 it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async () => {
@@ -600,7 +600,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20TUSD.address, doubleOfTUSDs, { from: user1 }),
-                        "Insufficient balance."
+                        "Lack of liquidity."
                     );
                 });
             });
@@ -883,7 +883,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     ).to.be.bignumber.equal(quaterOfDAIs);
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, numOfDAIs, { from: user1 }),
-                        "Insufficient balance."
+                        "Lack of liquidity."
                     );
                 });
             });
