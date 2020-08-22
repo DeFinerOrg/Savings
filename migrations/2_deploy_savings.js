@@ -114,7 +114,9 @@ module.exports = async function(deployer, network) {
         .encodeABI();
 
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
+    console.log("111");
     await accountsProxies.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
+    console.log("222");
     await bankProxies.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
 
     console.log("GlobalConfig:", globalConfig.address);
