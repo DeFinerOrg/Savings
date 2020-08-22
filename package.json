@@ -53,7 +53,7 @@
     "truffle-typings": "^1.0.7",
     "ts-generator": "^0.0.8",
     "ts-node": "^7.0.1",
-    "typechain": "^2.0.0",
+    "typechain": "^1.0.0",
     "typechain-target-truffle": "^1.0.0",
     "typescript": "^3.1.6",
     "web3": "^1.2.8",
