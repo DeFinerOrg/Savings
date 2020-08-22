@@ -8,7 +8,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenRegistry: t.TokenInfoRegistryContract = artifacts.require("TokenRegistry");
+const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
@@ -32,11 +32,11 @@ export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
-    public tokenInfoRegistry!: t.TokenInfoRegistryInstance;
+    public tokenInfoRegistry!: t.TokenRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
     public constant!: t.ConstantInstance;
-    public bank!: t.BankInstance;
-    public accounts!: t.AccountsInstance;
+    public bank!: t.BankProxiesInstance;
+    public accounts!: t.AccountsProxiesInstance;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -129,15 +129,15 @@ export class TestEngine {
         this.constant = await Constant.new();
 
         const bank = await Bank.new();
-        await this.bank.initialize(this.globalConfig.address);
+        await bank.initialize(this.globalConfig.address);
 
         const accounts = await Accounts.new();
-        await this.accounts.initialize(this.globalConfig.address);
+        await accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkOracleInstance = await ChainLinkAggregator.new(
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
             this.tokenInfoRegistry.address
         );
 
