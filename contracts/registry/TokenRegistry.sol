@@ -86,7 +86,7 @@ contract TokenRegistry is Ownable {
         require(_token != address(0), "Token address is zero");
         require(!isTokenExist(_token), "Token already exist");
         require(_chainLinkOracle != address(0), "ChainLinkAggregator address is zero");
-        require(tokens.length <= MAX_TOKENS, "Max token limit reached");
+        require(tokens.length < MAX_TOKENS, "Max token limit reached");
 
         TokenInfo storage storageTokenInfo = tokenInfo[_token];
         storageTokenInfo.index = uint8(tokens.length);
