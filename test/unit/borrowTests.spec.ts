@@ -61,7 +61,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenInfoRegistryInstance;
-    let accountsContract: t.AccountsInstance;
+    let accountsContract: t.AccountsProxiesInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

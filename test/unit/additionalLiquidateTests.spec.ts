@@ -19,7 +19,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
-    let accountsContract: t.AccountsInstance;
+    let accountsContract: t.AccountsProxiesInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

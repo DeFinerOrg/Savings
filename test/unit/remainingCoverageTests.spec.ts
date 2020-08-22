@@ -25,7 +25,7 @@ contract("RemainingCoverage", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenInfoRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
-    let accountsContract: t.AccountsInstance;
+    let accountsContract: t.AccountsProxiesInstance;
     let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];

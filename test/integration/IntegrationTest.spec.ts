@@ -14,8 +14,8 @@ contract("Integration Tests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
-    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
-    let accountsContract: t.AccountsInstance;
+    let tokenInfoRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsProxiesInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
