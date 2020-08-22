@@ -2,6 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "./lib/SavingLib.sol";
 import "./lib/Utils.sol";
@@ -10,7 +11,7 @@ import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable, Constant {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -28,7 +29,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     event WithdrawAll(address indexed token, address from, uint256 amount);
 
     modifier onlyEmergencyAddress() {
-        require(msg.sender == globalConfig.constants().EMERGENCY_ADDR(), "User not authorized");
+        require(msg.sender == EMERGENCY_ADDR, "User not authorized");
         _;
     }
 
@@ -64,7 +65,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         globalConfig = _globalConfig;
 
         for(uint i = 0;i < _tokenAddresses.length;i++) {
-            if(_cTokenAddresses[i] != address(0x0) &&  !Utils._isETH(address(globalConfig), _tokenAddresses[i])) {
+            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
         }
