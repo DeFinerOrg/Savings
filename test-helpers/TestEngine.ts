@@ -18,8 +18,8 @@ const Accounts: t.AccountsContract = artifacts.require("Accounts");
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
-const AccountsProxy: t.AccountsProxiesContract = artifacts.require("AccountsProxy");
-const BankProxy: t.BankProxiesContract = artifacts.require("BankProxy");
+const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxy");
+const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
