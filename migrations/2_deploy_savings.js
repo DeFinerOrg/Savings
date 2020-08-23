@@ -18,8 +18,8 @@ const Constant = artifacts.require("Constant");
 // Upgradablility contracts
 const ProxyAdmin = artifacts.require("ProxyAdmin");
 const SavingAccountProxy = artifacts.require("SavingAccountProxy");
-const AccountsProxies = artifacts.require("AccountsProxies");
-const BankProxies = artifacts.require("BankProxies");
+const AccountsProxy = artifacts.require("AccountsProxy");
+const BankProxy = artifacts.require("BankProxy");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -60,7 +60,7 @@ module.exports = async function(deployer, network) {
     const globalConfig = await deployer.deploy(GlobalConfig);
     const constant = await deployer.deploy(Constant);
 
-    const accountsProxies = await deployer.deploy(AccountsProxies);
+    const accountsProxy = await deployer.deploy(AccountsProxy);
     const accounts = await deployer.deploy(Accounts);
     const accounts_initialize_data = accounts.contract.methods
         .initialize(
@@ -68,7 +68,7 @@ module.exports = async function(deployer, network) {
         )
         .encodeABI();
 
-    const bankProxies = await deployer.deploy(BankProxies);
+    const bankProxy = await deployer.deploy(BankProxy);
     const bank = await deployer.deploy(Bank);
     const bank_initialize_data = bank.contract.methods
         .initialize(
@@ -96,10 +96,10 @@ module.exports = async function(deployer, network) {
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
 
     await globalConfig.initialize(
-        bankProxies.address,
+        bankProxy.address,
         savingAccountProxy.address,
         tokenInfoRegistry.address,
-        accountsProxies.address,
+        accountsProxy.address,
         constant.address
     );
 
@@ -114,12 +114,12 @@ module.exports = async function(deployer, network) {
         .encodeABI();
 
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
-    await accountsProxies.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
-    await bankProxies.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
+    await accountsProxy.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
+    await bankProxy.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
 
     console.log("GlobalConfig:", globalConfig.address);
-    console.log("Accounts:", accountsProxies.address);
-    console.log("Bank:", bankProxies.address);
+    console.log("Accounts:", accountsProxy.address);
+    console.log("Bank:", bankProxy.address);
     console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);

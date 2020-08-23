@@ -18,8 +18,8 @@ const Accounts: t.AccountsContract = artifacts.require("Accounts");
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
-const AccountsProxies: t.AccountsProxiesContract = artifacts.require("AccountsProxies");
-const BankProxies: t.BankProxiesContract = artifacts.require("BankProxies");
+const AccountsProxy: t.AccountsProxiesContract = artifacts.require("AccountsProxy");
+const BankProxy: t.BankProxiesContract = artifacts.require("BankProxy");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -146,15 +146,15 @@ export class TestEngine {
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
-        const accountsProxies = await AccountsProxies.new();
-        const bankProxies = await BankProxies.new();
+        const accountsProxy = await AccountsProxy.new();
+        const bankProxy = await BankProxy.new();
 
         // Global Config initialize
         await this.globalConfig.initialize(
-            bankProxies.address,
+            bankProxy.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
-            accountsProxies.address,
+            accountsProxy.address,
             this.constant.address
         );
 
@@ -187,20 +187,20 @@ export class TestEngine {
             initialize_data
         );
 
-        await accountsProxies.initialize(
+        await accountsProxy.initialize(
             accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
-        await bankProxies.initialize(
+        await bankProxy.initialize(
             bank.address,
             proxyAdmin.address,
             bank_initialize_data
         );
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxies.address);
-        this.bank = Bank.at(bankProxies.address);
+        this.accounts = Accounts.at(accountsProxy.address);
+        this.bank = Bank.at(bankProxy.address);
 
         return proxy;
 
