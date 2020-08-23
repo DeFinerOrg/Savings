@@ -10,7 +10,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ChainLinkAggregator: t.ChainLinkOracleContract = artifacts.require("ChainLinkAggregator");
+const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 
 contract("SavingAccount", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -32,20 +32,5 @@ contract("SavingAccount", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
-    });
-
-    context("constructor", async () => {
-        context("should fail", async () => {
-            it("when ...<describe the context>");
-        });
-
-        context("should succeed", async () => {
-            it("deployed and state variables initialized", async () => {
-                expect(await savingAccount.EMERGENCY_ADDR()).to.equal(EMERGENCY_ADDRESS);
-                expect(await savingAccount.ETH_ADDR()).equal(ETH_ADDRESS);
-            });
-
-            it("when all parameters are valid");
-        });
     });
 });

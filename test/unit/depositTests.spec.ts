@@ -14,7 +14,7 @@ contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
-    let accountsContract: t.AccountsProxiesInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

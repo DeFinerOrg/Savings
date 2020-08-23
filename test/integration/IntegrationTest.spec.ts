@@ -15,7 +15,7 @@ contract("Integration Tests", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
-    let accountsContract: t.AccountsProxiesInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];

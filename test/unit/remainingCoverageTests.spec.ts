@@ -11,7 +11,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ChainLinkAggregator: t.ChainLinkOracleContract = artifacts.require("ChainLinkAggregator");
+const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -23,9 +23,9 @@ contract("RemainingCoverage", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
-    let tokenInfoRegistry: t.TokenInfoRegistryInstance;
+    let tokenInfoRegistry: t.TokenRegistryInstance;
     let mockChainLinkAggregator: t.MockChainLinkAggregatorInstance;
-    let accountsContract: t.AccountsProxiesInstance;
+    let accountsContract: t.AccountsInstance;
     let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];
