@@ -344,19 +344,23 @@ contract("SavingAccount", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, USDCNumOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user2 });
+                    console.log("111");
                     await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, USDCNumOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
 
+                    console.log("222");
                     await savingAccount.borrow(addressDAI, DAINumOfToken.div(new BN(10)), {
                         from: user2
                     });
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
                     // 3. Start repayment.
+                    console.log("333");
                     await savingAccount.repay(addressDAI, DAINumOfToken.div(new BN(10)), {
                         from: user2
                     });
+                    console.log("444");
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
