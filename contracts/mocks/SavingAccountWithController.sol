@@ -102,4 +102,8 @@ contract SavingAccountWithController is SavingAccount {
     function getTokenPrice(address _token) public view returns (uint256) {
         return globalConfig.tokenInfoRegistry().priceFromAddress(_token);
     }
+
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
+        return globalConfig.bank().getTokenState(_token);
+    }
 }
