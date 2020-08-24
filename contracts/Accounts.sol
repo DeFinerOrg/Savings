@@ -2,11 +2,12 @@ pragma solidity 0.5.14;
 
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
+import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Accounts is Ownable{
+contract Accounts is Constant, Ownable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
@@ -191,7 +192,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = globalConfig.constants().INT_UNIT();
+        uint UNIT = INT_UNIT;
         uint accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
@@ -227,7 +228,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = globalConfig.constants().INT_UNIT();
+        uint UNIT = INT_UNIT;
         uint accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
@@ -262,8 +263,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = globalConfig.constants().INT_UNIT();
-                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 depositETH = depositETH.add(getDepositBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
@@ -282,8 +283,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = globalConfig.constants().INT_UNIT();
-                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
                     divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 borrowETH = borrowETH.add(getBorrowBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
