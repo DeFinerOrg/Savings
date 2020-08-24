@@ -69,8 +69,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
                 approveAll(_tokenAddresses[i]);
             }
         }
-
-        
     }
 
     /**
@@ -407,6 +405,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         }
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        globalConfig.bank().newRateIndexCheckpoint(_targetToken);
         globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
         globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
 
