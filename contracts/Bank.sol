@@ -70,7 +70,7 @@ contract Bank is Ownable, Initializable{
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public onlySavingAccount{
+    function updateTotalCompound(address _token) public{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -81,7 +81,7 @@ contract Bank is Ownable, Initializable{
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(address _token) public onlySavingAccount{
+    function updateTotalLoan(address _token) public{
         uint balance = totalLoans[_token];
         uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
         if(
@@ -103,7 +103,7 @@ contract Bank is Ownable, Initializable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == Deposit || _action == Repay) {
@@ -156,8 +156,7 @@ contract Bank is Ownable, Initializable{
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                     //fromCompound(_token, totalCompound[cToken]-totalInCompound);
-                    // compoundAmount = totalCompound[cToken].sub(totalInCompound);
-                    compoundAmount = totalCompound[cToken];
+                    compoundAmount = totalCompound[cToken].sub(totalInCompound);
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -271,7 +270,7 @@ contract Bank is Ownable, Initializable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public onlySavingAccount{
+    function newRateIndexCheckpoint(address _token) public{
 
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
 
