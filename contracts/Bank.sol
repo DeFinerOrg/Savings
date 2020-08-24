@@ -154,9 +154,10 @@ contract Bank is Ownable, Initializable{
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
+                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                     //fromCompound(_token, totalCompound[cToken]-totalInCompound);
-                    compoundAmount = totalCompound[cToken]-totalInCompound;
+                    // compoundAmount = totalCompound[cToken].sub(totalInCompound);
+                    compoundAmount = totalCompound[cToken];
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
