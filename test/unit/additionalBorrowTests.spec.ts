@@ -559,12 +559,25 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user2 }
                     );
 
+                    console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
+                    console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
                         from: user1
                     });
+                    console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
+                    console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
                         from: user2
                     });
+                    console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
+                    console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
+                    console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
+
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole TUSD twice
