@@ -31,11 +31,11 @@ contract SavingAccountWithController is SavingAccount {
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses, 
         //TokenRegistry _tokenRegistry, // can remove
-        GlobalConfig _globalConfig,  // is chainlinkAddress required?
+        GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
         super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig); // expected 3 passed 5 args
-        comptroller = _comptroller; // chainlinkAddress here?
+        comptroller = _comptroller;
     }
 
     /**
@@ -67,6 +67,8 @@ contract SavingAccountWithController is SavingAccount {
         uint256 lastDepositBlock = globalConfig.accounts().getLastDepositBlock(msg.sender, _token);
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
         return tokenInfo.calculateDepositInterest(accruedRate); */
+        return globalConfig.accounts().getDepositInterest(msg.sender, _token);
+
     }
 
     function getDepositBalance(address _token, address _accountAddr) public view returns (uint256) {
@@ -78,11 +80,12 @@ contract SavingAccountWithController is SavingAccount {
         return globalConfig.accounts().getBorrowPrincipal(msg.sender, _token);
     }
 
-    /* function getBorrowInterest(address _token) public view returns (uint256) {
-        TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+    function getBorrowInterest(address _token) public view returns (uint256) {
+        /* TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateBorrowInterest(accruedRate);
-    } */
+        return tokenInfo.calculateBorrowInterest(accruedRate); */
+        return globalConfig.accounts().getBorrowInterest(msg.sender, _token);
+    }
 
     function getBorrowBalance(address _token, address _accountAddr) public view returns (uint256) {
         return globalConfig.accounts().getBorrowBalanceCurrent(_token, _accountAddr);
