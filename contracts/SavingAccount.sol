@@ -418,19 +418,17 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
 
-                if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.token) == 0) {
-                    globalConfig.bank().newRateIndexCheckpoint(vars.token);
-                    vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
-                    if(vars.coinValue > vars.liquidationDebtValue) {
-                        vars.coinValue = vars.liquidationDebtValue;
-                        vars.liquidationDebtValue = 0;
-                    } else {
-                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
-                    }
-                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
-                    globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
+                globalConfig.bank().newRateIndexCheckpoint(vars.token);
+                vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                if(vars.coinValue > vars.liquidationDebtValue) {
+                    vars.coinValue = vars.liquidationDebtValue;
+                    vars.liquidationDebtValue = 0;
+                } else {
+                    vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                 }
+                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
+                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
             }
 
             if(vars.liquidationDebtValue == 0) {
