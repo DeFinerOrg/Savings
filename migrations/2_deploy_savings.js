@@ -18,6 +18,8 @@ const Constant = artifacts.require("Constant");
 // Upgradablility contracts
 const ProxyAdmin = artifacts.require("ProxyAdmin");
 const SavingAccountProxy = artifacts.require("SavingAccountProxy");
+const AccountsProxy = artifacts.require("AccountsProxy");
+const BankProxy = artifacts.require("BankProxy");
 
 // Mocks
 const MockERC20 = artifacts.require("MockERC20");
@@ -58,11 +60,21 @@ module.exports = async function(deployer, network) {
     const globalConfig = await deployer.deploy(GlobalConfig);
     const constant = await deployer.deploy(Constant);
 
+    const accountsProxy = await deployer.deploy(AccountsProxy);
     const accounts = await deployer.deploy(Accounts);
-    await accounts.initialize(globalConfig.address);
+    const accounts_initialize_data = accounts.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
 
+    const bankProxy = await deployer.deploy(BankProxy);
     const bank = await deployer.deploy(Bank);
-    await bank.initialize(globalConfig.address);
+    const bank_initialize_data = bank.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
@@ -84,10 +96,10 @@ module.exports = async function(deployer, network) {
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
 
     await globalConfig.initialize(
-        bank.address,
+        bankProxy.address,
         savingAccountProxy.address,
         tokenInfoRegistry.address,
-        accounts.address,
+        accountsProxy.address,
         constant.address
     );
 
@@ -101,6 +113,8 @@ module.exports = async function(deployer, network) {
         )
         .encodeABI();
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
+    await accountsProxy.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
+    await bankProxy.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
 
     console.log("GlobalConfig:", globalConfig.address);
     console.log("Accounts:", accounts.address);
