@@ -240,14 +240,6 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 const cUSDCAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
                 const cDAIAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
 
-                // Yichun:
-                // compoundBeforeFastForward meaning: DAI tokens in compound before fastforward
-                // should be 8.5x10^17 at this point, unit: 10^-18 DAI
-                // cUSDCBeforeFastForward meaning: cUSDC tokens in saving account
-                // unit: 10^-8 cUSDC
-                // cUSDCBeforeFastForward meaning: USDC tokens in compound after fastforward
-                // should be 750 + 1 = 751 atthis point, unit: 10^-6 USDC
-
                 const compoundPrincipalUSDC = compoundBeforeFastForwardUSDC.add(
                     cUSDCAfterFastForward
                         .sub(cUSDCBeforeFastForward)
@@ -334,16 +326,9 @@ contract("SavingAccount.borrowRepayTests", async (accounts) => {
                 // Verify the interest
                 // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
 
-                // Yichun:
-                // user1DepositPrincipal number: 2000000000000000000 unit: 10^-18 DAI
-                // user2DepositPrincipal number: 1000 unit: 10^-6 USDC
-                // Adding them up will be meaningless
                 const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                 const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
 
-                // Yichun:
-                // compoundAfterFastForward meaning: USDC tokens in compound after fastforward unit: 10^-16
-                // compoundPrincipal: Please check at line 237
                 const totalCompoundInterestUSDC = BN(compoundAfterFastForwardUSDC).sub(
                     compoundPrincipalUSDC
                 );
