@@ -182,8 +182,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-//        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
-        uint compoundAmount = 1;
+       uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
+        // uint compoundAmount = 1;
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
