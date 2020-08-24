@@ -13,7 +13,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
+contract("SavingAccount.multiTokenBorrowRepay", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -150,39 +150,79 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("RateTest5: Deposit DAI then borrow DAI, repay the loan amount and then winthdraw all", async () => {
+                it("RateTest6: Multiple transactions", async () => {
+                    //user 1 deposits DAI and borrows ETH
+                    //fastforward
+                    //User2 deposits USDC to borrow DAI
+                    //fastforward
+                    //User 1 repays
+                    //fastforward
+                    //User3 deposits ETH to borrow DAI
+                    //fastforward
+                    //User 2 & 3 repays
+
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
+                    await erc20USDC.transfer(user2, ONE_USDC.mul(new BN(6)));
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC.mul(new BN(6)), {
+                        from: user2
+                    });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+                    await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
+                        from: user2,
+                        value: eighteenPrecision
+                    });
 
                     // 2. Start borrowing.
-                    const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-                    await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
-                    const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                    expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                        HALF_DAI
-                    );
-                    const compoundBeforeFastForward = BN(
+                    const user1BalanceBeforeETH = new BN(await web3.eth.getBalance(user1));
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(1000), { from: user1 });
+                    const user1BalanceAfterETH = new BN(await web3.eth.getBalance(user1));
+                    /* expect(
+                        new BN(user1BalanceAfterETH).sub(new BN(user1BalanceBeforeETH))
+                    ).to.be.bignumber.equal(new BN(100)); */
+                    /* const compoundBeforeFastForward = BN(
                         await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
                     const cDAIBeforeFastForward = BN(
                         await cTokenDAI.balanceOf(savingAccount.address)
-                    );
+                    ); */
 
-                    // 3. Fastforward
+                    // *************Fastforward****************
                     await savingAccount.fastForward(100000);
                     // Deposit an extra token to create a new rate check point
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, new BN(100), {
+                        from: user1,
+                        value: new BN(100)
+                    });
+
+                    // User 2 deposits 3 USDC
+                    await savingAccount.deposit(addressUSDC, ONE_USDC.mul(new BN(3)), {
+                        from: user2
+                    });
+
+                    // User 2 borrows 1000 small DAI
+                    await savingAccount.borrow(addressDAI, new BN(1000), { from: user2 });
+
+                    // *************Fastforward****************
+                    await savingAccount.fastForward(100000);
+                    await savingAccount.deposit(addressDAI, new BN(10), {
+                        from: user2
+                    });
+
+                    // User 1 repays his ETH
+                    await savingAccount.repay(ETH_ADDRESS, new BN(1000), {
+                        from: user1,
+                        value: new BN(1000)
+                    });
 
                     // Repay DAI and withdraw all
-                    await savingAccount.repay(addressDAI, HALF_DAI, { from: user2 });
-                    await savingAccount.withdrawAll(erc20DAI.address, { from: user2 }); // 1000001503650800000
+                    //await savingAccount.repay(addressDAI, HALF_DAI, { from: user2 });
 
-                    let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user2);
+                    /* let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user2);
                     console.log(
                         "userBalanceAfterWithdrawDAI",
                         userBalanceAfterWithdrawDAI.toString()
@@ -267,7 +307,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     // the rate simulator.
                     expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650800000)); // 3007210014379.6274/2 || 1503559214300
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199)); */
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
                 });
             });
