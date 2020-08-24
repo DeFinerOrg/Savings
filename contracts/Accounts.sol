@@ -34,7 +34,7 @@ contract Accounts is Ownable{
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public onlyOwner {
+    ) public {
         globalConfig = _globalConfig;
     }
 
