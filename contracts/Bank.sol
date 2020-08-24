@@ -146,7 +146,7 @@ contract Bank is Ownable, Initializable{
             (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(globalConfig.minReserveRatio()).div(100))) {
 
                 // uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
-                uint totalAvailable = totalReserve[_token].add(totalCompound[cToken])
+                uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]);
                 if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
                     //fromCompound(_token, totalCompound[cToken]);
