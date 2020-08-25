@@ -592,6 +592,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
                     console.log(accTUSDAfterFirst.toString());
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
+                    console.log("112344");
                     let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
                     console.log(accTUSDAfterSecond.toString());
                     // Verify 1.

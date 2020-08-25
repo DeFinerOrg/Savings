@@ -145,8 +145,7 @@ contract Bank is Ownable, Initializable{
             if(cToken != address(0) &&
             (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(globalConfig.minReserveRatio()).div(100))) {
 
-                // uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
-                uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]);
+                uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
                     //fromCompound(_token, totalCompound[cToken]);
@@ -155,15 +154,15 @@ contract Bank is Ownable, Initializable{
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
-                    // uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
+                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                     //fromCompound(_token, totalCompound[cToken]-totalInCompound);
-                    // compoundAmount = totalCompound[cToken].sub(totalInCompound);
-                    // totalCompound[cToken] = totalInCompound;
-                    // totalReserve[_token] = totalAvailable.sub(totalInCompound);
+                    compoundAmount = totalCompound[cToken].sub(totalInCompound);
+                    totalCompound[cToken] = totalInCompound;
+                    totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
             }
             else {
-                totalReserve[_token] = totalReserve[_token].sub(_amount);
+                // totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
         return compoundAmount;
