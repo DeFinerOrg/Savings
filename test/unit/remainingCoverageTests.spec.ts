@@ -76,7 +76,14 @@ contract("RemainingCoverage", async (accounts) => {
                 // Approve all ERC20 tokens
                 for (let i = 0; i < ERC20TokenAddresses.length - 1; i++) {
                     //console.log("tokens", ERC20TokenAddresses[i]);
-                    await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    if (i == 3 || i == 4) {
+                        await expectRevert(
+                            savingAccount.approveAll(ERC20TokenAddresses[i]),
+                            "cToken address is zero"
+                        );
+                    } else {
+                        await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    }
                     // Verification for approve?
                 }
             });

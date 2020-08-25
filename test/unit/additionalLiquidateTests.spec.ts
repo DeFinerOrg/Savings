@@ -1738,7 +1738,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await expectRevert(
                         savingAccount.liquidate(user1, addressUSDT, { from: user2 }),
                         // FIXME: warning info in saving account shouldn't be hardcoded.
-                        "The account is not liquidable."
+                        "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
                     );
                 });
             });

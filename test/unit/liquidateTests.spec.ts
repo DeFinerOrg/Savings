@@ -140,7 +140,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user2, addressDAI),
-                        "The account is not liquidable."
+                        "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
                     );
                 });
 
@@ -338,7 +338,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user1, addressDAI),
-                        "The account is not liquidable."
+                        "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
                     );
                 });
 
