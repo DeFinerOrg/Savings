@@ -30,12 +30,12 @@ contract Bank is Ownable, Initializable{
         _;
     }
 
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
+    // enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
 
-    ActionChoices public Deposit = ActionChoices.Deposit;
-    ActionChoices public Withdraw = ActionChoices.Withdraw;
-    ActionChoices public Borrow = ActionChoices.Borrow;
-    ActionChoices public Repay = ActionChoices.Repay;
+    // ActionChoices public Deposit = ActionChoices.Deposit;
+    // ActionChoices public Withdraw = ActionChoices.Withdraw;
+    // ActionChoices public Borrow = ActionChoices.Borrow;
+    // ActionChoices public Repay = ActionChoices.Repay;
 
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
@@ -103,12 +103,12 @@ contract Bank is Ownable, Initializable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == Deposit || _action == Repay) {
+        if (_action == uint8(0) || _action == uint8(3)) {
             // Total amount of token after deposit or repay
-            if (_action == Deposit)
+            if (_action == uint8(0))
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -134,7 +134,7 @@ contract Bank is Ownable, Initializable{
             );
 
             // Total amount of token after withdraw or borrow
-            if (_action == Withdraw)
+            if (_action == uint8(1))
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);

@@ -621,9 +621,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let borrow = sixPrecision.mul(new BN(10));
                     let accUSDCBeforeFirst = await erc20USDC.balanceOf(user1);
 
+                    console.log("1");
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
+                    console.log("2");
                     let accUSDCAfterFirst = await erc20USDC.balanceOf(user1);
+                    console.log("3");
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
+                    console.log("4");
                     let accUSDCAfterSecond = await erc20USDC.balanceOf(user1);
                     // Verify 1.
                     expect(

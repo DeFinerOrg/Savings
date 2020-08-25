@@ -105,6 +105,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         emit Transfer(_token, msg.sender, _to, _amount);
     }
 
+    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
+
     /**
      * Borrow the amount of token from the saving pool.
      * @param _token token address
@@ -145,7 +147,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, uint8(ActionChoices.Borrow)); // Last parameter false means withdraw token
+        // uint compoundAmount = 10**19;
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
@@ -182,7 +185,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, uint8(ActionChoices.Repay));
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
@@ -228,7 +231,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, uint8(ActionChoices.Deposit)); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
 
@@ -291,7 +294,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, uint8(ActionChoices.Withdraw)); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         return amount;
