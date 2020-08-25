@@ -18,6 +18,8 @@ const Accounts: t.AccountsContract = artifacts.require("Accounts");
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxy");
+const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -126,11 +128,11 @@ export class TestEngine {
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
 
-        this.bank = await Bank.new();
-        await this.bank.initialize(this.globalConfig.address);
+        const bank = await Bank.new();
+        await bank.initialize(this.globalConfig.address);
 
-        this.accounts = await Accounts.new();
-        await this.accounts.initialize(this.globalConfig.address);
+        const accounts = await Accounts.new();
+        await accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
@@ -144,16 +146,19 @@ export class TestEngine {
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         const savingAccountProxy = await SavingAccountProxy.new();
+        const accountsProxy = await AccountsProxy.new();
+        const bankProxy = await BankProxy.new();
 
         // Global Config initialize
         await this.globalConfig.initialize(
-            this.bank.address,
+            bankProxy.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
-            this.accounts.address,
+            accountsProxy.address,
             this.constant.address,
             chainLinkOracle.address
         );
+ 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         // console.log("ERC20", this.erc20Tokens);
         // console.log("cTokens", cTokens);
@@ -165,35 +170,41 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+
+        const accounts_initialize_data = bank.contract.methods
+            .initialize(
+                this.globalConfig.address
+            )
+            .encodeABI();
+
+        const bank_initialize_data = accounts.contract.methods
+            .initialize(
+                this.globalConfig.address
+            )
+            .encodeABI();
+
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        // await this.globalConfig.initialize(
-        //     this.bank.address,
-        //     savingAccountProxy.address,
-        //     this.tokenInfoRegistry.address,
-        //     this.accounts.address,
-        //     this.constant.address,
-        //     chainLinkOracle.address
-        // );
 
-        return proxy;
-
-        /*
-        const savingAccount = await SavingAccountWithController.new(
-            compoundTokens.Contracts.Comptroller
+        await accountsProxy.initialize(
+            accounts.address,
+            proxyAdmin.address,
+            accounts_initialize_data
         );
 
-        await savingAccount.initialize(this.erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            this.tokenInfoRegistry.address,
-            this.globalConfig.address);
+        await bankProxy.initialize(
+            bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
+        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = Accounts.at(accountsProxy.address);
+        this.bank = Bank.at(bankProxy.address);
 
-        return savingAccount;*/
+        return proxy;
     }
 
     private async initializeTokenInfoRegistry(

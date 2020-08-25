@@ -199,7 +199,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
                     savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
-                    "Unauthorized call"
+                    "caller is not the owner"
                 );
             });
             // definerCommunityFund?

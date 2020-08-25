@@ -565,6 +565,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
                         from: user2
                     });
+
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole TUSD twice
