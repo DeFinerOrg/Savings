@@ -145,7 +145,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, uint8(2)); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
@@ -182,7 +182,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, uint8(3));
         toCompound(_token, compoundAmount);
 
         // Send the remain money back
@@ -228,7 +228,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, uint8(0)); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
 
@@ -291,7 +291,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
         globalConfig.bank().updateTotalLoan(_token);
-        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Withdraw()); // Last parameter false means withdraw token
+        uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, uint8(1)); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
         return amount;
