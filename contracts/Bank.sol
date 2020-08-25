@@ -30,13 +30,6 @@ contract Bank is Ownable, Initializable{
         _;
     }
 
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
-
-    ActionChoices public Deposit = ActionChoices.Deposit;
-    ActionChoices public Withdraw = ActionChoices.Withdraw;
-    ActionChoices public Borrow = ActionChoices.Borrow;
-    ActionChoices public Repay = ActionChoices.Repay;
-
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
         uint capitalRatio;          // the ratio of the capital in third party to the total asset

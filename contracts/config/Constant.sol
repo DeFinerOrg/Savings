@@ -8,11 +8,4 @@ contract Constant {
     uint256 public constant ACCURACY = 10 ** 18;
     uint256 public constant BLOCKS_PER_YEAR = 2102400;
 
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
-
-    ActionChoices public Deposit = ActionChoices.Deposit;
-    ActionChoices public Withdraw = ActionChoices.Withdraw;
-    ActionChoices public Borrow = ActionChoices.Borrow;
-    ActionChoices public Repay = ActionChoices.Repay;
-
 }
