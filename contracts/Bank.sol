@@ -5,8 +5,9 @@ import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract Bank is Ownable{
+contract Bank is Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
@@ -51,7 +52,7 @@ contract Bank is Ownable{
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public {
+    ) public initializer {
         globalConfig = _globalConfig;
     }
 
