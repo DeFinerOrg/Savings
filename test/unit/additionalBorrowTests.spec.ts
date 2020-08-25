@@ -559,24 +559,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user2 }
                     );
 
-                    // console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
-                    // console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
                         from: user1
                     });
-                    // console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
-                    // console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
                         from: user2
                     });
-                    // console.log((await erc20DAI.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20TUSD.balanceOf(savingAccount.address)).toString());
-                    // console.log((await erc20DAI.balanceOf(addressCTokenForDAI)).toString());
-                    // console.log((await erc20TUSD.balanceOf(addressCTokenForTUSD)).toString());
 
                     /*
                      * Step 2
@@ -587,14 +575,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                      */
                     let borrow = eighteenPrecision.mul(new BN(10));
                     let accTUSDBeforeFirst = await erc20TUSD.balanceOf(user1);
-                    console.log(accTUSDBeforeFirst.toString());
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
                     let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
-                    console.log(accTUSDAfterFirst.toString());
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
-                    console.log("112344");
                     let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
-                    console.log(accTUSDAfterSecond.toString());
                     // Verify 1.
                     expect(
                         BN(accTUSDAfterFirst).sub(BN(accTUSDBeforeFirst))
