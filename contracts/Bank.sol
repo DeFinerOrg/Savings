@@ -63,7 +63,7 @@ contract Bank is Ownable, Initializable{
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public{
+    function updateTotalCompound(address _token) internal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -74,7 +74,7 @@ contract Bank is Ownable, Initializable{
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(address _token) public{
+    function updateTotalLoan(address _token) internal {
         uint balance = totalLoans[_token];
         uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
         if(
@@ -96,7 +96,7 @@ contract Bank is Ownable, Initializable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, uint8 _action) public returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, uint8 _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
         if (_action == uint8(0) || _action == uint8(3)) {
