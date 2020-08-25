@@ -161,22 +161,34 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
     function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
-
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
+
+        uint256 amount = repay(msg.sender, _token, _amount);
+
+        // Send the remain money back
+        uint256 remain =  _amount.sub(amount);
+        if(remain != 0) {
+            send(msg.sender, remain, _token);
+        }
+
+        emit Repay(_token, msg.sender, address(0), amount);
+    }
+
+    function repay(address _to, address _token, uint256 _amount) internal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
 
         // Update tokenInfo
-        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
+        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, _to);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(msg.sender, _token, amount, getBlockNumber());
+        globalConfig.accounts().repay(_to, _token, amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -185,13 +197,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
-        // Send the remain money back
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
-        if(remain != 0) {
-            send(msg.sender, remain, _token);
-        }
-
-        emit Repay(_token, msg.sender, address(0), _amount.sub(remain));
+        // Return actual amount repaid
+        return amount;
     }
 
     /**
@@ -406,8 +413,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         globalConfig.bank().newRateIndexCheckpoint(_targetToken);
-        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
-        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
+        withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
+        repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount);
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
