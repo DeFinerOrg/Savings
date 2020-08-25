@@ -177,7 +177,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.fastForward(100000);
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+                    // await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
