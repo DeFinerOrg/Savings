@@ -159,7 +159,7 @@ contract Bank is Ownable, Initializable{
                     compoundAmount = totalCompound[cToken].sub(totalInCompound);
                     totalCompound[cToken] = totalInCompound;
                     // totalReserve[_token] = totalAvailable.sub(totalInCompound);
-                    totalReserve[_token] = totalAvailable
+                    totalReserve[_token] = totalAvailable;
                 }
             }
             else {
