@@ -363,7 +363,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         vars.msgTotalCollateral = globalConfig.accounts().getDepositETH(msg.sender);
 
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
-
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
@@ -383,9 +382,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.mul(100).sub(
             vars.totalCollateral.mul(vars.borrowLTV)).div(liquidationDiscountRatio - vars.borrowLTV);
-
         // Liquidators need to pay
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
+        uint targetAccTargetTokenBalance = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
+        uint borrowedTargetTokenValue = targetAccTargetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
         vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
 
         if(
@@ -398,8 +398,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
-
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        if(borrowedTargetTokenValue < vars.liquidationDebtValue) {
+            vars.liquidationDebtValue = borrowedTargetTokenValue;
+        }
+        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).mul(liquidationDiscountRatio).div(vars.targetTokenPrice).div(100);
         globalConfig.bank().newRateIndexCheckpoint(_targetToken);
         withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
         repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount);
