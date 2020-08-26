@@ -67,7 +67,7 @@ module.exports = {
                     mnemonic,
                     "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
                 ),
-            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
             gasPrice: 100000000000, //100Gwei
@@ -91,10 +91,10 @@ module.exports = {
                     mnemonic,
                     "https://kovan.infura.io/v3/77192ec7a3f248c298016696749c1c59"
                 ),
-            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
-            gasPrice: 150000000000, //150Gwei
+            gasPrice: 50000000000, //150Gwei
         }
     },
 
