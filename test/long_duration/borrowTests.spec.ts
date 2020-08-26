@@ -18,7 +18,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
-
+    let bank: t.BankInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -84,6 +84,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+        bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -172,12 +173,31 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const cDAIBeforeFastForward = BN(
                         await cTokenDAI.balanceOf(savingAccount.address)
                     );
+                    const cDAIBorrowRateBefore = BN(
+                        await cTokenDAI.borrowRatePerBlock()
+                    );
+
+                    const cDAISupplyRateBefore = BN(
+                        await cTokenDAI.borrowRatePerBlock()
+                    );
+
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+
+                    await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
+
                     // await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+                    const cDAIBorrowRateAfter = BN(
+                        await cTokenDAI.borrowRatePerBlock()
+                    );
+
+                    const cDAISupplyRateAfter = BN(
+                        await cTokenDAI.borrowRatePerBlock()
+                    );
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
@@ -243,7 +263,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // expect(user2BorrowPrincipal).to.be.bignumber.equal(HALF_DAI);
                     console.log(user1BorrowInterest.toString());
                     console.log(user2BorrowInterest.toString());
-
+                    console.log(cDAIBorrowRateBefore.toString());
+                    console.log(cDAISupplyRateBefore.toString());
+                    console.log(cDAIBorrowRateAfter.toString());
+                    console.log(cDAISupplyRateAfter.toString());
+                    // console.log(definerBorrowRateBefore.toString());
+                    // console.log(definerSupplyRateBefore.toString());
+                    // console.log(definerBorrowRateAfter.toString());
+                    // console.log(definerSupplyRateAfter.toString());
                     // Verify the interest
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
@@ -256,7 +283,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // the rate simulator.
                     expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(3007301600000)); // 3007210014379.6274
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(2997716150000)); // 2997625026684.72
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493200));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
                 });
 
