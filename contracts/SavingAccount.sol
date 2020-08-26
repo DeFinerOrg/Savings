@@ -377,6 +377,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
             "The account amount must be greater than zero."
         );
 
+        require(globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr) > 0,
+            "The borrower doesn't own any debt token specified by the liquidator.");
+
         uint divisor = _targetToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_targetToken));
 
         // Amount of assets that need to be liquidated
