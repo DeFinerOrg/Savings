@@ -260,9 +260,8 @@ contract("Integration Tests", async (accounts) => {
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
-                    const expectedTokensAtSavingAccountContract = numOfToken
-                        .mul(new BN(15))
-                        .div(new BN(100));
+                    const expectedTokensAtSavingAccountContract =
+                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -320,9 +319,8 @@ contract("Integration Tests", async (accounts) => {
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
-                    const expectedTokensAtSavingAccountContract = numOfToken
-                        .mul(new BN(15))
-                        .div(new BN(100));
+                    const expectedTokensAtSavingAccountContract =
+                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -385,9 +383,8 @@ contract("Integration Tests", async (accounts) => {
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
-                    const expectedTokensAtSavingAccountContract = numOfToken
-                        .mul(new BN(15))
-                        .div(new BN(100));
+                    const expectedTokensAtSavingAccountContract =
+                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -425,7 +422,7 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit 1million of each token, wait for a week, withdraw all", async () => {
+            it("should deposit 1 million of each token, wait for a week, withdraw all", async () => {
                 const numOfToken = new BN(10).pow(new BN(6));
 
                 // Deposit all tokens
@@ -444,9 +441,8 @@ contract("Integration Tests", async (accounts) => {
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
-                    const expectedTokensAtSavingAccountContract = numOfToken
-                        .mul(new BN(15))
-                        .div(new BN(100));
+                    const expectedTokensAtSavingAccountContract =
+                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -1036,7 +1032,7 @@ contract("Integration Tests", async (accounts) => {
                 } */
             });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -1184,9 +1180,9 @@ contract("Integration Tests", async (accounts) => {
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
             });
 
-            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
+            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and liquidate", async () => {

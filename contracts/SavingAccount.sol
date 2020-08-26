@@ -213,6 +213,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         emit Deposit(_token, msg.sender, address(0), _amount);
     }
+    
 
     /**
      * Deposit the amount of token to the saving pool.
@@ -362,7 +363,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         vars.msgTotalCollateral = globalConfig.accounts().getDepositETH(msg.sender);
 
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
-
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
@@ -385,10 +385,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.mul(100).sub(
             vars.totalCollateral.mul(vars.borrowLTV)).div(liquidationDiscountRatio - vars.borrowLTV);
-
         // Liquidators need to pay
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
-        // Debt token that the liquidator is available
+        uint targetAccTargetTokenBalance = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
+        uint borrowedTargetTokenValue = targetAccTargetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
         vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
         // Debt token that the borrower has borrowed
         if (vars.paymentOfLiquidationValue > globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr).mul(vars.targetTokenPrice).div(divisor))
@@ -399,8 +399,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
-
-        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
+        if(borrowedTargetTokenValue < vars.liquidationDebtValue) {
+            vars.liquidationDebtValue = borrowedTargetTokenValue;
+        }
+        vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).mul(liquidationDiscountRatio).div(vars.targetTokenPrice).div(100);
         globalConfig.bank().newRateIndexCheckpoint(_targetToken);
         // sichaoy: fix here: should not check the LTV when withdraw inside a liquidate function as he gots more asset in deposit
         withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
@@ -454,9 +456,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function toCompound(address _token, uint _amount) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if(_amount == 0) {
+            return;
+        }
         if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
-        } else {
+        }
+        else {
             uint256 success = ICToken(cToken).mint(_amount);
             require(success == 0, "mint failed");
         }
@@ -468,6 +474,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) public {
+        if(_amount == 0) {
+            return;
+        }
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");

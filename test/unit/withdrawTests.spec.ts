@@ -646,6 +646,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
+
                     it("when tokens are withdrawn with interest", async () => {
                         const depositAmount = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, depositAmount);
@@ -1285,6 +1286,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         let userBalanceBeforeWithdraw = await erc20TUSD.balanceOf(owner);
 
                         // 3. Withdraw Token from SavingContract
+
                         await savingAccount.withdraw(erc20TUSD.address, withdraws);
 
                         // 3.1 Validate user balance
