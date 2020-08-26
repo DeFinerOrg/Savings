@@ -261,12 +261,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // expect(user2DepositPrincipal).to.be.bignumber.equal(TWO_DAIS);
                     // expect(user1BorrowPrincipal).to.be.bignumber.equal(new BN(0));
                     // expect(user2BorrowPrincipal).to.be.bignumber.equal(HALF_DAI);
-                    console.log(user1BorrowInterest.toString());
-                    console.log(user2BorrowInterest.toString());
-                    console.log(cDAIBorrowRateBefore.toString());
-                    console.log(cDAISupplyRateBefore.toString());
-                    console.log(cDAIBorrowRateAfter.toString());
-                    console.log(cDAISupplyRateAfter.toString());
+                    // console.log(user1BorrowInterest.toString());
+                    // console.log(user2BorrowInterest.toString());
+                    // console.log(cDAIBorrowRateBefore.toString());
+                    // console.log(cDAISupplyRateBefore.toString());
+                    // console.log(cDAIBorrowRateAfter.toString());
+                    // console.log(cDAISupplyRateAfter.toString());
                     // console.log(definerBorrowRateBefore.toString());
                     // console.log(definerSupplyRateBefore.toString());
                     // console.log(definerBorrowRateAfter.toString());
