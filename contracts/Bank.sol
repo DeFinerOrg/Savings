@@ -26,7 +26,14 @@ contract Bank is Constant, Ownable{
     GlobalConfig globalConfig;            // global configuration contract address
 
     modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
+        _;
+    }
+
+    modifier onlyDeFinerContract() {
+        require(msg.sender == address(globalConfig.savingAccount()) ||
+            msg.sender == address(globalConfig.accounts())
+            , "Only authorized to call from DeFiner smart contracts.");
         _;
     }
 
@@ -270,7 +277,7 @@ contract Bank is Constant, Ownable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public onlySavingAccount{
+    function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
 
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
 

@@ -140,7 +140,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user2, addressDAI),
-                        "The account is not liquidable."
+                        "The borrower is not liquidatable."
                     );
                 });
 
@@ -200,10 +200,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
-                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user2);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user2
+                    );
 
                     await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user2);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
                 });
@@ -238,9 +240,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
                     // 4. Start liquidation.
-                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user2);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user2
+                    );
                     await savingAccount.liquidate(user2, addressDAI);
-                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user2);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                 });
@@ -271,9 +275,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
-                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user1
+                    );
                     await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
                 });
@@ -309,9 +315,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
                     // 4. Start liquidation.
-                    const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user1
+                    );
                     await savingAccount.liquidate(user1, addressUSDC);
-                    const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                 });
@@ -338,7 +346,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user1, addressDAI),
-                        "The account is not liquidable."
+                        "The borrower is not liquidatable."
                     );
                 });
 
@@ -396,9 +404,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     //     .div(new BN(10));
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // // 4. Start liquidation.
-                    // const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
+                    // const liquidateBefore = await accountsContract.isAccountLiquidatable.call(user1);
                     // await savingAccount.liquidate(user1, ETH_ADDRESS);
-                    // const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
+                    // const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     // expect(liquidateBefore).to.equal(true);
                     // expect(liquidateAfter).to.equal(true);
                 });
@@ -429,9 +437,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     //     .div(new BN(10));
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // // 4. Start liquidation.
-                    // const liquidateBefore = await accountsContract.isAccountLiquidatable(user1);
+                    // const liquidateBefore = await accountsContract.isAccountLiquidatable.call(user1);
                     // await savingAccount.liquidate(user1, ETH_ADDRESS);
-                    // const liquidateAfter = await accountsContract.isAccountLiquidatable(user1);
+                    // const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     // expect(liquidateBefore).to.equal(true);
                     // expect(liquidateAfter).to.equal(false);
                 });
