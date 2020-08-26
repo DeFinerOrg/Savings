@@ -32,68 +32,24 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 // This is to resolve "Invalid JSON RPC response" error when using expectRevert.
 // Code taken from
 // https://forum.openzeppelin.com/t/error-deploying-simple-erc777-contract-with-truffle-and-ganache/1588/13
+/*
 require("@openzeppelin/test-helpers/configure")({
     provider: web3.currentProvider,
     environment: "truffle"
 });
+*/
 
 const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network) {
-    // Deploy Libs
-    await deployer.deploy(AccountTokenLib);
-    console.log("=========================Deploy AccountTokenLib============================");
-    await deployer.deploy(BitmapLib);
-    console.log("=========================Deploy BitmapLib============================");
-    
-    await deployer.link(BitmapLib, Accounts);
-    console.log("=========================Link BitmapLib library============================");
-    await deployer.link(AccountTokenLib, Accounts);
-    console.log("=========================Link AccountTokenLib library============================");
-
-    await deployer.deploy(Utils);
-    console.log("=========================Deploy Utils============================");
-    await deployer.link(Utils, SavingLib);
-    console.log("=========================Link Utils library============================");
-    await deployer.link(Utils, SavingAccount);
-    console.log("=========================Link Utils library============================");
-    await deployer.link(Utils, SavingAccountWithController);
-    console.log("=========================Link Utils library============================");
-    await deployer.link(Utils, Accounts);
-    console.log("=========================Link Utils library============================");
-    await deployer.link(Utils, TokenRegistry);
-    console.log("=========================Link Utils library============================");
-
-    await deployer.deploy(SavingLib);
-    console.log("=========================Deploy SavingLib============================");
-    await deployer.link(SavingLib, SavingAccount);
-    console.log("=========================Link SavingLib library============================");
-    await deployer.link(SavingLib, SavingAccountWithController);
-    console.log("=========================Link SavingLib library============================");
-
     const erc20Tokens = await getERC20Tokens();
     console.log("=========================getERC20Tokens============================");
     const chainLinkAggregators = await getChainLinkAggregators();
     console.log("=========================getChainLinkAggregators============================");
     const cTokens = await getCTokens(erc20Tokens);
     console.log("=========================getCTokens============================");
-
-    const globalConfig = await deployer.deploy(GlobalConfig);
-    console.log("=========================Deploy GlobalConfig============================");
-    const constant = await deployer.deploy(Constant);
-    console.log("=========================Deploy Constant============================");
-
-    const accountsProxy = await deployer.deploy(AccountsProxy);
-    console.log("=========================Deploy AccountsProxy============================");
-    const accounts = await deployer.deploy(Accounts);
-    console.log("=========================Deploy Accounts============================");
-
-    const bankProxy = await deployer.deploy(BankProxy);
-    console.log("=========================Deploy BankProxy============================");
-    const bank = await deployer.deploy(Bank);
-    console.log("=========================Deploy Bank============================");
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
@@ -110,8 +66,11 @@ module.exports = async function(deployer, network) {
     const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
     console.log("=========================Deploy chainLinkOracle============================");
 
+    const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
-    console.log("=========================tokenInfoRegistry.initialize============================");
+    console.log(
+        "=========================tokenInfoRegistry.initialize============================"
+    );
 
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
@@ -119,6 +78,9 @@ module.exports = async function(deployer, network) {
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
     console.log("=========================Deploy ProxyAdmin============================");
 
+    const constant = await Constant.deployed();
+    const accountsProxy = await AccountsProxy.deployed();
+    const bankProxy = await BankProxy.deployed();
     await globalConfig.initialize(
         bankProxy.address,
         savingAccountProxy.address,
@@ -133,31 +95,25 @@ module.exports = async function(deployer, network) {
     const savingAccount = await deployer.deploy(SavingAccount);
     console.log("=========================Deploy SavingAccount============================");
 
+    const accounts = await Accounts.deployed();
     const accounts_initialize_data = accounts.contract.methods
-        .initialize(
-            globalConfig.address
-        )
+        .initialize(globalConfig.address)
         .encodeABI();
     console.log("=========================accounts_initialize_data============================");
 
-    const bank_initialize_data = bank.contract.methods
-        .initialize(
-            globalConfig.address
-        )
-        .encodeABI();
+    const bank = await Bank.deployed();
+    const bank_initialize_data = bank.contract.methods.initialize(globalConfig.address).encodeABI();
     console.log("=========================bank_initialize_data============================");
 
     const initialize_data = savingAccount.contract.methods
-        .initialize(
-            erc20Tokens,
-            cTokens,
-            globalConfig.address
-        )
+        .initialize(erc20Tokens, cTokens, globalConfig.address)
         .encodeABI();
     console.log("=========================initialize_data============================");
 
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
-    console.log("=========================savingAccountProxy.initialize============================");
+    console.log(
+        "=========================savingAccountProxy.initialize============================"
+    );
     await accountsProxy.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
     console.log("=========================accountsProxy.initialize============================");
     await bankProxy.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
@@ -248,7 +204,7 @@ const getERC20Tokens = async () => {
                 addr = token.ropsten.tokenAddress;
             } else if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.tokenAddress;
-            }  else if (network == "rinkeby" || network == "rinkeby-fork") {
+            } else if (network == "rinkeby" || network == "rinkeby-fork") {
                 addr = token.rinkeby.tokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
@@ -273,7 +229,7 @@ const getChainLinkAggregators = async () => {
                 addr = token.ropsten.aggregatorAddress;
             } else if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.aggregatorAddress;
-            }  else if (network == "rinkeby" || network == "rinkeby-fork") {
+            } else if (network == "rinkeby" || network == "rinkeby-fork") {
                 addr = token.rinkeby.aggregatorAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
