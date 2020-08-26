@@ -158,7 +158,7 @@ contract("RemainingCoverage", async (accounts) => {
 
                 await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable.call(user2);
                 expect(isAccountLiquidatableStr).equal(true);
             });
 
