@@ -2193,6 +2193,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
                     const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable.call(user1);
+
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
@@ -2275,6 +2276,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
                     const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable.call(user1);
+
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
@@ -2358,6 +2360,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     await savingAccount.liquidate(user1, addressTUSD, { from: user2 });
                     const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable.call(user1);
+
                     /*
                      * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
                      * Account2: Can fully liquidate user1 this time.
