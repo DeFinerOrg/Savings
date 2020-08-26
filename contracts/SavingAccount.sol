@@ -388,21 +388,21 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         // Liquidators need to pay
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
+        // Debt token that the liquidator is available
         vars.paymentOfLiquidationValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).div(divisor);
+        // Debt token that the borrower has borrowed
+        if (vars.paymentOfLiquidationValue > globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr).mul(vars.targetTokenPrice).div(divisor))
+            vars.paymentOfLiquidationValue = globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr).mul(vars.targetTokenPrice).div(divisor);
 
-        if(
-            vars.msgTotalBorrow != 0 &&
-            vars.paymentOfLiquidationValue > (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow)
-         ) {
-            vars.paymentOfLiquidationValue = (vars.msgTotalCollateral).mul(vars.borrowLTV).div(100).sub(vars.msgTotalBorrow);
-        }
-
+        // Compare the target tokens available to the amout that needed for a full liquidation. If the available tokens
+        // are less, then do a partial liquidation.
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
         globalConfig.bank().newRateIndexCheckpoint(_targetToken);
+        // sichaoy: fix here: should not check the LTV when withdraw inside a liquidate function as he gots more asset in deposit
         withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
         repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount);
 
@@ -416,9 +416,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
                 vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
                 if(vars.coinValue > vars.liquidationDebtValue) {
+                    // Partial amount of the token to be purchased by the liquidator
                     vars.coinValue = vars.liquidationDebtValue;
                     vars.liquidationDebtValue = 0;
                 } else {
+                    // Full amount of the token to be purchased by the liquidator
                     vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                 }
                 vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
