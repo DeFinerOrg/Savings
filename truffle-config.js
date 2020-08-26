@@ -87,7 +87,7 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://kovan.infura.io/v3/77192ec7a3f248c298016696749c1c59"
+                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
@@ -113,6 +113,7 @@ module.exports = {
                     enabled: true,
                     runs: 200,
                 },
+                evmVersion: "petersburg", //"constantinople",
             },
         },
     },

@@ -73,14 +73,11 @@ module.exports = async function(deployer, network) {
     );
 
     // Deploy Upgradability
-    const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
-    console.log("=========================Deploy SavingAccountProxy============================");
-    const proxyAdmin = await deployer.deploy(ProxyAdmin);
-    console.log("=========================Deploy ProxyAdmin============================");
 
     const constant = await Constant.deployed();
     const accountsProxy = await AccountsProxy.deployed();
     const bankProxy = await BankProxy.deployed();
+    const savingAccountProxy = await SavingAccountProxy.deployed();
     await globalConfig.initialize(
         bankProxy.address,
         savingAccountProxy.address,
@@ -110,6 +107,7 @@ module.exports = async function(deployer, network) {
         .encodeABI();
     console.log("=========================initialize_data============================");
 
+    const proxyAdmin = await ProxyAdmin.deployed();
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
     console.log(
         "=========================savingAccountProxy.initialize============================"
