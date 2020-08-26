@@ -3,13 +3,14 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./registry/TokenRegistry.sol";
+import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable, Constant {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -27,7 +28,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     event WithdrawAll(address indexed token, address from, address to, uint256 amount);
 
     modifier onlyEmergencyAddress() {
-        require(msg.sender == globalConfig.constants().EMERGENCY_ADDR(), "User not authorized");
+        require(msg.sender == EMERGENCY_ADDR, "User not authorized");
         _;
     }
 
@@ -62,13 +63,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         globalConfig = _globalConfig;
 
+        require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
         for(uint i = 0;i < _tokenAddresses.length;i++) {
-            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != globalConfig.constants().ETH_ADDR()) {
+            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
         }
-
-        
     }
 
     /**
@@ -120,8 +120,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = globalConfig.constants().INT_UNIT();
-        if(_token != globalConfig.constants().ETH_ADDR()) {
+        uint divisor = INT_UNIT;
+        if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
         }
         require(
@@ -161,22 +161,34 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
     function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
-
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
+
+        uint256 amount = repay(msg.sender, _token, _amount);
+
+        // Send the remain money back
+        uint256 remain =  _amount.sub(amount);
+        if(remain != 0) {
+            send(msg.sender, remain, _token);
+        }
+
+        emit Repay(_token, msg.sender, address(0), amount);
+    }
+
+    function repay(address _to, address _token, uint256 _amount) internal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
 
         // Update tokenInfo
-        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
+        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, _to);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(msg.sender, _token, amount, getBlockNumber());
+        globalConfig.accounts().repay(_to, _token, amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -185,13 +197,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
-        // Send the remain money back
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
-        if(remain != 0) {
-            send(msg.sender, remain, _token);
-        }
-
-        emit Repay(_token, msg.sender, address(0), _amount.sub(remain));
+        // Return actual amount repaid
+        return amount;
     }
 
     /**
@@ -264,8 +271,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         // Check if there are enough collaterals after withdraw
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-        uint divisor = globalConfig.constants().INT_UNIT();
-        if(_token != globalConfig.constants().ETH_ADDR()) {
+        uint divisor = INT_UNIT;
+        if(_token != ETH_ADDR) {
             divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_token));
         }
         require(globalConfig.accounts().getBorrowETH(_from).mul(100) <= globalConfig.accounts().getDepositETH(_from)
@@ -344,6 +351,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @param _targetToken token used for purchasing collaterals
      */
     function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
+
+        require(globalConfig.accounts().isAccountLiquidatable(_targetToken), "The borrower is not liquidatable.");
+
         LiquidationVars memory vars;
         vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
         vars.totalCollateral = globalConfig.accounts().getDepositETH(_targetAccountAddr);
@@ -353,24 +363,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
 
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
 
-        uint liquidationThreshold =  globalConfig.liquidationThreshold();
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
-
-        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-        );
-
-        // The value of discounted collateral should be never less than the borrow amount.
-        // We assume this will never happen as the market will not drop extreamly fast so that
-        // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
 
         require(
             vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
@@ -382,7 +377,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
             "The account amount must be greater than zero."
         );
 
-        uint divisor = _targetToken == globalConfig.constants().ETH_ADDR() ? globalConfig.constants().INT_UNIT() : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_targetToken));
+        uint divisor = _targetToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_targetToken));
 
         // Amount of assets that need to be liquidated
         vars.liquidationDebtValue = vars.totalBorrow.sub(
@@ -405,8 +400,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         }
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
-        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
+        globalConfig.bank().newRateIndexCheckpoint(_targetToken);
+        withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
+        repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount);
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
@@ -414,21 +410,18 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
             if(globalConfig.accounts().isUserHasDeposits(_targetAccountAddr, uint8(i))) {
                 vars.tokenPrice = globalConfig.tokenInfoRegistry().priceFromIndex(i);
 
-                vars.tokenDivisor = vars.token == globalConfig.constants().ETH_ADDR() ? globalConfig.constants().INT_UNIT() : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
+                vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
 
-                if(globalConfig.accounts().getBorrowPrincipal(_targetAccountAddr, vars.token) == 0) {
-                    globalConfig.bank().newRateIndexCheckpoint(vars.token);
-                    vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
-                    if(vars.coinValue > vars.liquidationDebtValue) {
-                        vars.coinValue = vars.liquidationDebtValue;
-                        vars.liquidationDebtValue = 0;
-                    } else {
-                        vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
-                    }
-                    vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                    globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
-                    globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
+                vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
+                if(vars.coinValue > vars.liquidationDebtValue) {
+                    vars.coinValue = vars.liquidationDebtValue;
+                    vars.liquidationDebtValue = 0;
+                } else {
+                    vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
                 }
+                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
+                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
             }
 
             if(vars.liquidationDebtValue == 0) {
@@ -457,7 +450,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      */
     function toCompound(address _token, uint _amount) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (_token == globalConfig.constants().ETH_ADDR()) {
+        if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
         } else {
             uint256 success = ICToken(cToken).mint(_amount);
@@ -514,7 +507,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
      * @return true if the token is Ether
      */
     function _isETH(address _token) internal view returns (bool) {
-        return globalConfig.constants().ETH_ADDR() == _token;
+        return ETH_ADDR == _token;
     }
 
     // ============================================
@@ -522,11 +515,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
     // Needs to be removed when final version deployed
     // ============================================
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        if(_token == globalConfig.constants().ETH_ADDR()) {
-            globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
+        if(_token == ETH_ADDR) {
+            EMERGENCY_ADDR.transfer(address(this).balance);
         } else {
             uint256 amount = IERC20(_token).balanceOf(address(this));
-            require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), amount), "transfer failed");
+            require(IERC20(_token).transfer(EMERGENCY_ADDR, amount), "transfer failed");
         }
     }
 

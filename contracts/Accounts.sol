@@ -2,11 +2,12 @@ pragma solidity 0.5.14;
 
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
+import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Accounts is Ownable{
+contract Accounts is Constant, Ownable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
@@ -16,7 +17,7 @@ contract Accounts is Ownable{
     GlobalConfig globalConfig;
 
     modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
         _;
     }
 
@@ -191,7 +192,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = globalConfig.constants().INT_UNIT();
+        uint UNIT = INT_UNIT;
         uint accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
@@ -227,7 +228,7 @@ contract Accounts is Ownable{
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint UNIT = globalConfig.constants().INT_UNIT();
+        uint UNIT = INT_UNIT;
         uint accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
@@ -262,8 +263,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = globalConfig.constants().INT_UNIT();
-                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
                     divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 depositETH = depositETH.add(getDepositBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
@@ -282,8 +283,8 @@ contract Accounts is Ownable{
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = globalConfig.constants().INT_UNIT();
-                if(tokenAddress != globalConfig.constants().ETH_ADDR()) {
+                uint divisor = INT_UNIT;
+                if(tokenAddress != ETH_ADDR) {
                     divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
                 }
                 borrowETH = borrowETH.add(getBorrowBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
@@ -297,17 +298,32 @@ contract Accounts is Ownable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) public view returns (bool) {
+    function isAccountLiquidatable(address _borrower) public returns (bool) {
+
+        // Add new rate check points for all the collateral tokens from borrower in order to
+        // have accurate calculation of liquidation oppotunites.
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+            if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
+                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
+                globalConfig.bank().newRateIndexCheckpoint(token);
+            }
+        }
+
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
         uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        uint256 totalBalance = getBorrowETH(_borrower);
-        uint256 totalETHValue = getDepositETH(_borrower);
-        if (
-            totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
-            totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
-        ) {
-            return true;
-        }
-        return false;
+
+        uint256 totalBorrow = getBorrowETH(_borrower);
+        uint256 totalCollateral = getDepositETH(_borrower);
+
+        // The value of discounted collateral should be never less than the borrow amount.
+        // We assume this will never happen as the market will not drop extreamly fast so that
+        // the LTV changes from 85% to 95%, an 10% drop within one block.
+        require(
+            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+            "Collateral is not sufficient to be liquidated."
+        );
+
+        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
     }
 }
