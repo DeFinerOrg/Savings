@@ -83,12 +83,12 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://kovan.infura.io/v3/465a917e61d14db99ba9a6da67f30133"
+                    "https://kovan.infura.io/v3/77192ec7a3f248c298016696749c1c59"
                 ),
             from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
-            gasPrice: 15000000000,
+            gasPrice: 150000000000, //150Gwei
         }
     },
 

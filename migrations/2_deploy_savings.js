@@ -54,51 +54,50 @@ module.exports = async function(deployer, network) {
     console.log("=========================Link AccountTokenLib library============================");
 
     await deployer.deploy(Utils);
+    console.log("=========================Deploy Utils============================");
     await deployer.link(Utils, SavingLib);
+    console.log("=========================Link Utils library============================");
     await deployer.link(Utils, SavingAccount);
+    console.log("=========================Link Utils library============================");
     await deployer.link(Utils, SavingAccountWithController);
+    console.log("=========================Link Utils library============================");
     await deployer.link(Utils, Accounts);
+    console.log("=========================Link Utils library============================");
     await deployer.link(Utils, TokenRegistry);
+    console.log("=========================Link Utils library============================");
 
     await deployer.deploy(SavingLib);
+    console.log("=========================Deploy SavingLib============================");
     await deployer.link(SavingLib, SavingAccount);
+    console.log("=========================Link SavingLib library============================");
     await deployer.link(SavingLib, SavingAccountWithController);
-
-    // Deploy Base library
-    //await deployer.deploy(Base);
-
-    // Link libraries
-    // await deployer.link(AccountTokenLib, SavingAccount);
-    // await deployer.link(Base, SavingAccount);
-    //
-    // await deployer.link(AccountTokenLib, SavingAccountWithController);
-    // await deployer.link(Base, SavingAccountWithController);
+    console.log("=========================Link SavingLib library============================");
 
     const erc20Tokens = await getERC20Tokens();
+    console.log("=========================getERC20Tokens============================");
     const chainLinkAggregators = await getChainLinkAggregators();
+    console.log("=========================getChainLinkAggregators============================");
     const cTokens = await getCTokens(erc20Tokens);
+    console.log("=========================getCTokens============================");
 
     const globalConfig = await deployer.deploy(GlobalConfig);
+    console.log("=========================Deploy GlobalConfig============================");
     const constant = await deployer.deploy(Constant);
+    console.log("=========================Deploy Constant============================");
 
     const accountsProxy = await deployer.deploy(AccountsProxy);
+    console.log("=========================Deploy AccountsProxy============================");
     const accounts = await deployer.deploy(Accounts);
-    const accounts_initialize_data = accounts.contract.methods
-        .initialize(
-            globalConfig.address
-        )
-        .encodeABI();
+    console.log("=========================Deploy Accounts============================");
 
     const bankProxy = await deployer.deploy(BankProxy);
+    console.log("=========================Deploy BankProxy============================");
     const bank = await deployer.deploy(Bank);
-    const bank_initialize_data = bank.contract.methods
-        .initialize(
-            globalConfig.address
-        )
-        .encodeABI();
+    console.log("=========================Deploy Bank============================");
 
     // Deploy TokenRegistry
     const tokenInfoRegistry = await deployer.deploy(TokenRegistry);
+    console.log("=========================Deploy TokenRegistry============================");
 
     await initializeTokenInfoRegistry(
         tokenInfoRegistry,
@@ -109,12 +108,16 @@ module.exports = async function(deployer, network) {
 
     // Configure ChainLinkAggregator
     const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
+    console.log("=========================Deploy chainLinkOracle============================");
 
     await tokenInfoRegistry.initialize(globalConfig.address);
+    console.log("=========================tokenInfoRegistry.initialize============================");
 
     // Deploy Upgradability
     const savingAccountProxy = await deployer.deploy(SavingAccountProxy);
+    console.log("=========================Deploy SavingAccountProxy============================");
     const proxyAdmin = await deployer.deploy(ProxyAdmin);
+    console.log("=========================Deploy ProxyAdmin============================");
 
     await globalConfig.initialize(
         bankProxy.address,
@@ -124,9 +127,26 @@ module.exports = async function(deployer, network) {
         constant.address,
         chainLinkOracle.address
     );
+    console.log("=========================globalConfig.initialize============================");
 
     // Deploy SavingAccount contract
     const savingAccount = await deployer.deploy(SavingAccount);
+    console.log("=========================Deploy SavingAccount============================");
+
+    const accounts_initialize_data = accounts.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
+    console.log("=========================accounts_initialize_data============================");
+
+    const bank_initialize_data = bank.contract.methods
+        .initialize(
+            globalConfig.address
+        )
+        .encodeABI();
+    console.log("=========================bank_initialize_data============================");
+
     const initialize_data = savingAccount.contract.methods
         .initialize(
             erc20Tokens,
@@ -134,10 +154,14 @@ module.exports = async function(deployer, network) {
             globalConfig.address
         )
         .encodeABI();
+    console.log("=========================initialize_data============================");
 
     await savingAccountProxy.initialize(savingAccount.address, proxyAdmin.address, initialize_data);
+    console.log("=========================savingAccountProxy.initialize============================");
     await accountsProxy.initialize(accounts.address, proxyAdmin.address, accounts_initialize_data);
+    console.log("=========================accountsProxy.initialize============================");
     await bankProxy.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
+    console.log("=========================bankProxy.initialize============================");
 
     console.log("GlobalConfig:", globalConfig.address);
     console.log("Constant:", constant.address);
@@ -170,11 +194,13 @@ const initializeTokenInfoRegistry = async (
                 cToken,
                 chainLinkOracle
             );
+            console.log("initializeTokenInfoRegistry: " + i);
         })
     );
 
     // Add ETH
     await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, ZERO_ADDRESS, DEAD_ADDR);
+    console.log("initializeTokenInfoRegistry: " + "ETH");
 };
 
 const getCTokens = async (erc20Tokens) => {
