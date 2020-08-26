@@ -70,7 +70,7 @@ module.exports = {
             from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
-            gasPrice: 100, //100Gwei
+            gasPrice: 100000000000, //100Gwei
         },
 
         // rinkeby: {
