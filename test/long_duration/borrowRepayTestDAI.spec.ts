@@ -18,6 +18,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -82,6 +83,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -180,6 +182,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // Repay DAI and withdraw all
                     await savingAccount.repay(addressDAI, HALF_DAI, { from: user2 });
+                    // TODO:
                     await savingAccount.withdrawAll(erc20DAI.address, { from: user2 }); // 1000001503650800000
 
                     let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user2);
@@ -189,7 +192,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     );
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
-                    const tokenState = await savingAccount.getTokenStateStore(addressDAI, {
+                    const tokenState = await savingAccount.getTokenState(addressDAI, {
                         from: user2
                     });
 
