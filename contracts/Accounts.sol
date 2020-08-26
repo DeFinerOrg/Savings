@@ -17,7 +17,7 @@ contract Accounts is Constant, Ownable{
     GlobalConfig globalConfig;
 
     modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
         _;
     }
 
@@ -298,17 +298,32 @@ contract Accounts is Constant, Ownable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) public view returns (bool) {
+    function isAccountLiquidatable(address _borrower) public returns (bool) {
+
+        // Add new rate check points for all the collateral tokens from borrower in order to
+        // have accurate calculation of liquidation oppotunites.
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+            if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
+                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
+                globalConfig.bank().newRateIndexCheckpoint(token);
+            }
+        }
+
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
         uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        uint256 totalBalance = getBorrowETH(_borrower);
-        uint256 totalETHValue = getDepositETH(_borrower);
-        if (
-            totalBalance.mul(100) > totalETHValue.mul(liquidationThreshold) &&
-            totalBalance.mul(liquidationDiscountRatio) <= totalETHValue.mul(100)
-        ) {
-            return true;
-        }
-        return false;
+
+        uint256 totalBorrow = getBorrowETH(_borrower);
+        uint256 totalCollateral = getDepositETH(_borrower);
+
+        // The value of discounted collateral should be never less than the borrow amount.
+        // We assume this will never happen as the market will not drop extreamly fast so that
+        // the LTV changes from 85% to 95%, an 10% drop within one block.
+        require(
+            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+            "Collateral is not sufficient to be liquidated."
+        );
+
+        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
     }
 }
