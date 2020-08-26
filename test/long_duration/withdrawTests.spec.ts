@@ -18,6 +18,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -83,6 +84,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
 
     beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
+        accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -157,22 +159,22 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
 
                     let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(user1);
-                    const totalDefinerBalanceBeforeDeposit = await savingAccount.tokenBalance(
+                    const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                         erc20DAI.address,
-                        { from: user1 }
+                        user1
                     );
 
                     // deposit tokens
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
 
                     // Validate the total balance on DeFiner after deposit
-                    const totalDefinerBalanceAfterDeposit = await savingAccount.tokenBalance(
+                    const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         erc20DAI.address,
-                        { from: user1 }
+                        user1
                     );
-                    const totalDefinerBalanceChange = new BN(
-                        totalDefinerBalanceAfterDeposit[0]
-                    ).sub(new BN(totalDefinerBalanceBeforeDeposit[0]));
+                    const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
+                        new BN(totalDefinerBalanceBeforeDeposit)
+                    );
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(ONE_DAI);
 
                     const compoundBeforeFastForward = BN(
@@ -193,7 +195,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
-                    const tokenState = await savingAccount.getTokenStateStore(addressDAI, {
+                    const tokenState = await savingAccount.getTokenState(addressDAI, {
                         from: user1
                     });
 
