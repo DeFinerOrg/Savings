@@ -380,9 +380,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         uint divisor = _targetToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_targetToken));
 
         // Amount of assets that need to be liquidated
-        vars.liquidationDebtValue = vars.totalBorrow.sub(
-            vars.totalCollateral.mul(vars.borrowLTV).div(100)
-        ).mul(liquidationDiscountRatio).div(liquidationDiscountRatio - vars.borrowLTV);
+        vars.liquidationDebtValue = vars.totalBorrow.mul(100).sub(
+            vars.totalCollateral.mul(vars.borrowLTV)).div(liquidationDiscountRatio - vars.borrowLTV);
 
         // Liquidators need to pay
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
