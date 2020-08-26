@@ -1119,7 +1119,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     await expectRevert(
                         savingAccount.liquidate(user1, addressTUSD, { from: user2 }),
-                        "Amount is zero"
+                        "The borrower doesn't own any debt token specified by the liquidator."
                     );
                 });
                 it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens", async () => {
@@ -1195,7 +1195,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     await expectRevert(
                         savingAccount.liquidate(user1, addressDAI, { from: user2 }),
-                        "Amount is zero"
+                        "The borrower doesn't own any debt token specified by the liquidator."
                     );
 
                 });
