@@ -1085,6 +1085,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     });
                 });
             });
+        });
 
             context("Compound Supported 8 decimals Token", async () => {
                 context("Should succeed", async () => {
