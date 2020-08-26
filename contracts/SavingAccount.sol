@@ -69,8 +69,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
                 approveAll(_tokenAddresses[i]);
             }
         }
-
-        
     }
 
     /**
@@ -163,22 +161,34 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
     function repay(address _token, uint256 _amount) public payable onlyValidToken(_token) nonReentrant {
-
         require(_amount != 0, "Amount is zero");
         receive(msg.sender, _amount, _token);
+
+        uint256 amount = repay(msg.sender, _token, _amount);
+
+        // Send the remain money back
+        uint256 remain =  _amount.sub(amount);
+        if(remain != 0) {
+            send(msg.sender, remain, _token);
+        }
+
+        emit Repay(_token, msg.sender, address(0), amount);
+    }
+
+    function repay(address _to, address _token, uint256 _amount) internal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Sanity check
-        require(globalConfig.accounts().getBorrowPrincipal(msg.sender, _token) > 0,
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
             "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
         );
 
         // Update tokenInfo
-        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, msg.sender);
+        uint256 amountOwedWithInterest = globalConfig.accounts().getBorrowBalanceStore(_token, _to);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        globalConfig.accounts().repay(msg.sender, _token, amount, getBlockNumber());
+        globalConfig.accounts().repay(_to, _token, amount, getBlockNumber());
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -187,13 +197,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
-        // Send the remain money back
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
-        if(remain != 0) {
-            send(msg.sender, remain, _token);
-        }
-
-        emit Repay(_token, msg.sender, address(0), _amount.sub(remain));
+        // Return actual amount repaid
+        return amount;
     }
 
     /**
@@ -347,6 +352,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _targetToken token used for purchasing collaterals
      */
     function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
+
+        require(globalConfig.accounts().isAccountLiquidatable(_targetToken), "The borrower is not liquidatable.");
+
         LiquidationVars memory vars;
         vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
         vars.totalCollateral = globalConfig.accounts().getDepositETH(_targetAccountAddr);
@@ -356,24 +364,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
 
-        uint liquidationThreshold =  globalConfig.liquidationThreshold();
         uint liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         vars.borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_targetToken);
-
-        // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        require(
-            vars.totalBorrow.mul(100) > vars.totalCollateral.mul(liquidationThreshold),
-            "The ratio of borrowed money and collateral must be larger than 85% in order to be liquidated."
-        );
-
-        // The value of discounted collateral should be never less than the borrow amount.
-        // We assume this will never happen as the market will not drop extreamly fast so that
-        // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            vars.totalBorrow.mul(100) <= vars.totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
 
         require(
             vars.msgTotalBorrow.mul(100) < vars.msgTotalCollateral.mul(vars.borrowLTV),
@@ -408,8 +401,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         }
 
         vars.targetTokenAmount = vars.liquidationDebtValue.mul(divisor).div(vars.targetTokenPrice).mul(liquidationDiscountRatio).div(100);
-        globalConfig.accounts().withdraw(msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
-        globalConfig.accounts().repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
+        globalConfig.bank().newRateIndexCheckpoint(_targetToken);
+        withdraw(msg.sender, _targetToken, vars.targetTokenAmount);
+        repay(_targetAccountAddr, _targetToken, vars.targetTokenAmount);
 
         // The collaterals are liquidate in the order of their market liquidity
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
@@ -419,7 +413,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
                 vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
 
-                globalConfig.bank().newRateIndexCheckpoint(vars.token);
                 vars.coinValue = globalConfig.accounts().getDepositBalanceStore(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
                 if(vars.coinValue > vars.liquidationDebtValue) {
                     vars.coinValue = vars.liquidationDebtValue;
