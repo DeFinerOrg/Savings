@@ -62,9 +62,15 @@ module.exports = {
             gasPrice: 1
         },
         mainnet: {
-            host: "127.0.0.1",
-            port: 8546,
-            network_id: "*"
+            provider: () =>
+                new HDWalletProvider(
+                    mnemonic,
+                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                ),
+            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            network_id: 1,
+            gas: 7000000,
+            gasPrice: 100, //100Gwei
         },
 
         // rinkeby: {
