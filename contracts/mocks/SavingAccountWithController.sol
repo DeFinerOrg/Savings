@@ -2,10 +2,17 @@ pragma solidity 0.5.14;
 
 import "../SavingAccount.sol";
 import { IController } from "../compound/ICompound.sol";
+import "../Accounts.sol";
+//import { TokenRegistry } from "../registry/TokenRegistry.sol";
+//import { Bank } from "../Bank.sol";
+//import "../config/GlobalConfig.sol";
 
 // This file is only for testing purpose only
-contract SavingAccountWithController  is SavingAccount {
+contract SavingAccountWithController is SavingAccount {
 
+    Accounts.Account public accountVariable;
+    //GlobalConfig public globalConfig;
+    TokenRegistry.TokenInfo symbols;
     address comptroller;
 
     constructor() public {
@@ -17,20 +24,17 @@ contract SavingAccountWithController  is SavingAccount {
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
      * @param _cTokenAddresses list of corresponding cToken addresses
-     * @param _chainlinkAddress chainlink oracle address
-     * @param _tokenRegistry token registry contract
      * @param _globalConfig global configuration contract
      * @param _comptroller Compound controller address
      */
     function initialize(
         address[] memory _tokenAddresses,
-        address[] memory _cTokenAddresses,
-        address _chainlinkAddress,
-        TokenInfoRegistry _tokenRegistry,
+        address[] memory _cTokenAddresses, 
+        //TokenRegistry _tokenRegistry, // can remove
         GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _chainlinkAddress, _tokenRegistry, _globalConfig);
+        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig); // expected 3 passed 5 args
         comptroller = _comptroller;
     }
 
@@ -50,28 +54,56 @@ contract SavingAccountWithController  is SavingAccount {
     }
 
     function newRateIndexCheckpoint(address _token) public {
-        baseVariable.newRateIndexCheckpoint(_token);
+        globalConfig.bank().newRateIndexCheckpoint(_token);
     }
 
     function getDepositPrincipal(address _token) public view returns (uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.depositPrincipal;
+        //TokenRegistry.TokenInfo storage tokenInfo.depositPrincipal = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);  // is this correct?
+        return globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
     }
 
     function getDepositInterest(address _token) public view returns (uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        uint256 accruedRate = baseVariable.getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        return tokenInfo.calculateDepositInterest(accruedRate);
+        /* TokenRegistry.TokenInfo storage tokenInfo = accountVariable.tokenInfos[_token];
+        uint256 lastDepositBlock = globalConfig.accounts().getLastDepositBlock(msg.sender, _token);
+        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
+        return tokenInfo.calculateDepositInterest(accruedRate); */
+        return globalConfig.accounts().getDepositInterest(msg.sender, _token);
+
+    }
+
+    function getDepositBalance(address _token, address _accountAddr) public view returns (uint256) {
+        return globalConfig.accounts().getDepositBalanceCurrent(_token, _accountAddr);
     }
 
     function getBorrowPrincipal(address _token) public view returns (uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        return tokenInfo.borrowPrincipal;
+        //TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        return globalConfig.accounts().getBorrowPrincipal(msg.sender, _token);
     }
 
     function getBorrowInterest(address _token) public view returns (uint256) {
-        TokenInfoLib.TokenInfo storage tokenInfo = baseVariable.accounts[msg.sender].tokenInfos[_token];
-        uint256 accruedRate = baseVariable.getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateBorrowInterest(accruedRate);
+        /* TokenRegistry.TokenInfo storage tokenInfo = globalConfig.accounts().accounts[msg.sender].tokenInfos[_token];
+        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        return tokenInfo.calculateBorrowInterest(accruedRate); */
+        return globalConfig.accounts().getBorrowInterest(msg.sender, _token);
+    }
+
+    function getBorrowBalance(address _token, address _accountAddr) public view returns (uint256) {
+        return globalConfig.accounts().getBorrowBalanceCurrent(_token, _accountAddr);
+    }
+
+    function getBorrowETH(address _account) public view returns (uint256) {
+        return globalConfig.accounts().getBorrowETH(_account);
+    }
+
+    function getDepositETH(address _account) public view returns (uint256) {
+        return globalConfig.accounts().getDepositETH(_account);
+    }
+
+    function getTokenPrice(address _token) public view returns (uint256) {
+        return globalConfig.tokenInfoRegistry().priceFromAddress(_token);
+    }
+
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
+        return globalConfig.bank().getTokenState(_token);
     }
 }
