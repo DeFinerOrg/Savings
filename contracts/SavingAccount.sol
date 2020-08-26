@@ -353,7 +353,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function liquidate(address _targetAccountAddr, address _targetToken) public onlyValidToken(_targetToken) whenNotPaused nonReentrant {
 
-        require(globalConfig.accounts().isAccountLiquidatable(_targetToken), "The borrower is not liquidatable.");
+        require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
 
         LiquidationVars memory vars;
         vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
