@@ -295,11 +295,16 @@ contract("SavingAccount", async (accounts) => {
                         value: new BN(5)
                     });
                     // 4. Verify the repay amount.
-                    const user2ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
-                    });
+                    const user2ETHValueDeposit = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
+                    const user2ETHValueBorrow = await accountsContract.getBorrowBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
                     expect(
-                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                        new BN(user2ETHValueDeposit).add(new BN(user2ETHValueBorrow))
                     ).to.be.bignumber.equal(new BN(5));
                 });
 
@@ -310,11 +315,16 @@ contract("SavingAccount", async (accounts) => {
                         value: new BN(20)
                     });
                     // 4. Verify the repay amount.
-                    const user2ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user2
-                    });
+                    const user2ETHValueDeposit = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
+                    const user2ETHValueBorrow = await accountsContract.getBorrowBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
                     expect(
-                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                        new BN(user2ETHValueDeposit).add(new BN(user2ETHValueBorrow))
                     ).to.be.bignumber.equal(new BN(0));
                 });
             });
@@ -400,23 +410,33 @@ contract("SavingAccount", async (accounts) => {
                     await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1
                     });
-                    const user1ETHValueBefore = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
-                    });
+                    const user1ETHValueBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user1
+                    );
+                    const user1ETHValueBeforeBorrow = await accountsContract.getBorrowBalanceCurrent(
+                        ETH_ADDRESS,
+                        user1
+                    );
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1,
                         value: ETHNumOfToken.div(new BN(10))
                     });
-                    const user1ETHValueAfter = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
-                    });
+                    const user1ETHValueAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user1
+                    );
+                    const user1ETHValueAfterBorrow = await accountsContract.getBorrowBalanceCurrent(
+                        ETH_ADDRESS,
+                        user1
+                    );
                     // 4. Verify the repay amount.
                     expect(
-                        new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))
+                        new BN(user1ETHValueBeforeDeposit).add(new BN(user1ETHValueBeforeBorrow))
                     ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)));
                     expect(
-                        new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))
+                        new BN(user1ETHValueAfterDeposit).add(new BN(user1ETHValueAfterBorrow))
                     ).to.be.bignumber.equal(new BN(0));
                 });
             });
