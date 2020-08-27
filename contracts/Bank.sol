@@ -391,7 +391,7 @@ contract Bank is Constant, Ownable{
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
-        totalReserve[_token]
+        totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }
 }
