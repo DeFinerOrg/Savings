@@ -248,91 +248,77 @@ contract("SavingAccount", async (accounts) => {
             });
         });
 
-        // context("with ETH", async () => {
-        //     beforeEach(async () => {
-        //         // 1.1 Set up collateral.
-        //         const numOfUSDC = sixPrecision.mul(new BN(10));
-        //         await erc20USDC.transfer(user2, numOfUSDC);
-        //         await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
-        //         await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
-        //             from: user1,
-        //             value: numOfToken
-        //         });
-        //         await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-        //         // 2. Start borrowing.
-        //         await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
-        //     });
-        //
-        //     context("should fail", async () => {
-        //         it("when unsupported token address passed", async () => {
-        //             // 3. Start repayment.
-        //             await expectRevert(
-        //                 savingAccount.repay(dummy, new BN(10), {
-        //                     from: user2,
-        //                     value: new BN(10)
-        //                 }),
-        //                 "Unsupported token"
-        //             );
-        //         });
-        //
-        //         it("when amount is zero", async () => {
-        //             // 3. Start repayment.
-        //             await expectRevert(
-        //                 savingAccount.repay(ETH_ADDRESS, new BN(0), {
-        //                     from: user2,
-        //                     value: new BN(0)
-        //                 }),
-        //                 "Amount is zero"
-        //             );
-        //         });
-        //     });
-        //
-        //     context("should succeed", async () => {
-        //         it("when the repayment ETHAmount is less than the loan amount.", async () => {
-        //             // 3. Start repayment.
-        //             await savingAccount.repay(ETH_ADDRESS, new BN(5), {
-        //                 from: user2,
-        //                 value: new BN(5)
-        //             });
-        //             // 4. Verify the repay amount.
-        //             const user2ETHValueD = await accountsContract.getDepositBalanceCurrent(
-        //                 ETH_ADDRESS,
-        //                 user2
-        //             );
+        context("with ETH", async () => {
+            beforeEach(async () => {
+                // 1.1 Set up collateral.
+                const numOfUSDC = sixPrecision.mul(new BN(10));
+                await erc20USDC.transfer(user2, numOfUSDC);
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
+                await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
+                    from: user1,
+                    value: numOfToken
+                });
+                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
+                // 2. Start borrowing.
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
+            });
 
-        //              const user2ETHValueB = await accountsContract.getBorrowBalanceCurrent(
-        //                 ETH_ADDRESS,
-        //                 user2
-        //             );
-        //             expect(
-        //                 new BN(user2ETHValueD).add(new BN(user2ETHValueB))
-        //             ).to.be.bignumber.equal(new BN(-5));
-        //         });
-        //
-        //         it("when the repayment ETHAmount is greater than the loan amount.", async () => {
-        //             // 3. Start repayment.
-        //             await savingAccount.repay(ETH_ADDRESS, new BN(20), {
-        //                 from: user2,
-        //                 value: new BN(20)
-        //             });
-        //             // 4. Verify the repay amount.
-        //             const user2ETHValueD = await accountsContract.getDepositBalanceCurrent(
-        //                 ETH_ADDRESS,
-        //                 user2
-        //             );
+            context("should fail", async () => {
+                it("when unsupported token address passed", async () => {
+                    // 3. Start repayment.
+                    await expectRevert(
+                        savingAccount.repay(dummy, new BN(10), {
+                            from: user2,
+                            value: new BN(10)
+                        }),
+                        "Unsupported token"
+                    );
+                });
 
-        //              const user2ETHValueB = await accountsContract.getBorrowBalanceCurrent(
-        //                 ETH_ADDRESS,
-        //                 user2
-        //             );
+                it("when amount is zero", async () => {
+                    // 3. Start repayment.
+                    await expectRevert(
+                        savingAccount.repay(ETH_ADDRESS, new BN(0), {
+                            from: user2,
+                            value: new BN(0)
+                        }),
+                        "Amount is zero"
+                    );
+                });
+            });
 
-        //             expect(
-        //                 new BN(user2ETHValueD).add(new BN(user2ETHValueB))
-        //             ).to.be.bignumber.equal(new BN(0));
-        //         });
-        //     });
-        // });
+            context("should succeed", async () => {
+                it("when the repayment ETHAmount is less than the loan amount.", async () => {
+                    // 3. Start repayment.
+                    await savingAccount.repay(ETH_ADDRESS, new BN(5), {
+                        from: user2,
+                        value: new BN(5)
+                    });
+                    // 4. Verify the repay amount.
+                    const user2ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user2
+                    });
+                    expect(
+                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                    ).to.be.bignumber.equal(new BN(5));
+                });
 
+                it("when the repayment ETHAmount is greater than the loan amount.", async () => {
+                    // 3. Start repayment.
+                    await savingAccount.repay(ETH_ADDRESS, new BN(20), {
+                        from: user2,
+                        value: new BN(20)
+                    });
+                    // 4. Verify the repay amount.
+                    const user2ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user2
+                    });
+                    expect(
+                        new BN(user2ETHValue[0]).add(new BN(user2ETHValue[1]))
+                    ).to.be.bignumber.equal(new BN(0));
+                });
+            });
+        });
         context("Repayment of large amounts.", async () => {
             context("should succeed", async () => {
                 it("When the tokenAmount that needs to be repaid is the whole token.", async () => {
@@ -399,50 +385,40 @@ contract("SavingAccount", async (accounts) => {
                     ).to.be.bignumber.equal(new BN(0));
                 });
 
-                // it("When the ETHAmount that needs to be repaid is the whole ETH.", async () => {
-                //     // 1.1 Set up collateral.
-                //     const DAINumOfToken = eighteenPrecision.mul(new BN(1000));
-                //     const ETHNumOfToken = eighteenPrecision.mul(new BN(10));
-                //     await erc20DAI.transfer(user1, DAINumOfToken);
-                //     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user1 });
-                //     await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
-                //     await savingAccount.deposit(ETH_ADDRESS, ETHNumOfToken, {
-                //         from: user2,
-                //         value: ETHNumOfToken
-                //     });
-                //     // 2. Start borrowing.
-                //     await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
-                //         from: user1
-                //     });
-                //     const user1ETHValueBeforeD = await accountsContract.getDepositBalanceCurrent(
-                //         ETH_ADDRESS,
-                //         user1
-                //     );
-                //     const user1ETHValueBeforeB = await accountsContract.getBorrowBalanceCurrent(
-                //         ETH_ADDRESS,
-                //         user1
-                //     );
-                //     // 3. Start repayment.
-                //     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
-                //         from: user1,
-                //         value: ETHNumOfToken.div(new BN(10))
-                //     });
-                //     const user1ETHValueAfterD = await accountsContract.getDepositBalanceCurrent(
-                //         ETH_ADDRESS,
-                //         user1
-                //     );
-                //     const user1ETHValueAfterB = await accountsContract.getBorrowBalanceCurrent(
-                //         ETH_ADDRESS,
-                //         user1
-                //     );
-                //     // 4. Verify the repay amount.
-                //     expect(
-                //         new BN(user1ETHValueBeforeD).add(new BN(user1ETHValueBeforeB))
-                //     ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)));
-                //     expect(
-                //         new BN(user1ETHValueAfterD).add(new BN(user1ETHValueAfterB))
-                //     ).to.be.bignumber.equal(new BN(-14269406391));
-                // });
+                it("When the ETHAmount that needs to be repaid is the whole ETH.", async () => {
+                    // 1.1 Set up collateral.
+                    const DAINumOfToken = eighteenPrecision.mul(new BN(1000));
+                    const ETHNumOfToken = eighteenPrecision.mul(new BN(10));
+                    await erc20DAI.transfer(user1, DAINumOfToken);
+                    await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user1 });
+                    await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, ETHNumOfToken, {
+                        from: user2,
+                        value: ETHNumOfToken
+                    });
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
+                        from: user1
+                    });
+                    const user1ETHValueBefore = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    // 3. Start repayment.
+                    await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
+                        from: user1,
+                        value: ETHNumOfToken.div(new BN(10))
+                    });
+                    const user1ETHValueAfter = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    // 4. Verify the repay amount.
+                    expect(
+                        new BN(user1ETHValueBefore[0]).add(new BN(user1ETHValueBefore[1]))
+                    ).to.be.bignumber.equal(ETHNumOfToken.div(new BN(10)));
+                    expect(
+                        new BN(user1ETHValueAfter[0]).add(new BN(user1ETHValueAfter[1]))
+                    ).to.be.bignumber.equal(new BN(0));
+                });
             });
         });
 
