@@ -42,8 +42,13 @@ require("@openzeppelin/test-helpers/configure")({
 const ETH_ADDR = "0x000000000000000000000000000000000000000E";
 const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+let net_work;
 
 module.exports = async function(deployer, network) {
+
+    console.log("++++++++++++++++"+network+"+++++++++++++++++++");
+    net_work = network;
+
     const erc20Tokens = await getERC20Tokens();
     console.log("=========================getERC20Tokens============================");
     const chainLinkAggregators = await getChainLinkAggregators();
@@ -158,7 +163,11 @@ const initializeTokenInfoRegistry = async (
 };
 
 const getCTokens = async (erc20Tokens) => {
-    const network = process.env.NETWORK;
+    // const network = process.env.NETWORK;
+    const network = net_work;
+
+    console.log("*************"+network+"***********");
+
     var cTokens = new Array();
 
     let isSupportedByCompoundArray = tokenData.tokens.map((token) => token.isSupportedByCompound);
@@ -191,7 +200,9 @@ const getCTokens = async (erc20Tokens) => {
 };
 
 const getERC20Tokens = async () => {
-    const network = process.env.NETWORK;
+    // const network = process.env.NETWORK;
+    const network = net_work;
+
     const tokensToMint = new BN(10000);
     var erc20TokenAddresses = new Array();
 
@@ -219,7 +230,9 @@ const getERC20Tokens = async () => {
 
 const getChainLinkAggregators = async () => {
     var aggregators = new Array();
-    const network = process.env.NETWORK;
+    // const network = process.env.NETWORK;
+    const network = net_work;
+
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
