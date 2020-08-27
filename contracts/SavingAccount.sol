@@ -399,6 +399,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
+
+        // Let's say we compute 1000 liquidationDebtValue.
+        // The borrower borrows 700 value of the target token and 700 value of another token
+        // Although in total, the borrower has enough value to be liquidated, but the liquidator can only repay his target token's debt
+        // So the liquidator can only liquidate 700 value of the borrower's asset.
         if(borrowedTargetTokenValue < vars.liquidationDebtValue) {
             vars.liquidationDebtValue = borrowedTargetTokenValue;
         }
