@@ -137,6 +137,7 @@ const initializeTokenInfoRegistry = async (
     cTokens,
     chainLinkAggregators
 ) => {
+    const network = net_work;
     await Promise.all(
         tokenData.tokens.map(async (token, i) => {
             const tokenAddr = erc20Tokens[i];
@@ -158,7 +159,18 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    await tokenInfoRegistry.addToken(ETH_ADDR, 18, false, true, ZERO_ADDRESS, DEAD_ADDR);
+    if (network == "ropsten" || network == "ropsten-fork") {
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, false, true, tokenData.ETH.ropsten, DEAD_ADDR);
+    } else if (network == "kovan" || network == "kovan-fork") {
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, false, true, tokenData.ETH.kovan, DEAD_ADDR);
+    } else if (network == "rinkeby" || network == "rinkeby-fork") {
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, false, true, tokenData.ETH.rinkeby, DEAD_ADDR);
+    } else if (network == "mainnet" || network == "mainnet-fork") {
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, false, true, tokenData.ETH.mainnet, DEAD_ADDR);
+    } else {
+        // network = development || coverage
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, false, true, ZERO_ADDRESS, DEAD_ADDR);
+    }
     console.log("initializeTokenInfoRegistry: " + "ETH");
 };
 
