@@ -299,6 +299,8 @@
     "ETH": {
         "decimals": 18,
         "latestAnswer": "1",
+        "isFeeEnabled": false,
+        "isSupportedByCompound": true,
 
         "mainnet": {
             "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
