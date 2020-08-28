@@ -160,6 +160,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+                    console.log("check1");
+                    
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
@@ -179,11 +181,14 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     await savingAccount.fastForward(100000);
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    console.log("check2");
 
                     // Repay DAI and withdraw all
                     await savingAccount.repay(addressDAI, HALF_DAI, { from: user2 });
+                    console.log("check3");
                     // TODO:
                     await savingAccount.withdrawAll(erc20DAI.address, { from: user2 }); // 1000001503650800000
+                    console.log("check4");
 
                     let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user2);
                     console.log(

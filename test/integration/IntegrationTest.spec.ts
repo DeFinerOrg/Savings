@@ -1281,7 +1281,7 @@ contract("Integration Tests", async (accounts) => {
                     new BN(ETHbalanceBeforeWithdraw)
                 );
                 // validate user 1 ETH balance
-                //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft);
+                //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft); // minute difference between the two
             });
 
             it("should deposit ETH, borrow more than reserve if collateral is sufficient", async () => {
