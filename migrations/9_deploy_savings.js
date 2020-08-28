@@ -160,13 +160,13 @@ const initializeTokenInfoRegistry = async (
 
     // Add ETH
     if (network == "ropsten" || network == "ropsten-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.ropsten, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.ropsten.cTokenAddress, DEAD_ADDR);
     } else if (network == "kovan" || network == "kovan-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.kovan, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.kovan.cTokenAddress, DEAD_ADDR);
     } else if (network == "rinkeby" || network == "rinkeby-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.rinkeby, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.rinkeby.cTokenAddress, DEAD_ADDR);
     } else if (network == "mainnet" || network == "mainnet-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.mainnet, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.mainnet.cTokenAddress, DEAD_ADDR);
     } else {
         // network = development || coverage
         await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, ZERO_ADDRESS, DEAD_ADDR);
