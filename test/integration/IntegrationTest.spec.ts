@@ -1,13 +1,11 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
-
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../test-helpers/tokenData.json");
-
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -43,22 +41,22 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
-    let erc20BAT: t.ERC20Instance;
-    let erc20ZRX: t.ERC20Instance;
-    let erc20REP: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
+    let erc20BAT: t.Erc20Instance;
+    let erc20ZRX: t.Erc20Instance;
+    let erc20REP: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
-    let erc20contr: t.ERC20Instance;
+    let erc20contr: t.Erc20Instance;
 
     before(async () => {
         // Things to initialize before all test
@@ -607,7 +605,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(user1BalanceChange).to.be.bignumber.equal(borrowAmount);
 
                 const totalDefinerBalanceAfterBorrowtDAIUser1 = await accountsContract.getDepositBalanceCurrent(
-                    erc20DAI.address, 
+                    erc20DAI.address,
                     user1
                 );
                 expect(totalDefinerBalanceAfterBorrowtDAIUser1).to.be.bignumber.equal(numOfDAI);
@@ -1040,7 +1038,7 @@ contract("Integration Tests", async (accounts) => {
                 } */
             });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -1051,7 +1049,7 @@ contract("Integration Tests", async (accounts) => {
                 const borrowAmount = numOfUSDC.div(new BN(10));
                 const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
                     erc20DAI.address,
-                    user1 
+                    user1
                 );
                 const totalDefinerBalanceBeforeDepositUSDC = await accountsContract.getDepositBalanceCurrent(
                     erc20USDC.address,
@@ -1200,9 +1198,9 @@ contract("Integration Tests", async (accounts) => {
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
             });
 
-            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
+            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
         });
-        context("should fail", async () => {});
+        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and liquidate", async () => {
