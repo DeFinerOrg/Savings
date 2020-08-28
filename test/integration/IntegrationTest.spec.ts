@@ -264,8 +264,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
-
+                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -324,7 +323,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -388,7 +387,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -446,7 +445,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        (i == 3 || i == 4) ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -1094,7 +1093,6 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterRepayUSDCUser1).to.be.bignumber.equal(ZERO);
             });
         });
-        context("should fail", async () => { });
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -1440,12 +1438,9 @@ contract("Integration Tests", async (accounts) => {
                 console.log("expectedBalanceAfterBorrow", expectedBalanceAfterBorrow);
                 // Verify that borrow was successful
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
-            });
-
-            it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
         });
-        context("should fail", async () => { });
 
+        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
     });
     context("should fail", async () => {});
 
