@@ -646,6 +646,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
+
                     it("when tokens are withdrawn with interest", async () => {
                         const depositAmount = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, depositAmount);

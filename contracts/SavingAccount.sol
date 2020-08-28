@@ -399,6 +399,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         if(vars.paymentOfLiquidationValue.mul(100) < vars.liquidationDebtValue.mul(liquidationDiscountRatio)) {
             vars.liquidationDebtValue = vars.paymentOfLiquidationValue.mul(100).div(liquidationDiscountRatio);
         }
+
         if(borrowedTargetTokenValue < vars.liquidationDebtValue) {
             vars.liquidationDebtValue = borrowedTargetTokenValue;
         }
