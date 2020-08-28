@@ -387,10 +387,11 @@ contract Bank is Constant, Ownable{
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
+        totalReserve[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }

@@ -26,10 +26,13 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressUSDC: any;
     let addressTUSD: any;
     let addressMKR: any;
+    let cETH_addr: any;
     let cDAI_addr: any;
     let cUSDC_addr: any;
+
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
     let erc20DAI: t.ERC20Instance;
     let erc20USDC: t.ERC20Instance;
     let erc20TUSD: t.ERC20Instance;
@@ -56,8 +59,11 @@ contract("SavingAccount.deposit", async (accounts) => {
         erc20MKR = await ERC20.at(addressMKR);
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
+        cETH = await MockCToken.at(cETH_addr);
+        //console.log("addressCETH", addressCETH);
     });
 
     context("deposit()", async () => {
@@ -392,7 +398,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     });
                 });
             });
-
+          
             context("Compound unsupported Token", async () => {
                 context("Should succeed", async () => {
                     // When Compound unsupported tokens are passed

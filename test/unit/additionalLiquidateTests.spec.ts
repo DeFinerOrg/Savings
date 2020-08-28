@@ -1119,6 +1119,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     await expectRevert(
                         savingAccount.liquidate(user1, addressTUSD, { from: user2 }),
+                      
                         "The borrower doesn't own any debt token specified by the liquidator."
                     );
                 });
