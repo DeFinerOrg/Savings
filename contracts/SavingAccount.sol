@@ -149,7 +149,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         fromCompound(_token, compoundAmount);
 
         // Transfer the token on Ethereum
-        send(msg.sender, _amount, _token);
+        send(_amount, _token);
 
         emit Borrow(_token, msg.sender, address(0), _amount);
     }
@@ -162,14 +162,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        receive(_amount, _token);
 
         uint256 amount = repay(msg.sender, _token, _amount);
 
         // Send the remain money back
         uint256 remain =  _amount.sub(amount);
         if(remain != 0) {
-            send(msg.sender, remain, _token);
+            send(remain, _token);
         }
 
         emit Repay(_token, msg.sender, address(0), amount);
@@ -207,7 +207,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token)  onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        receive(msg.sender, _amount, _token);
+        receive(_amount, _token);
         deposit(msg.sender, _token, _amount);
 
         emit Deposit(_token, msg.sender, address(0), _amount);
@@ -245,7 +245,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, amount, _token);
+        send(amount, _token);
 
         emit Withdraw(_token, msg.sender, address(0), amount);
     }
@@ -320,7 +320,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
         uint256 actualAmount = withdraw(msg.sender, _token, amount);
-        send(msg.sender, actualAmount, _token);
+        send(actualAmount, _token);
 
         emit WithdrawAll(_token, msg.sender, address(0), actualAmount);
     }
@@ -442,7 +442,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
          uint256 amount = deFinerFund[_token];
          if (amount > 0) {
              deFinerFund[_token] = 0;
-             send(globalConfig.deFinerCommunityFund(), amount, _token);
+             send(amount, _token);
          }
      }
 
@@ -474,31 +474,29 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
     /**
      * Receive the amount of token from msg.sender
-     * @param _from from address
      * @param _amount amount of token
      * @param _token token address
      */
-    function receive(address _from, uint256 _amount, address _token) private {
+    function receive(uint256 _amount, address _token) private {
         if (_isETH(_token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
             require(msg.value == 0, "msg.value must be 0 when receiving tokens");
-            IERC20(_token).safeTransferFrom(_from, address(this), _amount);
+            IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         }
     }
 
     /**
      * Send the amount of token to an address
-     * @param _to address of the token receiver
      * @param _amount amount of token
      * @param _token token address
      */
-    function send(address _to, uint256 _amount, address _token) private {
+    function send(uint256 _amount, address _token) private {
         if (_isETH(_token)) {
             msg.sender.transfer(_amount);
         } else {
-            IERC20(_token).safeTransfer(_to, _amount);
+            IERC20(_token).safeTransfer(msg.sender, _amount);
         }
     }
 
