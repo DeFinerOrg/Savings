@@ -155,7 +155,7 @@ contract Bank is Ownable, Initializable{
                 }
             }
             else {
-                // totalReserve[_token] = totalReserve[_token].sub(_amount);
+                totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
         return compoundAmount;
