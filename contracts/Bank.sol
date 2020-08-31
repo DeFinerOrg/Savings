@@ -74,19 +74,19 @@ contract Bank is Ownable, Initializable{
      * Update total amount of token lended as the intersted earned from the borrower
      * @param _token token address
      */
-    function updateTotalLoan(address _token) internal {
-        uint balance = totalLoans[_token];
-        uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
-        if(
-            rate == 0 ||
-            balance == 0 ||
-            globalConfig.constants().INT_UNIT() > rate
-        ) {
-            totalLoans[_token] = balance;
-        } else {
-            totalLoans[_token] = balance.mul(rate).div(globalConfig.constants().INT_UNIT());
-        }
-    }
+    // function updateTotalLoan(address _token) internal {
+    //     uint balance = totalLoans[_token];
+    //     uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
+    //     if(
+    //         rate == 0 ||
+    //         balance == 0 ||
+    //         globalConfig.constants().INT_UNIT() > rate
+    //     ) {
+    //         totalLoans[_token] = balance;
+    //     } else {
+    //         totalLoans[_token] = balance.mul(rate).div(globalConfig.constants().INT_UNIT());
+    //     }
+    // }
 
     /**
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
@@ -163,7 +163,7 @@ contract Bank is Ownable, Initializable{
 
     function update (address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
-        updateTotalLoan(_token);
+        // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }
@@ -281,6 +281,7 @@ contract Bank is Ownable, Initializable{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
+        uint256 previousCheckpoint = lastCheckpoint[_token];
         if (lastCheckpoint[_token] == 0) {
             if(cToken == address(0)) {
                 compoundPool[_token].supported = false;
@@ -326,6 +327,13 @@ contract Bank is Ownable, Initializable{
                 lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
             }
         }
+
+        // Update the total loan
+        if(borrowRateIndex[_token][blockNumber] != UNIT) {
+            totalLoans[_token] = totalLoans[_token].mul(borrowRateIndex[_token][blockNumber])
+                .div(borrowRateIndex[_token][previousCheckpoint]);
+        }
+
         emit UpdateIndex(_token, depositeRateIndex[_token][block.number], borrowRateIndex[_token][block.number]);
     }
 
