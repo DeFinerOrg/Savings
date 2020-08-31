@@ -8,7 +8,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -30,13 +30,15 @@ contract("SavingAccount.deposit", async (accounts) => {
     let addressCTokenForUSDC: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
 
-    before(async () => {
+
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });

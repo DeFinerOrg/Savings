@@ -1,0 +1,7 @@
+{
+    "require": [
+        "@nomiclabs/buidler/register"
+    ],
+    "recursive": "test",
+    "enableTimeouts": false
+}

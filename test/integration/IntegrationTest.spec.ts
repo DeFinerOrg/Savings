@@ -9,6 +9,7 @@ const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
+
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
@@ -57,19 +58,26 @@ contract("Integration Tests", async (accounts) => {
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
     let erc20contr: t.Erc20Instance;
-
-    before(async () => {
+    // testEngine = new TestEngine();
+    // testEngine.deploy("scriptFlywheel.scen");
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
+
         testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async () => {
+
         savingAccount = await testEngine.deploySavingAccount();
+
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
+
         accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -104,6 +112,8 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit and Withdraw", async () => {
         context("should succeed", async () => {
             it("should deposit all tokens and withdraw all tokens", async () => {
+
+                // this.setTimeout(done, 1500000);
                 const numOfToken = new BN(1000);
 
                 for (let i = 0; i < 9; i++) {

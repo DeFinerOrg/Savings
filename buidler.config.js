@@ -35,7 +35,6 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-            timeout: 200000000
 
         },
         buidlerevm: {
@@ -43,7 +42,6 @@ module.exports = {
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
-            timeout: 2000000000
         }
     },
 
