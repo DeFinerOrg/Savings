@@ -263,6 +263,28 @@ contract Accounts is Constant, Ownable{
     }
 
     /**
+     * Calculate an account's borrow power based on token's LTV
+     */
+    function getBorrowPower(address _borrower) public returns (uint256 power) {
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+            if (isUserHasDeposits(_borrower, i)) {
+                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(token != ETH_ADDR) {
+                    divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(token));
+                }
+                // globalConfig.bank().newRateIndexCheckpoint(token);
+                power = power.add(getDepositBalanceCurrent(token, _borrower)
+                    .mul(globalConfig.tokenInfoRegistry().priceFromIndex(i))
+                    .mul(globalConfig.tokenInfoRegistry().getBorrowLTV(token)).div(100)
+                    .div(divisor)
+                );
+            }
+        }
+        return power;
+    }
+
+    /**
      * Get current deposit balance of a token
      * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
      */
