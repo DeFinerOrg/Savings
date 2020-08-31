@@ -99,10 +99,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     function transfer(address _to, address _token, uint _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        withdraw(msg.sender, _token, _amount);
-        deposit(_to, _token, _amount);
+        uint256 amount =  withdraw(msg.sender, _token, _amount);
+        deposit(_to, _token, amount);
 
-        emit Transfer(_token, msg.sender, _to, _amount);
+        emit Transfer(_token, msg.sender, _to, amount);
     }
 
     /**
@@ -244,7 +244,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     function withdraw(address _token, uint256 _amount) public onlyValidToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = withdraw(msg.sender, _token, _amount);
-        send(msg.sender, _amount, _token);
+        send(msg.sender, amount, _token);
 
         emit Withdraw(_token, msg.sender, address(0), amount);
     }
@@ -319,10 +319,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Get the total amount of token for the account
         uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
-        withdraw(msg.sender, _token, amount);
-        send(msg.sender, amount, _token);
+        uint256 actualAmount = withdraw(msg.sender, _token, amount);
+        send(msg.sender, actualAmount, _token);
 
-        emit WithdrawAll(_token, msg.sender, address(0), amount);
+        emit WithdrawAll(_token, msg.sender, address(0), actualAmount);
     }
 
     struct LiquidationVars {
