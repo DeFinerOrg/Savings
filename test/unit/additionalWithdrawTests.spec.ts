@@ -335,7 +335,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
                 await expectRevert(
                     savingAccount.withdrawAll(erc20DAI.address, { from: user1 }),
-                    "Insufficient collateral."
+                    "given: Insufficient collateral when withdraw."
                 );
             });
             it("Deposit DAI, borrows USDC and wants to withdraw", async () => {

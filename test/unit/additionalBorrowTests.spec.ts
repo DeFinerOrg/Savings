@@ -193,7 +193,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Insufficient collateral."
+                                "Insufficient collateral when borrow."
                             );
                         });
                         it("Deposits TUSD, borrows WBTC and the collateral is not enough", async () => {
@@ -237,7 +237,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = eightPrecision.mul(TUSDPrice).div(WBTCPrice);
                             await expectRevert(
                                 savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
-                                "Insufficient collateral."
+                                "Insufficient collateral when borrow."
                             );
                         });
                         it("Deposits WBTC, borrows TUSD and the amount is zero", async () => {

@@ -169,7 +169,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                                 from: user2
                             }
                         ),
-                        "Insufficient collateral."
+                        "Insufficient collateral when withdraw."
                     );
                 });
             });
