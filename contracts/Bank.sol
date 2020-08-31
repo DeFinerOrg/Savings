@@ -85,24 +85,6 @@ contract Bank is Constant, Ownable{
     }
 
     /**
-     * Update total amount of token lended as the intersted earned from the borrower
-     * @param _token token address
-     */
-    function updateTotalLoan(address _token) public onlySavingAccount{
-        uint balance = totalLoans[_token];
-        uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
-        if(
-            rate == 0 ||
-            balance == 0 ||
-            INT_UNIT > rate
-        ) {
-            totalLoans[_token] = balance;
-        } else {
-            totalLoans[_token] = balance.mul(rate).div(INT_UNIT);
-        }
-    }
-
-    /**
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
      * by calling updateTotalCompound. Otherwise, totalCompound may not equal to the exact amount of the
      * token in Compound.
@@ -279,8 +261,8 @@ contract Bank is Constant, Ownable{
      */
     function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
 
+        // return if the rate check point already exists
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
-
         if (blockNumber == lastCheckpoint[_token])
             return;
 
@@ -288,6 +270,7 @@ contract Bank is Constant, Ownable{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
+        uint256 previousCheckpoint = lastCheckpoint[_token];
         if (lastCheckpoint[_token] == 0) {
             if(cToken == address(0)) {
                 compoundPool[_token].supported = false;
@@ -333,6 +316,13 @@ contract Bank is Constant, Ownable{
                 lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
             }
         }
+
+        // Update the total loan
+        if(borrowRateIndex[_token][blockNumber] != UNIT) {
+            totalLoans[_token] = totalLoans[_token].mul(borrowRateIndex[_token][blockNumber])
+                .div(borrowRateIndex[_token][previousCheckpoint]);
+        }
+
         emit UpdateIndex(_token, depositeRateIndex[_token][block.number], borrowRateIndex[_token][block.number]);
     }
 

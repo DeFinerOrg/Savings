@@ -145,7 +145,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Borrow()); // Last parameter false means withdraw token
         fromCompound(_token, compoundAmount);
 
@@ -194,7 +193,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, amount, globalConfig.bank().Repay());
         toCompound(_token, compoundAmount);
 
@@ -235,7 +233,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Deposit()); // Last parameter false means deposit token
         toCompound(_token, compoundAmount);
     }
@@ -301,7 +298,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         globalConfig.bank().updateTotalCompound(_token);
-        globalConfig.bank().updateTotalLoan(_token);
         uint compoundAmount = globalConfig.bank().updateTotalReserve(_token, _amount, globalConfig.bank().Withdraw());
         fromCompound(_token, compoundAmount);
 
