@@ -212,6 +212,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         emit Deposit(_token, msg.sender, address(0), _amount);
     }
+    
 
     /**
      * Deposit the amount of token to the saving pool.
@@ -453,9 +454,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function toCompound(address _token, uint _amount) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if(_amount == 0) {
+            return;
+        }
         if (_token == ETH_ADDR) {
             ICETH(cToken).mint.value(_amount)();
-        } else {
+        }
+        else {
             uint256 success = ICToken(cToken).mint(_amount);
             require(success == 0, "mint failed");
         }
@@ -467,6 +472,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) public {
+        if(_amount == 0) {
+            return;
+        }
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint256 success = ICToken(cToken).redeemUnderlying(_amount);
         require(success == 0, "redeemUnderlying failed");
