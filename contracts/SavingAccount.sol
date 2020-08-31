@@ -126,7 +126,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(2));
-        SavingLib.fromCompound(globalConfig, _token, compoundAmount);
+
+        if(compoundAmount > 0) {
+            SavingLib.fromCompound(globalConfig, _token, compoundAmount);
+        }
 
         // Transfer the token on Ethereum
         SavingLib.send(globalConfig, _amount, _token);
@@ -152,8 +155,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token,  _amount.sub(remain), uint8(3));
-        SavingLib.toCompound(globalConfig, _token, compoundAmount);
-
+        if(compoundAmount > 0) {
+            SavingLib.toCompound(globalConfig, _token, compoundAmount);
+        }
         // Send the remain money back
         if(remain != 0) {
             SavingLib.send(globalConfig, remain, _token);
@@ -204,8 +208,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
         SavingLib.withdraw(globalConfig, msg.sender, _token, amount, getBlockNumber());
-        SavingLib.send(globalConfig, amount, _token);
-
+        if(amount != 0) {
+            SavingLib.send(globalConfig, amount, _token);
+        }
         emit WithdrawAll(_token, msg.sender, amount);
     }
 

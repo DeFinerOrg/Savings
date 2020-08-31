@@ -78,7 +78,9 @@ library SavingLib {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(0));
-        toCompound(globalConfig, _token, compoundAmount);
+        if(compoundAmount > 0) {
+            toCompound(globalConfig, _token, compoundAmount);   
+        }
     }
 
     /**
@@ -106,7 +108,9 @@ library SavingLib {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(1));
-        fromCompound(globalConfig, _token, compoundAmount);
+        if(compoundAmount > 0) {
+            fromCompound(globalConfig, _token, compoundAmount);
+        }
 
         return amount;
     }
