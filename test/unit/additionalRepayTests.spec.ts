@@ -53,8 +53,9 @@ contract("SavingAccount.repay", async (accounts) => {
     const numOfUSDC = sixPrecision;
 
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0)
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
