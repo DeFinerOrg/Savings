@@ -127,7 +127,9 @@ library SavingLib {
             globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
         } else {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
-            require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
+            if(cToken != address(0)) {
+                require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
+            }
             // uint256 amount = IERC20(_token).balanceOf(address(this));
             require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), IERC20(_token).balanceOf(address(this))), "transfer failed");
         }
