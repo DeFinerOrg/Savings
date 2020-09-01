@@ -9,7 +9,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
@@ -40,12 +40,15 @@ contract("RemainingCoverage", async (accounts) => {
     let addressDAI: any;
     let addressUSDC: any;
     let tempContractAddress: any;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20contr: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20contr: t.Erc20Instance;
+    // testEngine = new TestEngine();
+    // testEngine.deploy("scriptFlywheel.scen");
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
@@ -108,14 +111,16 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
+        context("should fail", async () => { });
+
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
 
-                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
-                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
+                const erc20DAI: t.Erc20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.Erc20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const ONE_DAI = eighteenPrecision;
@@ -168,8 +173,8 @@ contract("RemainingCoverage", async (accounts) => {
                 const addressUSDC = tokens[1];
                 //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
-                const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
-                const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
+                const erc20DAI: t.Erc20Instance = await ERC20.at(addressDAI);
+                const erc20USDC: t.Erc20Instance = await ERC20.at(addressUSDC);
 
                 // 2. Approve 1000 tokens
                 const numOfToken = new BN(1000);
@@ -201,6 +206,12 @@ contract("RemainingCoverage", async (accounts) => {
                     "Unauthorized call"
                 );
             });
+            // definerCommunityFund?
+        });
+
+        context("should succeed", async () => {
+            it("when valid token address is passed", async () => { });
+            // verify deFinerFund == 0, transfer()
         });
     });
 
@@ -209,7 +220,7 @@ contract("RemainingCoverage", async (accounts) => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
                     globalConfig.updatedeFinerCommunityFund(user1, { from: user1 }),
-                    "Ownable: caller is not the owner."
+                    "Ownable: caller is not the owner"
                 );
             });
         });

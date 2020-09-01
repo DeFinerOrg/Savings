@@ -9,17 +9,17 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
+
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
-
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -53,12 +53,12 @@ contract("SavingAccount.borrow", async (accounts) => {
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -70,8 +70,10 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
+
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });

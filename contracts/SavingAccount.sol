@@ -4,6 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
+// import "@nomiclabs/buidler/console.sol";
 import "./lib/SavingLib.sol";
 import "./lib/Utils.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
@@ -47,6 +48,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
     constructor() public {
         // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
+        // console.log("Start to construct", msg.sender);
     }
 
     /**

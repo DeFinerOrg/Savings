@@ -5,15 +5,20 @@ var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
-const SavingAccount = artifacts.require("SavingAccount");
-const SavingAccountWithController = artifacts.require("SavingAccountWithController");
+const SavingAccount: any = artifacts.require("SavingAccount");
+const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
+const TokenRegistry: any = artifacts.require("TokenRegistry");
+const AccountTokenLib = artifacts.require("AccountTokenLib");
+const BitmapLib = artifacts.require("BitmapLib");
+const Utils: any = artifacts.require('Utils');
+const SavingLib = artifacts.require('SavingLib');
+
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
 const Bank: t.BankContract = artifacts.require("Bank");
-const Accounts: t.AccountsContract = artifacts.require("Accounts");
+const Accounts: any = artifacts.require("Accounts");
 
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
@@ -41,7 +46,7 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
-    public async deploy(script: String) {
+    public deploy(script: String) {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -95,7 +100,7 @@ export class TestEngine {
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
                 let addr;
-                if (network == "development" || "coverage") {
+                if (network == "development" || "coverage" || !network) {
                     addr = (
                         await MockChainLinkAggregator.new(
                             token.decimals,
@@ -121,18 +126,52 @@ export class TestEngine {
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
+
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
+
         const cTokens: Array<string> = await this.getCompoundAddresses();
+
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
 
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
 
-        const bank = await Bank.new();
-        await bank.initialize(this.globalConfig.address);
+        this.bank = await Bank.new();
+        await this.bank.initialize(this.globalConfig.address);
 
-        const accounts = await Accounts.new();
-        await accounts.initialize(this.globalConfig.address);
+        const accountTokenLib = await AccountTokenLib.new();
+        const bitMapLib = await BitmapLib.new();
+        const utils = await Utils.new();
+        Utils.setAsDeployed(utils);
+
+        try {
+            await SavingLib.link(utils);
+        } catch (err) {
+            // console.log(err);
+        }
+
+        const savingLib = await SavingLib.new();
+
+        AccountTokenLib.setAsDeployed(accountTokenLib);
+        BitmapLib.setAsDeployed(bitMapLib);
+        SavingLib.setAsDeployed(savingLib);
+
+        try {
+            await SavingAccount.link(utils);
+            await SavingAccount.link(savingLib);
+            await SavingAccountWithController.link(utils);
+            await SavingAccountWithController.link(savingLib);
+            await Accounts.link(utils);
+            await Accounts.link(accountTokenLib);
+            await TokenRegistry.link(utils);
+
+        } catch (error) {
+            // console.log(error);
+        }
+
+        this.accounts = await Accounts.new();
+        Accounts.setAsDeployed(this.accounts);
+        await this.accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
@@ -145,6 +184,8 @@ export class TestEngine {
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
+        // ProxyAdmin.setAsDeployed(proxyAdmin);
+
         const savingAccountProxy = await SavingAccountProxy.new();
         const accountsProxy = await AccountsProxy.new();
         const bankProxy = await BankProxy.new();
@@ -158,8 +199,9 @@ export class TestEngine {
             this.constant.address,
             chainLinkOracle.address
         );
- 
+
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        SavingAccountWithController.setAsDeployed(savingAccount);
         // console.log("ERC20", this.erc20Tokens);
         // console.log("cTokens", cTokens);
         const initialize_data = savingAccount.contract.methods
@@ -171,13 +213,13 @@ export class TestEngine {
             )
             .encodeABI();
 
-        const accounts_initialize_data = bank.contract.methods
+        const accounts_initialize_data = this.bank.contract.methods
             .initialize(
                 this.globalConfig.address
             )
             .encodeABI();
 
-        const bank_initialize_data = accounts.contract.methods
+        const bank_initialize_data = this.accounts.contract.methods
             .initialize(
                 this.globalConfig.address
             )
@@ -190,13 +232,13 @@ export class TestEngine {
         );
 
         await accountsProxy.initialize(
-            accounts.address,
+            this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
         await bankProxy.initialize(
-            bank.address,
+            this.bank.address,
             proxyAdmin.address,
             bank_initialize_data
         );
