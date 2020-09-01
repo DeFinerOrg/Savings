@@ -164,6 +164,7 @@ contract Bank is Ownable, Initializable{
     function update (address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
+        require(getPoolAmount(_token) >= _amount, "Lack of liquidity.");
         compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }

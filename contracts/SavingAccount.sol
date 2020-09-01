@@ -125,7 +125,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable 
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(2));
 
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
+        // require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
 
         if(compoundAmount > 0) {
             SavingLib.fromCompound(globalConfig, _token, compoundAmount);

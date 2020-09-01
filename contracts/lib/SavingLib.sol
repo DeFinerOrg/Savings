@@ -106,7 +106,7 @@ library SavingLib {
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(1));
 
         // Check if there are enough tokens in the pool.
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
+        // require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
         if(compoundAmount > 0) {
             fromCompound(globalConfig, _token, compoundAmount);
         }
