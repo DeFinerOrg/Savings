@@ -109,36 +109,43 @@ contract("Integration Tests", async (accounts) => {
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
                 const numOfBAT = eighteenPrecision.mul(new BN(100));
-                const borrowAmount = eighteenPrecision.mul(20);
+                const borrowAmount = eighteenPrecision.mul(new BN(20));
+                console.log("const");
 
                 await erc20BAT.transfer(user2, numOfBAT);
+                await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
                 await savingAccount.deposit(ETH_ADDRESS, numOfETH, { 
                     from: user1,
                     value: numOfETH
                 });
+                console.log("uesr1 deposit 1ETH");
                 // uesr2 deposit 100BAT
                 await savingAccount.deposit(addressBAT, numOfBAT, { from: user2 });
+                console.log("uesr2 deposit 100BAT");
                 const user1Deposit = await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
                 const user2Deposit = await accountsContract.getDepositBalanceCurrent(addressBAT, user2);
 
                 // user1 borrow 20BAT
                 await savingAccount.borrow(addressBAT, borrowAmount, { from: user1 });
+                console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 
-                // user1 repay 2BAT
-                await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
+                // user1 repay 5BAT
+                await savingAccount.repay(addressBAT, borrowAmount.div(new BN(4)), { from: user1 });
+                console.log("user1 repay 5BAT");
                 const user1Borrow2 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
 
                 // user1 repay 20BAT(repay all BAT)
                 await savingAccount.repay(addressBAT, borrowAmount, { from: user1 });
+                console.log("user1 repay 20BAT(repay all BAT)");
                 const user1Borrow3 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
 
                 expect(user1Deposit).to.be.bignumber.equal(numOfETH);
                 expect(user2Deposit).to.be.bignumber.equal(numOfBAT);
                 expect(user1Borrow1).to.be.bignumber.equal(borrowAmount);
-                expect(user1Borrow2).to.be.bignumber.equal(borrowAmount.sub(borrowAmount.div(new BN(10))));
+                expect(user1Borrow2).to.be.bignumber.equal(borrowAmount.sub(borrowAmount.div(new BN(4))));
                 expect(user1Borrow3).to.be.bignumber.equal(new BN(0));
 
             });

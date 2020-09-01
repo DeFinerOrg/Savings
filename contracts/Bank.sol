@@ -121,10 +121,7 @@ contract Bank is Ownable, Initializable{
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
         } else {
-            // require(
-            //     totalReserve[_token].add(totalCompound[cToken]) >= _amount,
-            //     "Not enough tokens in the pool."
-            // );
+            require(getPoolAmount(_token) >= _amount, "Lack of liquidity.");
 
             // Total amount of token after withdraw or borrow
             if (_action == uint8(1))
@@ -164,7 +161,6 @@ contract Bank is Ownable, Initializable{
     function update (address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
-        require(getPoolAmount(_token) >= _amount, "Lack of liquidity.");
         compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }
