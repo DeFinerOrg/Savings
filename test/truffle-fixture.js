@@ -4,6 +4,9 @@ var tokenData = require("../test-helpers/tokenData.json");
 const { BN } = require("@openzeppelin/test-helpers");
 
 const AccountTokenLib = artifacts.require("AccountTokenLib");
+const BitmapLib = artifacts.require("BitmapLib");
+const Utils = artifacts.require('Utils');
+const SavingLib = artifacts.require('SavingLib');
 const Accounts = artifacts.require("Accounts");
 const Bank = artifacts.require("Bank");
 
@@ -38,12 +41,38 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function (deployer, network) {
     // Deploy Libs
+    const globalConfig = await GlobalConfig.new();
+    GlobalConfig.setAsDeployed(globalConfig);
     const accountTokenLib = await AccountTokenLib.new();
-    AccountTokenLib.setAsDeployed(accountTokenLib);
-    try {
-        Accounts.link(accountTokenLib);
-    } catch (err) {
+    const bitMapLib = await BitmapLib.new();
+    const utils = await Utils.new();
+    Utils.setAsDeployed(utils);
 
+    try {
+        await SavingLib.link(utils);
+    } catch (err) {
+        console.log(err);
+    }
+
+    const savingLib = await SavingLib.new();
+
+    AccountTokenLib.setAsDeployed(accountTokenLib);
+    BitmapLib.setAsDeployed(bitMapLib);
+    SavingLib.setAsDeployed(savingLib);
+
+    try {
+        await SavingAccount.link(utils);
+
+        await SavingAccount.link(savingLib);
+        await SavingAccountWithController.link(utils);
+        await SavingAccountWithController.link(savingLib);
+
+        await Accounts.link(utils);
+        await Accounts.link(accountTokenLib);
+        await TokenRegistry.link(utils);
+
+    } catch (error) {
+        console.log(error);
     }
     // await deployer.deploy(AccountTokenLib);
     // await deployer.link(AccountTokenLib, Accounts);
@@ -62,13 +91,12 @@ module.exports = async function (deployer, network) {
     const chainLinkAggregators = await getChainLinkAggregators();
     const cTokens = await getCTokens(erc20Tokens);
 
-    const globalConfig = await GlobalConfig.new();
-    GlobalConfig.setAsDeployed(globalConfig);
     const constant = await Constant.new();
     Constant.setAsDeployed(constant);
 
     const accounts = await Accounts.new();
     Accounts.setAsDeployed(accounts);
+
     await accounts.initialize(globalConfig.address);
 
     const bank = await Bank.new();
@@ -104,7 +132,9 @@ module.exports = async function (deployer, network) {
         savingAccountProxy.address,
         tokenInfoRegistry.address,
         accounts.address,
-        constant.address
+        constant.address,
+        chainLinkOracle.address
+
     );
 
     // Deploy SavingAccount contract

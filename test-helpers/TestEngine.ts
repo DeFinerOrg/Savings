@@ -5,11 +5,15 @@ var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
-const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccount: any = artifacts.require("SavingAccount");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
+const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
+const BitmapLib = artifacts.require("BitmapLib");
+const Utils: any = artifacts.require('Utils');
+const SavingLib = artifacts.require('SavingLib');
+
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
@@ -134,14 +138,37 @@ export class TestEngine {
 
         this.bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
+
         const accountTokenLib = await AccountTokenLib.new();
-        AccountTokenLib.setAsDeployed(accountTokenLib);
+        const bitMapLib = await BitmapLib.new();
+        const utils = await Utils.new();
+        Utils.setAsDeployed(utils);
+
         try {
-            Accounts.link(accountTokenLib);
+            await SavingLib.link(utils);
+        } catch (err) {
+            // console.log(err);
+        }
+
+        const savingLib = await SavingLib.new();
+
+        AccountTokenLib.setAsDeployed(accountTokenLib);
+        BitmapLib.setAsDeployed(bitMapLib);
+        SavingLib.setAsDeployed(savingLib);
+
+        try {
+            await SavingAccount.link(utils);
+            await SavingAccount.link(savingLib);
+            await SavingAccountWithController.link(utils);
+            await SavingAccountWithController.link(savingLib);
+            await Accounts.link(utils);
+            await Accounts.link(accountTokenLib);
+            await TokenRegistry.link(utils);
 
         } catch (error) {
-            // console.log("already linked");
+            // console.log(error);
         }
+
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
         await this.accounts.initialize(this.globalConfig.address);

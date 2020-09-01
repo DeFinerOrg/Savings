@@ -7,11 +7,8 @@ import "../SavingAccount.sol";
 import "../Bank.sol";
 import "../Accounts.sol";
 import "./Constant.sol";
-<<<<<<< HEAD
 // import "@nomiclabs/buidler/console.sol";
-=======
 import "../oracle/ChainLinkAggregator.sol";
->>>>>>> jitendra/mainnet
 
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;
