@@ -7,6 +7,7 @@ import "../SavingAccount.sol";
 import "../Bank.sol";
 import "../Accounts.sol";
 import "./Constant.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;

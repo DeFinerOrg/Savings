@@ -6,6 +6,7 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Ownable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -143,7 +144,7 @@ contract Accounts is Constant, Ownable{
 
     function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInBorrowBitmap(_accountAddr, tokenIndex);
@@ -151,6 +152,15 @@ contract Accounts is Constant, Ownable{
         tokenInfo.borrow(_amount, accruedRate, _block);
     }
 
+    // function getDepositAccruedRate(address _accountAddr, address _token) public view returns(uint256){
+    //     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+    //     return globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+    // }
+
+    // function getBorrowAccruedRate(address _accountAddr, address _token) public view returns(uint256){
+    //     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+    //     return globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+    // }
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
@@ -254,6 +264,28 @@ contract Accounts is Constant, Ownable{
     }
 
     /**
+     * Calculate an account's borrow power based on token's LTV
+     */
+    function getBorrowPower(address _borrower) public returns (uint256 power) {
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+            if (isUserHasDeposits(_borrower, i)) {
+                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
+                uint divisor = INT_UNIT;
+                if(token != ETH_ADDR) {
+                    divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(token));
+                }
+                // globalConfig.bank().newRateIndexCheckpoint(token);
+                power = power.add(getDepositBalanceCurrent(token, _borrower)
+                    .mul(globalConfig.tokenInfoRegistry().priceFromIndex(i))
+                    .mul(globalConfig.tokenInfoRegistry().getBorrowLTV(token)).div(100)
+                    .div(divisor)
+                );
+            }
+        }
+        return power;
+    }
+
+    /**
      * Get current deposit balance of a token
      * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
      */
@@ -292,7 +324,24 @@ contract Accounts is Constant, Ownable{
         }
         return borrowETH;
     }
-
+    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+    if (_i == 0) {
+        return "0";
+    }
+    uint j = _i;
+    uint len;
+    while (j != 0) {
+        len++;
+        j /= 10;
+    }
+    bytes memory bstr = new bytes(len);
+    uint k = len - 1;
+    while (_i != 0) {
+        bstr[k--] = byte(uint8(48 + _i % 10));
+        _i /= 10;
+    }
+    return string(bstr);
+}
     /**
 	 * Check if the account is liquidatable
      * @param _borrower borrower's account
@@ -314,6 +363,11 @@ contract Accounts is Constant, Ownable{
 
         uint256 totalBorrow = getBorrowETH(_borrower);
         uint256 totalCollateral = getDepositETH(_borrower);
+
+        // uint256 temp1 = totalBorrow.mul(100);
+        // uint256 temp2 = totalCollateral.mul(liquidationDiscountRatio);
+        // // require(false, uint2str(temp1));
+        // require(false, uint2str(temp2));
 
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that

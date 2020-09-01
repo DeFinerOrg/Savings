@@ -148,8 +148,12 @@ const getCTokens = async (erc20Tokens) => {
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
-            if (network == "ropsten") {
+            if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.cTokenAddress;
+            } else if (network == "kovan" || network == "kovan-fork") {
+                addr = token.kovan.cTokenAddress;
+            } else if (network == "rinkeby" || network == "rinkeby-fork") {
+                addr = token.rinkeby.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
@@ -176,8 +180,12 @@ const getERC20Tokens = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "ropsten") {
+            if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.tokenAddress;
+            } else if (network == "kovan" || network == "kovan-fork") {
+                addr = token.kovan.tokenAddress;
+            }  else if (network == "rinkeby" || network == "rinkeby-fork") {
+                addr = token.rinkeby.tokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
@@ -197,8 +205,12 @@ const getChainLinkAggregators = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "ropsten") {
+            if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.aggregatorAddress;
+            } else if (network == "kovan" || network == "kovan-fork") {
+                addr = token.kovan.aggregatorAddress;
+            }  else if (network == "rinkeby" || network == "rinkeby-fork") {
+                addr = token.rinkeby.aggregatorAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.aggregatorAddress;
             } else {

@@ -12,7 +12,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.borrow", async function (accounts) {
+contract("SavingAccount.borrow", async (accounts) => {
 
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
@@ -46,15 +46,11 @@ contract("SavingAccount.borrow", async function (accounts) {
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
     let addressCTokenForWBTC: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.Erc20Instance;
@@ -68,7 +64,6 @@ contract("SavingAccount.borrow", async function (accounts) {
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
-
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
@@ -104,7 +99,7 @@ contract("SavingAccount.borrow", async function (accounts) {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
         erc20WBTC = await ERC20.at(addressWBTC);
 
         erc20DAI = await ERC20.at(addressDAI);
@@ -116,13 +111,9 @@ contract("SavingAccount.borrow", async function (accounts) {
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -286,8 +277,6 @@ contract("SavingAccount.borrow", async function (accounts) {
                         new BN(10)
                     );
                 });
-
-                it("when borrow amount of token less then ILTV of his collateral value");
 
                 it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
                     await erc20DAI.transfer(user1, eighteenPrecision);
@@ -501,8 +490,17 @@ contract("SavingAccount.borrow", async function (accounts) {
                 // });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: There are still problems with the price acquisition of ETH.
                  */
+                /* it("when supported token address is passed", async () => {
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                }); */
 
                 // it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
                 //     // 2. Start borrowing.
@@ -518,7 +516,7 @@ contract("SavingAccount.borrow", async function (accounts) {
                 // });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: lack of liquidity..
                  */
                 // it("When the amount is large, deposit DAI to borrow ETH.", async () => {
                 //     const numOfDAI = eighteenPrecision.mul(new BN(10));
@@ -605,7 +603,7 @@ contract("SavingAccount.borrow", async function (accounts) {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
-                        "Insufficient collateral."
+                        "Insufficient collateral when borrow."
                     );
                 });
 
@@ -784,7 +782,7 @@ contract("SavingAccount.borrow", async function (accounts) {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(1001), { from: user1 }),
-                        "Insufficient collateral."
+                        "Insufficient collateral when borrow."
                     );
                 });
             });
