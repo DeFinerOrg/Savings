@@ -121,10 +121,10 @@ contract Bank is Ownable, Initializable{
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
         } else {
-            require(
-                totalReserve[_token].add(totalCompound[cToken]) >= _amount,
-                "Not enough tokens in the pool."
-            );
+            // require(
+            //     totalReserve[_token].add(totalCompound[cToken]) >= _amount,
+            //     "Not enough tokens in the pool."
+            // );
 
             // Total amount of token after withdraw or borrow
             if (_action == uint8(1))
