@@ -72,7 +72,20 @@ contract Bank is Constant, Ownable{
         // totalLoans[_token] = U   totalReserve[_token] = R
         return totalCompound[cToken].add(totalLoans[_token]).add(totalReserve[_token]); // return totalAmount = C + U + R
     }
+    function addressToString(address _addr) public pure returns(string memory) 
+    {
+        bytes32 value = bytes32(uint256(_addr));
+        bytes memory alphabet = "0123456789abcdef";
 
+        bytes memory str = new bytes(51);
+        str[0] = '0';
+        str[1] = 'x';
+        for (uint256 i = 0; i < 20; i++) {
+            str[2+i*2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3+i*2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+        return string(str);
+    }
     /**
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
@@ -81,24 +94,6 @@ contract Bank is Constant, Ownable{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
-        }
-    }
-
-    /**
-     * Update total amount of token lended as the intersted earned from the borrower
-     * @param _token token address
-     */
-    function updateTotalLoan(address _token) public onlySavingAccount{
-        uint balance = totalLoans[_token];
-        uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
-        if(
-            rate == 0 ||
-            balance == 0 ||
-            INT_UNIT > rate
-        ) {
-            totalLoans[_token] = balance;
-        } else {
-            totalLoans[_token] = balance.mul(rate).div(INT_UNIT);
         }
     }
 
@@ -183,7 +178,7 @@ contract Bank is Constant, Ownable{
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
         // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
-            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR).div(INT_UNIT);
+            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).div(INT_UNIT).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR);
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
         return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
@@ -279,8 +274,8 @@ contract Bank is Constant, Ownable{
      */
     function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
 
+        // return if the rate check point already exists
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
-
         if (blockNumber == lastCheckpoint[_token])
             return;
 
@@ -288,6 +283,7 @@ contract Bank is Constant, Ownable{
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
+        uint256 previousCheckpoint = lastCheckpoint[_token];
         if (lastCheckpoint[_token] == 0) {
             if(cToken == address(0)) {
                 compoundPool[_token].supported = false;
@@ -333,6 +329,13 @@ contract Bank is Constant, Ownable{
                 lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
             }
         }
+
+        // Update the total loan
+        if(borrowRateIndex[_token][blockNumber] != UNIT) {
+            totalLoans[_token] = totalLoans[_token].mul(borrowRateIndex[_token][blockNumber])
+                .div(borrowRateIndex[_token][previousCheckpoint]);
+        }
+
         emit UpdateIndex(_token, depositeRateIndex[_token][block.number], borrowRateIndex[_token][block.number]);
     }
 
@@ -374,10 +377,11 @@ contract Bank is Constant, Ownable{
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
+        totalReserve[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }
