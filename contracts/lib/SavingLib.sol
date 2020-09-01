@@ -98,17 +98,16 @@ library SavingLib {
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
-        // sichaoy: all the sanity checks should be before the operations???
-        // Check if there are enough tokens in the pool.
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
-
         // Withdraw from the account
         uint amount = globalConfig.accounts().withdraw(_from, _token, _amount, _blockNumber);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = globalConfig.bank().update(_token, amount, uint8(1));
+        uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(1));
+
+        // Check if there are enough tokens in the pool.
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
         if(compoundAmount > 0) {
             fromCompound(globalConfig, _token, compoundAmount);
         }

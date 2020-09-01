@@ -121,8 +121,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
-
 
         // Update tokenInfo for the user
         globalConfig.accounts().borrow(msg.sender, _token, _amount, getBlockNumber());
@@ -131,6 +129,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(2));
+
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
 
         if(compoundAmount > 0) {
             SavingLib.fromCompound(globalConfig, _token, compoundAmount);
