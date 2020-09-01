@@ -6,8 +6,9 @@ import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract Bank is Constant, Ownable{
+contract Bank is Constant, Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
@@ -37,13 +38,6 @@ contract Bank is Constant, Ownable{
         _;
     }
 
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
-
-    ActionChoices public Deposit = ActionChoices.Deposit;
-    ActionChoices public Withdraw = ActionChoices.Withdraw;
-    ActionChoices public Borrow = ActionChoices.Borrow;
-    ActionChoices public Repay = ActionChoices.Repay;
-
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
         uint capitalRatio;          // the ratio of the capital in third party to the total asset
@@ -59,7 +53,7 @@ contract Bank is Constant, Ownable{
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public onlyOwner {
+    ) public initializer {
         globalConfig = _globalConfig;
     }
 
@@ -90,7 +84,7 @@ contract Bank is Constant, Ownable{
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public onlySavingAccount{
+    function updateTotalCompound(address _token) internal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -105,12 +99,12 @@ contract Bank is Constant, Ownable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, uint8 _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == Deposit || _action == Repay) {
+        if (_action == uint8(0) || _action == uint8(3)) {
             // Total amount of token after deposit or repay
-            if (_action == Deposit)
+            if (_action == uint8(0))
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -136,7 +130,7 @@ contract Bank is Constant, Ownable{
             );
 
             // Total amount of token after withdraw or borrow
-            if (_action == Withdraw)
+            if (_action == uint8(1))
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);
@@ -156,9 +150,9 @@ contract Bank is Constant, Ownable{
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
+                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                     //fromCompound(_token, totalCompound[cToken]-totalInCompound);
-                    compoundAmount = totalCompound[cToken]-totalInCompound;
+                    compoundAmount = totalCompound[cToken].sub(totalInCompound);
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -167,6 +161,13 @@ contract Bank is Constant, Ownable{
                 totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
+        return compoundAmount;
+    }
+
+    function update(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
+        updateTotalCompound(_token);
+        // updateTotalLoan(_token);
+        compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }
 
@@ -384,5 +385,9 @@ contract Bank is Constant, Ownable{
         totalReserve[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
+    }
+
+    function getPoolAmount(address _token) public view returns(uint) {
+        return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
 }

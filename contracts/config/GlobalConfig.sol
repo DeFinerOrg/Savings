@@ -7,7 +7,11 @@ import "../SavingAccount.sol";
 import "../Bank.sol";
 import "../Accounts.sol";
 import "./Constant.sol";
+<<<<<<< HEAD
 // import "@nomiclabs/buidler/console.sol";
+=======
+import "../oracle/ChainLinkAggregator.sol";
+>>>>>>> jitendra/mainnet
 
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;
@@ -29,6 +33,7 @@ contract GlobalConfig is Ownable {
     TokenRegistry public tokenInfoRegistry;     // the TokenRegistry contract
     Accounts public accounts;                       // the Accounts contract
     Constant public constants;                      // the constants contract
+    ChainLinkAggregator public chainLink;
 
     event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
     event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
@@ -46,6 +51,7 @@ contract GlobalConfig is Ownable {
     event AccountsUpdated(address indexed accounts);
     event DeFinerCommunityFundUpdated(address indexed deFinerCommunityFund);
     event DeFinerRateUpdated(uint256 indexed deFinerRate);
+    event ChainLinkUpdated(address indexed chainLink);
 
 
     function initialize(
@@ -53,13 +59,15 @@ contract GlobalConfig is Ownable {
         SavingAccount _savingAccount,
         TokenRegistry _tokenInfoRegistry,
         Accounts _accounts,
-        Constant _constants
+        Constant _constants,
+        ChainLinkAggregator _chainLink
     ) public onlyOwner {
         bank = _bank;
         savingAccount = _savingAccount;
         tokenInfoRegistry = _tokenInfoRegistry;
         accounts = _accounts;
         constants = _constants;
+        chainLink = _chainLink;
     }
 
     /**
@@ -209,6 +217,12 @@ contract GlobalConfig is Ownable {
         deFinerRate = _deFinerRate;
 
         emit DeFinerRateUpdated(_deFinerRate);
+    }
+
+    function updateChainLink(ChainLinkAggregator _chainLink) external onlyOwner{
+        chainLink = _chainLink;
+
+        emit ChainLinkUpdated(address(_chainLink));
     }
 
 }

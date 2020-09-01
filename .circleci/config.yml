@@ -75,5 +75,5 @@ jobs:
       #     command: yarn coverage-setup
 
       # - run: yarn coverage
-      - run: yarn generate # Generate typings
+      - run: yarn generate # Generate typings@
       - run: yarn test # triggers truffle test

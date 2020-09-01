@@ -192,7 +192,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                              */
                             let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                             let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                            let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
+                            let borrow = new BN(90);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
                                 "Insufficient collateral when borrow."
@@ -559,6 +559,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
                         from: user2
                     });
+
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole TUSD twice
