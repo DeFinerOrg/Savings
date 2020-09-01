@@ -6,6 +6,7 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Ownable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -362,6 +363,7 @@ contract Accounts is Constant, Ownable{
 
         uint256 totalBorrow = getBorrowETH(_borrower);
         uint256 totalCollateral = getDepositETH(_borrower);
+
         // uint256 temp1 = totalBorrow.mul(100);
         // uint256 temp2 = totalCollateral.mul(liquidationDiscountRatio);
         // // require(false, uint2str(temp1));

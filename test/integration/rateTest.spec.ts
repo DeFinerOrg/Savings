@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockERC20Contract = artifacts.require("MockERC20");
+const MockERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -43,27 +43,30 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
     let cTokenZRX: t.MockCTokenInstance;
-    let erc20DAI: t.MockERC20Instance;
-    let erc20USDC: t.MockERC20Instance;
-    let erc20USDT: t.MockERC20Instance;
-    let erc20TUSD: t.MockERC20Instance;
-    let erc20MKR: t.MockERC20Instance;
-    let erc20BAT: t.MockERC20Instance;
-    let erc20ZRX: t.MockERC20Instance;
-    let erc20REP: t.MockERC20Instance;
-    let erc20WBTC: t.MockERC20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20BAT: t.MockErc20Instance;
+    let erc20ZRX: t.MockErc20Instance;
+    let erc20REP: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: any;
     let addressCTokenTemp: any;
-    let erc20contr: t.MockERC20Instance;
+    let erc20contr: t.MockErc20Instance;
+    // testEngine = new TestEngine();
+    // testEngine.deploy("whitePaperModel.scen");
 
     context("Compound Model Validation", async () => {
         context("Uses WhitePaper Model", async () => {
-            before(async () => {
+            before(function () {
                 // Things to initialize before all test
+                this.timeout(0);
                 testEngine = new TestEngine();
                 testEngine.deploy("whitePaperModel.scen");
             });
@@ -166,12 +169,8 @@ contract("Integration Tests", async (accounts) => {
                 console.log("balTokenZRX = ", balTokenZRX2.toString());
 
                 // 4. Check the compound rate after deposit
-                const borrowRateAfterFastForward = await cTokenZRX.borrowRatePerBlock({
-                    from: user1
-                });
-                const depositRateAfterFastForward = await cTokenZRX.supplyRatePerBlock({
-                    from: user1
-                });
+                const borrowRateAfterFastForward = await cTokenZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateAfterFastForward = await cTokenZRX.supplyRatePerBlock({ from: user1 });
                 console.log("Borrow rate ", borrowRateAfterFastForward.toString());
                 console.log("Deposit rate ", depositRateAfterFastForward.toString());
                 /*
