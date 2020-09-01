@@ -13,49 +13,6 @@ const ERC20: t.ERC20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
-    // const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
-    // const addressZero: string = "0x0000000000000000000000000000000000000000";
-    // let testEngine: TestEngine;
-    // let savingAccount: t.SavingAccountInstance;
-
-    // const owner = accounts[0];
-    // const user1 = accounts[1];
-    // const user2 = accounts[2];
-    // const dummy = accounts[9];
-    // const eighteenPrecision = new BN(10).pow(new BN(18));
-    // const sixPrecision = new BN(10).pow(new BN(6));
-
-    // let tokens: any;
-    // let addressDAI: any;
-    // let addressUSDC: any;
-
-    // let addressMKR: any;
-    // let addressTUSD: any;
-    // let erc20DAI: t.ERC20Instance;
-    // let erc20USDC: t.ERC20Instance;
-    // let erc20MKR: t.ERC20Instance;
-    // let erc20TUSD: t.ERC20Instance;
-    // let numOfToken: any;
-
-    // before(async () => {
-    //     // Things to initialize before all test
-    //     testEngine = new TestEngine();
-    // });
-
-    // beforeEach(async () => {
-    //     savingAccount = await testEngine.deploySavingAccount();
-    //     // 1. initialization.
-    //     tokens = await testEngine.erc20Tokens;
-    //     addressDAI = tokens[0];
-    //     addressUSDC = tokens[1];
-    //     addressMKR = tokens[4];
-    //     addressTUSD = tokens[3];
-    //     erc20DAI = await ERC20.at(addressDAI);
-    //     erc20USDC = await ERC20.at(addressUSDC);
-    //     erc20MKR = await ERC20.at(addressMKR);
-    //     erc20TUSD = await ERC20.at(addressTUSD);
-    //     numOfToken = new BN(1000);
-    // });
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -89,15 +46,11 @@ contract("SavingAccount.borrow", async (accounts) => {
     let addressCTokenForDAI: any;
     let addressCTokenForUSDC: any;
     let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
     let addressCTokenForWBTC: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenTUSD: t.MockCTokenInstance;
-    let cTokenMKR: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.ERC20Instance;
@@ -111,7 +64,6 @@ contract("SavingAccount.borrow", async (accounts) => {
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
-
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
@@ -145,7 +97,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0]; //todo:where is ETH address?
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
         erc20WBTC = await ERC20.at(addressWBTC);
 
         erc20DAI = await ERC20.at(addressDAI);
@@ -157,13 +109,9 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenTUSD = await MockCToken.at(addressCTokenForTUSD);
-        cTokenMKR = await MockCToken.at(addressCTokenForMKR);
         cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -327,8 +275,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                         new BN(10)
                     );
                 });
-
-                it("when borrow amount of token less then ILTV of his collateral value");
 
                 it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
                     await erc20DAI.transfer(user1, eighteenPrecision);
@@ -542,8 +488,17 @@ contract("SavingAccount.borrow", async (accounts) => {
                 // });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: There are still problems with the price acquisition of ETH.
                  */
+                /* it("when supported token address is passed", async () => {
+                    // 2. Start borrowing.
+                    await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                    // 3. Verify the loan amount.
+                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
+                        from: user1
+                    });
+                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                }); */
 
                 // it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
                 //     // 2. Start borrowing.
@@ -559,7 +514,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 // });
 
                 /*
-                todo: There are still problems with the price acquisition of ETH.
+                TODO: lack of liquidity..
                  */
                 // it("When the amount is large, deposit DAI to borrow ETH.", async () => {
                 //     const numOfDAI = eighteenPrecision.mul(new BN(10));

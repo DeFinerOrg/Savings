@@ -72,15 +72,15 @@ module.exports = {
         },
 
         // rinkeby: {
-        //   provider: () =>
-        //     new HDWalletProvider(
-        //       mnemonic,
-        //       "https://rinkeby.infura.io/v3/6aa29d6a396e4820891471316f5ceaac"
-        //     ),
-        //   from: "0xDC7c68458cf288b5367978469387cf0e9C5728fc", // default address to use for any transaction Truffle makes during migrations
-        //   network_id: 4,
-        //   gas: 6000000,
-        //   gasPrice: 15000000000,
+        //     provider: () =>
+        //         new HDWalletProvider(
+        //             mnemonic,
+        //             "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //         ),
+        //     from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
+        //     network_id: 4,
+        //     gas: 6000000,
+        //     gasPrice: 15000000000,
         // },
 
         kovan: {

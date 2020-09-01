@@ -15,6 +15,7 @@ const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("Ch
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
+const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("RemainingCoverage", async (accounts) => {
     const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
@@ -63,10 +64,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("approveAll", async () => {
-        // Is being covered in Base.sol but not in savingsAccounts
         context("should fail", async () => {
-            it("when unsupported token address is passed");
-
             it("when cToken address is zero", async () => {
                 await expectRevert(savingAccount.approveAll(dummy), "cToken address is zero");
             });
@@ -76,9 +74,16 @@ contract("RemainingCoverage", async (accounts) => {
             it("when all conditions are satisfied", async () => {
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
                 // Approve all ERC20 tokens
-                for (let i = 0; i < ERC20TokenAddresses.length-1; i++) {
+                for (let i = 0; i < ERC20TokenAddresses.length - 1; i++) {
                     //console.log("tokens", ERC20TokenAddresses[i]);
-                    await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    if (i == 3 || i == 4) {
+                        await expectRevert(
+                            savingAccount.approveAll(ERC20TokenAddresses[i]),
+                            "cToken address is zero"
+                        );
+                    } else {
+                        await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    }
                     // Verification for approve?
                 }
             });
@@ -103,17 +108,11 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => {});
-
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async () => {
-                // should return "True"
-                // LTV > 85%
-                // line 163 savingAccount
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
-                //const addressCTokenForDAI = await testEngine.cTokenRegistry.getCToken(addressDAI);
 
                 const erc20DAI: t.ERC20Instance = await ERC20.at(addressDAI);
                 const erc20USDC: t.ERC20Instance = await ERC20.at(addressUSDC);
@@ -133,8 +132,10 @@ contract("RemainingCoverage", async (accounts) => {
                 await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
                 await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                 await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
@@ -157,13 +158,11 @@ contract("RemainingCoverage", async (accounts) => {
 
                 await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable.call(user2);
                 expect(isAccountLiquidatableStr).equal(true);
-                // should return "True"
             });
 
             it("when user has borrowed but his LTV doesn't change", async () => {
-                //FIXME:
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -202,39 +201,16 @@ contract("RemainingCoverage", async (accounts) => {
                     "Unauthorized call"
                 );
             });
-            // definerCommunityFund?
-        });
-
-        context("should succeed", async () => {
-            it("when valid token address is passed", async () => {});
-            // verify deFinerFund == 0, transfer()
         });
     });
 
-    context("setDeFinerCommunityFund", async () => {
+    context("updateDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
                 await expectRevert(
                     globalConfig.updatedeFinerCommunityFund(user1, { from: user1 }),
                     "Ownable: caller is not the owner."
                 );
-            });
-        });
-
-        context("should succeed", async () => {
-            // verify if self.deFinerCommunityFund has been updated with the new address
-        });
-    });
-
-    context("emergencyWithdraw", async () => {
-        context("should fail", async () => {
-            //await savingAccount.emergencyWithdraw(addressDAI, { from: user1 });
-        });
-
-        context("should succeed", async () => {
-            it("when supported address is passed");
-            it("when ETH address is passed", async () => {
-                //await savingAccount.emergencyWithdraw(ETH_ADDRESS, { from: EMERGENCY_ADDRESS });
             });
         });
     });
@@ -328,11 +304,6 @@ contract("RemainingCoverage", async (accounts) => {
     */
 
     context("getDeFinerCommunityFund", async () => {
-        context("should fail", async () => {
-            //await savingAccount.getDeFinerCommunityFund(dummy);
-        });
-        // invalid token address?
-
         context("should succeed", async () => {
             it("when valid token address is passed", async () => {
                 await accountsContract.deFinerFund(addressDAI);

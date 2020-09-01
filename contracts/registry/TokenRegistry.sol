@@ -300,7 +300,7 @@ contract TokenRegistry is Ownable {
     // }
 
     // function getDivisor(address _token) public view returns (uint256) {
-    //     if(_isETH(_token)) return globalConfig.constants().INT_UNIT();
+    //     if(_isETH(_token)) return INT_UNIT;
     //     return 10 ** uint256(getTokenDecimals(_token));
     // }
 }

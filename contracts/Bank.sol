@@ -1,13 +1,14 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract Bank is Ownable, Initializable{
+contract Bank is Constant, Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
@@ -26,7 +27,14 @@ contract Bank is Ownable, Initializable{
     GlobalConfig globalConfig;            // global configuration contract address
 
     modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Insufficient power");
+        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
+        _;
+    }
+
+    modifier onlyDeFinerContract() {
+        require(msg.sender == address(globalConfig.savingAccount()) ||
+            msg.sender == address(globalConfig.accounts())
+            , "Only authorized to call from DeFiner smart contracts.");
         _;
     }
 
@@ -58,7 +66,20 @@ contract Bank is Ownable, Initializable{
         // totalLoans[_token] = U   totalReserve[_token] = R
         return totalCompound[cToken].add(totalLoans[_token]).add(totalReserve[_token]); // return totalAmount = C + U + R
     }
+    function addressToString(address _addr) public pure returns(string memory) 
+    {
+        bytes32 value = bytes32(uint256(_addr));
+        bytes memory alphabet = "0123456789abcdef";
 
+        bytes memory str = new bytes(51);
+        str[0] = '0';
+        str[1] = 'x';
+        for (uint256 i = 0; i < 20; i++) {
+            str[2+i*2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3+i*2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+        return string(str);
+    }
     /**
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
@@ -69,24 +90,6 @@ contract Bank is Ownable, Initializable{
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
         }
     }
-
-    /**
-     * Update total amount of token lended as the intersted earned from the borrower
-     * @param _token token address
-     */
-    // function updateTotalLoan(address _token) internal {
-    //     uint balance = totalLoans[_token];
-    //     uint rate = getBorrowAccruedRate(_token, lastCheckpoint[_token]);
-    //     if(
-    //         rate == 0 ||
-    //         balance == 0 ||
-    //         globalConfig.constants().INT_UNIT() > rate
-    //     ) {
-    //         totalLoans[_token] = balance;
-    //     } else {
-    //         totalLoans[_token] = balance.mul(rate).div(globalConfig.constants().INT_UNIT());
-    //     }
-    // }
 
     /**
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
@@ -161,7 +164,7 @@ contract Bank is Ownable, Initializable{
         return compoundAmount;
     }
 
-    function update (address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
+    function update(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -176,7 +179,7 @@ contract Bank is Ownable, Initializable{
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
         // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
-            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).add(globalConfig.rateCurveConstant()).div(globalConfig.constants().BLOCKS_PER_YEAR()).div(globalConfig.constants().INT_UNIT());
+            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).div(INT_UNIT).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR);
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
         return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
@@ -194,10 +197,10 @@ contract Bank is Ownable, Initializable{
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
         uint256 capitalUtilRatio = getCapitalUtilizationRatio(_token);
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
-            return borrowRatePerBlock.mul(capitalUtilRatio).div(globalConfig.constants().INT_UNIT());
+            return borrowRatePerBlock.mul(capitalUtilRatio).div(INT_UNIT);
 
         return borrowRatePerBlock.mul(capitalUtilRatio).add(compoundPool[_token].depositRatePerBlock
-            .mul(compoundPool[_token].capitalRatio)).div(globalConfig.constants().INT_UNIT());
+            .mul(compoundPool[_token].capitalRatio)).div(INT_UNIT);
     }
 
     /**
@@ -209,7 +212,7 @@ contract Bank is Ownable, Initializable{
         if(totalDepositsNow == 0) {
             return 0;
         } else {
-            return totalLoans[_token].mul(globalConfig.constants().INT_UNIT()).div(totalDepositsNow);
+            return totalLoans[_token].mul(INT_UNIT).div(totalDepositsNow);
         }
     }
 
@@ -222,7 +225,7 @@ contract Bank is Ownable, Initializable{
         if(totalCompound[cToken] == 0 ) {
             return 0;
         } else {
-            return uint(totalCompound[cToken].mul(globalConfig.constants().INT_UNIT()).div(getTotalDepositStore(_token)));
+            return uint(totalCompound[cToken].mul(INT_UNIT).div(getTotalDepositStore(_token)));
         }
     }
 
@@ -236,7 +239,7 @@ contract Bank is Ownable, Initializable{
     // sichaoy: require:what if a index point doesn't exist?
     function getDepositAccruedRate(address _token, uint _depositRateRecordStart) public view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
-        uint256 UNIT = globalConfig.constants().INT_UNIT();
+        uint256 UNIT = INT_UNIT;
         if (depositRate == 0) {
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
@@ -255,7 +258,7 @@ contract Bank is Ownable, Initializable{
     // the checkpoint for current block exists.
     function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) public view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
-        uint256 UNIT = globalConfig.constants().INT_UNIT();
+        uint256 UNIT = INT_UNIT;
         if (borrowRate == 0) {
             // when block is same
             return UNIT;
@@ -270,14 +273,14 @@ contract Bank is Ownable, Initializable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public{
+    function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
 
+        // return if the rate check point already exists
         uint blockNumber = globalConfig.savingAccount().getBlockNumber();
-
         if (blockNumber == lastCheckpoint[_token])
             return;
 
-        uint256 UNIT = globalConfig.constants().INT_UNIT();
+        uint256 UNIT = INT_UNIT;
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
@@ -345,7 +348,7 @@ contract Bank is Ownable, Initializable{
      */
     function depositRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
-        uint256 UNIT = globalConfig.constants().INT_UNIT();
+        uint256 UNIT = INT_UNIT;
         // If this is the first checkpoint, set the index be 1.
         if(lcp == 0)
             return UNIT;
@@ -362,7 +365,7 @@ contract Bank is Ownable, Initializable{
      */
     function borrowRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
-        uint256 UNIT = globalConfig.constants().INT_UNIT();
+        uint256 UNIT = INT_UNIT;
         // If this is the first checkpoint, set the index be 1.
         if(lcp == 0)
             return UNIT;
@@ -375,10 +378,11 @@ contract Bank is Ownable, Initializable{
 	 * Get the state of the given token
      * @param _token token address
 	 */
-    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 collateral){
+    function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return (
         getTotalDepositStore(_token),
         totalLoans[_token],
+        totalReserve[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
     }

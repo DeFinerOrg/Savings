@@ -1,5 +1,6 @@
 pragma solidity 0.5.14;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./Utils.sol";
@@ -107,12 +108,36 @@ library SavingLib {
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(1));
+        uint compoundAmount = globalConfig.bank().update(_token, amount, uint8(1));
         if(compoundAmount > 0) {
             fromCompound(globalConfig, _token, compoundAmount);
         }
 
         return amount;
+    }
+
+    function repay(GlobalConfig globalConfig, address _to, address _token, uint256 _amount, uint256 _blockNumber) internal returns(uint) {
+
+        // Add a new checkpoint on the index curve.
+        globalConfig.bank().newRateIndexCheckpoint(_token);
+
+        // Sanity check
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
+
+        // Update tokenInfo
+        uint256 remain = globalConfig.accounts().repay(_to, _token, _amount, _blockNumber);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = globalConfig.bank().update(_token, _amount-remain, uint8(3));
+        if(compoundAmount > 0) {
+            toCompound(globalConfig, _token, compoundAmount);
+        }
+
+        // Return actual amount repaid
+        return _amount-remain;
     }
 
     // ============================================
@@ -124,7 +149,7 @@ library SavingLib {
         if(Utils._isETH(address(globalConfig), _token)) {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
-            globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
+                globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
         } else {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             if(cToken != address(0)) {
