@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.repay", async (accounts) => {
@@ -37,12 +37,12 @@ contract("SavingAccount.repay", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
     let ZERO: any;
     let ONE_YEAR: any;
     const eighteenPrecision = new BN(10).pow(new BN(18));
@@ -51,8 +51,11 @@ contract("SavingAccount.repay", async (accounts) => {
     const numOfDAI = eighteenPrecision;
     const numOfWBTC = eightPrecision;
     const numOfUSDC = sixPrecision;
-    before(async () => {
+
+
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0)
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });

@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -46,24 +46,25 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
-    let erc20BAT: t.ERC20Instance;
-    let erc20ZRX: t.ERC20Instance;
-    let erc20REP: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
+    let erc20BAT: t.Erc20Instance;
+    let erc20ZRX: t.Erc20Instance;
+    let erc20REP: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
-    let erc20contr: t.ERC20Instance;
+    let erc20contr: t.Erc20Instance;
 
-    before(async () => {
+    before(function () {
+        this.timeout(0);
         // Things to initialize before all test
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
@@ -929,7 +930,7 @@ contract("Integration Tests", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.deposit(addressDAI, borrowTokens, { from: user2 }),
-                    "SafeERC20: low-level call failed -- Reason given: SafeERC20: low-level call failed."
+                    "SafeERC20: low-level call failed"
                 );
             });
         });
@@ -1185,7 +1186,7 @@ contract("Integration Tests", async (accounts) => {
                 );
             });
 
-            context("should fail", async () => {});
+            context("should fail", async () => { });
         });
     });
 
@@ -1256,11 +1257,11 @@ contract("Integration Tests", async (accounts) => {
                     .div(new BN(60))
                     .div(eighteenPrecision);
 
-                const totalLockedAmount = new BN(lockedAmountDAI).add(new BN(lockedAmountUSDC));                
+                const totalLockedAmount = new BN(lockedAmountDAI).add(new BN(lockedAmountUSDC));
                 const totalAmountLeft = new BN(ETHbalanceBeforeBorrow).sub(
                     new BN(totalLockedAmount)
                 );
-                
+
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(user1);
 
                 console.log("lockedAmountDAI", lockedAmountDAI.toString());
@@ -1275,8 +1276,8 @@ contract("Integration Tests", async (accounts) => {
                 });
 
                 let ETHbalanceAfterWithdraw = await web3.eth.getBalance(user1);
-                console.log("ETHbalanceAfterWithdraw",ETHbalanceAfterWithdraw.toString());
-                
+                console.log("ETHbalanceAfterWithdraw", ETHbalanceAfterWithdraw.toString());
+
                 let accountBalanceDiff = new BN(ETHbalanceAfterWithdraw).sub(
                     new BN(ETHbalanceBeforeWithdraw)
                 );
@@ -1442,9 +1443,9 @@ contract("Integration Tests", async (accounts) => {
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
         });
 
-        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
+        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
     });
-    context("should fail", async () => {});
+    context("should fail", async () => { });
 
     context("Deposit, Borrow and liquidate", async () => {
         it("");

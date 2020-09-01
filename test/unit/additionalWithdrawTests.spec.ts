@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.withdraw", async (accounts) => {
@@ -37,20 +37,23 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
     let ZERO: any;
     let ONE_YEAR: any;
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
     const eightPrecision = new BN(10).pow(new BN(8));
+    // testEngine = new TestEngine();
+    // testEngine.deploy("scriptFlywheel.scen");
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
@@ -335,7 +338,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
                 await expectRevert(
                     savingAccount.withdrawAll(erc20DAI.address, { from: user1 }),
-                    "given: Insufficient collateral when withdraw."
+                    "Insufficient collateral when withdraw."
                 );
             });
             it("Deposit DAI, borrows USDC and wants to withdraw", async () => {

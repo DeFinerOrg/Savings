@@ -9,7 +9,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.ERC20Contract = artifacts.require("ERC20");
+const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -47,12 +47,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.ERC20Instance;
-    let erc20USDC: t.ERC20Instance;
-    let erc20MKR: t.ERC20Instance;
-    let erc20TUSD: t.ERC20Instance;
-    let erc20USDT: t.ERC20Instance;
-    let erc20WBTC: t.ERC20Instance;
+    let erc20DAI: t.Erc20Instance;
+    let erc20USDC: t.Erc20Instance;
+    let erc20MKR: t.Erc20Instance;
+    let erc20TUSD: t.Erc20Instance;
+    let erc20USDT: t.Erc20Instance;
+    let erc20WBTC: t.Erc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -62,9 +62,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_USDC: any;
+    // testEngine = new TestEngine();
+    // testEngine.deploy("scriptFlywheel.scen");
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
@@ -1119,7 +1122,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     await expectRevert(
                         savingAccount.liquidate(user1, addressTUSD, { from: user2 }),
-                      
+
                         "The borrower doesn't own any debt token specified by the liquidator."
                     );
                 });
@@ -1754,7 +1757,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await accountsContract.isAccountLiquidatable.call(user1);
-                    testEngine.globalConfig.updateLiquidationThreshold(90);
+                    await testEngine.globalConfig.updateLiquidationThreshold(90);
                     const rateChangeAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(rateChangeBefore).to.be.true;
                     expect(rateChangeAfter).to.be.false;
@@ -1828,9 +1831,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let updatedPrice = BN(DAIprice)
                         .mul(new BN(80))
                         .div(new BN(100));
+
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     const rateChangeBefore = await accountsContract.isAccountLiquidatable.call(user1);
-                    testEngine.globalConfig.updateLiquidationThreshold(70);
+
+                    await testEngine.globalConfig.updateLiquidationThreshold(70);
+
                     const rateChangeAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(rateChangeBefore).to.be.false;
                     expect(rateChangeAfter).to.be.true;
