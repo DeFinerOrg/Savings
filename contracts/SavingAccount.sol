@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./registry/TokenRegistry.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
-import "@nomiclabs/buidler/console.sol";
+// import "@nomiclabs/buidler/console.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
@@ -43,9 +43,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
     constructor() public {
         // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
-        console.log("get here");
-            
-        }
+        // console.log("Start to construct", msg.sender);
+    }
 
     /**
      * Initialize function to be called by the Deployer for the first time
