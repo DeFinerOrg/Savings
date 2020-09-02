@@ -13,8 +13,8 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
-      - image: trufflesuite/ganache-cli
-        command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
+      # - image: trufflesuite/ganache-cli
+      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
 
     working_directory: ~/repo
 
@@ -30,7 +30,6 @@ jobs:
           command: |
             git submodule init
             git submodule update
-
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
@@ -75,5 +74,9 @@ jobs:
       #     command: yarn coverage-setup
 
       # - run: yarn coverage
-      - run: yarn generate # Generate typings
+      - run: 
+          name: Start EVM
+          background: true
+          command: yarn buidler-evm
+      - run: yarn generate # Generate typings@
       - run: yarn test # triggers truffle test
