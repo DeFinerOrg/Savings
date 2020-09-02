@@ -7,6 +7,7 @@ import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract Bank is Constant, Ownable, Initializable{
     using SafeMath for uint256;
@@ -114,11 +115,11 @@ contract Bank is Constant, Ownable, Initializable{
 
             if (cToken != address(0) &&
             totalReserveBeforeAdjust > totalAmount.mul(globalConfig.maxReserveRatio()).div(100)) {
-                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
+                uint toCompoundAmount = totalReserveBeforeAdjust.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                 //toCompound(_token, toCompoundAmount);
                 compoundAmount = toCompoundAmount;
                 totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
-                totalReserve[_token] = totalReserve[_token].add(_amount.sub(toCompoundAmount));
+                totalReserve[_token] = totalReserve[_token].add(_amount).sub(toCompoundAmount);
             }
             else {
                 totalReserve[_token] = totalReserve[_token].add(_amount);
@@ -134,6 +135,7 @@ contract Bank is Constant, Ownable, Initializable{
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);
+
             // Expected total amount of token in reservation after deposit or repay
             uint totalReserveBeforeAdjust = totalReserve[_token] > _amount ? totalReserve[_token].sub(_amount) : 0;
 
