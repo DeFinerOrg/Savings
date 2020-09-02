@@ -75,6 +75,9 @@ jobs:
       #     command: yarn coverage-setup
 
       # - run: yarn coverage
-      - run: yarn buidler-evm
+      - run: 
+          name: Start EVM
+          background: true
+          command: yarn buidler-evm
       - run: yarn generate # Generate typings@
       - run: yarn test # triggers truffle test
