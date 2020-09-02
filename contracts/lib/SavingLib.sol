@@ -101,8 +101,6 @@ library SavingLib {
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
-
         // Withdraw from the account
         uint amount = globalConfig.accounts().withdraw(_from, _token, _amount, _blockNumber);
 
