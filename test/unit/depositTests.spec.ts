@@ -38,7 +38,7 @@ contract("SavingAccount.deposit", async (accounts) => {
     let erc20MKR: t.Erc20Instance;
     let cETH: t.MockCTokenInstance;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -109,6 +109,24 @@ contract("SavingAccount.deposit", async (accounts) => {
                             totalDefinerBalanceAfterDeposit
                         ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                        // Some tokens are sent to Compound contract
+                        const expectedTokensAtCTokenContract = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await web3.eth.getBalance(cDAI_addr);
+                        expect(new BN(expectedTokensAtCTokenContract)).to.be.bignumber.equal(
+                            balCTokenContract
+                        );
+
+                        // cToken must be minted for SavingAccount
+                        const expectedCTokensAtSavingAccount = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await web3.eth.getBalance(savingAccount.address);
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                            new BN(balCTokens).div(new BN(10))
+                        );
                     });
 
                     it("C6: when 1000 whole ETH are deposited", async () => {
@@ -148,6 +166,24 @@ contract("SavingAccount.deposit", async (accounts) => {
                             totalDefinerBalanceAfterDeposit
                         ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                        // Some tokens are sent to Compound contract
+                        const expectedTokensAtCTokenContract = new BN(depositAmount)
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await web3.eth.getBalance(cDAI_addr);
+                        expect(new BN(expectedTokensAtCTokenContract)).to.be.bignumber.equal(
+                            balCTokenContract
+                        );
+
+                        // cToken must be minted for SavingAccount
+                        const expectedCTokensAtSavingAccount = new BN(depositAmount)
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await web3.eth.getBalance(savingAccount.address);
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                            new BN(balCTokens).div(new BN(10))
+                        );
                     });
                 });
             });
