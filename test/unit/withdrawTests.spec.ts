@@ -1581,7 +1581,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, withdraws),
-                        "Amount is zero."
+                        "Amount is zero"
                     );
                 });
 
@@ -1590,7 +1590,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, withdraws),
-                        "Lack of liquidity."
+                        "Lack of liquidity when withdraw."
                     );
                 });
 
@@ -1618,7 +1618,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     const withdraws = new BN(20);
                     await expectRevert(
                         savingAccount.withdraw(ETH_ADDRESS, withdraws),
-                        "Lack of liquidity."
+                        "Lack of liquidity when withdraw."
                     );
                 });
             });

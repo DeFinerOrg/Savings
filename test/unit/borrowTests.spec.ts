@@ -178,7 +178,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "Lack of liquidity."
+                        "The user doesn't have any deposits."
                     );
                 });
 
@@ -192,7 +192,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(1001), { from: user2 }),
-                        "Lack of liquidity."
+                        "Lack of liquidity when borrow."
                     );
                 });
             });
@@ -603,7 +603,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
-                        "Lack of liquidity."
+                        "Insufficient collateral when borrow."
                     );
                 });
 
@@ -617,7 +617,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(1001), { from: user1 }),
-                        "Lack of liquidity."
+                        "Lack of liquidity when borrow."
                     );
                 });
             });
@@ -782,7 +782,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(1001), { from: user1 }),
-                        "Lack of liquidity."
+                        "Insufficient collateral when borrow."
                     );
                 });
             });
