@@ -64,8 +64,8 @@ contract("Integration Tests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
-        // testEngine.deploy("whitePaperModel.scen");
+        // testEngine.deploy("scriptFlywheel.scen");
+        testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async () => {
@@ -256,31 +256,31 @@ contract("Integration Tests", async (accounts) => {
 
             it("Special test 3", async () => {
                 // const
-                const numOfBAT = eighteenPrecision.mul(new BN(100));
+                const numOfDAI = eighteenPrecision.mul(new BN(100));
                 console.log("const");
 
-                await erc20BAT.approve(savingAccount.address, numOfBAT);
+                await erc20DAI.approve(savingAccount.address, numOfDAI);
                 
-                // owner deposit 100BAT
-                await savingAccount.deposit(addressBAT, numOfBAT);
-                console.log("owner deposit 100BAT");
-                const ownerDeposit = await accountsContract.getDepositBalanceCurrent(addressBAT, owner);
+                // owner deposit 100DAI
+                await savingAccount.deposit(addressDAI, numOfDAI);
+                console.log("owner deposit 100DAI");
+                const ownerDeposit = await accountsContract.getDepositBalanceCurrent(addressDAI, owner);
                 console.log("ownerDeposit: " + ownerDeposit.toString());
 
                 // Fastforward
                 await savingAccount.fastForward(100000);
 
-                const ownerBalanceBefore = await erc20BAT.balanceOf(owner);
+                const ownerBalanceBefore = await erc20DAI.balanceOf(owner);
                 console.log("ownerBalanceBefore: " + ownerBalanceBefore.toString());
-                // owner withdraw ALLBAT
-                await savingAccount.withdrawAll(addressBAT);
-                console.log("owner withdraw ALLBAT");
-                const uownerDeposit3 = await accountsContract.getDepositBalanceCurrent(addressBAT, owner);
+                // owner withdraw ALLDAI
+                await savingAccount.withdrawAll(addressDAI);
+                console.log("owner withdraw ALLDAI");
+                const uownerDeposit3 = await accountsContract.getDepositBalanceCurrent(addressDAI, owner);
                 console.log("ownerDeposit3: " + uownerDeposit3.toString());
-                const ownerBalanceAfter = await erc20BAT.balanceOf(owner);
+                const ownerBalanceAfter = await erc20DAI.balanceOf(owner);
                 console.log("ownerBalanceAfter: " + ownerBalanceAfter.toString());
 
-                expect(ownerDeposit).to.be.bignumber.equal(numOfBAT);
+                expect(ownerDeposit).to.be.bignumber.equal(numOfDAI);
                 expect(uownerDeposit3).to.be.bignumber.equal(new BN(0));
             });
         });
