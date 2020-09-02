@@ -6,8 +6,10 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./Utils.sol";
 import { ICToken } from "../compound/ICompound.sol";
 import { ICETH } from "../compound/ICompound.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 library SavingLib {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /**
@@ -79,6 +81,7 @@ library SavingLib {
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(0));
+
         if(compoundAmount > 0) {
             toCompound(globalConfig, _token, compoundAmount);   
         }
@@ -98,6 +101,8 @@ library SavingLib {
         // Add a new checkpoint on the index curve.
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
+
         // Withdraw from the account
         uint amount = globalConfig.accounts().withdraw(_from, _token, _amount, _blockNumber);
 
@@ -107,7 +112,6 @@ library SavingLib {
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(1));
 
         // Check if there are enough tokens in the pool.
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
         if(compoundAmount > 0) {
             fromCompound(globalConfig, _token, compoundAmount);
         }
@@ -130,13 +134,13 @@ library SavingLib {
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = globalConfig.bank().update(_token, _amount-remain, uint8(3));
+        uint compoundAmount = globalConfig.bank().update(_token, _amount.sub(remain), uint8(3));
         if(compoundAmount > 0) {
             toCompound(globalConfig, _token, compoundAmount);
         }
 
         // Return actual amount repaid
-        return _amount-remain;
+        return _amount.sub(remain);
     }
 
     // ============================================

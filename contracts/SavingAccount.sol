@@ -4,13 +4,13 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
-// import "@nomiclabs/buidler/console.sol";
 import "./lib/SavingLib.sol";
 import "./lib/Utils.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable, Constant {
     using SafeERC20 for IERC20;
@@ -127,12 +127,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Update tokenInfo for the user
         globalConfig.accounts().borrow(msg.sender, _token, _amount, getBlockNumber());
 
+        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
+
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(2));
-
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity.");
 
         if(compoundAmount > 0) {
             SavingLib.fromCompound(globalConfig, _token, compoundAmount);
@@ -155,14 +155,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         SavingLib.receive(globalConfig, _amount, _token);
 
         // Add a new checkpoint on the index curve.
-        uint256 remain = SavingLib.repay(globalConfig, msg.sender, _token, _amount, getBlockNumber());
+        uint256 amount = SavingLib.repay(globalConfig, msg.sender, _token, _amount, getBlockNumber());
 
         // Send the remain money back
-        if(remain != 0) {
-            SavingLib.send(globalConfig, remain, _token);
+        if(amount < _amount) {
+            SavingLib.send(globalConfig, _amount.sub(amount), _token);
         }
 
-        emit Repay(_token, msg.sender, _amount.sub(remain));
+        emit Repay(_token, msg.sender, amount);
     }
 
     /**
