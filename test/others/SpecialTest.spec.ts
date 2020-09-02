@@ -64,7 +64,8 @@ contract("Integration Tests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        // testEngine.deploy("scriptFlywheel.scen");
+        testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async () => {
@@ -251,6 +252,32 @@ contract("Integration Tests", async (accounts) => {
                 expect(user1Deposit2).to.be.bignumber.equal(numOfETH.sub(numOfETH.div(new BN(2))));
                 expect(user1Deposit3).to.be.bignumber.equal(new BN(0));
 
+            });
+
+            it("Special test 3", async () => {
+                // const
+                const numOfBAT = eighteenPrecision.mul(new BN(100));
+                console.log("const");
+
+                await erc20BAT.approve(savingAccount.address, numOfBAT);
+                
+                // owner deposit 100BAT
+                await savingAccount.deposit(addressBAT, numOfBAT);
+                console.log("owner deposit 100BAT");
+                const ownerDeposit = await accountsContract.getDepositBalanceCurrent(addressBAT, owner);
+                console.log("ownerDeposit: " + ownerDeposit.toString());
+
+                // Fastforward
+                await savingAccount.fastForward(100000);
+
+                // owner withdraw ALLBAT
+                await savingAccount.withdrawAll(addressBAT);
+                console.log("owner withdraw ALLBAT");
+                const uownerDeposit3 = await accountsContract.getDepositBalanceCurrent(addressBAT, owner);
+                console.log("ownerDeposit3: " + uownerDeposit3.toString());
+
+                expect(ownerDeposit).to.be.bignumber.equal(numOfBAT);
+                expect(uownerDeposit3).to.be.bignumber.equal(new BN(0));
             });
         });
     });
