@@ -64,8 +64,8 @@ contract("Integration Tests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        // testEngine.deploy("scriptFlywheel.scen");
-        testEngine.deploy("whitePaperModel.scen");
+        testEngine.deploy("scriptFlywheel.scen");
+        // testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async () => {
@@ -270,11 +270,15 @@ contract("Integration Tests", async (accounts) => {
                 // Fastforward
                 await savingAccount.fastForward(100000);
 
+                const ownerBalanceBefore = await erc20BAT.balanceOf(owner);
+                console.log("ownerBalanceBefore: " + ownerBalanceBefore.toString());
                 // owner withdraw ALLBAT
                 await savingAccount.withdrawAll(addressBAT);
                 console.log("owner withdraw ALLBAT");
                 const uownerDeposit3 = await accountsContract.getDepositBalanceCurrent(addressBAT, owner);
                 console.log("ownerDeposit3: " + uownerDeposit3.toString());
+                const ownerBalanceAfter = await erc20BAT.balanceOf(owner);
+                console.log("ownerBalanceAfter: " + ownerBalanceAfter.toString());
 
                 expect(ownerDeposit).to.be.bignumber.equal(numOfBAT);
                 expect(uownerDeposit3).to.be.bignumber.equal(new BN(0));
