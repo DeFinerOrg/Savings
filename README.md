@@ -10,13 +10,13 @@
 
 **`cd Savings && yarn`**
 
-**3)** Launch ganache-cli:
+**3)** Launch buidler evm:
 
-**`ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true`**
+**`npx buidler node`**
 
 **4)** Run test scripts
 
-**`yarn test`**
+**`npx buidler test --network development`**
 
 ## Passing Tests:
 
