@@ -7,7 +7,7 @@ import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract Bank is Constant, Ownable, Initializable{
     using SafeMath for uint256;
@@ -125,7 +125,21 @@ contract Bank is Constant, Ownable, Initializable{
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
         } else {
-            require(getPoolAmount(_token) >= _amount, "Lack of liquidity.");
+            // The lack of liquidity exception happens when the pool doesn't have enough tokens for borrow/withdraw
+            // It happens when part of the token has lended to the other accounts.
+            // However in case of withdrawAll, even if the token has no loan, this requirment may still false because
+            // of the precision loss in the rate calcuation. So we put a logic here to deal with this case: in case
+            // of withdrawAll and there is no loans for the token, we just adjust the balance in bank contract to the
+            // to the balance of that individual account.
+            if(_action == uint8(1)) {
+                if(totalLoans[_token] != 0)
+                    require(getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
+                else if (getPoolAmount(_token) < _amount)
+                    totalReserve[_token] = _amount.sub(totalCompound[cToken]);
+                totalAmount = getTotalDepositStore(_token);
+            }
+            else
+                require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
 
             // Total amount of token after withdraw or borrow
             if (_action == uint8(1))
@@ -321,7 +335,7 @@ contract Bank is Constant, Ownable, Initializable{
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
                 compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
-                .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
+                    .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
                 depositeRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
                 // Update the last checkpoint
