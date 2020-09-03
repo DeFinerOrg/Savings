@@ -114,7 +114,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cDAI_addr);
+                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
                         expect(new BN(expectedTokensAtCTokenContract)).to.be.bignumber.equal(
                             balCTokenContract
                         );
@@ -123,7 +123,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedCTokensAtSavingAccount = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokens = await web3.eth.getBalance(savingAccount.address);
+                        const balCTokens = await cETH.balanceOf(savingAccount.address);
                         expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
                             new BN(balCTokens).div(new BN(10))
                         );
@@ -138,6 +138,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
+                        const balCTokensBefore = await cETH.balanceOf(savingAccount.address);
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                             value: depositAmount
@@ -171,16 +173,18 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtCTokenContract = new BN(depositAmount)
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cDAI_addr);
-                        expect(new BN(expectedTokensAtCTokenContract)).to.be.bignumber.equal(
-                            balCTokenContract
-                        );
+                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                        expect(
+                            new BN(expectedTokensAtCTokenContract).add(
+                                new BN(balCTokenContractBefore)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContract);
 
                         // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccount = new BN(depositAmount)
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokens = await web3.eth.getBalance(savingAccount.address);
+                        const balCTokens = await cETH.balanceOf(savingAccount.address);
                         expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
                             new BN(balCTokens).div(new BN(10))
                         );
