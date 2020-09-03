@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test": "yarn prepare && truffle test",
+    "test": "yarn prepare && npx buidler test --network development",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
-    "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true"
+    "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
+    "buidler-evm": "npx buidler node"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "solidity-coverage": "^0.6.7",
     "surya": "^0.4.0",
     "truffle": "^5.1.24",
+    "truffle-hdwallet-provider": "^1.0.0-web3one.5",
     "truffle-typings": "^1.0.7",
     "ts-generator": "^0.0.8",
     "ts-node": "^7.0.1",
@@ -60,7 +62,7 @@
     "web3-utils": "^1.2.6"
   },
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.39",
+    "@truffle/hdwallet-provider": "^1.0.42",
     "@types/shelljs": "^0.8.8",
     "shelljs": "^0.8.4",
     "solidity-parser-antlr": "^0.4.11",
