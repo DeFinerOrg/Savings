@@ -73,7 +73,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -649,8 +649,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-
                     it("when tokens are withdrawn with interest", async () => {
+                        // TODO:
                         const depositAmount = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, depositAmount);
                         let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(owner);
