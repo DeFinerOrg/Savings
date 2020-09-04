@@ -220,7 +220,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     // Verify that reservation equals to the token in pool's address
                     const reservation = BN(await erc20DAI.balanceOf(savingAccount.address));
                     // TODO:
-                    //expect(tokenState[2]).to.be.bignumber.equal(reservation);
+                    expect(tokenState[2]).to.be.bignumber.equal(reservation);
                     console.log("check5");
 
                     // Verifty that compound equals cToken underlying balance in pool's address
