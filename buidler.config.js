@@ -2,7 +2,7 @@ usePlugin("@nomiclabs/buidler-truffle5");
 usePlugin("buidler-typechain");
 require("ts-node/register");
 usePlugin("@nomiclabs/buidler-ethers");
-
+usePlugin("buidler-gas-reporter");
 // require("tsconfig-paths/register");
 
 // This is a sample Buidler task. To learn how to create your own go to
@@ -44,7 +44,8 @@ module.exports = {
             loggingEnabled: true,
         }
     },
-
+    gasReporter: {
+    },
     // This is a sample solc configuration that specifies which version of solc to use
     solc: {
         version: "0.5.14",
