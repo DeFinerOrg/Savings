@@ -453,11 +453,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     // console.log(usdcDiff.toString());
                     // console.log(daiEarned.toString());
-                    // expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
+                    await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
+                    expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
+
+
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
-                    await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
 
                 });
 
@@ -559,9 +561,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     // console.log(usdcDiff.toString());
                     // console.log(liquidatedDebt.toString());
 
-                    // expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
-
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
+                    expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
+
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                     await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
