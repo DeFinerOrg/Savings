@@ -49,7 +49,7 @@ contract SavingAccountWithController is SavingAccount {
     /**
      * Get the block number from comound
      */
-    function getBlockNumber() public view returns (uint) {
+    function getBlockNumber() internal view returns (uint) {
         return IController(comptroller).getBlockNumber();
     }
 

@@ -145,8 +145,8 @@ contract("Integration Tests", async (accounts) => {
                 console.log("balCTokenContract = ", balCTokenContract1.toString());
                 console.log("balTokenZRX = ", balTokenZRX1.toString());
                 // 3. Advance 175,200 blocks, which roughly equals one month
-                const b1 = await savingAccount.getBlockNumber({ from: user1 });
-                console.log("Block number = ", b1.toString());
+                // const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                // console.log("Block number = ", b1.toString());
                 const borrowRateAfterDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });
                 const depositRateAfterDeposit = await cTokenZRX.supplyRatePerBlock({ from: user1 });
                 console.log("Borrow rate ", borrowRateAfterDeposit.toString());
@@ -156,8 +156,8 @@ contract("Integration Tests", async (accounts) => {
                 console.log(
                     "------------------------100000000 blocks later------------------------"
                 );
-                const b2 = await savingAccount.getBlockNumber({ from: user1 });
-                console.log("Block number = ", b2.toString());
+                // const b2 = await savingAccount.getBlockNumber({ from: user1 });
+                // console.log("Block number = ", b2.toString());
 
                 // await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
 

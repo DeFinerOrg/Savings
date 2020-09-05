@@ -344,7 +344,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                             from: user2
                         }),
-                        "Lack of liquidity when withdraw."
+                        "Insufficient balance."
                     );
                 });
 

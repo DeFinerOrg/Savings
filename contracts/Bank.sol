@@ -27,15 +27,9 @@ contract Bank is Constant, Ownable, Initializable{
 
     GlobalConfig globalConfig;            // global configuration contract address
 
-    modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
-        _;
-    }
-
-    modifier onlyDeFinerContract() {
-        require(msg.sender == address(globalConfig.savingAccount()) ||
-            msg.sender == address(globalConfig.accounts())
-            , "Only authorized to call from DeFiner smart contracts.");
+    modifier onlyInternal() {
+        require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
+            "Only authorized to call from DeFiner internal contracts.");
         _;
     }
 
@@ -177,7 +171,7 @@ contract Bank is Constant, Ownable, Initializable{
         return compoundAmount;
     }
 
-     function update(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
+     function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -257,7 +251,7 @@ contract Bank is Constant, Ownable, Initializable{
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
             // sichaoy: to check that the current block rate index already exist
-            return depositeRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
+            return depositeRateIndex[_token][getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
 
@@ -277,7 +271,7 @@ contract Bank is Constant, Ownable, Initializable{
             return UNIT;
         } else {
             // rate change
-            return borrowRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(borrowRate);
+            return borrowRateIndex[_token][getBlockNumber()].mul(UNIT).div(borrowRate);
         }
     }
 
@@ -286,10 +280,10 @@ contract Bank is Constant, Ownable, Initializable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
+    function newRateIndexCheckpoint(address _token) public onlyInternal {
 
         // return if the rate check point already exists
-        uint blockNumber = globalConfig.savingAccount().getBlockNumber();
+        uint blockNumber = getBlockNumber();
         if (blockNumber == lastCheckpoint[_token])
             return;
 
@@ -350,7 +344,7 @@ contract Bank is Constant, Ownable, Initializable{
                 .div(borrowRateIndex[_token][previousCheckpoint]);
         }
 
-        emit UpdateIndex(_token, depositeRateIndex[_token][block.number], borrowRateIndex[_token][block.number]);
+        emit UpdateIndex(_token, depositeRateIndex[_token][getBlockNumber()], borrowRateIndex[_token][getBlockNumber()]);
     }
 
     /**
@@ -369,7 +363,7 @@ contract Bank is Constant, Ownable, Initializable{
         uint256 lastDepositeRateIndex = depositeRateIndex[_token][lcp];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
-        return lastDepositeRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        return lastDepositeRateIndex.mul(getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -384,7 +378,7 @@ contract Bank is Constant, Ownable, Initializable{
             return UNIT;
         uint256 lastBorrowRateIndex = borrowRateIndex[_token][lcp];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
-        return lastBorrowRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -404,7 +398,7 @@ contract Bank is Constant, Ownable, Initializable{
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(address _to, address _token, uint256 _amount) public onlySavingAccount {
+    function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
 
         require(_amount != 0, "Amount is zero");
 
@@ -423,7 +417,7 @@ contract Bank is Constant, Ownable, Initializable{
         }
     }
 
-    function borrow(address _from, address _token, uint256 _amount) public onlySavingAccount {
+    function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -441,7 +435,7 @@ contract Bank is Constant, Ownable, Initializable{
         }
     }
 
-    function repay(address _to, address _token, uint256 _amount) public onlySavingAccount returns(uint) {
+    function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -472,7 +466,7 @@ contract Bank is Constant, Ownable, Initializable{
      * @param _amount amount to be withdrawn
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
-    function withdraw(address _from, address _token, uint256 _amount) public onlySavingAccount returns(uint) {
+    function withdraw(address _from, address _token, uint256 _amount) public onlyInternal returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 
@@ -493,5 +487,13 @@ contract Bank is Constant, Ownable, Initializable{
         }
 
         return amount;
+    }
+
+    /**
+     * Get current block number
+     * @return the current block number
+     */
+    function getBlockNumber() private view returns (uint) {
+        return block.number;
     }
 }

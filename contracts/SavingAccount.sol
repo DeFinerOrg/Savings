@@ -93,7 +93,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * Get current block number
      * @return the current block number
      */
-    function getBlockNumber() public view returns (uint) {
+    function getBlockNumber() internal view returns (uint) {
         return block.number;
     }
 

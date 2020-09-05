@@ -1,4 +1,6 @@
 import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
@@ -7,6 +9,8 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 const SavingAccount: any = artifacts.require("SavingAccount");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
+const Bank: any = artifacts.require("BankWithController");
+const Accounts: any = artifacts.require("AccountsWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
@@ -17,8 +21,6 @@ const SavingLib = artifacts.require('SavingLib');
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
-const Bank: t.BankContract = artifacts.require("Bank");
-const Accounts: any = artifacts.require("Accounts");
 
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
@@ -215,13 +217,15 @@ export class TestEngine {
 
         const accounts_initialize_data = this.bank.contract.methods
             .initialize(
-                this.globalConfig.address
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
         const bank_initialize_data = this.accounts.contract.methods
             .initialize(
-                this.globalConfig.address
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
