@@ -139,30 +139,23 @@ contract("Integration Tests", async (accounts) => {
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow1: " + user1Borrow1.toString());
                 
-                // user1 repay 5BAT
+                // user1 repay 2BAT
                 await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
-                console.log("user1 repay 5BAT");
+                console.log("user1 repay 2BAT");
                 const user1Borrow2 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow2: " + user1Borrow2.toString());
 
-                await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
-                console.log("user1 repay 5BAT");
-                await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
-                console.log("user1 repay 5BAT");
-                await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
-                console.log("user1 repay 5BAT");
-
                 // user1 repay 20BAT(repay all BAT)
-                // await savingAccount.repay(addressBAT, borrowAmount, { from: user1 });
-                // console.log("user1 repay 20BAT(repay all BAT)");
-                // const user1Borrow3 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
-                // console.log("user1Borrow3: " + user1Borrow3.toString());
+                await savingAccount.repay(addressBAT, borrowAmount, { from: user1 });
+                console.log("user1 repay 20BAT(repay all BAT)");
+                const user1Borrow3 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
+                console.log("user1Borrow3: " + user1Borrow3.toString());
 
                 expect(user1Deposit).to.be.bignumber.equal(numOfETH);
                 expect(user2Deposit).to.be.bignumber.equal(numOfBAT);
                 expect(user1Borrow1).to.be.bignumber.equal(borrowAmount);
-                expect(user1Borrow2).to.be.bignumber.equal(borrowAmount.sub(borrowAmount.div(new BN(4))));
-                // expect(user1Borrow3).to.be.bignumber.equal(new BN(0));
+                expect(user1Borrow2).to.be.bignumber.equal(borrowAmount.sub(borrowAmount.div(new BN(10))));
+                expect(user1Borrow3).to.be.bignumber.equal(new BN(0));
 
             });
 
