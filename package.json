@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test": "yarn prepare && truffle test",
+    "test": "yarn prepare && npx buidler test --network development",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
-    "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true"
+    "ganache": "ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
+    "buidler-evm": "npx buidler node"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,7 @@
     "@typechain/truffle-v4": "^2.0.3",
     "@typechain/truffle-v5": "^2.0.2",
     "@typechain/web3-v1": "^1.0.0",
+    "buidler-gas-reporter": "^0.1.3",
     "buidler-typechain": "git+https://git@github.com/jchittoda/buidler-typechain.git#truffle-v5",
     "chai": "^4.2.0",
     "eth-gas-reporter": "^0.2.17",

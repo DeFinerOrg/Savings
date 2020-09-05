@@ -341,7 +341,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100));
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     await expectRevert(
-                        savingAccount.liquidate(user1, addressTUSD, { from: user2 }),
+                        savingAccount.liquidate(user1, addressUSDC, { from: user2 }),
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
@@ -645,7 +645,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-
                 it("Borrow multiple compound supported tokens, liquidate with compound supported token, and the liqudiator don't have enough tokens", async () => {
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -2220,88 +2219,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableAfterSecond).to.be.false;
                 });
 
-                it("With 6 decimals USDC, liquidate partially the first time then liquidate fully", async () => {
-                    /*
-                     * Step 1. Assign tokens to each user and deposit them to DeFiner
-                     * Account1: deposits 2 DAI
-                     * Account2: deposits small amount of USDC
-                     * Account3: deposits 20 USDC and 20 USDT
-                     */
-                    await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(2)));
-                    await erc20USDC.transfer(user2, sixPrecision.mul(new BN(10)));
-                    await erc20USDC.transfer(user3, sixPrecision.mul(new BN(20)));
-                    await erc20USDT.transfer(user3, sixPrecision.mul(new BN(20)));
-
-                    await erc20DAI.approve(
-                        savingAccount.address,
-                        eighteenPrecision.mul(new BN(2)),
-                        { from: user1 }
-                    );
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(10)), {
-                        from: user2
-                    });
-                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
-                        from: user3
-                    });
-                    await erc20USDT.approve(savingAccount.address, sixPrecision.mul(new BN(20)), {
-                        from: user3
-                    });
-
-                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(2)), {
-                        from: user1
-                    });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.div(new BN(100)), {
-                        from: user2
-                    });
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(20)), {
-                        from: user3
-                    });
-                    await savingAccount.deposit(addressUSDT, sixPrecision.mul(new BN(20)), {
-                        from: user3
-                    });
-                    /*
-                     * Step 2. User1 borrows from DeFiner
-                     * Account1: borrows 1.2 USDC
-                     */
-                    await savingAccount.borrow(
-                        addressUSDC,
-                        sixPrecision.mul(new BN(120)).div(new BN(100)),
-                        { from: user1 }
-                    );
-                    /*
-                     * Step 3. DAI price drops 30%, acccount2 tries to liquidate using USDT
-                     * Account1: Collateral worth roughly 1.4 USD, 1.2/1.4 = 0.857 > 0.85 liquidatable
-                     * Account2: Tries to liquidate user1, can only partially liquidate due to the limited amount
-                     */
-                    let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    let updatedPrice = BN(DAIprice)
-                        .mul(new BN(70))
-                        .div(new BN(100));
-                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
-                    const liquidatableBeforeFirst = await accountsContract.isAccountLiquidatable.call(
-                        user1
-                    );
-                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
-                    const liquidatableAfterFirst = await accountsContract.isAccountLiquidatable.call(user1);
-
-                    /*
-                     * Step 4. Account 2 deposits more tokens to DeFiner, tries to liquidate again.
-                     * Account2: Can fully liquidate user1 this time.
-                     * To verify:
-                     * 1. Liquidatable after first liquidataion, but unliquidatable after the second time.
-                     */
-                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(5)), {
-                        from: user2
-                    });
-                    await savingAccount.liquidate(user1, addressUSDC, { from: user2 });
-                    const liquidatableAfterSecond = await accountsContract.isAccountLiquidatable.call(
-                        user1
-                    );
-                    // verify 1.
-                    expect(liquidatableBeforeFirst).to.be.true;
-                    expect(liquidatableAfterFirst).to.be.true;
-                    expect(liquidatableAfterSecond).to.be.false;
-                });
                 it("With 18 decimals, liquidate partially the first time then liquidate fully", async () => {
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner

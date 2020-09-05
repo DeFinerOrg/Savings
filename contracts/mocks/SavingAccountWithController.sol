@@ -58,7 +58,7 @@ contract SavingAccountWithController is SavingAccount {
     }
 
     function getDepositPrincipal(address _token) public view returns (uint256) {
-        //TokenRegistry.TokenInfo storage tokenInfo.depositPrincipal = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);  // is this correct?
+        //TokenRegistry.TokenInfo storage tokenInfo.depositPrincipal = globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
         return globalConfig.accounts().getDepositPrincipal(msg.sender, _token);
     }
 
