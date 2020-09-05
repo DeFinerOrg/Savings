@@ -1,24 +1,32 @@
 import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
-const SavingAccount = artifacts.require("SavingAccount");
+const SavingAccount: any = artifacts.require("SavingAccount");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
+const Bank: any = artifacts.require("BankWithController");
+const Accounts: any = artifacts.require("AccountsWithController");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
-const TokenRegistry: t.TokenRegistryContract = artifacts.require("TokenRegistry");
+const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
+const BitmapLib = artifacts.require("BitmapLib");
+const Utils: any = artifacts.require('Utils');
+const SavingLib = artifacts.require('SavingLib');
+
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
-const Bank: t.BankContract = artifacts.require("Bank");
-const Accounts: any = artifacts.require("Accounts");
 
 // Contracts for Upgradability
-const ProxyAdmin: any = artifacts.require("ProxyAdmin");
-const SavingAccountProxy: any = artifacts.require("SavingAccountProxy");
+const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
+const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxy");
+const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -132,14 +140,37 @@ export class TestEngine {
 
         this.bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
+
         const accountTokenLib = await AccountTokenLib.new();
-        AccountTokenLib.setAsDeployed(accountTokenLib);
+        const bitMapLib = await BitmapLib.new();
+        const utils = await Utils.new();
+        Utils.setAsDeployed(utils);
+
         try {
-            Accounts.link(accountTokenLib);
+            await SavingLib.link(utils);
+        } catch (err) {
+            // console.log(err);
+        }
+
+        const savingLib = await SavingLib.new();
+
+        AccountTokenLib.setAsDeployed(accountTokenLib);
+        BitmapLib.setAsDeployed(bitMapLib);
+        SavingLib.setAsDeployed(savingLib);
+
+        try {
+            await SavingAccount.link(utils);
+            await SavingAccount.link(savingLib);
+            await SavingAccountWithController.link(utils);
+            await SavingAccountWithController.link(savingLib);
+            await Accounts.link(utils);
+            await Accounts.link(accountTokenLib);
+            await TokenRegistry.link(utils);
 
         } catch (error) {
-            // console.log("already linked");
+            // console.log(error);
         }
+
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
         await this.accounts.initialize(this.globalConfig.address);
@@ -151,22 +182,24 @@ export class TestEngine {
             this.tokenInfoRegistry.address
         );
 
-        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+        await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         // ProxyAdmin.setAsDeployed(proxyAdmin);
 
         const savingAccountProxy = await SavingAccountProxy.new();
-        // SavingAccountProxy.setAsDeployed(savingAccountProxy);
+        const accountsProxy = await AccountsProxy.new();
+        const bankProxy = await BankProxy.new();
 
         // Global Config initialize
         await this.globalConfig.initialize(
-            this.bank.address,
+            bankProxy.address,
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
-            this.accounts.address,
-            this.constant.address
+            accountsProxy.address,
+            this.constant.address,
+            chainLinkOracle.address
         );
 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
@@ -181,34 +214,43 @@ export class TestEngine {
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+
+        const accounts_initialize_data = this.bank.contract.methods
+            .initialize(
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            )
+            .encodeABI();
+
+        const bank_initialize_data = this.accounts.contract.methods
+            .initialize(
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            )
+            .encodeABI();
+
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        await this.globalConfig.initialize(
-            this.bank.address,
-            savingAccountProxy.address,
-            this.tokenInfoRegistry.address,
+
+        await accountsProxy.initialize(
             this.accounts.address,
-            this.constant.address
+            proxyAdmin.address,
+            accounts_initialize_data
         );
+
+        await bankProxy.initialize(
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
+        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = Accounts.at(accountsProxy.address);
+        this.bank = Bank.at(bankProxy.address);
 
         return proxy;
-
-        /*
-        const savingAccount = await SavingAccountWithController.new(
-            compoundTokens.Contracts.Comptroller
-        );
-
-        await savingAccount.initialize(this.erc20Tokens,
-            cTokens,
-            chainLinkOracle.address,
-            this.tokenInfoRegistry.address,
-            this.globalConfig.address);
-
-        return savingAccount;*/
     }
 
     private async initializeTokenInfoRegistry(

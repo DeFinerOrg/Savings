@@ -22,12 +22,10 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-/* const mnemonic = fs
-    .readFileSync(".secret")
-    .toString()
-    .trim(); */
+// const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
+    contracts_build_directory: "./build/contracts",
     // this is required by truffle to find any ts test files
     test_file_extension_regexp: /.*\.ts$/,
 
@@ -52,19 +50,25 @@ module.exports = {
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
-            gas: 20000000
+            gas: 20000000,
         },
         coverage: {
             host: "127.0.0.1",
             port: 8546,
             network_id: "*",
             gas: 0xfffffffffff,
-            gasPrice: 1
+            gasPrice: 1,
         },
         mainnet: {
-            host: "127.0.0.1",
-            port: 8546,
-            network_id: "*"
+            provider: () =>
+                new HDWalletProvider(
+                    mnemonic,
+                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                ),
+            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
+            network_id: 1,
+            gas: 7000000,
+            gasPrice: 150000000000, //150Gwei
         },
 
         // rinkeby: {
@@ -79,29 +83,17 @@ module.exports = {
         //     gasPrice: 15000000000,
         // },
 
-        // ropsten: {
-        //     provider: () =>
-        //         new HDWalletProvider(
-        //             mnemonic,
-        //             "https://ropsten.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
-        //         ),
-        //     from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
-        //     network_id: 3,
-        //     gas: 6000000,
-        //     gasPrice: 15000000000,
-        // }
-
         kovan: {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://kovan.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
                 ),
-            from: "0xe6A7bc2c96e4374eBCdB23aEDCBB6Ef1eB3d4C83", // default address to use for any transaction Truffle makes during migrations
+            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
-            gasPrice: 15000000000
-        }
+            gasPrice: 50000000000, //150Gwei
+        },
     },
 
     plugins: ["solidity-coverage"],
@@ -120,9 +112,10 @@ module.exports = {
                 // See the solidity docs for advice about optimization and evmVersion
                 optimizer: {
                     enabled: true,
-                    runs: 200
-                }
-            }
-        }
-    }
+                    runs: 200,
+                },
+                evmVersion: "petersburg", //"constantinople",
+            },
+        },
+    },
 };

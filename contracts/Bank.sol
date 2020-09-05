@@ -6,8 +6,10 @@ import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import "@nomiclabs/buidler/console.sol";
 
-contract Bank is Constant, Ownable{
+contract Bank is Constant, Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
@@ -25,24 +27,11 @@ contract Bank is Constant, Ownable{
 
     GlobalConfig globalConfig;            // global configuration contract address
 
-    modifier onlySavingAccount() {
-        require(msg.sender == address(globalConfig.savingAccount()), "Ony authorized to call from SavingAccount contract.");
+    modifier onlyInternal() {
+        require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
+            "Only authorized to call from DeFiner internal contracts.");
         _;
     }
-
-    modifier onlyDeFinerContract() {
-        require(msg.sender == address(globalConfig.savingAccount()) ||
-            msg.sender == address(globalConfig.accounts())
-            , "Only authorized to call from DeFiner smart contracts.");
-        _;
-    }
-
-    enum ActionChoices { Deposit, Withdraw, Borrow, Repay }
-
-    ActionChoices public Deposit = ActionChoices.Deposit;
-    ActionChoices public Withdraw = ActionChoices.Withdraw;
-    ActionChoices public Borrow = ActionChoices.Borrow;
-    ActionChoices public Repay = ActionChoices.Repay;
 
     struct ThirdPartyPool {
         bool supported;             // if the token is supported by the third party platforms such as Compound
@@ -59,7 +48,7 @@ contract Bank is Constant, Ownable{
      */
     function initialize(
         GlobalConfig _globalConfig
-    ) public onlyOwner {
+    ) public initializer {
         globalConfig = _globalConfig;
     }
 
@@ -90,7 +79,7 @@ contract Bank is Constant, Ownable{
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
      */
-    function updateTotalCompound(address _token) public onlySavingAccount{
+    function updateTotalCompound(address _token) internal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
             totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
@@ -105,12 +94,12 @@ contract Bank is Constant, Ownable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, ActionChoices _action) public onlySavingAccount returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, uint8 _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == Deposit || _action == Repay) {
+        if (_action == uint8(0) || _action == uint8(3)) {
             // Total amount of token after deposit or repay
-            if (_action == Deposit)
+            if (_action == uint8(0))
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -120,26 +109,38 @@ contract Bank is Constant, Ownable{
 
             if (cToken != address(0) &&
             totalReserveBeforeAdjust > totalAmount.mul(globalConfig.maxReserveRatio()).div(100)) {
-                uint toCompoundAmount = totalReserveBeforeAdjust - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
+                uint toCompoundAmount = totalReserveBeforeAdjust.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                 //toCompound(_token, toCompoundAmount);
                 compoundAmount = toCompoundAmount;
                 totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
-                totalReserve[_token] = totalReserve[_token].add(_amount.sub(toCompoundAmount));
+                totalReserve[_token] = totalReserve[_token].add(_amount).sub(toCompoundAmount);
             }
             else {
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
         } else {
-            require(
-                totalReserve[_token].add(totalCompound[cToken]) >= _amount,
-                "Not enough tokens in the pool."
-            );
+            // The lack of liquidity exception happens when the pool doesn't have enough tokens for borrow/withdraw
+            // It happens when part of the token has lended to the other accounts.
+            // However in case of withdrawAll, even if the token has no loan, this requirment may still false because
+            // of the precision loss in the rate calcuation. So we put a logic here to deal with this case: in case
+            // of withdrawAll and there is no loans for the token, we just adjust the balance in bank contract to the
+            // to the balance of that individual account.
+            if(_action == uint8(1)) {
+                if(totalLoans[_token] != 0)
+                    require(getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
+                else if (getPoolAmount(_token) < _amount)
+                    totalReserve[_token] = _amount.sub(totalCompound[cToken]);
+                totalAmount = getTotalDepositStore(_token);
+            }
+            else
+                require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
 
             // Total amount of token after withdraw or borrow
-            if (_action == Withdraw)
+            if (_action == uint8(1))
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);
+
             // Expected total amount of token in reservation after deposit or repay
             uint totalReserveBeforeAdjust = totalReserve[_token] > _amount ? totalReserve[_token].sub(_amount) : 0;
 
@@ -156,9 +157,9 @@ contract Bank is Constant, Ownable{
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable - totalAmount.mul(globalConfig.midReserveRatio()).div(100);
+                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
                     //fromCompound(_token, totalCompound[cToken]-totalInCompound);
-                    compoundAmount = totalCompound[cToken]-totalInCompound;
+                    compoundAmount = totalCompound[cToken].sub(totalInCompound);
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
                 }
@@ -167,6 +168,13 @@ contract Bank is Constant, Ownable{
                 totalReserve[_token] = totalReserve[_token].sub(_amount);
             }
         }
+        return compoundAmount;
+    }
+
+     function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
+        updateTotalCompound(_token);
+        // updateTotalLoan(_token);
+        compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
     }
 
@@ -243,7 +251,7 @@ contract Bank is Constant, Ownable{
             return UNIT;    // return UNIT if the checkpoint doesn't exist
         } else {
             // sichaoy: to check that the current block rate index already exist
-            return depositeRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
+            return depositeRateIndex[_token][getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
         }
     }
 
@@ -263,7 +271,7 @@ contract Bank is Constant, Ownable{
             return UNIT;
         } else {
             // rate change
-            return borrowRateIndex[_token][globalConfig.savingAccount().getBlockNumber()].mul(UNIT).div(borrowRate);
+            return borrowRateIndex[_token][getBlockNumber()].mul(UNIT).div(borrowRate);
         }
     }
 
@@ -272,10 +280,10 @@ contract Bank is Constant, Ownable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public onlyDeFinerContract{
+    function newRateIndexCheckpoint(address _token) public onlyInternal {
 
         // return if the rate check point already exists
-        uint blockNumber = globalConfig.savingAccount().getBlockNumber();
+        uint blockNumber = getBlockNumber();
         if (blockNumber == lastCheckpoint[_token])
             return;
 
@@ -321,7 +329,7 @@ contract Bank is Constant, Ownable{
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
                 compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
-                .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
+                    .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
                 depositeRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
                 // Update the last checkpoint
@@ -336,7 +344,7 @@ contract Bank is Constant, Ownable{
                 .div(borrowRateIndex[_token][previousCheckpoint]);
         }
 
-        emit UpdateIndex(_token, depositeRateIndex[_token][block.number], borrowRateIndex[_token][block.number]);
+        emit UpdateIndex(_token, depositeRateIndex[_token][getBlockNumber()], borrowRateIndex[_token][getBlockNumber()]);
     }
 
     /**
@@ -355,7 +363,7 @@ contract Bank is Constant, Ownable{
         uint256 lastDepositeRateIndex = depositeRateIndex[_token][lcp];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
-        return lastDepositeRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        return lastDepositeRateIndex.mul(getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -370,7 +378,7 @@ contract Bank is Constant, Ownable{
             return UNIT;
         uint256 lastBorrowRateIndex = borrowRateIndex[_token][lcp];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
-        return lastBorrowRateIndex.mul(globalConfig.savingAccount().getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
     }
 
     /**
@@ -384,5 +392,108 @@ contract Bank is Constant, Ownable{
         totalReserve[_token],
         totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)])
         );
+    }
+
+    function getPoolAmount(address _token) public view returns(uint) {
+        return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
+    }
+ // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
+    function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        globalConfig.accounts().deposit(_to, _token, _amount);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(0));
+
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().toCompound(_token, compoundAmount);
+        }
+    }
+
+    function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Update tokenInfo for the user
+        globalConfig.accounts().borrow(_from, _token, _amount);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(2));
+
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().fromCompound(_token, compoundAmount);
+        }
+    }
+
+    function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Sanity check
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
+
+        // Update tokenInfo
+        uint256 remain = globalConfig.accounts().repay(_to, _token, _amount);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount.sub(remain), uint8(3));
+        if(compoundAmount > 0) {
+           globalConfig.savingAccount().toCompound(_token, compoundAmount);
+        }
+
+        // Return actual amount repaid
+        return _amount.sub(remain);
+    }
+
+    /**
+     * Withdraw a token from an address
+     * @param _from address to be withdrawn from
+     * @param _token token address
+     * @param _amount amount to be withdrawn
+     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
+     */
+    function withdraw(address _from, address _token, uint256 _amount) public onlyInternal returns(uint) {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Withdraw from the account
+        uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(1));
+
+        // Check if there are enough tokens in the pool.
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().fromCompound(_token, compoundAmount);
+        }
+
+        return amount;
+    }
+
+    /**
+     * Get current block number
+     * @return the current block number
+     */
+    function getBlockNumber() private view returns (uint) {
+        return block.number;
     }
 }

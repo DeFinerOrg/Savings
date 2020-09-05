@@ -21,7 +21,7 @@
 
             "kovan": {
                 "tokenAddress": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa",
-                "aggregatorAddress": "0x6F47077D3B6645Cb6fb7A29D280277EC1e5fFD90",
+                "aggregatorAddress": "0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541",
                 "cTokenAddress": "0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad"
             },
 
@@ -54,7 +54,7 @@
 
             "kovan": {
                 "tokenAddress": "0xb7a4f3e9097c08da09517b5ab877f7a917224ede",
-                "aggregatorAddress": "0x672c1C0d1130912D83664011E7960a42E8cA05D5",
+                "aggregatorAddress": "0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838",
                 "cTokenAddress": "0x4a92e71227d294f041bd82dd8f78591b75140d63"
             },
 
@@ -87,7 +87,7 @@
 
             "kovan": {
                 "tokenAddress": "0x07de306ff27a2b630b1141956844eb1552b956b5",
-                "aggregatorAddress": "0xCC833A6522721B3252e7578c5BCAF65738B75Fc3",
+                "aggregatorAddress": "0x0bF499444525a23E7Bb61997539725cA2e928138",
                 "cTokenAddress": "0x3f0a0ea2f86bae6362cf9799b523ba06647da018"
             },
 
@@ -120,7 +120,7 @@
 
             "kovan": {
                 "tokenAddress": "0x7A6E8e83cd3f28872317055688164B3CC0846A58",
-                "aggregatorAddress": "0x02424c54D78D48179Fd12ebFfB11c16f9CA984Ad",
+                "aggregatorAddress": "0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
@@ -153,7 +153,7 @@
 
             "kovan": {
                 "tokenAddress": "0xeD8aff4253e6317D9A7606FF7E3A2C5C5a75ad3a",
-                "aggregatorAddress": "0x14D7714eC44F44ECD0098B39e642b246fB2c38D0",
+                "aggregatorAddress": "0x0B156192e04bAD92B6C1C13cf8739d14D78D5701",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
@@ -186,7 +186,7 @@
 
             "kovan": {
                 "tokenAddress": "0x482dc9bb08111cb875109b075a40881e48ae02cd",
-                "aggregatorAddress": "0x2c8d01771CCDca47c103194C5860dbEA2fE61626",
+                "aggregatorAddress": "0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae",
                 "cTokenAddress": "0x4a77faee9650b09849ff459ea1476eab01606c7a"
             },
 
@@ -219,7 +219,7 @@
 
             "kovan": {
                 "tokenAddress": "0x162c44e53097e7b5aae939b297fffd6bf90d1ee3",
-                "aggregatorAddress": "0x2636cfdDB457a6C7A7D60A439F1E5a5a0C3d9c65",
+                "aggregatorAddress": "0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883",
                 "cTokenAddress": "0xaf45ae737514c8427d373d50cd979a242ec59e5a"
             },
 
@@ -252,7 +252,7 @@
 
             "kovan": {
                 "tokenAddress": "0x50dd65531676f718b018de3dc48f92b53d756996",
-                "aggregatorAddress": "0x09F4A94F44c29d4967C761bBdB89f5bD3E2c09E6",
+                "aggregatorAddress": "0x3A7e6117F2979EFf81855de32819FBba48a63e9e",
                 "cTokenAddress": "0xa4ec170599a1cf87240a35b9b1b8ff823f448b57"
             },
 
@@ -299,9 +299,11 @@
     "ETH": {
         "decimals": 18,
         "latestAnswer": "1",
+        "isFeeEnabled": false,
+        "isSupportedByCompound": true,
 
         "mainnet": {
-            "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
+            "cTokenAddress": "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"
         },
 
         "ropsten": {

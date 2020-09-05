@@ -283,7 +283,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = new BN(0);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Amount is zero"
+                                "Borrow zero amount of token is not allowed."
                             );
                         });
                         it("Deposits TUSD, borrows WBTC and the amount is zero", async () => {
@@ -327,7 +327,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = new BN(0);
                             await expectRevert(
                                 savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
-                                "Amount is zero"
+                                "Borrow zero amount of token is not allowed."
                             );
                         });
                     });
@@ -559,6 +559,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
                         from: user2
                     });
+
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole TUSD twice
