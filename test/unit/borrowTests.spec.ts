@@ -170,7 +170,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(0), { from: user2 }),
-                        "Amount is zero"
+                        "Borrow zero amount of token is not allowed."
                     );
                 });
 
@@ -354,7 +354,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(0), { from: user1 }),
-                        "Amount is zero"
+                        "Borrow zero amount of token is not allowed."
                     );
                 });
 
@@ -552,7 +552,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(0), { from: user2 }),
-                        "Amount is zero"
+                        "Borrow zero amount of token is not allowed."
                     );
                 });
 
@@ -566,7 +566,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(0), { from: user1 }),
-                        "Amount is zero"
+                        "Borrow zero amount of token is not allowed."
                     );
                 });
 
@@ -757,7 +757,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(0), { from: user1 }),
-                        "Amount is zero"
+                        "Borrow zero amount of token is not allowed."
                     );
                 });
 

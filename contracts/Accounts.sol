@@ -25,6 +25,11 @@ contract Accounts is Constant, Ownable, Initializable{
         _;
     }
 
+    modifier onlyBank() {
+        require(msg.sender == address(globalConfig.bank()), "Ony authorized to call from Bank contract.");
+        _;
+    }
+
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
@@ -145,7 +150,8 @@ contract Accounts is Constant, Ownable, Initializable{
         return tokenInfo.getBorrowInterest();
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
+    function borrow(address _accountAddr, address _token, uint256 _amount) public onlyBank {
+        require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         require(
             getBorrowETH(_accountAddr).add(
@@ -156,13 +162,14 @@ contract Accounts is Constant, Ownable, Initializable{
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        if(tokenInfo.getBorrowPrincipal() == 0) {
-            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
-            setInBorrowBitmap(_accountAddr, tokenIndex);
-        }
-        tokenInfo.borrow(_amount, accruedRate, _block);
-    }
 
+        // Update the token principla and interest
+        tokenInfo.borrow(_amount, accruedRate, block.number);
+        // Since we have checked that borrow amount is larget than zero. We can set the borrow
+        // map directly without checking the borrow balance.
+        uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+        setInBorrowBitmap(_accountAddr, tokenIndex);
+    }
     // function getDepositAccruedRate(address _accountAddr, address _token) public view returns(uint256){
     //     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
     //     return globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
@@ -175,7 +182,7 @@ contract Accounts is Constant, Ownable, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount returns(uint256){
+    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyBank returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -194,7 +201,7 @@ contract Accounts is Constant, Ownable, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate, _block);
+        tokenInfo.withdraw(_amount, accruedRate, block.number);
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -211,17 +218,17 @@ contract Accounts is Constant, Ownable, Initializable{
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount{
+    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyBank {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
-        tokenInfo.deposit(_amount, accruedRate, _block);
+        tokenInfo.deposit(_amount, accruedRate, block.number);
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount, uint256 _block) public onlySavingAccount returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) public onlyBank returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceStore(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -230,7 +237,7 @@ contract Accounts is Constant, Ownable, Initializable{
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.repay(amount, accruedRate, _block);
+        tokenInfo.repay(amount, accruedRate, block.number);
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);

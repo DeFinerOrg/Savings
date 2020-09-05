@@ -106,8 +106,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
         // sichaoy: what if withdraw fails?
         // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        uint256 amount = SavingLib.withdraw(globalConfig, msg.sender, _token, _amount, getBlockNumber());
-        SavingLib.deposit(globalConfig, _to, _token, _amount, getBlockNumber());
+        uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
+        globalConfig.bank().deposit(_to, _token, _amount);
 
         emit Transfer(_token, msg.sender, _to, amount);
     }
@@ -119,24 +119,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function borrow(address _token, uint256 _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
 
-        require(_amount != 0, "Amount is zero");
+        require(_amount != 0, "Borrow zero amount of token is not allowed.");
 
-        // Add a new checkpoint on the index curve.
-        globalConfig.bank().newRateIndexCheckpoint(_token);
-
-        // Update tokenInfo for the user
-        globalConfig.accounts().borrow(msg.sender, _token, _amount, getBlockNumber());
-
-        require(globalConfig.bank().getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
-
-        // Update pool balance
-        // Update the amount of tokens in compound and loans, i.e. derive the new values
-        // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = globalConfig.bank().update(_token, _amount, uint8(2));
-
-        if(compoundAmount > 0) {
-            SavingLib.fromCompound(globalConfig, _token, compoundAmount);
-        }
+        globalConfig.bank().borrow(msg.sender, _token, _amount);
 
         // Transfer the token on Ethereum
         SavingLib.send(globalConfig, _amount, _token);
@@ -155,7 +140,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         SavingLib.receive(globalConfig, _amount, _token);
 
         // Add a new checkpoint on the index curve.
-        uint256 amount = SavingLib.repay(globalConfig, msg.sender, _token, _amount, getBlockNumber());
+        uint256 amount = globalConfig.bank().repay(msg.sender, _token, _amount);
 
         // Send the remain money back
         if(amount < _amount) {
@@ -173,7 +158,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
-        SavingLib.deposit(globalConfig, msg.sender, _token, _amount, getBlockNumber());
+
+        globalConfig.bank().deposit(msg.sender, _token, _amount);
 
         emit Deposit(_token, msg.sender, _amount);
     }
@@ -185,7 +171,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      */
     function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
-        uint256 amount = SavingLib.withdraw(globalConfig, msg.sender, _token, _amount, getBlockNumber());
+        uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
         SavingLib.send(globalConfig, amount, _token);
 
         emit Withdraw(_token, msg.sender, amount);
@@ -206,7 +192,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // Get the total amount of token for the account
         uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
 
-        uint256 actualAmount = SavingLib.withdraw(globalConfig, msg.sender, _token, amount, getBlockNumber());
+        uint256 actualAmount = globalConfig.bank().withdraw(msg.sender, _token, amount);
         if(actualAmount != 0) {
             SavingLib.send(globalConfig, actualAmount, _token);
         }
@@ -303,9 +289,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
                 // Update the account balance after the collateral is transfered.
                 vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
                 // vars.targetTokenAmount = vars.coinValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(vars.targetTokenPrice).div(100);
-                // SavingLib.repay(globalConfig, _targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
-                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount, getBlockNumber());
-                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount, getBlockNumber());
+                // globalConfig.bank().repay(globalConfig, _targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
+                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
+                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount);
                 // SavingLib.withdraw(globalConfig, msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
             }
 
@@ -318,8 +304,27 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // We call the withdraw/repay functions in SavingAccount instead of in Accounts because the total amount
         // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
         uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(divisor).div(vars.targetTokenPrice);
-        SavingLib.withdraw(globalConfig, msg.sender, _targetToken, targetTokenTransfer, getBlockNumber());
-        SavingLib.repay(globalConfig, _targetAccountAddr, _targetToken, targetTokenTransfer, getBlockNumber());
+        globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
+        globalConfig.bank().repay(_targetAccountAddr, _targetToken, targetTokenTransfer);
+    }
+
+    /**
+     * Withdraw token from Compound
+     * @param _token token address
+     * @param _amount amount of token
+     */
+    function fromCompound(address _token, uint _amount) public {
+        require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
+    }
+
+    function toCompound(address _token, uint _amount) public {
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if (Utils._isETH(address(globalConfig), _token)) {
+            ICETH(cToken).mint.value(_amount)();
+        } else {
+            // uint256 success = ICToken(cToken).mint(_amount);
+            require(ICToken(cToken).mint(_amount) == 0, "mint failed");
+        }
     }
 
     /**

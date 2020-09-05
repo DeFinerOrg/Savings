@@ -177,7 +177,7 @@ contract Bank is Constant, Ownable, Initializable{
         return compoundAmount;
     }
 
-    function update(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
+     function update(address _token, uint _amount, uint8 _action) public onlySavingAccount returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -402,5 +402,96 @@ contract Bank is Constant, Ownable, Initializable{
 
     function getPoolAmount(address _token) public view returns(uint) {
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
+    }
+ // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
+    function deposit(address _to, address _token, uint256 _amount) public onlySavingAccount {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        globalConfig.accounts().deposit(_to, _token, _amount);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(0));
+
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().toCompound(_token, compoundAmount);
+        }
+    }
+
+    function borrow(address _from, address _token, uint256 _amount) public onlySavingAccount {
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Update tokenInfo for the user
+        globalConfig.accounts().borrow(_from, _token, _amount);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(2));
+
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().fromCompound(_token, compoundAmount);
+        }
+    }
+
+    function repay(address _to, address _token, uint256 _amount) public onlySavingAccount returns(uint) {
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Sanity check
+        require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
+            "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button."
+        );
+
+        // Update tokenInfo
+        uint256 remain = globalConfig.accounts().repay(_to, _token, _amount);
+
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount.sub(remain), uint8(3));
+        if(compoundAmount > 0) {
+           globalConfig.savingAccount().toCompound(_token, compoundAmount);
+        }
+
+        // Return actual amount repaid
+        return _amount.sub(remain);
+    }
+
+    /**
+     * Withdraw a token from an address
+     * @param _from address to be withdrawn from
+     * @param _token token address
+     * @param _amount amount to be withdrawn
+     * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
+     */
+    function withdraw(address _from, address _token, uint256 _amount) public onlySavingAccount returns(uint) {
+
+        require(_amount != 0, "Amount is zero");
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
+        // Withdraw from the account
+        uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);
+
+        // Update pool balance
+        // Update the amount of tokens in compound and loans, i.e. derive the new values
+        // of C (Compound Ratio) and U (Utilization Ratio).
+        uint compoundAmount = update(_token, _amount, uint8(1));
+
+        // Check if there are enough tokens in the pool.
+        if(compoundAmount > 0) {
+            globalConfig.savingAccount().fromCompound(_token, compoundAmount);
+        }
+
+        return amount;
     }
 }
