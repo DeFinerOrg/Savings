@@ -198,23 +198,6 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    context("recycleCommunityFund", async () => {
-        context("should fail", async () => {
-            it("when user's address is not same as definerCommunityFund", async () => {
-                await expectRevert(
-                    savingAccount.recycleCommunityFund(addressDAI, { from: user1 }),
-                    "Unauthorized call"
-                );
-            });
-            // definerCommunityFund?
-        });
-
-        context("should succeed", async () => {
-            it("when valid token address is passed", async () => { });
-            // verify deFinerFund == 0, transfer()
-        });
-    });
-
     context("updateDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async () => {
