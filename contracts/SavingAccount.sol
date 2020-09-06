@@ -103,10 +103,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _amount amout of tokens transfer
      */
     function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
-        // sichaoy: what if withdraw fails?
-        // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
-        globalConfig.bank().deposit(_to, _token, _amount);
+
+        globalConfig.bank().newRateIndexCheckpoint(_token);
+        uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
+        globalConfig.accounts().deposit(_to, _token, _amount);
 
         emit Transfer(_token, msg.sender, _to, amount);
     }
@@ -189,7 +189,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Get the total amount of token for the account
-        uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
+        uint amount = globalConfig.accounts().getDepositBalanceCurrent(_token, msg.sender);
 
         uint256 actualAmount = globalConfig.bank().withdraw(msg.sender, _token, amount);
         if(actualAmount != 0) {
@@ -238,7 +238,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
         require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
 
-        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr);
+        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
         require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
 
         if (vars.targetTokenBalance > vars.targetTokenBalanceBorrowed)
@@ -287,11 +287,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
                 // Update the account balance after the collateral is transfered.
                 vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                // vars.targetTokenAmount = vars.coinValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(vars.targetTokenPrice).div(100);
-                // globalConfig.bank().repay(globalConfig, _targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
-                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
-                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount);
-                // SavingLib.withdraw(globalConfig, msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
+                uint256 amount = globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
+                globalConfig.accounts().deposit(msg.sender, vars.token, amount);
             }
 
             if(vars.totalBorrow <= vars.borrowPower || vars.liquidationDebtValue == 0) {
@@ -303,8 +300,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // We call the withdraw/repay functions in SavingAccount instead of in Accounts because the total amount
         // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
         uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(divisor).div(vars.targetTokenPrice);
-        globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
-        globalConfig.bank().repay(_targetAccountAddr, _targetToken, targetTokenTransfer);
+        uint256 amount = globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
+        globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
     }
 
     /**

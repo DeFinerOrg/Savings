@@ -278,14 +278,13 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
                 const ownerDAIBefore = await erc20DAI.balanceOf(owner);
                 const ownerDepositDAIBefore = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
+                console.log("ownerDAIBefore: " + ownerDAIBefore.toString());
+                console.log("ownerDepositDAIBefore: " + ownerDepositDAIBefore.toString());
 
                 await savingAccount.withdrawAll(erc20DAI.address);
-
                 const ownerDAIAfter = await erc20DAI.balanceOf(owner);
                 const ownerDepositDAIAfter = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
                 console.log("ownerDAIAfter: " + ownerDAIAfter.toString());
-                console.log("ownerDAIBefore: " + ownerDAIBefore.toString());
-                console.log("ownerDepositDAIBefore: " + ownerDepositDAIBefore.toString());
                 console.log("ownerDepositDAIAfter: " + ownerDepositDAIAfter.toString());
 
             });
