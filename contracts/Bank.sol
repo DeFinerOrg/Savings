@@ -479,7 +479,7 @@ contract Bank is Constant, Ownable, Initializable{
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount, uint8(1));
+        uint compoundAmount = update(_token, amount, uint8(1));
 
         // Check if there are enough tokens in the pool.
         if(compoundAmount > 0) {

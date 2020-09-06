@@ -327,19 +327,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         }
     }
 
-    /**
-     * Withdraw the community fund (commission fee)
-     * @param _token token address
-     */
-     function recycleCommunityFund(address _token) public {
-         require(msg.sender == globalConfig.deFinerCommunityFund(), "Unauthorized call");
-         uint256 amount = globalConfig.accounts().deFinerFund(_token);
-         if (amount > 0) {
-             globalConfig.accounts().clearDeFinerFund(_token);
-             SavingLib.send(globalConfig, amount, _token);
-         }
-     }
-
     function() external payable{}
 
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
