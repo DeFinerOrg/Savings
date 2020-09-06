@@ -210,7 +210,7 @@ contract Accounts is Constant, Ownable, Initializable{
             // DeFiner takes 10% commission on the interest a user earn
             commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
             AccountTokenLib.TokenInfo storage tokenInfoCommission = accounts[globalConfig.deFinerCommunityFund()].tokenInfos[_token];
-            tokenInfoCommission.deposit(_amount, accruedRate, getBlockNumber());
+            tokenInfoCommission.deposit(commission, accruedRate, getBlockNumber());
         }
 
         return _amount.sub(commission);
