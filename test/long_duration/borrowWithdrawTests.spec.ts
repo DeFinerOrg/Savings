@@ -273,6 +273,12 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 /* expect(balSavingAccountDAI).to.be.bignumber.equal(
                     collateralLocked.mul(new BN(15)).div(new BN(100))
                 ); */
+
+                const ownerDAIBefore = await erc20DAI.balanceOf(owner);
+                await savingAccount.withdrawAll(erc20DAI.address);
+                const ownerDAIAfter = await erc20DAI.balanceOf(owner);
+                console.log("owner: " + (ownerDAIAfter.sub(ownerDAIBefore)).toString());
+
             });
         });
     });
