@@ -17,7 +17,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
-    // mapping(address => uint256) public deFinerFund;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -323,19 +322,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
             require(ICToken(cToken).mint(_amount) == 0, "mint failed");
         }
     }
-
-    /**
-     * Withdraw the community fund (commission fee)
-     * @param _token token address
-     */
-     function recycleCommunityFund(address _token) public {
-         require(msg.sender == globalConfig.deFinerCommunityFund(), "Unauthorized call");
-         uint256 amount = globalConfig.accounts().deFinerFund(_token);
-         if (amount > 0) {
-             globalConfig.accounts().clearDeFinerFund(_token);
-             SavingLib.send(globalConfig, amount, _token);
-         }
-     }
 
     function() external payable{}
 

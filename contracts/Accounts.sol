@@ -16,7 +16,6 @@ contract Accounts is Constant, Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => Account) public accounts;
-    mapping(address => uint256) public deFinerFund;
 
     GlobalConfig globalConfig;
 
@@ -206,10 +205,14 @@ contract Accounts is Constant, Ownable, Initializable{
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
 
-        // DeFiner takes 10% commission on the interest a user earn
-        uint256 commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
-        deFinerFund[_token] = deFinerFund[_token].add(commission);
-        
+        uint commission = 0;
+        if (_accountAddr != globalConfig.deFinerCommunityFund()) {
+            // DeFiner takes 10% commission on the interest a user earn
+            commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
+            AccountTokenLib.TokenInfo storage tokenInfoCommission = accounts[globalConfig.deFinerCommunityFund()].tokenInfos[_token];
+            tokenInfoCommission.deposit(commission, accruedRate, getBlockNumber());
+        }
+
         return _amount.sub(commission);
     }
 
@@ -398,11 +401,6 @@ contract Accounts is Constant, Ownable, Initializable{
         uint256 borrowLTV;
         uint256 paymentOfLiquidationValue;
     }
-
-    function clearDeFinerFund(address _token) public onlyInternal{
-        deFinerFund[_token] = 0;
-    }
-
     /**
      * Get current block number
      * @return the current block number
