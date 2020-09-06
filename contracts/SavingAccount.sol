@@ -104,10 +104,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _amount amout of tokens transfer
      */
     function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
-        // sichaoy: what if withdraw fails?
-        // baseVariable.withdraw(msg.sender, _token, _amount, symbols);
-        uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
-        globalConfig.bank().deposit(_to, _token, _amount);
+
+        globalConfig.bank().newRateIndexCheckpoint(_token);
+        uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
+        globalConfig.accounts().deposit(_to, _token, _amount);
 
         emit Transfer(_token, msg.sender, _to, amount);
     }
