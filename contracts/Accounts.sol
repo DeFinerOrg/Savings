@@ -350,24 +350,6 @@ contract Accounts is Constant, Ownable, Initializable{
         }
         return borrowETH;
     }
-
-    function uint2str(uint _i) public pure returns (string memory _uintAsString) {
-    if (_i == 0) {
-        return "0";
-    }
-    uint j = _i;
-    uint len;
-    while (j != 0) {
-        len++;
-        j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint k = len - 1;
-    while (_i != 0) {
-        bstr[k--] = byte(uint8(48 + _i % 10));
-        _i /= 10;
-    }
-    return string(bstr);
 }
     /**
 	 * Check if the account is liquidatable
@@ -390,11 +372,6 @@ contract Accounts is Constant, Ownable, Initializable{
 
         uint256 totalBorrow = getBorrowETH(_borrower);
         uint256 totalCollateral = getDepositETH(_borrower);
-
-        // uint256 temp1 = totalBorrow.mul(100);
-        // uint256 temp2 = totalCollateral.mul(liquidationDiscountRatio);
-        // // require(false, uint2str(temp1));
-        // require(false, uint2str(temp2));
 
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that
