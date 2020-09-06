@@ -228,7 +228,7 @@ contract Accounts is Constant, Ownable, Initializable{
 
     function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
         // Update tokenInfo
-        uint256 amountOwedWithInterest = getBorrowBalanceStore(_token, _accountAddr);
+        uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -263,15 +263,6 @@ contract Accounts is Constant, Ownable, Initializable{
         }
     }
 
-    function getDepositBalanceStore(
-        address _token,
-        address _accountAddr
-    ) public view returns (uint256 depositBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        return tokenInfo.getDepositBalance(accruedRate);
-    }
-
     /**
      * Get current borrow balance of a token
      * @param _token token address
@@ -296,15 +287,6 @@ contract Accounts is Constant, Ownable, Initializable{
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
-    }
-
-    function getBorrowBalanceStore(
-        address _token,
-        address _accountAddr
-    ) public view returns (uint256 borrowBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.getBorrowBalance(accruedRate);
     }
 
     /**
@@ -368,24 +350,6 @@ contract Accounts is Constant, Ownable, Initializable{
         }
         return borrowETH;
     }
-
-    function uint2str(uint _i) public pure returns (string memory _uintAsString) {
-    if (_i == 0) {
-        return "0";
-    }
-    uint j = _i;
-    uint len;
-    while (j != 0) {
-        len++;
-        j /= 10;
-    }
-    bytes memory bstr = new bytes(len);
-    uint k = len - 1;
-    while (_i != 0) {
-        bstr[k--] = byte(uint8(48 + _i % 10));
-        _i /= 10;
-    }
-    return string(bstr);
 }
     /**
 	 * Check if the account is liquidatable
@@ -408,11 +372,6 @@ contract Accounts is Constant, Ownable, Initializable{
 
         uint256 totalBorrow = getBorrowETH(_borrower);
         uint256 totalCollateral = getDepositETH(_borrower);
-
-        // uint256 temp1 = totalBorrow.mul(100);
-        // uint256 temp2 = totalCollateral.mul(liquidationDiscountRatio);
-        // // require(false, uint2str(temp1));
-        // require(false, uint2str(temp2));
 
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that
