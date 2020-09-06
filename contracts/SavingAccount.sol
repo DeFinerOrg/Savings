@@ -288,11 +288,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
 
                 // Update the account balance after the collateral is transfered.
                 vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-                // vars.targetTokenAmount = vars.coinValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(vars.targetTokenPrice).div(100);
-                // globalConfig.bank().repay(globalConfig, _targetAccountAddr, _targetToken, vars.targetTokenAmount, getBlockNumber());
-                globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
-                globalConfig.accounts().deposit(msg.sender, vars.token, vars.tokenAmount);
-                // SavingLib.withdraw(globalConfig, msg.sender, _targetToken, vars.targetTokenAmount, getBlockNumber());
+                uint256 amount = globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
+                globalConfig.accounts().deposit(msg.sender, vars.token, amount);
             }
 
             if(vars.totalBorrow <= vars.borrowPower || vars.liquidationDebtValue == 0) {
@@ -304,8 +301,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         // We call the withdraw/repay functions in SavingAccount instead of in Accounts because the total amount
         // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
         uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(divisor).div(vars.targetTokenPrice);
-        globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
-        globalConfig.bank().repay(_targetAccountAddr, _targetToken, targetTokenTransfer);
+        uint256 amount = globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
+        globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
     }
 
     /**
