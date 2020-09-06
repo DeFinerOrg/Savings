@@ -16,7 +16,6 @@ contract Accounts is Constant, Ownable, Initializable{
     using SafeMath for uint256;
 
     mapping(address => Account) public accounts;
-    mapping(address => uint256) public deFinerFund;
 
     GlobalConfig globalConfig;
 
@@ -443,11 +442,6 @@ contract Accounts is Constant, Ownable, Initializable{
         uint256 borrowLTV;
         uint256 paymentOfLiquidationValue;
     }
-
-    function clearDeFinerFund(address _token) public onlyInternal{
-        deFinerFund[_token] = 0;
-    }
-
     /**
      * Get current block number
      * @return the current block number

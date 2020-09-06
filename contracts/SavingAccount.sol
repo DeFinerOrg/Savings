@@ -17,7 +17,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
-    // mapping(address => uint256) public deFinerFund;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract

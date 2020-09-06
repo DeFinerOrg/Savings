@@ -296,12 +296,4 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
     */
-
-    context("getDeFinerCommunityFund", async () => {
-        context("should succeed", async () => {
-            it("when valid token address is passed", async () => {
-                await accountsContract.deFinerFund(addressDAI);
-            });
-        });
-    });
 });
