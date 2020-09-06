@@ -20,6 +20,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
+    let bank: t.BankInstance
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -88,6 +89,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
+        bank = await testEngine.bank;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -273,6 +275,18 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 /* expect(balSavingAccountDAI).to.be.bignumber.equal(
                     collateralLocked.mul(new BN(15)).div(new BN(100))
                 ); */
+
+                const ownerDAIBefore = await erc20DAI.balanceOf(owner);
+                const ownerDepositDAIBefore = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
+                console.log("ownerDAIBefore: " + ownerDAIBefore.toString());
+                console.log("ownerDepositDAIBefore: " + ownerDepositDAIBefore.toString());
+
+                await savingAccount.withdrawAll(erc20DAI.address);
+                const ownerDAIAfter = await erc20DAI.balanceOf(owner);
+                const ownerDepositDAIAfter = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
+                console.log("ownerDAIAfter: " + ownerDAIAfter.toString());
+                console.log("ownerDepositDAIAfter: " + ownerDepositDAIAfter.toString());
+
             });
         });
     });
