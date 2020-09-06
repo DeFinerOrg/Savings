@@ -190,7 +190,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Get the total amount of token for the account
-        uint amount = globalConfig.accounts().getDepositBalanceStore(_token, msg.sender);
+        uint amount = globalConfig.accounts().getDepositBalanceCurrent(_token, msg.sender);
 
         uint256 actualAmount = globalConfig.bank().withdraw(msg.sender, _token, amount);
         if(actualAmount != 0) {
@@ -239,7 +239,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
         require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
 
-        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceStore(_targetToken, _targetAccountAddr);
+        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
         require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
 
         if (vars.targetTokenBalance > vars.targetTokenBalanceBorrowed)

@@ -228,7 +228,7 @@ contract Accounts is Constant, Ownable, Initializable{
 
     function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
         // Update tokenInfo
-        uint256 amountOwedWithInterest = getBorrowBalanceStore(_token, _accountAddr);
+        uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -263,15 +263,6 @@ contract Accounts is Constant, Ownable, Initializable{
         }
     }
 
-    function getDepositBalanceStore(
-        address _token,
-        address _accountAddr
-    ) public view returns (uint256 depositBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        return tokenInfo.getDepositBalance(accruedRate);
-    }
-
     /**
      * Get current borrow balance of a token
      * @param _token token address
@@ -296,15 +287,6 @@ contract Accounts is Constant, Ownable, Initializable{
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
-    }
-
-    function getBorrowBalanceStore(
-        address _token,
-        address _accountAddr
-    ) public view returns (uint256 borrowBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.getBorrowBalance(accruedRate);
     }
 
     /**
