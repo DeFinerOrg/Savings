@@ -1,22 +1,23 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "./lib/SavingLib.sol";
 import "./lib/Utils.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
+import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 // import "@nomiclabs/buidler/console.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable, Constant {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+    uint256 a;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -68,6 +69,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         super._initialize();
 
         globalConfig = _globalConfig;
+        a = 100;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
         for(uint i = 0;i < _tokenAddresses.length;i++) {
@@ -134,7 +136,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) nonReentrant {
+    function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
 
@@ -154,7 +156,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
+    function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
 
