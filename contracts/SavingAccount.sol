@@ -135,7 +135,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _amount amout of tokens to borrow
      * @dev If the repay amount is larger than the borrowed balance, the extra will be returned.
      */
-    function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) whenNotPaused nonReentrant {
+    function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
 
@@ -155,7 +155,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token the address of the deposited token
      * @param _amount the mount of the deposited token
      */
-    function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+    function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
 
