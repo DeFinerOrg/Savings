@@ -1,5 +1,7 @@
 pragma solidity ^0.5.0;
 
+import "./config/GlobalConfig.sol";
+
 /**
  * @dev Contract module which allows children to implement an emergency stop
  * mechanism that can be triggered by an authorized account.
@@ -19,11 +21,14 @@ contract InitializablePausable {
      * @dev Emitted when the pause is lifted by a pauser (`account`).
      */
     event Unpaused(address account);
+    
+    address private globalConfig;
+    bool private _paused;
 
-    event UpdatePauser(address account);
-
-    address private pauser = msg.sender;
-    bool private _paused = false;
+    function _initialize(address _globalConfig) internal {
+        globalConfig = _globalConfig;
+        _paused = false;
+    }
 
     /**
      * @dev Returns true if the contract is paused, and false otherwise.
@@ -53,7 +58,7 @@ contract InitializablePausable {
      */
     function pause() public onlyPauser whenNotPaused {
         _paused = true;
-        emit Paused(pauser);
+        emit Paused(GlobalConfig(globalConfig).owner());
     }
 
     /**
@@ -61,16 +66,11 @@ contract InitializablePausable {
      */
     function unpause() public onlyPauser whenPaused {
         _paused = false;
-        emit Unpaused(pauser);
-    }
-
-    function updatePauser(address _pauser) public onlyPauser {
-        pauser = _pauser;
-        emit UpdatePauser(_pauser);
+        emit Unpaused(GlobalConfig(globalConfig).owner());
     }
 
     modifier onlyPauser() {
-        require(msg.sender == pauser, "PauserRole: caller does not have the Pauser role");
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "PauserRole: caller does not have the Pauser role");
         _;
     }
 }
