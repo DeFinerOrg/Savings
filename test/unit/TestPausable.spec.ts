@@ -80,12 +80,12 @@ contract("InitializablePausable", async (accounts) => {
                 await savingAccount.pause();
 
                 const midPaused = await savingAccount.paused();
-
-                await savingAccount.unpause();
                 await expectRevert(
                     savingAccount.withdrawAll(ETH_ADDRESS),
                     "Pausable: paused"
                 );
+
+                await savingAccount.unpause();
 
                 const afterPaused = await savingAccount.paused();
 
