@@ -294,7 +294,7 @@ contract Accounts is Constant, Ownable, Initializable{
     /**
      * Calculate an account's borrow power based on token's LTV
      */
-    function getBorrowPower(address _borrower) public returns (uint256 power) {
+    function getBorrowPower(address _borrower) public view returns (uint256 power) {
         for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if (isUserHasDeposits(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
