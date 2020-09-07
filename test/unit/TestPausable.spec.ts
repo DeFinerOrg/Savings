@@ -42,7 +42,7 @@ contract("InitializablePausable", async (accounts) => {
             it("The non-owner calls the function that can be suspended.", async () => {
                 await expectRevert(
                     savingAccount.pause({from: user1}),
-                    "Ownable: caller is not the owner"
+                    "PauserRole: caller does not have the Pauser role"
                 );
             });
         });
@@ -51,15 +51,16 @@ contract("InitializablePausable", async (accounts) => {
             it("The test turns on the pause function.", async () => {
 
                 const depositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                })
 
                 const beforePaused = await savingAccount.paused();
 
                 await savingAccount.pause();
 
                 await expectRevert(
-                    savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                        value: depositAmount
-                    }),
+                    savingAccount.withdrawAll(ETH_ADDRESS),
                     "Pausable: paused"
                 );
                 const afterPaused = await savingAccount.paused();
@@ -70,6 +71,10 @@ contract("InitializablePausable", async (accounts) => {
 
             it("The test turns off the pause function.", async () => {
                 const depositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount
+                })
+
                 const beforePaused = await savingAccount.paused();
 
                 await savingAccount.pause();
@@ -78,17 +83,13 @@ contract("InitializablePausable", async (accounts) => {
 
                 await savingAccount.unpause();
                 await expectRevert(
-                    savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                        value: depositAmount
-                    }),
+                    savingAccount.withdrawAll(ETH_ADDRESS),
                     "Pausable: paused"
                 );
 
                 const afterPaused = await savingAccount.paused();
 
-                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                })
+                await savingAccount.withdrawAll(ETH_ADDRESS)
 
                 expect(beforePaused).to.equal(false);
                 expect(midPaused).to.equal(true);
