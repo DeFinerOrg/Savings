@@ -1,7 +1,6 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "./lib/SavingLib.sol";
@@ -12,11 +11,12 @@ import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 // import "@nomiclabs/buidler/console.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable, Constant {
+contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+    uint256 a;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -68,6 +68,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
         super._initialize();
 
         globalConfig = _globalConfig;
+        a = 100;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
         for(uint i = 0;i < _tokenAddresses.length;i++) {
@@ -102,7 +103,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+    function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
 
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
@@ -116,7 +117,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+    function borrow(address _token, uint256 _amount) public onlySupportedToken(_token) onlyEnabledToken(_token)nonReentrant {
 
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
 
@@ -168,7 +169,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+    function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
         SavingLib.send(globalConfig, amount, _token);
@@ -180,7 +181,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+    function withdrawAll(address _token) public onlySupportedToken(_token) nonReentrant {
 
         // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
@@ -220,7 +221,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Pausable,
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
+    function liquidate(address _targetAccountAddr, address _targetToken) public onlySupportedToken(_targetToken) nonReentrant {
 
         require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
         LiquidationVars memory vars;

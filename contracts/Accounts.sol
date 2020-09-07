@@ -6,11 +6,10 @@ import "./lib/Utils.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-// import "@nomiclabs/buidler/console.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
+// import "@nomiclabs/buidler/console.sol";
 
-contract Accounts is Constant, Ownable, Initializable{
+contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
