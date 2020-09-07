@@ -17,7 +17,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
-    uint256 a;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -70,7 +69,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         super._initialize(address(_globalConfig));
 
         globalConfig = _globalConfig;
-        a = 100;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
         for(uint i = 0;i < _tokenAddresses.length;i++) {
