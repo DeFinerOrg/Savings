@@ -60,20 +60,7 @@ contract Bank is Constant, Initializable{
         // totalLoans[_token] = U   totalReserve[_token] = R
         return totalCompound[cToken].add(totalLoans[_token]).add(totalReserve[_token]); // return totalAmount = C + U + R
     }
-    function addressToString(address _addr) public pure returns(string memory) 
-    {
-        bytes32 value = bytes32(uint256(_addr));
-        bytes memory alphabet = "0123456789abcdef";
 
-        bytes memory str = new bytes(51);
-        str[0] = '0';
-        str[1] = 'x';
-        for (uint256 i = 0; i < 20; i++) {
-            str[2+i*2] = alphabet[uint8(value[i + 12] >> 4)];
-            str[3+i*2] = alphabet[uint8(value[i + 12] & 0x0f)];
-        }
-        return string(str);
-    }
     /**
      * Update total amount of token in Compound as the cToken price changed
      * @param _token token address
@@ -150,14 +137,12 @@ contract Bank is Constant, Initializable{
                 uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
                 if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
                     // Withdraw all the tokens from Compound
-                    //fromCompound(_token, totalCompound[cToken]);
                     compoundAmount = totalCompound[cToken];
                     totalCompound[cToken] = 0;
                     totalReserve[_token] = totalAvailable;
                 } else {
                     // Withdraw partial tokens from Compound
                     uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
-                    //fromCompound(_token, totalCompound[cToken]-totalInCompound);
                     compoundAmount = totalCompound[cToken].sub(totalInCompound);
                     totalCompound[cToken] = totalInCompound;
                     totalReserve[_token] = totalAvailable.sub(totalInCompound);
