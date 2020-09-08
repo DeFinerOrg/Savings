@@ -166,15 +166,7 @@ contract Accounts is Constant, Initializable{
         uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
         setInBorrowBitmap(_accountAddr, tokenIndex);
     }
-    // function getDepositAccruedRate(address _accountAddr, address _token) public view returns(uint256){
-    //     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-    //     return globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-    // }
 
-    // function getBorrowAccruedRate(address _accountAddr, address _token) public view returns(uint256){
-    //     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-    //     return globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-    // }
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */

@@ -45,6 +45,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         _;
     }
 
+    modifier onlyInternal() {
+        require(msg.sender == address(globalConfig.bank()),
+            "Only authorized to call from DeFiner internal contracts.");
+        _;
+    }
+
     constructor() public {
         // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
         // console.log("Start to construct", msg.sender);
@@ -310,11 +316,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token token address
      * @param _amount amount of token
      */
-    function fromCompound(address _token, uint _amount) public {
+    function fromCompound(address _token, uint _amount) public onlyInternal {
         require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
     }
 
-    function toCompound(address _token, uint _amount) public {
+    function toCompound(address _token, uint _amount) public onlyInternal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if (Utils._isETH(address(globalConfig), _token)) {
             ICETH(cToken).mint.value(_amount)();
