@@ -2,7 +2,6 @@
 node_modules
 .secret
 package-lock.json
-build/contracts/
 bridge.log
 .node-xml*
 .DS_Store
