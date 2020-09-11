@@ -109,7 +109,7 @@
             "mainnet": {
                 "tokenAddress": "0x0000000000085d4780B73119b644AE5ecd22b376",
                 "aggregatorAddress": "0x3886BA987236181D98F2401c507Fb8BeA7871dF2",
-                "cTokenAddress": "0x0000000000000000000000000000000000000001"
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
             "ropsten": {
@@ -142,7 +142,7 @@
             "mainnet": {
                 "tokenAddress": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
                 "aggregatorAddress": "0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2",
-                "cTokenAddress": "0x0000000000000000000000000000000000000002"
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
             "ropsten": {
@@ -307,7 +307,7 @@
             "mainnet": {
                 "tokenAddress": "0x514910771af9ca656af840dff83e8264ecf986ca",
                 "aggregatorAddress": "0xDC530D9457755926550b59e8ECcdaE7624181557",
-                "cTokenAddress": "0x0000000000000000000000000000000000000002"
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             },
 
             "ropsten": {
