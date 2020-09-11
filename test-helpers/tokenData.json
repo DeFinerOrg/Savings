@@ -294,6 +294,39 @@
                 "aggregatorAddress": "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD",
                 "cTokenAddress": "0x0014f450b8ae7708593f4a46f8fa6e5d50620f96"
             }
+        },
+
+        {
+            "name": "ChainLink Token",
+            "symbol": "LINK",
+            "decimals": 18,
+            "isFeeEnabled": false,
+            "isSupportedByCompound": false,
+            "latestAnswer": "35327635353398230",
+
+            "mainnet": {
+                "tokenAddress": "0x514910771af9ca656af840dff83e8264ecf986ca",
+                "aggregatorAddress": "0xDC530D9457755926550b59e8ECcdaE7624181557",
+                "cTokenAddress": "0x0000000000000000000000000000000000000002"
+            },
+
+            "ropsten": {
+                "tokenAddress": "0xC41c4BC9C5d5821983db243D6f3bB0D8d4D07BF7",
+                "aggregatorAddress": "0xf27a1E18d1605F8C3FB74d770275F7c38350D508",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+            },
+
+            "kovan": {
+                "tokenAddress": "0xC41c4BC9C5d5821983db243D6f3bB0D8d4D07BF7",
+                "aggregatorAddress": "0x3Af8C569ab77af5230596Acf0E8c2F9351d24C38",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+            },
+
+            "rinkeby": {
+                "tokenAddress": "0xC41c4BC9C5d5821983db243D6f3bB0D8d4D07BF7",
+                "aggregatorAddress": "0xd8bD0a1cB028a31AA859A21A3758685a95dE4623",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+            }
         }
     ],
     "ETH": {

@@ -74,6 +74,7 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.LINK);
         erc20TokensFromCompound.push(ETH_ADDR);
 
         return erc20TokensFromCompound;
@@ -91,6 +92,7 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
+        cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
 
         return cTokensCompound;
