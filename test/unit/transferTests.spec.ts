@@ -39,7 +39,7 @@ contract("SavingAccount.transfer", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -420,7 +420,7 @@ contract("SavingAccount.transfer", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("K9: Transfer small amount balance", async () => {
+                it("K9: Transfer small amount balance (ETH)", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
@@ -477,7 +477,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
-                    // Error: -- Reason given: Insufficient collateral..
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
@@ -496,7 +495,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("L9: Transfer large amount of balance", async () => {
+                it("L9: Transfer large amount of balance (ETH)", async () => {
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
