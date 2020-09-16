@@ -16,6 +16,7 @@ contract("Integration Tests", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
+    let bank: t.BankInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -72,6 +73,7 @@ contract("Integration Tests", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
+        bank = await testEngine.bank;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -275,6 +277,50 @@ contract("Integration Tests", async (accounts) => {
 
                 expect(ownerDeposit).to.be.bignumber.equal(numOfDAI);
                 expect(uownerDeposit3).to.be.bignumber.equal(new BN(0));
+            });
+
+            it("Special test 4", async () => {
+                // const
+                const numOfUSDC = sixPrecision.mul(new BN(20000));
+                const numOfETH = eighteenPrecision.mul(new BN(1000));
+                const borrowAmount = numOfUSDC.div(new BN(4)).mul(new BN(3));
+                console.log("const");
+
+                await erc20USDC.transfer(user1, numOfUSDC);
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, {
+                    from: user1
+                });
+                
+                // user1 deposit 20000USDC
+                await savingAccount.deposit(addressUSDC, numOfUSDC, {
+                    from: user1
+                });
+                console.log("user1 deposit 20000USDC");
+                // owner deposit 1000ETH
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH);
+                console.log("owner deposit 1000ETH");
+
+                const usre1Deposit = await accountsContract.getDepositBalanceCurrent(addressUSDC, user1);
+                console.log("user1Deposit: " + usre1Deposit.toString());
+                const ownerDeposit = await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, owner);
+                console.log("ownerDeposit: " + ownerDeposit.toString());
+
+                // Fastforward
+                await savingAccount.fastForward(10000);
+
+                const beforeDepositRate = await bank.getDepositRatePerBlock(addressUSDC);
+                console.log("beforeDepositRate: " + beforeDepositRate.toString());
+                const beforeBorrowRate = await bank.getBorrowRatePerBlock(addressUSDC);
+                console.log("beforeBorrowRate: " + beforeBorrowRate.toString());
+
+                await savingAccount.borrow(addressUSDC,borrowAmount);
+                const ownerBorrow = await accountsContract.getBorrowBalanceCurrent(addressUSDC, owner);
+                console.log("ownerBorrow: " + ownerBorrow.toString());
+
+                const afterDepositRate = await bank.getDepositRatePerBlock(addressUSDC);
+                console.log("afterDepositRate: " + afterDepositRate.toString());
+                const afterBorrowRate = await bank.getBorrowRatePerBlock(addressUSDC);
+                console.log("afterBorrowRate: " + afterBorrowRate.toString());
             });
         });
     });
