@@ -299,7 +299,9 @@ contract("Integration Tests", async (accounts) => {
                 });
                 console.log("user1 deposit 20000USDC");
                 // owner deposit 1000ETH
-                await savingAccount.deposit(ETH_ADDRESS, numOfETH);
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
+                    value: numOfETH
+                });
                 console.log("owner deposit 1000ETH");
 
                 const usre1Deposit = await accountsContract.getDepositBalanceCurrent(addressUSDC, user1);
