@@ -282,10 +282,12 @@ contract("Integration Tests", async (accounts) => {
             it("Special test 4", async () => {
                 // const
                 const numOfUSDC = sixPrecision.mul(new BN(20000));
-                const numOfETH = eighteenPrecision.mul(new BN(1000));
+                const numOfETH = eighteenPrecision.mul(new BN(100));
                 const borrowAmount = numOfUSDC.div(new BN(4)).mul(new BN(3));
                 console.log("const");
 
+                const usdcamount = await erc20USDC.balanceOf(owner);
+                console.log("usdcamount: " + usdcamount.toString());
                 await erc20USDC.transfer(user1, numOfUSDC);
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, {
                     from: user1
