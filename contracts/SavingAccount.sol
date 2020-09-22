@@ -230,7 +230,21 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function liquidate(address _targetAccountAddr, address _targetToken) public onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
 
         require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
-        LiquidationVars memory vars;
+        LiquidationVars memory vars = LiquidationVars({
+            token: address(0),
+            tokenPrice:0,
+            coinValue:0,
+            liquidationDebtValue:0,
+            tokenAmount:0,
+            tokenDivisor:0,
+            msgTotalBorrow:0,
+            targetTokenBalance:0,
+            targetTokenBalanceBorrowed:0,
+            targetTokenPrice:0,
+            liquidationDiscountRatio:0,
+            totalBorrow:0,
+            borrowPower:0
+            });
 
         // It is required that the liquidator doesn't exceed it's borrow power.
         vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
