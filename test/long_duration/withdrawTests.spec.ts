@@ -76,7 +76,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -203,6 +203,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     // Verify that reservation equals to the token in pool's address
                     const reservation = BN(await erc20DAI.balanceOf(savingAccount.address));
                     expect(tokenState[2]).to.be.bignumber.equal(reservation);
+                    console.log("reservation", reservation.toString());
 
                     // Verifty that compound equals cToken underlying balance in pool's address
                     // It also verifies that (Deposit = Loan + Compound + Reservation)

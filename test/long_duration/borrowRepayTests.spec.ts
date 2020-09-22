@@ -76,7 +76,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -153,7 +153,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC and repay after one month", async () => {
+            it("RateTest4: should deposit DAI, borrow USDC and repay after one month", async () => {
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
