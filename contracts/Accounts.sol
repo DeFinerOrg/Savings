@@ -286,8 +286,8 @@ contract Accounts is Constant, Initializable{
      * Calculate an account's borrow power based on token's LTV
      */
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
-        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        for(uint8 i = 0; i < tokenNum; i++) {
+        // uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if (isUserHasDeposits(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
