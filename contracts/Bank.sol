@@ -22,9 +22,9 @@ contract Bank is Constant, Initializable{
     mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
-    mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
+    mapping(address => ThirdPartyPool) public compoundPool;    // the compound pool
 
-    GlobalConfig globalConfig;            // global configuration contract address
+    GlobalConfig public globalConfig;            // global configuration contract address
 
     modifier onlyInternal() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
