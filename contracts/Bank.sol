@@ -228,7 +228,7 @@ contract Bank is Constant, Initializable{
      */
     // sichaoy: this function could be more general to have an end checkpoit as a parameter.
     // sichaoy: require:what if a index point doesn't exist?
-    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) public view returns (uint256) {
+    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
         uint256 UNIT = INT_UNIT;
         if (depositRate == 0) {
@@ -247,7 +247,7 @@ contract Bank is Constant, Initializable{
      */
     // sichaoy: actually the rate + 1, add a require statement here to make sure
     // the checkpoint for current block exists.
-    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) public view returns (uint256) {
+    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) external view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
         uint256 UNIT = INT_UNIT;
         if (borrowRate == 0) {
@@ -382,7 +382,7 @@ contract Bank is Constant, Initializable{
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
+    function deposit(address _to, address _token, uint256 _amount) external onlyInternal {
 
         require(_amount != 0, "Amount is zero");
 
@@ -401,7 +401,7 @@ contract Bank is Constant, Initializable{
         }
     }
 
-    function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
+    function borrow(address _from, address _token, uint256 _amount) external onlyInternal {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -419,7 +419,7 @@ contract Bank is Constant, Initializable{
         }
     }
 
-    function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
+    function repay(address _to, address _token, uint256 _amount) external onlyInternal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -450,7 +450,7 @@ contract Bank is Constant, Initializable{
      * @param _amount amount to be withdrawn
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
-    function withdraw(address _from, address _token, uint256 _amount) public onlyInternal returns(uint) {
+    function withdraw(address _from, address _token, uint256 _amount) external onlyInternal returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 

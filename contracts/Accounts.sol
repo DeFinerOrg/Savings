@@ -146,7 +146,7 @@ contract Accounts is Constant, Initializable{
         return tokenInfo.calculateBorrowInterest(accruedRate);
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function borrow(address _accountAddr, address _token, uint256 _amount) external onlyInternal {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         require(
@@ -170,7 +170,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyInternal returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -219,7 +219,7 @@ contract Accounts is Constant, Initializable{
         tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) external onlyInternal returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -349,7 +349,7 @@ contract Accounts is Constant, Initializable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) public returns (bool) {
+    function isAccountLiquidatable(address _borrower) external returns (bool) {
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
