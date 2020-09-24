@@ -322,7 +322,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
         uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(divisor).div(vars.targetTokenPrice);
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
-        globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
+        uint256 repayAmount = globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
     }
 
     /**
