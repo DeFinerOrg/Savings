@@ -80,12 +80,12 @@ contract Bank is Constant, Initializable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, uint8 _action) internal returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, ActionType _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == uint8(0) || _action == uint8(3)) {
+        if (_action == ActionType.DepositAction || _action == ActionType.RepayAction) {
             // Total amount of token after deposit or repay
-            if (_action == uint8(0))
+            if (_action == ActionType.DepositAction)
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -111,7 +111,7 @@ contract Bank is Constant, Initializable{
             // of the precision loss in the rate calcuation. So we put a logic here to deal with this case: in case
             // of withdrawAll and there is no loans for the token, we just adjust the balance in bank contract to the
             // to the balance of that individual account.
-            if(_action == uint8(1)) {
+            if(_action == ActionType.WithdrawAction) {
                 if(totalLoans[_token] != 0)
                     require(getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
                 else if (getPoolAmount(_token) < _amount)
@@ -122,7 +122,7 @@ contract Bank is Constant, Initializable{
                 require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
 
             // Total amount of token after withdraw or borrow
-            if (_action == uint8(1))
+            if (_action == ActionType.WithdrawAction)
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);
@@ -155,7 +155,7 @@ contract Bank is Constant, Initializable{
         return compoundAmount;
     }
 
-     function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
+     function update(address _token, uint _amount, ActionType _action) public onlyInternal returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -394,7 +394,7 @@ contract Bank is Constant, Initializable{
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount, uint8(0));
+        uint compoundAmount = update(_token, _amount, ActionType.DepositAction);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().toCompound(_token, compoundAmount);
@@ -412,7 +412,7 @@ contract Bank is Constant, Initializable{
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount, uint8(2));
+        uint compoundAmount = update(_token, _amount, ActionType.BorrowAction);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().fromCompound(_token, compoundAmount);
@@ -434,7 +434,7 @@ contract Bank is Constant, Initializable{
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount.sub(remain), uint8(3));
+        uint compoundAmount = update(_token, _amount.sub(remain), ActionType.RepayAction);
         if(compoundAmount > 0) {
            globalConfig.savingAccount().toCompound(_token, compoundAmount);
         }
@@ -463,7 +463,7 @@ contract Bank is Constant, Initializable{
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, amount, uint8(1));
+        uint compoundAmount = update(_token, amount, ActionType.WithdrawAction);
 
         // Check if there are enough tokens in the pool.
         if(compoundAmount > 0) {
