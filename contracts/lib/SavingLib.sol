@@ -51,6 +51,7 @@ library SavingLib {
         if(Utils._isETH(address(globalConfig), _token)) {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) <= 0, "redeem ETH failed");
+            require(msg.sender == address(globalConfig.savingAccount()));
                 globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
         } else {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
