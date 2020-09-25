@@ -34,8 +34,8 @@ contract SavingAccountWithController is SavingAccount {
         GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
-        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig); // expected 3 passed 5 args
         comptroller = _comptroller;
+        super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig);
     }
 
     /**
