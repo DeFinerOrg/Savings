@@ -22,9 +22,9 @@ contract Bank is Constant, Initializable{
     mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
-    mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
+    mapping(address => ThirdPartyPool) public compoundPool;    // the compound pool
 
-    GlobalConfig globalConfig;            // global configuration contract address
+    GlobalConfig public globalConfig;            // global configuration contract address
 
     modifier onlyInternal() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
@@ -80,12 +80,12 @@ contract Bank is Constant, Initializable{
      * @param _action indicate if user's operation is deposit or withdraw, and borrow or repay.
      * @return the actuall amount deposit/withdraw from the saving pool
      */
-    function updateTotalReserve(address _token, uint _amount, uint8 _action) internal returns(uint256 compoundAmount){
+    function updateTotalReserve(address _token, uint _amount, ActionType _action) internal returns(uint256 compoundAmount){
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         uint totalAmount = getTotalDepositStore(_token);
-        if (_action == uint8(0) || _action == uint8(3)) {
+        if (_action == ActionType.DepositAction || _action == ActionType.RepayAction) {
             // Total amount of token after deposit or repay
-            if (_action == uint8(0))
+            if (_action == ActionType.DepositAction)
                 totalAmount = totalAmount.add(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
@@ -111,7 +111,7 @@ contract Bank is Constant, Initializable{
             // of the precision loss in the rate calcuation. So we put a logic here to deal with this case: in case
             // of withdrawAll and there is no loans for the token, we just adjust the balance in bank contract to the
             // to the balance of that individual account.
-            if(_action == uint8(1)) {
+            if(_action == ActionType.WithdrawAction) {
                 if(totalLoans[_token] != 0)
                     require(getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
                 else if (getPoolAmount(_token) < _amount)
@@ -122,7 +122,7 @@ contract Bank is Constant, Initializable{
                 require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
 
             // Total amount of token after withdraw or borrow
-            if (_action == uint8(1))
+            if (_action == ActionType.WithdrawAction)
                 totalAmount = totalAmount.sub(_amount);
             else
                 totalLoans[_token] = totalLoans[_token].add(_amount);
@@ -155,7 +155,7 @@ contract Bank is Constant, Initializable{
         return compoundAmount;
     }
 
-     function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
+     function update(address _token, uint _amount, ActionType _action) public onlyInternal returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -228,7 +228,7 @@ contract Bank is Constant, Initializable{
      */
     // sichaoy: this function could be more general to have an end checkpoit as a parameter.
     // sichaoy: require:what if a index point doesn't exist?
-    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) public view returns (uint256) {
+    function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
         uint256 UNIT = INT_UNIT;
         if (depositRate == 0) {
@@ -247,7 +247,7 @@ contract Bank is Constant, Initializable{
      */
     // sichaoy: actually the rate + 1, add a require statement here to make sure
     // the checkpoint for current block exists.
-    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) public view returns (uint256) {
+    function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) external view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
         uint256 UNIT = INT_UNIT;
         if (borrowRate == 0) {
@@ -382,7 +382,7 @@ contract Bank is Constant, Initializable{
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
+    function deposit(address _to, address _token, uint256 _amount) external onlyInternal {
 
         require(_amount != 0, "Amount is zero");
 
@@ -394,14 +394,14 @@ contract Bank is Constant, Initializable{
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount, uint8(0));
+        uint compoundAmount = update(_token, _amount, ActionType.DepositAction);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().toCompound(_token, compoundAmount);
         }
     }
 
-    function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
+    function borrow(address _from, address _token, uint256 _amount) external onlyInternal {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -412,14 +412,14 @@ contract Bank is Constant, Initializable{
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount, uint8(2));
+        uint compoundAmount = update(_token, _amount, ActionType.BorrowAction);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().fromCompound(_token, compoundAmount);
         }
     }
 
-    function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
+    function repay(address _to, address _token, uint256 _amount) external onlyInternal returns(uint) {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -434,7 +434,7 @@ contract Bank is Constant, Initializable{
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, _amount.sub(remain), uint8(3));
+        uint compoundAmount = update(_token, _amount.sub(remain), ActionType.RepayAction);
         if(compoundAmount > 0) {
            globalConfig.savingAccount().toCompound(_token, compoundAmount);
         }
@@ -450,7 +450,7 @@ contract Bank is Constant, Initializable{
      * @param _amount amount to be withdrawn
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
-    function withdraw(address _from, address _token, uint256 _amount) public onlyInternal returns(uint) {
+    function withdraw(address _from, address _token, uint256 _amount) external onlyInternal returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 
@@ -463,7 +463,7 @@ contract Bank is Constant, Initializable{
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, amount, uint8(1));
+        uint compoundAmount = update(_token, amount, ActionType.WithdrawAction);
 
         // Check if there are enough tokens in the pool.
         if(compoundAmount > 0) {

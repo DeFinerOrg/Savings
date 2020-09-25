@@ -77,7 +77,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         globalConfig = _globalConfig;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
-        for(uint i = 0;i < _tokenAddresses.length;i++) {
+        uint tokenNum = _tokenAddresses.length;
+        for(uint i = 0;i < tokenNum;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
@@ -109,7 +110,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token token address
      * @param _amount amout of tokens transfer
      */
-    function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+    function transfer(address _to, address _token, uint _amount) external onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
 
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
@@ -123,7 +124,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token token address
      * @param _amount amout of tokens to borrow
      */
-    function borrow(address _token, uint256 _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+    function borrow(address _token, uint256 _amount) external onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
 
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
 
@@ -175,7 +176,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token token address
      * @param _amount amount to be withdrawn
      */
-    function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+    function withdraw(address _token, uint256 _amount) external onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
         SavingLib.send(globalConfig, amount, _token);
@@ -187,7 +188,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * Withdraw all tokens from the saving pool.
      * @param _token the address of the withdrawn token
      */
-    function withdrawAll(address _token) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+    function withdrawAll(address _token) external onlySupportedToken(_token) whenNotPaused nonReentrant {
 
         // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
@@ -227,7 +228,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _targetAccountAddr account to be liquidated
      * @param _targetToken token used for purchasing collaterals
      */
-    function liquidate(address _targetAccountAddr, address _targetToken) public onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
+    function liquidate(address _targetAccountAddr, address _targetToken) external onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
 
         require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
         LiquidationVars memory vars = LiquidationVars({
@@ -281,7 +282,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         vars.borrowPower = globalConfig.accounts().getBorrowPower(_targetAccountAddr);
 
         uint256 totalBorrowBeforeLiquidation = vars.totalBorrow;
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint i = 0; i < tokenNum; i++) {
             vars.token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
             if(globalConfig.accounts().isUserHasDeposits(_targetAccountAddr, uint8(i))) {
                 // Get the collateral token price and divisor
@@ -330,11 +332,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _token token address
      * @param _amount amount of token
      */
-    function fromCompound(address _token, uint _amount) public onlyInternal {
+    function fromCompound(address _token, uint _amount) external onlyInternal {
         require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
     }
 
-    function toCompound(address _token, uint _amount) public onlyInternal {
+    function toCompound(address _token, uint _amount) external onlyInternal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if (Utils._isETH(address(globalConfig), _token)) {
             ICETH(cToken).mint.value(_amount)();
