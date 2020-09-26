@@ -312,7 +312,7 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        uint tokeNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
         for(uint i = 0; i < tokeNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
