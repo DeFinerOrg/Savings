@@ -313,7 +313,7 @@ contract Accounts is Constant, Initializable{
         address _accountAddr
     ) public view returns (uint256 depositETH) {
         uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        for(uint i = 0; i < tokeNum; i++) {
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
