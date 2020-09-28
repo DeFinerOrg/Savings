@@ -34,8 +34,9 @@ library SavingLib {
      */
     function send(GlobalConfig globalConfig, uint256 _amount, address _token) public {
         if (Utils._isETH(address(globalConfig), _token)) {
-            require(msg.sender == address(globalConfig.savingAccount()));
+            if(msg.sender == address(globalConfig.savingAccount())){
                 msg.sender.transfer(_amount);
+            }
         } else {
             IERC20(_token).safeTransfer(msg.sender, _amount);
         }
@@ -50,8 +51,9 @@ library SavingLib {
         if(Utils._isETH(address(globalConfig), _token)) {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) <= 0, "redeem ETH failed");
-            require(msg.sender == address(globalConfig.savingAccount()));
+            if(msg.sender == address(globalConfig.savingAccount())){
                 globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
+            }
         } else {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             if(cToken != address(0)) {

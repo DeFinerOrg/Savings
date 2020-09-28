@@ -51,7 +51,7 @@ jobs:
 
       - run: cd compound-protocol && yarn install
       - run: cd compound-protocol/scenario && yarn install
-      - run: yarn
+      - run: yarn --network-timeout 100000
 
       - save_cache:
           paths:
