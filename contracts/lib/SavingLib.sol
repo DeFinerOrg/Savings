@@ -34,9 +34,8 @@ library SavingLib {
      */
     function send(GlobalConfig globalConfig, uint256 _amount, address _token) public {
         if (Utils._isETH(address(globalConfig), _token)) {
-            if(msg.sender == address(globalConfig.savingAccount())){
+            require(msg.sender == address(globalConfig.savingAccount()));
                 msg.sender.transfer(_amount);
-            }
         } else {
             IERC20(_token).safeTransfer(msg.sender, _amount);
         }
