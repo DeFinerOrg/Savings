@@ -35,13 +35,14 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-
+            defaultBalanceEther: 10000000,
         },
         buidlerevm: {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
+            defaultBalanceEther: 10000000
         }
     },
     gasReporter: {

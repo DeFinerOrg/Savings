@@ -14,7 +14,12 @@ const ERC20: t.Erc20Contract = artifacts.require("ERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
-
+const revertBorrow = async (savingAccount:t.SavingAccountWithControllerInstance, addressTUSD:any, borrow:any, user1:any ) => {
+    await expectRevert(
+        savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
+        "Insufficient collateral when borrow."
+    );
+}
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
@@ -193,10 +198,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
                             let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
                             let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
-                            await expectRevert(
-                                savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Insufficient collateral when borrow."
-                            );
+                            // await expectRevert(
+                            //     savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
+                            //     "Insufficient collateral when borrow."
+                            // );
+                            revertBorrow(savingAccount,addressTUSD,borrow,user1);
                         });
                         it("Deposits TUSD, borrows WBTC and the collateral is not enough", async () => {
                             /*
