@@ -22,7 +22,7 @@ contract("Scenario testing", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
-        scenarioTestEngine = new ScenarioTestEngine(accounts, testEngine, savingAccount, 0.9);
+        scenarioTestEngine = new ScenarioTestEngine(accounts, testEngine, savingAccount, 0.8);
         await scenarioTestEngine.initialize();
     });
 
@@ -31,15 +31,15 @@ contract("Scenario testing", async (accounts) => {
             this.timeout(0)
 
             for (let i = 0; i < 30; ++i) {
-                await scenarioTestEngine.generateOneBehav();
+                await scenarioTestEngine.generateOneMove();
             }
         });
 
         it("Generate 10 withdraw behaviors", async function () {
             this.timeout(0)
-            scenarioTestEngine.setUserBehavWeight([0, 1, 0, 0, 0, 0, 0, 0]);
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
             for (let i = 0; i < 30; ++i) {
-                await scenarioTestEngine.generateOneBehav();
+                await scenarioTestEngine.generateOneMove();
             }
         });
     });
