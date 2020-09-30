@@ -40,7 +40,7 @@ contract TokenRegistry is Ownable {
     event TokenAdded(address indexed token);
     event TokenUpdated(address indexed token);
 
-    address internal constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
+    //address internal constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     uint256 public constant MAX_TOKENS = 128;
     uint256 public constant SCALE = 100;
 

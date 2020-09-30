@@ -12,7 +12,6 @@ contract SavingAccountWithController is SavingAccount {
 
     Accounts.Account public accountVariable;
     //GlobalConfig public globalConfig;
-    TokenRegistry.TokenInfo symbols;
     address comptroller;
 
     constructor() public {
