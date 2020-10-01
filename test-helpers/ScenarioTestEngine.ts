@@ -24,6 +24,7 @@ enum UserMove {
     LiquidateTarget
 };
 
+// TODO
 enum SysMove {
     IncBlockNum,
     ChangePrice
@@ -91,6 +92,7 @@ export class ScenarioTestEngine {
     public decimals: Array<number> = [18, 6, 6, 18, 18, 18, 18, 18, 8, 18];
     public isComp: Array<boolean> = [true, true, true, false, false, true, true, true, true, true];
     public tokenNames: Array<string> = ["DAI", "USDC", "USDT", "TUSD", "MKR", "BAT", "ZRX", "REP", "WBTC", "ETH"];
+    // [deposit, borrow, withdraw, withdrawAll, repay, transfer, liquidate, liquidateTarget]
     public userSuccMoveWeight = [1, 15, 15, 0, 0, 0, 0, 0];
     public userFailMoveWeight = [1, 15, 15, 0, 0, 0, 0, 0];
 
@@ -559,7 +561,7 @@ export class ScenarioTestEngine {
         await this.updateUserState(user);
     }
 
-    // Four kinds of failing cases in withdraw()
+    // Five kinds of failing cases in withdraw()
     // 1. Withdraw 0 token from DeFiner
     // 2. Withdraw from an unsupported token
     // 3. Withdraw more tokens than definer's pool has
@@ -615,7 +617,7 @@ export class ScenarioTestEngine {
         const userBorrowPowerLeftETH = userBorrowPower.minus(userBorrowETH);
         const userBorrowPowerLeftToken = userBorrowPowerLeftETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
         const maxBorrowAmt = userBorrowPowerLeftToken.gt(definerRemaining) ? definerRemaining : userBorrowPowerLeftToken;
-
+        if (maxBorrowAmt.eq(0)) shouldSuccess = false;
         if (shouldSuccess) {
             const actualAmt = this.getRandBigWithBigRange(new BigNumber(1), maxBorrowAmt);
             console.log("User " + user + " tries to borrow " + actualAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");

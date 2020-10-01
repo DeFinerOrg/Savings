@@ -27,25 +27,25 @@ contract("Scenario testing", async (accounts) => {
     });
 
     context("Use scenario test engine to randomly generate behaviors", async () => {
-        it("Generate 100 random moves", async function () {
+        it("Generate 30 random moves", async function () {
             this.timeout(0)
 
-            for (let i = 0; i < 100; ++i) {
+            for (let i = 0; i < 30; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
 
-        it("Generate 100 withdraw moves", async function () {
+        it("Generate 30 withdraw moves", async function () {
             this.timeout(0)
             // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
-            for (let i = 0; i < 100; ++i) {
+            for (let i = 0; i < 30; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
-        it("Generate 100 withdraw moves", async function () {
+        it("Generate 30 withdraw moves", async function () {
             this.timeout(0)
             // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
-            for (let i = 0; i < 100; ++i) {
+            for (let i = 0; i < 30; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
