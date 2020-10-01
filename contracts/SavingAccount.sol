@@ -10,7 +10,7 @@ import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
@@ -113,6 +113,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         
         require(_amount != 0, "Amount is zero");
 
+        require(_amount != 0, "Amount is zero");
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
         globalConfig.accounts().deposit(_to, _token, _amount);
@@ -179,6 +180,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _amount amount to be withdrawn
      */
     function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
         SavingLib.send(globalConfig, amount, _token);
@@ -192,8 +194,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      */
     function withdrawAll(address _token) public onlySupportedToken(_token) whenNotPaused nonReentrant {
 
-        // Sanity check
+        // // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
+
+        // // Add a new checkpoint on the index curve.
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Get the total amount of token for the account
         uint amount = globalConfig.accounts().getDepositBalanceCurrent(_token, msg.sender);
