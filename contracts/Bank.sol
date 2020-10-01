@@ -26,7 +26,7 @@ contract Bank is Constant, Initializable{
 
     GlobalConfig public globalConfig;            // global configuration contract address
 
-    modifier onlyInternal() {
+    modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
@@ -155,7 +155,7 @@ contract Bank is Constant, Initializable{
         return compoundAmount;
     }
 
-     function update(address _token, uint _amount, ActionType _action) public onlyInternal returns(uint256 compoundAmount) {
+     function update(address _token, uint _amount, ActionType _action) public onlyAuthorized returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -264,7 +264,7 @@ contract Bank is Constant, Initializable{
      * @param _token token address
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
-    function newRateIndexCheckpoint(address _token) public onlyInternal {
+    function newRateIndexCheckpoint(address _token) public onlyAuthorized {
 
         // return if the rate check point already exists
         uint blockNumber = getBlockNumber();
@@ -382,7 +382,7 @@ contract Bank is Constant, Initializable{
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
-    function deposit(address _to, address _token, uint256 _amount) external onlyInternal {
+    function deposit(address _to, address _token, uint256 _amount) external onlyAuthorized {
 
         require(_amount != 0, "Amount is zero");
 
@@ -401,7 +401,7 @@ contract Bank is Constant, Initializable{
         }
     }
 
-    function borrow(address _from, address _token, uint256 _amount) external onlyInternal {
+    function borrow(address _from, address _token, uint256 _amount) external onlyAuthorized {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -419,7 +419,7 @@ contract Bank is Constant, Initializable{
         }
     }
 
-    function repay(address _to, address _token, uint256 _amount) external onlyInternal returns(uint) {
+    function repay(address _to, address _token, uint256 _amount) external onlyAuthorized returns(uint) {
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
@@ -450,7 +450,7 @@ contract Bank is Constant, Initializable{
      * @param _amount amount to be withdrawn
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
-    function withdraw(address _from, address _token, uint256 _amount) external onlyInternal returns(uint) {
+    function withdraw(address _from, address _token, uint256 _amount) external onlyAuthorized returns(uint) {
 
         require(_amount != 0, "Amount is zero");
 

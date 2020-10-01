@@ -18,7 +18,7 @@ contract Accounts is Constant, Initializable{
 
     GlobalConfig public globalConfig;
 
-    modifier onlyInternal() {
+    modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
@@ -146,7 +146,7 @@ contract Accounts is Constant, Initializable{
         return tokenInfo.calculateBorrowInterest(accruedRate);
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount) external onlyInternal {
+    function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         require(
@@ -170,7 +170,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyInternal returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -209,7 +209,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -219,7 +219,7 @@ contract Accounts is Constant, Initializable{
         tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount) external onlyInternal returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
