@@ -149,14 +149,18 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("Deposit USDC then withdraw it", async () => {
                 const usdcAmt = sixPrecision;
                 const daiAmt = eighteenPrecision
+                await erc20USDC.transfer(owner, usdcAmt);
                 await erc20USDC.approve(savingAccount.address, usdcAmt);
                 await savingAccount.deposit(erc20USDC.address, usdcAmt);
-
+                await erc20DAI.transfer(user1, daiAmt);
                 await erc20DAI.approve(savingAccount.address, daiAmt, { from: user1 });
                 await savingAccount.deposit(erc20DAI.address, daiAmt, { from: user1 });
-                await savingAccount.borrow(erc20USDC.address, usdcAmt.div(new BN(2)), { from: user1 })
+                console.log("get here");
+                await savingAccount.borrow(erc20USDC.address, usdcAmt.div(new BN(2)), { from: user1 });
+                console.log("get here");
+
                 // deposit tokens
-                await savingAccount.withdraw(erc20USDC.address, daiAmt);
+                await savingAccount.withdraw(erc20USDC.address, usdcAmt);
             });
         });
     });
