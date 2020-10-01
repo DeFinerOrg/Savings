@@ -2,7 +2,6 @@ import { use } from "chai";
 import * as t from "../types/truffle-contracts/index";
 import { TestEngine } from "./TestEngine";
 import { BigNumber } from "bignumber.js";
-import { PrimaryExpression } from "solidity-parser-antlr";
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
@@ -11,6 +10,8 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.req
     "MockChainLinkAggregator"
 );
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+
+// Set this to prevent toString() of BigNumber gives scientific representation of a number
 BigNumber.config({ EXPONENTIAL_AT: 50 });
 
 enum UserMove {
@@ -93,8 +94,8 @@ export class ScenarioTestEngine {
     public isComp: Array<boolean> = [true, true, true, false, false, true, true, true, true, true];
     public tokenNames: Array<string> = ["DAI", "USDC", "USDT", "TUSD", "MKR", "BAT", "ZRX", "REP", "WBTC", "ETH"];
     // [deposit, borrow, withdraw, withdrawAll, repay, transfer, liquidate, liquidateTarget]
-    public userSuccMoveWeight = [1, 15, 15, 0, 0, 0, 0, 0];
-    public userFailMoveWeight = [1, 15, 15, 0, 0, 0, 0, 0];
+    public userSuccMoveWeight = [1, 10, 10, 0, 0, 20, 0, 0];
+    public userFailMoveWeight = [1, 10, 10, 0, 0, 20, 0, 0];
 
     public ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     public ZERO_ADDRESS: string = "0x0000000000000000000000000000000000000000";
@@ -191,6 +192,10 @@ export class ScenarioTestEngine {
         this.userFailMoveWeight = weightArr;
     }
 
+    public setUsersAddress = (userAddrs: Array<string>) => {
+        this.userAddrs = userAddrs;
+    }
+
     public generateOneMove = async () => {
         this.updateAvailableArr();
 
@@ -218,6 +223,9 @@ export class ScenarioTestEngine {
                 break;
             case UserMove.Withdraw:
                 await this.withdrawMove(move.user, move.token, shouldSuccess);
+                break;
+            case UserMove.Transfer:
+                await this.transferMove(move.user, move.token, shouldSuccess);
                 break;
         }
     }
@@ -276,7 +284,7 @@ export class ScenarioTestEngine {
         return res;
     }
 
-    private getRandBigWithBigRange = (max: BigNumber, min: BigNumber) => {
+    private getRandBigWithBigRange = (min: BigNumber, max: BigNumber) => {
         const res = BigNumber.random(18).times(max.minus(min)).plus(min).integerValue(BigNumber.ROUND_DOWN);
         return res;
     }
@@ -359,7 +367,7 @@ export class ScenarioTestEngine {
             curUserMoves[token][UserMove.Liquidate] = userLiquidatableStatus;
 
             // Update liquidated status
-            curUserMoves[token][UserMove.Liquidate] = !userLiquidatableStatus && curTokenDepositBalance.gt(0) && hasExtraBorrowPower;
+            curUserMoves[token][UserMove.LiquidateTarget] = !userLiquidatableStatus && curTokenDepositBalance.gt(0) && hasExtraBorrowPower;
         }
 
     }
@@ -439,6 +447,12 @@ export class ScenarioTestEngine {
 
     // Deposit [0, 100) whole tokens into DeFiner
     private depositExecSucc = async (user: string, token: Tokens, amount: any) => {
+        const depositBalanceArr = this.userDepositBalanceCache.get(user);
+
+        if (!depositBalanceArr) return;
+
+        const balanceBefore = depositBalanceArr[token];
+
         if (token == Tokens.ETH) {
             const tokenInfo = await this.getTokenInfo(token);
             const depositAmt = new BN(amount);
@@ -467,6 +481,11 @@ export class ScenarioTestEngine {
 
         await this.updateDeFinerCache(token);
         await this.updateUserState(user);
+
+        const balanceAfter = depositBalanceArr[token];
+
+        // Check whether the change of the balance match
+        expect(balanceBefore.eq(balanceAfter.minus(amount))).equal(true);
     }
 
     // Two kinds of failing cases in deposit, generate a number to decide which behavior to take
@@ -507,24 +526,29 @@ export class ScenarioTestEngine {
         const extraBorrowPower = userBorrowPower.minus(userBorrowETH).times(100).div(60);
         const curTokenDepositETH = tokenInfo.price.times(curTokenDepositBalance).div(10 ** this.decimals[token]);
 
+        // Theoretical -> Maximum tokens that can be borrowed with the remaining borrowing power
         const theoMaxWithdrawETH = extraBorrowPower.gt(curTokenDepositETH) ? curTokenDepositETH : extraBorrowPower;
         const theoMaxWithdrawAmt = theoMaxWithdrawETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
 
+        // Max -> Max(therertical, definerRemaining)
         const maxWithdrawETH = definerRemainingETH.gt(theoMaxWithdrawETH) ? theoMaxWithdrawETH : definerRemainingETH;
-
         const maxWithdrawAmt = maxWithdrawETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
+
+        // If the maxWithdrawAmount is not enough to compose one token, just set this behavior to should fail
+        if (maxWithdrawAmt.eq(0)) shouldSuccess = false;
 
         if (shouldSuccess) {
 
-            const execAmt = this.getRandBigWithBig(maxWithdrawAmt);
-
+            const execAmt = this.getRandBigWithBigRange(new BigNumber(1), maxWithdrawAmt);
             console.log("User " + user + " tries to withdraw " + execAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
+            console.log("Maximum withdraw amt is: " + maxWithdrawAmt.toString());
+            console.log("execAmt amt is: " + execAmt.toString());
 
             await this.withdrawExecSucc(user, token, execAmt);
 
         } else {
-            const rand = this.getRandInt(0, 100);
-            var num = rand % 2;
+            const rand = this.getRandInt(0, 1000);
+            var num = rand % 3;
 
             if (maxWithdrawAmt.eq(0)) {
                 console.log("User " + user + " tries to withdraw " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
@@ -532,16 +556,25 @@ export class ScenarioTestEngine {
             } else if (theoMaxWithdrawAmt.gt(maxWithdrawAmt)) {
                 console.log("User " + user + " tries to withdraw more tokens DeFiner's pool currently have, should fail.");
                 await this.withdrawExecFail(user, token, 2, theoMaxWithdrawAmt);
-            } else if (num == 1) {
+            } else if (num == 0) {
                 console.log("User " + user + " tries to withdraw an invalid token from DeFiner, should fail.");
                 await this.withdrawExecFail(user, token, 1, maxWithdrawAmt);
             } else {
-                const actualAmt = this.getRandBigWithBigRange(definerRemaining, theoMaxWithdrawAmt);
+
+                // Generate a number that belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance * 2)
+                // If the number belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance), it will gives insufficient collateral error
+                // If the number belongs to [curTokenDepositBalance, curTokenDepositBalance * 2), it will gives insufficient balance error
+                const actualAmt = this.getRandBigWithBigRange(theoMaxWithdrawAmt.plus(1), curTokenDepositBalance.times(2));
+
                 if (actualAmt.gt(curTokenDepositBalance)) {
                     console.log("User " + user + " tries to withdraw more tokens than it deposit, should fail.");
+                    console.log("Actual amt is: " + actualAmt.toString());
+                    console.log("max amt is: " + maxWithdrawAmt.toString());
                     await this.withdrawExecFail(user, token, 3, actualAmt);
                 } else {
                     console.log("User " + user + " tries to withdraw more tokens than its left borrowing power, should fail.");
+                    console.log("Actual amt is: " + actualAmt.toString());
+                    console.log("max amt is: " + maxWithdrawAmt.toString());
                     await this.withdrawExecFail(user, token, 4, actualAmt);
                 }
             }
@@ -551,6 +584,12 @@ export class ScenarioTestEngine {
 
     // Borrow the amount of token that is within the borrow power
     private withdrawExecSucc = async (user: string, token: Tokens, amount: any) => {
+        const depositBalanceArr = this.userDepositBalanceCache.get(user);
+
+        if (!depositBalanceArr) return;
+
+        const balanceBefore = depositBalanceArr[token];
+
         const withdrawAmt = new BN(amount.toString());
 
         await this.savingAccount.withdraw(this.tokenAddrs[token], withdrawAmt, {
@@ -559,6 +598,11 @@ export class ScenarioTestEngine {
 
         await this.updateDeFinerCache(token);
         await this.updateUserState(user);
+
+        const balanceAfter = depositBalanceArr[token];
+
+        // Check whether the change of the balance match
+        expect(balanceBefore.eq(balanceAfter.plus(amount))).equal(true);
     }
 
     // Five kinds of failing cases in withdraw()
@@ -602,6 +646,7 @@ export class ScenarioTestEngine {
 
 
     private borrowMove = async (user: string, token: Tokens, shouldSuccess: boolean) => {
+
         const userState = this.userStateCache.get(user);
         const tokenInfo = await this.getTokenInfo(token);
         const curUserDepositBalanceArr = this.userDepositBalanceCache.get(user);
@@ -617,14 +662,19 @@ export class ScenarioTestEngine {
         const userBorrowPowerLeftETH = userBorrowPower.minus(userBorrowETH);
         const userBorrowPowerLeftToken = userBorrowPowerLeftETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
         const maxBorrowAmt = userBorrowPowerLeftToken.gt(definerRemaining) ? definerRemaining : userBorrowPowerLeftToken;
+
+        // If there is no enough collateral to borrow even one target token
+        // This should not be success.
         if (maxBorrowAmt.eq(0)) shouldSuccess = false;
+
         if (shouldSuccess) {
             const actualAmt = this.getRandBigWithBigRange(new BigNumber(1), maxBorrowAmt);
             console.log("User " + user + " tries to borrow " + actualAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
             await this.borrowExecSucc(user, token, actualAmt);
         } else {
+
             const rand = this.getRandInt(0, 100);
-            var kind = rand % 4;
+            var kind = rand % 3;
 
             if (userDepositETH.eq(0)) {
                 console.log("User " + user + " tries to borrow from DeFiner but doesn't have any deposits, should fail.");
@@ -635,7 +685,7 @@ export class ScenarioTestEngine {
                 // console.log("User power left computed: " + userBorrowPowerLeftETH);
                 // console.log("User amount: " + userBorrowPowerLeftToken);
                 await this.borrowExecFail(user, token, 3, userBorrowPowerLeftToken);
-            } else if (kind == 0) {
+            } else if (kind == 0 || definerRemaining.eq(0)) {
                 console.log("User " + user + " tries to borrow " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
                 await this.borrowExecFail(user, token, 0, new BigNumber(0));
             } else if (kind == 1) {
@@ -651,6 +701,12 @@ export class ScenarioTestEngine {
 
     // Borrow the amount of token that is within the borrow power
     private borrowExecSucc = async (user: string, token: Tokens, amount: BigNumber) => {
+        const borrowBalanceArr = this.userBorrowBalanceCache.get(user);
+
+        if (!borrowBalanceArr) return;
+
+        const balanceBefore = borrowBalanceArr[token];
+
         const borrowAmt = new BN(amount.toString());
         await this.savingAccount.borrow(this.tokenAddrs[token], borrowAmt, {
             from: user
@@ -658,6 +714,12 @@ export class ScenarioTestEngine {
 
         await this.updateDeFinerCache(token);
         await this.updateUserState(user);
+
+        const balanceAfter = borrowBalanceArr[token];
+
+        // Check whether the change of borrow balance matches or not
+        expect(balanceBefore.plus(amount).eq(balanceAfter)).equal(true);
+
     }
 
 
@@ -699,5 +761,140 @@ export class ScenarioTestEngine {
         }
     }
 
+    // The conditions in transfer() should be similar to withdraw()
+    // If a user can withdraw x tokens, it can also transfer x tokens to other accounts
+    // We should generate a random user.
+    private transferMove = async (user: string, token: Tokens, shouldSuccess: boolean) => {
 
+        // Generate a random user to transfer tokens to
+        const targetUserIndex = this.getRandInt(0, this.userAddrs.length);
+        const targetUser = this.userAddrs[targetUserIndex];
+
+        const userState = this.userStateCache.get(user);
+        const tokenInfo = await this.getTokenInfo(token);
+        const curUserDepositBalanceArr = this.userDepositBalanceCache.get(user);
+
+        if (!userState || !curUserDepositBalanceArr) return;
+
+        const userBorrowETH = userState.userBorrowETH;
+        const userDepositETH = userState.userDepositETH;
+        const userBorrowPower = userState.userBorrowPower;
+        const definerRemaining = this.definerBalanceCache[token].remainingAssets;
+
+        const curTokenDepositBalance = curUserDepositBalanceArr[token];
+        const extraBorrowPower = userBorrowPower.minus(userBorrowETH).times(100).div(60);
+        const curTokenDepositETH = tokenInfo.price.times(curTokenDepositBalance).div(10 ** this.decimals[token]);
+
+        // Theoretical -> Maximum tokens that can be borrowed with the remaining borrowing power
+        const theoMaxTransETH = extraBorrowPower.gt(curTokenDepositETH) ? curTokenDepositETH : extraBorrowPower;
+        const theoMaxTransAmt = theoMaxTransETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
+
+        // Max -> Max(therertical, definerRemaining)
+        const maxTransETH = theoMaxTransETH;
+        const maxTransAmt = maxTransETH.times(10 ** this.decimals[token]).div(tokenInfo.price).integerValue(BigNumber.ROUND_DOWN);
+
+        // If the maxWithdrawAmount is not enough to compose one token, just set this behavior to should fail
+        if (maxTransAmt.eq(0)) shouldSuccess = false;
+
+        if (shouldSuccess) {
+
+            const execAmt = this.getRandBigWithBigRange(new BigNumber(1), maxTransAmt);
+            console.log("User " + user + " tries to transfer " + execAmt.toString() + " " + this.tokenNames[token] + " to user " + targetUser + ", should succeed.");
+            console.log("Maximum transfer amt is: " + maxTransAmt.toString());
+            console.log("execAmt amt is: " + execAmt.toString());
+
+            await this.transExecSucc(user, targetUser, token, execAmt);
+
+        } else {
+            const rand = this.getRandInt(0, 1000);
+            var num = rand % 3;
+
+            if (maxTransAmt.eq(0)) {
+                console.log("User " + user + " tries to transfer " + 0 + " " + this.tokenNames[token] + " to user " + targetUser + ", should fail.");
+                await this.transExecFail(user, targetUser, token, 0, new BigNumber(0));
+            } else if (num == 0) {
+                console.log("User " + user + " tries to transfer an invalid token to user " + targetUser + ", should fail.");
+                await this.transExecFail(user, targetUser, token, 1, maxTransAmt);
+            } else {
+
+                // Generate a number that belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance * 2)
+                // If the number belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance), it will gives insufficient collateral error
+                // If the number belongs to [curTokenDepositBalance, curTokenDepositBalance * 2), it will gives insufficient balance error
+                const actualAmt = this.getRandBigWithBigRange(theoMaxTransAmt.plus(1), curTokenDepositBalance.times(2));
+
+                if (actualAmt.gt(curTokenDepositBalance)) {
+                    console.log("User " + user + " tries to transfer more tokens to user " + targetUser + " than it deposit, should fail.");
+                    console.log("Actual amt is: " + actualAmt.toString());
+                    console.log("max amt is: " + maxTransAmt.toString());
+                    await this.transExecFail(user, targetUser, token, 2, actualAmt);
+                } else {
+                    console.log("User " + user + " tries to transfer more tokens to user " + targetUser + " than its left borrowing power, should fail.");
+                    console.log("Actual amt is: " + actualAmt.toString());
+                    console.log("max amt is: " + maxTransAmt.toString());
+                    await this.transExecFail(user, targetUser, token, 3, actualAmt);
+                }
+            }
+        }
+
+    }
+
+
+    // Transfer the amount of tokens from user to a target account
+    private transExecSucc = async (user: string, target: string, token: Tokens, amount: any) => {
+
+        const withdrawAmt = new BN(amount.toString());
+
+        await this.savingAccount.transfer(target, this.tokenAddrs[token], withdrawAmt, {
+            from: user
+        });
+
+        await this.updateDeFinerCache(token);
+        await this.updateUserState(user);
+        await this.updateUserState(target);
+
+    }
+
+    // Four kinds of failing cases in transfer()
+    // 1. Transfer 0 token to a user
+    // 2. Transfer an unsupported token
+    // 3. Transfer more tokens to a target than the user has
+    // 4. After transfer there will not be enough collateral
+    private transExecFail = async (user: string, target: string, token: Tokens, kind: number, amount: BigNumber) => {
+        const userBorrowBalanceArr = this.userDepositBalanceCache.get(user);
+        const targetBorrowBalanceArr = this.userDepositBalanceCache.get(target);
+
+        if (!userBorrowBalanceArr || !targetBorrowBalanceArr) return;
+
+        const userBalanceBefore = userBorrowBalanceArr[token];
+        const targetBalanceBefore = targetBorrowBalanceArr[token];
+
+        if (kind == 0) {
+            await expectRevert(
+                this.savingAccount.transfer(target, this.tokenAddrs[token], new BN(0), { from: user }),
+                "Amount is zero"
+            );
+        } else if (kind == 1) {
+            await expectRevert(
+                this.savingAccount.transfer(target, user, new BN(100), { from: user }),
+                "Unsupported token"
+            );
+        } else if (kind == 2) {
+            const actualAmt = new BN(amount.toString());
+            await expectRevert(
+                this.savingAccount.transfer(target, this.tokenAddrs[token], actualAmt, { from: user }),
+                "Insufficient balance."
+            );
+        } else {
+            const actualAmt = new BN(amount.toString());
+            await expectRevert(
+                this.savingAccount.transfer(target, this.tokenAddrs[token], actualAmt, { from: user }),
+                "Insufficient collateral when withdraw."
+            );
+        }
+
+        const userBalanceAfter = userBorrowBalanceArr[token];
+        const targetBalanceAfter = targetBorrowBalanceArr[token];
+
+        expect(userBalanceBefore.minus(userBalanceAfter).eq(targetBalanceAfter.minus(targetBalanceBefore))).equal(true);
+    }
 }

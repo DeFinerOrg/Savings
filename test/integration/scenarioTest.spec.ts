@@ -22,30 +22,86 @@ contract("Scenario testing", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
-        scenarioTestEngine = new ScenarioTestEngine(accounts, testEngine, savingAccount, 0.5);
+        scenarioTestEngine = new ScenarioTestEngine(accounts, testEngine, savingAccount, 0.4);
         await scenarioTestEngine.initialize();
     });
 
     context("Use scenario test engine to randomly generate behaviors", async () => {
-        it("Generate 30 random moves", async function () {
+        it("Generate 100 random moves", async function () {
             this.timeout(0)
 
-            for (let i = 0; i < 30; ++i) {
+            for (let i = 0; i < 100; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
 
-        it("Generate 30 withdraw moves", async function () {
+        it("Generate 100 withdraw moves", async function () {
             this.timeout(0)
             // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
-            for (let i = 0; i < 30; ++i) {
+            for (let i = 0; i < 100; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
-        it("Generate 30 withdraw moves", async function () {
+        it("Generate 100 withdraw moves", async function () {
             this.timeout(0)
             // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
-            for (let i = 0; i < 30; ++i) {
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
                 await scenarioTestEngine.generateOneMove();
             }
         });
