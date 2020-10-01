@@ -842,9 +842,17 @@ export class ScenarioTestEngine {
     // Transfer the amount of tokens from user to a target account
     private transExecSucc = async (user: string, target: string, token: Tokens, amount: any) => {
 
-        const withdrawAmt = new BN(amount.toString());
+        const userDepositBalanceArr = this.userDepositBalanceCache.get(user);
+        const targetDepositBalanceArr = this.userDepositBalanceCache.get(target);
 
-        await this.savingAccount.transfer(target, this.tokenAddrs[token], withdrawAmt, {
+        if (!userDepositBalanceArr || !targetDepositBalanceArr) return;
+
+        const userBalanceBefore = userDepositBalanceArr[token];
+        const targetBalanceBefore = targetDepositBalanceArr[token];
+
+        const transferAmt = new BN(amount.toString());
+
+        await this.savingAccount.transfer(target, this.tokenAddrs[token], transferAmt, {
             from: user
         });
 
@@ -852,6 +860,10 @@ export class ScenarioTestEngine {
         await this.updateUserState(user);
         await this.updateUserState(target);
 
+        const userBalanceAfter = userDepositBalanceArr[token];
+        const targetBalanceAfter = targetDepositBalanceArr[token];
+
+        expect(userBalanceBefore.minus(userBalanceAfter).eq(targetBalanceAfter.minus(targetBalanceBefore))).equal(true);
     }
 
     // Four kinds of failing cases in transfer()
@@ -860,13 +872,6 @@ export class ScenarioTestEngine {
     // 3. Transfer more tokens to a target than the user has
     // 4. After transfer there will not be enough collateral
     private transExecFail = async (user: string, target: string, token: Tokens, kind: number, amount: BigNumber) => {
-        const userBorrowBalanceArr = this.userDepositBalanceCache.get(user);
-        const targetBorrowBalanceArr = this.userDepositBalanceCache.get(target);
-
-        if (!userBorrowBalanceArr || !targetBorrowBalanceArr) return;
-
-        const userBalanceBefore = userBorrowBalanceArr[token];
-        const targetBalanceBefore = targetBorrowBalanceArr[token];
 
         if (kind == 0) {
             await expectRevert(
@@ -892,9 +897,69 @@ export class ScenarioTestEngine {
             );
         }
 
-        const userBalanceAfter = userBorrowBalanceArr[token];
-        const targetBalanceAfter = targetBorrowBalanceArr[token];
+    }
 
-        expect(userBalanceBefore.minus(userBalanceAfter).eq(targetBalanceAfter.minus(targetBalanceBefore))).equal(true);
+    private withdrawAllMove = async (user: string, token: Tokens, shouldSuccess: boolean) => {
+        const userState = this.userStateCache.get(user);
+        const tokenInfo = await this.getTokenInfo(token);
+        const curUserDepositBalanceArr = this.userDepositBalanceCache.get(user);
+
+        if (!userState || !curUserDepositBalanceArr) return;
+
+        const userBorrowETH = userState.userBorrowETH;
+        const userDepositETH = userState.userDepositETH;
+        const userBorrowPower = userState.userBorrowPower;
+        const definerRemainingAmt = this.definerBalanceCache[token].remainingAssets;
+
+        const definerRemainingETH = tokenInfo.price.times(definerRemainingAmt).div(10 ** this.decimals[token]);
+        const curTokenDepositBalance = curUserDepositBalanceArr[token];
+        const extraBorrowPower = userBorrowPower.minus(userBorrowETH).times(100).div(60);
+        const curTokenDepositETH = tokenInfo.price.times(curTokenDepositBalance).div(10 ** this.decimals[token]);
+
+        if (shouldSuccess) {
+            console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, should succeed.");
+            await this.withdrawAllExecSucc(user, token);
+        } else {
+            if (curTokenDepositBalance.eq(0)) {
+                console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but it doesn't have any deposits, should fail.");
+                await this.withdrawAllExecFail(user, token, 0);
+            } else if (curTokenDepositETH.gt(extraBorrowPower)) {
+                console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but it will not have enough collateral, should fail.");
+                await this.withdrawAllExecFail(user, token, 1);
+            } else {
+                console.log("User " + user + " tries to withdraw all unsupported token from DeFiner, but it will not have enough collateral, should fail.");
+                await this.withdrawAllExecFail(user, token, 2);
+            }
+        }
+    }
+
+    private withdrawAllExecSucc = async (user: string, token: Tokens) => {
+        const userDepositBalanceArr = this.userDepositBalanceCache.get(user);
+
+        // Null guardian
+        if (!userDepositBalanceArr) return;
+
+        this.savingAccount.withdrawAll(this.tokenAddrs[token], { from: user });
+
+        await this.updateDeFinerCache(token);
+        await this.updateUserState(user);
+
+        const userBalanceAfter = userDepositBalanceArr[token];
+
+        expect(userBalanceAfter.eq(0)).equal(true);
+
+    }
+
+    // Three kind of should fail in withdrawAll
+    // 1. Withdraw all when there is no deposit
+    // 2. After withdraw, there will not be enough collateral
+    // 3. Withdraw an unsupported token
+    private withdrawAllExecFail = async (user: string, token: Tokens, kind: number) => {
+        if (kind == 0) {
+            await expectRevert(
+                this.savingAccount.withdrawAll(this.tokenAddrs[token], { from: user }),
+                "Token depositPrincipal must be greater than 0"
+            );
+        }
     }
 }
