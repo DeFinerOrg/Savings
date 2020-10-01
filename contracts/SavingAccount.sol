@@ -10,7 +10,7 @@ import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
@@ -176,6 +176,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _amount amount to be withdrawn
      */
     function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
+
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
         SavingLib.send(globalConfig, amount, _token);
