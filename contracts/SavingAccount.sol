@@ -110,6 +110,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _amount amout of tokens transfer
      */
     function transfer(address _to, address _token, uint _amount) public onlySupportedToken(_token) onlyEnabledToken(_token) whenNotPaused nonReentrant {
+        
+        require(_amount != 0, "Amount is zero");
 
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
@@ -191,9 +193,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
         // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
-
-        // Add a new checkpoint on the index curve.
-        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Get the total amount of token for the account
         uint amount = globalConfig.accounts().getDepositBalanceCurrent(_token, msg.sender);

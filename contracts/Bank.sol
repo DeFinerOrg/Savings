@@ -384,8 +384,6 @@ contract Bank is Constant, Initializable{
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
     function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
 
-        require(_amount != 0, "Amount is zero");
-
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
 
@@ -451,8 +449,6 @@ contract Bank is Constant, Initializable{
      * @return The actually amount withdrawed, which will be the amount requested minus the commission fee.
      */
     function withdraw(address _from, address _token, uint256 _amount) public onlyInternal returns(uint) {
-
-        require(_amount != 0, "Amount is zero");
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
