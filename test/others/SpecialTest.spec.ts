@@ -119,7 +119,7 @@ contract("Integration Tests", async (accounts) => {
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
-                await savingAccount.deposit(ETH_ADDRESS, numOfETH, { 
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
                     value: numOfETH
                 });
@@ -138,7 +138,7 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow1: " + user1Borrow1.toString());
-                
+
                 // user1 repay 2BAT
                 await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
                 console.log("user1 repay 2BAT");
@@ -171,7 +171,7 @@ contract("Integration Tests", async (accounts) => {
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
-                await savingAccount.deposit(ETH_ADDRESS, numOfETH, { 
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
                     value: numOfETH
                 });
@@ -190,7 +190,7 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow1: " + user1Borrow1.toString());
-                
+
                 // user1 repay 40BAT
                 await savingAccount.repay(addressBAT, borrowAmount.mul(new BN(2)), { from: user1 });
                 console.log("user1 repay 40BAT");
@@ -253,7 +253,7 @@ contract("Integration Tests", async (accounts) => {
                 console.log("const");
 
                 await erc20DAI.approve(savingAccount.address, numOfDAI);
-                
+
                 // owner deposit 100DAI
                 await savingAccount.deposit(addressDAI, numOfDAI);
                 console.log("owner deposit 100DAI");

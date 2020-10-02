@@ -960,6 +960,11 @@ export class ScenarioTestEngine {
                 this.savingAccount.withdrawAll(this.tokenAddrs[token], { from: user }),
                 "Token depositPrincipal must be greater than 0"
             );
+        } else if (kind == 1) {
+            await expectRevert(
+                this.savingAccount.withdrawAll(this.tokenAddrs[token], { from: user }),
+                "Token depositPrincipal must be greater than 0"
+            );
         }
     }
 }

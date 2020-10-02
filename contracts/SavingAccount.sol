@@ -197,7 +197,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         // // Sanity check
         require(globalConfig.accounts().getDepositPrincipal(msg.sender, _token) > 0, "Token depositPrincipal must be greater than 0");
 
-   
+        // // Add a new checkpoint on the index curve.
+        globalConfig.bank().newRateIndexCheckpoint(_token);
 
         // Get the total amount of token for the account
         uint amount = globalConfig.accounts().getDepositBalanceCurrent(_token, msg.sender);
