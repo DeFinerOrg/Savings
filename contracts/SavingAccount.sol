@@ -113,7 +113,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         
         require(_amount != 0, "Amount is zero");
 
-        require(_amount != 0, "Amount is zero");
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
         globalConfig.accounts().deposit(_to, _token, _amount);
