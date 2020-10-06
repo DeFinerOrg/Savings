@@ -312,27 +312,25 @@ contract("SavingAccount.withdraw", async (accounts) => {
             // });
 
             it("Strange test case", async () => {
-                await erc20USDC.transfer(owner, new BN("10000000"));
-                await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: owner });
-                await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: owner });
-
+                const daiAmt = eighteenPrecision;
+                await erc20DAI.transfer(owner, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
                 await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
+                const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
-                const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20USDC.address, owner));
-                const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20USDC.address));
-                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20USDC.address));
+                await erc20DAI.transfer(owner, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
 
-                // await erc20USDC.transfer(user1, new BN("10000000"));
-                // await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: user1 });
-                // await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: user1 });
-
-                await erc20USDC.transfer(owner, new BN("10000000"));
-                await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: owner });
-                await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: owner });
-
-                const balanceAfter = new BN(await savingAccount.getDepositBalance(erc20USDC.address, owner));
-                const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20USDC.address));
-                const interestAfter = new BN(await savingAccount.getDepositInterest(erc20USDC.address));
+                const balanceAfter = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
                 console.log(balanceBefore.toString());
                 console.log(principalBefore.toString());
@@ -345,27 +343,32 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
             });
             it("Strange test case", async () => {
-                await erc20USDC.transfer(owner, new BN("10000000"));
-                await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: owner });
-                await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: owner });
+                const daiAmt = eighteenPrecision;
+
+                await erc20DAI.transfer(owner, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
 
                 await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(1000000);
 
-                const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20USDC.address, owner));
-                const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20USDC.address));
-                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20USDC.address));
+                const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
-                await erc20USDC.transfer(user1, new BN("10000000"));
-                await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: user1 });
-                await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: user1 });
+                await erc20DAI.transfer(user1, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: user1 });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: user1 });
 
                 // await erc20USDC.transfer(owner, new BN("10000000"));
                 // await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: owner });
                 // await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: owner });
 
-                const balanceAfter = new BN(await savingAccount.getDepositBalance(erc20USDC.address, owner));
-                const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20USDC.address));
-                const interestAfter = new BN(await savingAccount.getDepositInterest(erc20USDC.address));
+                const balanceAfter = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
                 console.log(balanceBefore.toString());
                 console.log(principalBefore.toString());
@@ -377,9 +380,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
 
             });
-
-
-
         });
     });
 
