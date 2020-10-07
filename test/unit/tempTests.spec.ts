@@ -310,16 +310,41 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
 
             // });
-
-            it("Strange test case", async () => {
+            it("getDepositInterest(): Case 1", async () => {
                 const daiAmt = eighteenPrecision;
                 await erc20DAI.transfer(owner, daiAmt);
                 await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
                 await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
+
+                const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
+
+                await savingAccount.fastForward(4000000);
+
+                const balanceAfter = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
+                const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
+
+                console.log("Total deposit balance before fastforward " + balanceBefore.toString());
+                console.log("Principal before fastforward: " + principalBefore.toString());
+                console.log("Interest before fastforward: " + interestBefore.toString());
+
+                console.log("Total deposit balance after fastforward: " + balanceAfter.toString());
+                console.log("Principal after fastforward " + principalAfter.toString());
+                console.log("Interest after fastforward: " + interestAfter.toString());
+
+
+            });
+
+            it("getDepositInterest(): Case 2", async () => {
+                const daiAmt = eighteenPrecision;
+                await erc20DAI.transfer(owner, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
+
+                await savingAccount.fastForward(4000000);
+
                 const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
                 const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
                 const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
@@ -332,27 +357,24 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
                 const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
-                console.log(balanceBefore.toString());
-                console.log(principalBefore.toString());
-                console.log(interestBefore.toString());
+                console.log("Total deposit balance before deposit again: " + balanceBefore.toString());
+                console.log("Principal before deposit again: " + principalBefore.toString());
+                console.log("Interest before deposit again: " + interestBefore.toString());
 
-                console.log(balanceAfter.toString());
-                console.log(principalAfter.toString());
-                console.log(interestAfter.toString());
+                console.log("Total deposit balance after deposit again: " + balanceAfter.toString());
+                console.log("Principal after deposit again: " + principalAfter.toString());
+                console.log("Interest after deposit again: " + interestAfter.toString());
 
 
             });
-            it("Strange test case", async () => {
+            it("getDepositInterest(): Case 3", async () => {
                 const daiAmt = eighteenPrecision;
 
                 await erc20DAI.transfer(owner, daiAmt);
                 await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
                 await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
 
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(4000000);
 
                 const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
                 const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
@@ -370,41 +392,47 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
                 const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
-                console.log(balanceBefore.toString());
-                console.log(principalBefore.toString());
-                console.log(interestBefore.toString());
+                console.log("Total deposit balance before deposit again: " + balanceBefore.toString());
+                console.log("Principal before deposit again: " + principalBefore.toString());
+                console.log("Interest before deposit again: " + interestBefore.toString());
 
-                console.log(balanceAfter.toString());
-                console.log(principalAfter.toString());
-                console.log(interestAfter.toString());
+                console.log("Total deposit balance after deposit again: " + balanceAfter.toString());
+                console.log("Principal after deposit again: " + principalAfter.toString());
+                console.log("Interest after deposit again: " + interestAfter.toString());
 
 
             });
 
-            it("Strange test case", async () => {
+            it("transfer(): Case 1", async () => {
                 const daiAmt = eighteenPrecision;
+                const usdcAmt = sixPrecision;
 
-                await erc20DAI.transfer(owner, daiAmt);
-                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
-                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
+                await erc20DAI.transfer(owner, daiAmt.mul(new BN(2)));
+                await erc20DAI.approve(savingAccount.address, daiAmt.mul(new BN(2)), { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt.mul(new BN(2)), { from: owner });
 
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
+                await erc20USDC.transfer(user1, usdcAmt);
+                await erc20USDC.approve(savingAccount.address, usdcAmt, { from: user1 });
+                await savingAccount.deposit(erc20USDC.address, usdcAmt, { from: user1 });
 
-                await erc20DAI.transfer(owner, daiAmt);
-                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
-                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
+                await savingAccount.borrow(erc20DAI.address, daiAmt.div(new BN(2)), { from: user1 });
 
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
-                await savingAccount.fastForward(1000000);
+                await savingAccount.fastForward(10000000);
+                await savingAccount.newRateIndexCheckpoint(erc20DAI.address);
+
+                // await erc20DAI.transfer(owner, daiAmt);
+                // await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                // await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
+
+                // await savingAccount.fastForward(10000000);
 
                 const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
                 const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address));
                 const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
+
+                const usr1balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, user1));
+                const usr1principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: user1 }));
+                const usr1interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: user1 }));
 
                 await savingAccount.transfer(user1, erc20DAI.address, daiAmt)
                 // await erc20USDC.transfer(owner, new BN("10000000"));
@@ -419,27 +447,33 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const usr1principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: user1 }));
                 const usr1interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: user1 }));
 
-                console.log(balanceBefore.toString());
-                console.log(principalBefore.toString());
-                console.log(interestBefore.toString());
+                console.log("Owner balance before transfer: " + balanceBefore.toString());
+                console.log("Owner principal before transfer: " + principalBefore.toString());
+                console.log("Owner interest before transfer: " + interestBefore.toString());
 
-                console.log(balanceAfter.toString());
-                console.log(principalAfter.toString());
-                console.log(interestAfter.toString());
+                console.log("Owner balance after transfer: " + balanceAfter.toString());
+                console.log("Owner principal after transfer: " + principalAfter.toString());
+                console.log("Owner interest after transfer: " + interestAfter.toString());
 
-                console.log(usr1balanceAfter.toString());
-                console.log(usr1principalAfter.toString());
-                console.log(usr1interestAfter.toString());
+                console.log("User1 balance before transfer: " + usr1balanceBefore.toString());
+                console.log("User1 principal before transfer: " + usr1principalBefore.toString());
+                console.log("User1 interest before transfer: " + usr1interestBefore.toString());
+
+                console.log("User1 balance after transfer: " + usr1balanceAfter.toString());
+                console.log("User1 principal after transfer: " + usr1principalAfter.toString());
+                console.log("User1 interest after transfer: " + usr1interestAfter.toString());
 
 
             });
 
-            it("Strange test case", async () => {
+            it("transfer(): Case 2", async () => {
+
                 const daiAmt = eighteenPrecision;
                 const usdcAmt = sixPrecision;
-                await erc20DAI.transfer(user1, daiAmt);
-                await erc20DAI.approve(savingAccount.address, daiAmt, { from: user1 });
-                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: user1 });
+
+                await erc20DAI.transfer(user1, daiAmt.mul(new BN(2)));
+                await erc20DAI.approve(savingAccount.address, daiAmt.mul(new BN(2)), { from: user1 });
+                await savingAccount.deposit(erc20DAI.address, daiAmt.mul(new BN(2)), { from: user1 });
 
                 await erc20USDC.transfer(owner, usdcAmt);
                 await erc20USDC.approve(savingAccount.address, usdcAmt, { from: owner });
@@ -451,20 +485,22 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 await savingAccount.newRateIndexCheckpoint(erc20DAI.address);
 
 
-                await erc20DAI.transfer(user1, daiAmt);
-                await erc20DAI.approve(savingAccount.address, daiAmt, { from: user1 });
-                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: user1 });
+                // await erc20DAI.transfer(user1, daiAmt);
+                // await erc20DAI.approve(savingAccount.address, daiAmt, { from: user1 });
+                // await savingAccount.deposit(erc20DAI.address, daiAmt, { from: user1 });
 
-                await savingAccount.fastForward(10000000);
-                await savingAccount.newRateIndexCheckpoint(erc20DAI.address);
-                const usr1balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
-                const usr1principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: owner }));
-                const usr1interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: owner }));
+                // await savingAccount.fastForward(10000000);
+                // await savingAccount.newRateIndexCheckpoint(erc20DAI.address);
+                const ownerBalanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const ownerPrincipalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: owner }));
+                const ownerInterestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: owner }));
 
                 const balanceBefore = new BN(await savingAccount.getDepositBalance(erc20DAI.address, user1));
                 const principalBefore = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: user1 }));
                 const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: user1 }));
-                await savingAccount.transfer(owner, erc20DAI.address, daiAmt, { from: user1 })
+
+                await savingAccount.transfer(owner, erc20DAI.address, daiAmt, { from: user1 });
+
                 // await erc20USDC.transfer(owner, new BN("10000000"));
                 // await erc20USDC.approve(savingAccount.address, new BN("10000000"), { from: owner });
                 // await savingAccount.deposit(erc20USDC.address, new BN("10000000"), { from: owner });
@@ -473,25 +509,45 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 const principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: user1 }));
                 const interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: user1 }));
 
-                const usr1balanceAfter = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
-                const usr1principalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: owner }));
-                const usr1interestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: owner }));
+                const ownerBalanceAfter = new BN(await savingAccount.getDepositBalance(erc20DAI.address, owner));
+                const ownerPrincipalAfter = new BN(await savingAccount.getDepositPrincipal(erc20DAI.address, { from: owner }));
+                const ownerInterestAfter = new BN(await savingAccount.getDepositInterest(erc20DAI.address, { from: owner }));
 
-                console.log(balanceBefore.toString());
-                console.log(principalBefore.toString());
-                console.log(interestBefore.toString());
+                console.log("User1 balance before transfer: " + balanceBefore.toString());
+                console.log("User1 principal before transfer: " + principalBefore.toString());
+                console.log("User1 interest before transfer: " + interestBefore.toString());
 
-                console.log(balanceAfter.toString());
-                console.log(principalAfter.toString());
-                console.log(interestAfter.toString());
+                console.log("User1 balance after transfer: " + balanceAfter.toString());
+                console.log("User1 principal after transfer: " + principalAfter.toString());
+                console.log("User1 interest after transfer: " + interestAfter.toString());
 
-                console.log(usr1balanceBefore.toString());
-                console.log(usr1principalBefore.toString());
-                console.log(usr1interestBefore.toString());
+                console.log("Owner balance before transfer: " + ownerBalanceBefore.toString());
+                console.log("Owner principal before transfer: " + ownerPrincipalBefore.toString());
+                console.log("Owner interest before transfer: " + ownerInterestBefore.toString());
 
-                console.log(usr1balanceAfter.toString());
-                console.log(usr1principalAfter.toString());
-                console.log(usr1interestAfter.toString());
+                console.log("Owner balance after transfer: " + ownerBalanceAfter.toString());
+                console.log("Owner principal after transfer: " + ownerPrincipalAfter.toString());
+                console.log("Owner interest after transfer: " + ownerInterestAfter.toString());
+
+
+
+            });
+
+            it("getDepositInterest(): Case 4", async () => {
+                const daiAmt = eighteenPrecision;
+                const usdcAmt = sixPrecision;
+
+                await erc20DAI.transfer(owner, daiAmt);
+                await erc20DAI.approve(savingAccount.address, daiAmt, { from: owner });
+                await savingAccount.deposit(erc20DAI.address, daiAmt, { from: owner });
+                console.log("get here1");
+
+                await savingAccount.borrow(erc20DAI.address, daiAmt.div(new BN(2)), { from: owner });
+                console.log("get here3");
+
+                await savingAccount.fastForward(10000000);
+
+                const interestBefore = new BN(await savingAccount.getDepositInterest(erc20DAI.address));
 
 
             });
