@@ -97,11 +97,11 @@ export class ScenarioTestEngine {
     public tokenNames: Array<string> = ["DAI", "USDC", "USDT", "TUSD", "MKR", "BAT", "ZRX", "REP", "WBTC", "ETH"];
 
     // [deposit, borrow, withdraw, withdrawAll, repay, transfer, liquidate, liquidateTarget]
-    public userSuccMoveWeight = [1, 0, 0, 0, 0, 0, 0, 0];
+    public userSuccMoveWeight = [1, 1, 1, 1, 1, 1, 0, 0];
     public userFailMoveWeight = [10, 10, 10, 10, 10, 10, 1, 0];
 
     // [IncBlockNum, ChangePrice]
-    public sysMoveWeight = [7, 0];
+    public sysMoveWeight = [10, 2];
 
     public ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     public ZERO_ADDRESS: string = "0x0000000000000000000000000000000000000000";
@@ -334,6 +334,15 @@ export class ScenarioTestEngine {
         return res;
     }
 
+    private createAllCheckpoints = async () => {
+        for (let i = 0; i < this.tokenAddrs.length; ++i) {
+            await this.createCheckpoint(this.tokenAddrs[i]);
+        }
+        await this.createCheckpoint(this.ETH_ADDRESS);
+    }
+    private createCheckpoint = async (tokenAddres: string) => {
+        await this.savingAccount.newRateIndexCheckpoint(tokenAddres);
+    }
 
     private updateAllUserState = async () => {
         for (let user of this.userAddrs) {
@@ -593,7 +602,9 @@ export class ScenarioTestEngine {
     private depositExecSucc = async (user: string, token: Tokens, amount: any) => {
         const depositBalanceArr = this.userDepositBalanceCache.get(user);
         const depositAmt = new BN(amount.toString());
+
         console.log("deposit amt is: ", depositAmt.toString());
+
         if (!depositBalanceArr) {
             console.log("get here deposit exec succ");
             return;
@@ -601,9 +612,9 @@ export class ScenarioTestEngine {
 
         const balanceBefore = depositBalanceArr[token];
 
-        const balanceFromContract = await this.savingAccount.getDepositBalance(this.tokenAddrs[token], user);
-        const interestFromContract = await this.savingAccount.getDepositInterest(this.tokenAddrs[token], { from: user });
-        const principalFromContract = await this.savingAccount.getDepositPrincipal(this.tokenAddrs[token], { from: user });
+        // const balanceFromContract = await this.savingAccount.getDepositBalance(this.tokenAddrs[token], user);
+        // const interestFromContract = await this.savingAccount.getDepositInterest(this.tokenAddrs[token], { from: user });
+        // const principalFromContract = await this.savingAccount.getDepositPrincipal(this.tokenAddrs[token], { from: user });
 
         if (token == Tokens.ETH) {
             const tokenInfo = await this.getTokenInfo(token);
@@ -637,9 +648,9 @@ export class ScenarioTestEngine {
         const balanceAfter = depositBalanceArr[token];
 
         console.log(balanceBefore.toString());
-        console.log(balanceFromContract.toString());
-        console.log(interestFromContract.toString());
-        console.log(principalFromContract.toString());
+        // console.log(balanceFromContract.toString());
+        // console.log(interestFromContract.toString());
+        // console.log(principalFromContract.toString());
         console.log(balanceAfter.toString());
         console.log(interestFromContractAfter.toString());
         console.log(principalFromContractAfter.toString());
@@ -1378,8 +1389,10 @@ export class ScenarioTestEngine {
         await this.savingAccount.fastForward(100000);
 
         // Update the status for all users
+        await this.createAllCheckpoints();
         await this.updateAllDeFinerCache();
         await this.updateAllUserState();
+
 
     }
 

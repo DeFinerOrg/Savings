@@ -35,13 +35,13 @@ contract("Scenario testing", async (accounts) => {
             }
         });
 
-        // it("Generate 100 withdraw moves", async function () {
-        //     this.timeout(0)
-        //     // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
-        //     for (let i = 0; i < 100; ++i) {
-        //         await scenarioTestEngine.generateOneMove();
-        //     }
-        // });
+        it("Generate 100 withdraw moves", async function () {
+            this.timeout(0)
+            // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);
+            for (let i = 0; i < 100; ++i) {
+                await scenarioTestEngine.generateOneMove();
+            }
+        });
         // it("Generate 100 withdraw moves", async function () {
         //     this.timeout(0)
         //     // scenarioTestEngine.setUserSuccMoveWeight([0, 0, 0, 0, 0, 0, 0, 0]);

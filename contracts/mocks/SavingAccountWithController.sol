@@ -106,4 +106,5 @@ contract SavingAccountWithController is SavingAccount {
     function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return globalConfig.bank().getTokenState(_token);
     }
+
 }
