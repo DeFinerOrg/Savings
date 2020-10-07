@@ -193,7 +193,7 @@ contract TokenRegistry is Ownable {
 
 
     function enableToken(address _token) external onlyOwner whenTokenExists(_token) {
-        require(tokenInfo[_token].enabled, "Token already enabled");
+        require(!tokenInfo[_token].enabled, "Token already enabled");
 
         tokenInfo[_token].enabled = true;
 
@@ -201,7 +201,7 @@ contract TokenRegistry is Ownable {
     }
 
     function disableToken(address _token) external onlyOwner whenTokenExists(_token) {
-        require(!tokenInfo[_token].enabled, "Token already disabled");
+        require(tokenInfo[_token].enabled, "Token already disabled");
 
         tokenInfo[_token].enabled = false;
 
