@@ -471,9 +471,6 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(new BN(user1ETHValue)).to.be.bignumber.equal(new BN(10));
                 }); */
 
-                /*
-                TODO: There are still problems with the price acquisition of ETH.
-                 */
                 it("when borrow amount of ETH less then ILTV of his collateral value", async () => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(1), { from: user1 });
@@ -492,10 +489,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
                     // 3. Verify the loan amount.
-                    const user1ETHValue = await savingAccount.tokenBalance(ETH_ADDRESS, {
-                        from: user1
-                    });
-                    expect(new BN(user1ETHValue[1])).to.be.bignumber.equal(new BN(10));
+                    const user1ETHValue = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user1
+                    );
+                    expect(new BN(user1ETHValue)).to.be.bignumber.equal(new BN(10));
                 }); */
 
                 /* it("when borrow amount of ETH is equal to ILTV of his collateral value", async () => {
