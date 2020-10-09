@@ -1414,20 +1414,53 @@ export class ScenarioTestEngine {
 
     // Execute a liquidate move
     private liquidateMove = async (user: string, target: string, token: Tokens, shouldSuccess: boolean) => {
+        const targetStatusArr = this.availableMovesMap.get(user);
+        const userState = this.userStateCache.get(user);
+
+        // Null check guardian
+        if (!targetStatusArr || !userState) return;
+
+        const targetLiquidatable = targetStatusArr[token][UserMove.LiquidateTarget];
+        const userBorrowLtv = userState.userBorrowETH.div(userState.userDepositETH);
+        // Re-check whether the precondition satisfies
+        if (targetLiquidatable == false) shouldSuccess = false;
+
         if (shouldSuccess) {
+            console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", should succeed.");
             await this.liquidateExecSucc(user, target, token);
         } else {
-            await this.liquidateExecFail(user, target, token);
+            if (userBorrowLtv.lt(0.85)) {
+                console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the collateral is not enough, should fail.");
+                await expectRevert(this.liquidateExecFail(user, target, token, 0),
+                    "The borrower is not liquidatable."
+                );
+            } else if (userState.userBorrowPower.lte(userState.userBorrowETH)) {
+                console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the borrower is not liquidatbale, should fail.");
+                await expectRevert(this.liquidateExecFail(user, target, token, 1),
+                    "No extra funds are used for liquidation."
+                );
+            } else {
+                console.log("User " + user + " tries to liquidate user " + target + " using an unsupported token, should fail.");
+                await expectRevert(this.liquidateExecFail(user, target, token, 1),
+                    "Unsupported token"
+                );
+            }
         }
     }
 
-    // TODO
+    // Execute a liquidate move
     private liquidateExecSucc = async (user: string, target: string, token: Tokens) => {
-        console.log("LiquidateExecSucc not implemented yet.")
+        this.savingAccount.liquidate(target, this.tokenAddrs[token], { from: user })
     }
 
-    // TODO
-    private liquidateExecFail = async (user: string, target: string, token: Tokens) => {
+    // kinds of should fail situations
+    // 1. The borrower is not liquidatable (LTV < 0.85)
+    // 2. The liquidator has no extra funds are used for liquidation.
+    // 3. The account amount must be greater than zero.
+    // 4. The borrower doesn't own any debt token specified by the liquidator.
+    // 5. The collateral not sufficient to be liquidated (LTV > 0.95)
+    // 6. Unsupported token.
+    private liquidateExecFail = async (user: string, target: string, token: Tokens, kind: number) => {
         console.log("LiquidateExecFail not implemented yet.")
     }
 

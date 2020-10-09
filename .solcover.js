@@ -11,6 +11,6 @@ module.exports = {
     },
     silent: false,
     compileCommand: 'truffle compile',
-    testCommand: 'COVERAGE=TRUE truffle test --network coverage',
+    testCommand: 'COVERAGE=TRUE truffle test --network coverage ./test/unit/borrowTests.spec.ts',
     skipFiles: ["mocks/MockCToken.sol", "mocks/MockChainLinkAggregator.sol", "mocks/MockERC20.sol", "mocks/MockProxyAdmin.sol", "mocks/SavingAccountWithController.sol", "external/strings.sol"]
 };
