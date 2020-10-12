@@ -11,6 +11,13 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.req
 );
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
+const debug = 3;
+
+function dPrint(level: int, str: string) {
+    if (level >= debug) {
+        console.log(str);
+    }
+}
 // Set this to prevent toString() of BigNumber gives scientific representation of a number
 BigNumber.config({ EXPONENTIAL_AT: 50 });
 
@@ -105,8 +112,8 @@ export class ScenarioTestEngine {
     public tokenNames: Array<string> = ["DAI", "USDC", "USDT", "TUSD", "MKR", "BAT", "ZRX", "REP", "WBTC", "ETH"];
 
     // [deposit, borrow, withdraw, withdrawAll, repay, transfer, liquidate, liquidateTarget]
-    public userSuccMoveWeight = [1, 1, 1, 1, 1, 1, 0, 0];
-    public userFailMoveWeight = [10, 10, 10, 10, 10, 10, 1, 0];
+    public userSuccMoveWeight = [1, 1, 1, 1, 1, 0, 0, 0];
+    public userFailMoveWeight = [10, 10, 10, 10, 10, 0, 0, 0];
 
     // [IncBlockNum, ChangePrice]
     public sysMoveWeight = [10, 2];
@@ -244,7 +251,6 @@ export class ScenarioTestEngine {
         // Otherwise we execute a should fail move.
         const succRate = this.getRandFloat();
 
-        // console.log("succ rate: " + this.succRate + " rand: " + succRate);
         if (succRate < this.succRate) {
             const index = this.getRandInt(0, this.succMovesArr.length);
             const curMove = this.succMovesArr[index];
@@ -283,9 +289,6 @@ export class ScenarioTestEngine {
                     break;
                 case UserMove.Liquidate:
                     if (!move.target) {
-                        console.log("get here liquidate move");
-                        console.log(move);
-                        console.log(move.target);
                         return;
                     }
                     await this.liquidateMove(move.user, move.target, move.token, shouldSuccess);
@@ -625,15 +628,15 @@ export class ScenarioTestEngine {
 
         // If rand < succRate, current behavior should success
         if (shouldSuccess) {
-            console.log("User " + user + " tries to deposit " + amount + " " + this.tokenNames[token] + " to DeFiner, should succeed.");
+            dPrint(3, "User " + user + " tries to deposit " + amount + " " + this.tokenNames[token] + " to DeFiner, should succeed.");
             await this.depositExecSucc(user, token, amount);
         } else {
             const rand = this.getRandInt(0, 100);
             const kind = rand % 2;
             if (kind == 0) {
-                console.log("User " + user + " tries to deposit " + 0 + " " + this.tokenNames[token] + " to DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to deposit " + 0 + " " + this.tokenNames[token] + " to DeFiner, should fail.");
             } else {
-                console.log("User " + user + " tries to deposit an invalid token to DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to deposit an invalid token to DeFiner, should fail.");
             }
             await this.depositExecFail(user, token, kind);
         }
@@ -645,10 +648,10 @@ export class ScenarioTestEngine {
         const depositBalanceArr = this.userDepositBalanceCache.get(user);
         const depositAmt = new BN(amount.toString());
 
-        console.log("deposit amt is: ", depositAmt.toString());
+        dPrint(2, "deposit amt is: " + depositAmt.toString());
 
         if (!depositBalanceArr) {
-            console.log("get here deposit exec succ");
+            dPrint(2, "Get here deposit exec succ");
             return;
         }
 
@@ -689,13 +692,15 @@ export class ScenarioTestEngine {
         const principalFromContractAfter = await this.savingAccount.getDepositPrincipal(this.tokenAddrs[token], { from: user });
         const balanceAfter = depositBalanceArr[token];
 
-        console.log(balanceBefore.toString());
+        dPrint(2, "Blance before deposit is " + balanceBefore.toString());
+        dPrint(2, "Blance after deposit is " + balanceAfter.toString());
+        dPrint(2, "Interest after deposit is " + interestFromContractAfter.toString());
+        dPrint(2, "Principal after deposit is " + principalFromContractAfter.toString());
+
         // console.log(balanceFromContract.toString());
         // console.log(interestFromContract.toString());
         // console.log(principalFromContract.toString());
-        console.log(balanceAfter.toString());
-        console.log(interestFromContractAfter.toString());
-        console.log(principalFromContractAfter.toString());
+
         // Check whether the change of the balance match
         expect(balanceBefore.eq(balanceAfter.minus(amount))).equal(true);
     }
@@ -726,8 +731,7 @@ export class ScenarioTestEngine {
         const curUserDepositBalanceArr = this.userDepositBalanceCache.get(user);
 
         if (!userState || !curUserDepositBalanceArr) {
-            console.log("get here withdraw move succ");
-
+            dPrint(2, "Get here withdraw move succ.");
             return;
         }
 
@@ -755,9 +759,10 @@ export class ScenarioTestEngine {
         if (shouldSuccess) {
 
             const execAmt = this.getRandBigWithBigRange(new BigNumber(1), maxWithdrawAmt);
-            console.log("User " + user + " tries to withdraw " + execAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
-            console.log("Maximum withdraw amt is: " + maxWithdrawAmt.toString());
-            console.log("execAmt amt is: " + execAmt.toString());
+
+            dPrint(3, "User " + user + " tries to withdraw " + execAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
+            dPrint(2, "Maximum withdraw amt is: " + maxWithdrawAmt.toString());
+            dPrint(2, "execAmt amt is: " + execAmt.toString());
 
             await this.withdrawExecSucc(user, token, execAmt);
 
@@ -767,31 +772,27 @@ export class ScenarioTestEngine {
 
             // If the maximumWithdrawAmt is already zero, we should perform this kind of should fail test case
             if (maxWithdrawAmt.eq(0)) {
-                console.log("User " + user + " tries to withdraw " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
                 await this.withdrawExecFail(user, token, 0, new BigNumber(0));
             } else if (theoMaxWithdrawAmt.gt(maxWithdrawAmt)) {
-                console.log("User " + user + " tries to withdraw more tokens DeFiner's pool currently have, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw more tokens DeFiner's pool currently have, should fail.");
                 await this.withdrawExecFail(user, token, 2, theoMaxWithdrawAmt);
             } else if (num == 0) {
-                console.log("User " + user + " tries to withdraw an invalid token from DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw an invalid token from DeFiner, should fail.");
                 await this.withdrawExecFail(user, token, 1, maxWithdrawAmt);
             } else {
-
                 // Generate a number that belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance * 2)
                 // If the number belongs to [theoMaxWithdrawAmt + 1, curTokenDepositBalance), it will gives insufficient collateral error
                 // If the number belongs to [curTokenDepositBalance, curTokenDepositBalance * 2), it will gives insufficient balance error
                 const actualAmt = this.getRandBigWithBigRange(theoMaxWithdrawAmt.plus(1), curTokenDepositBalance.times(2));
-                console.log("actual mat is: " + actualAmt.toString());
-                console.log("cur deposit is" + curTokenDepositBalance.toString());
+                dPrint(2, "Actual withdraw amount is: " + actualAmt.toString());
+                dPrint(2, "Current deposit is" + curTokenDepositBalance.toString());
+
                 if (actualAmt.gt(curTokenDepositBalance)) {
-                    console.log("User " + user + " tries to withdraw more tokens than it deposit, should fail.");
-                    // console.log("Actual amt is: " + actualAmt.toString());
-                    // console.log("max amt is: " + maxWithdrawAmt.toString());
+                    dPrint(3, "User " + user + " tries to withdraw more tokens than it deposit, should fail.");
                     await this.withdrawExecFail(user, token, 3, actualAmt);
                 } else {
-                    console.log("User " + user + " tries to withdraw more tokens than its left borrowing power, should fail.");
-                    // console.log("Actual amt is: " + actualAmt.toString());
-                    // console.log("max amt is: " + maxWithdrawAmt.toString());
+                    dPrint(3, "User " + user + " tries to withdraw more tokens than its left borrowing power, should fail.");
                     await this.withdrawExecFail(user, token, 4, actualAmt);
                 }
             }
@@ -804,14 +805,15 @@ export class ScenarioTestEngine {
         const depositBalanceArr = this.userDepositBalanceCache.get(user);
 
         if (!depositBalanceArr) {
-            console.log("get here withdraw exec succ");
+            dPrint(2, "Get here withdraw exec succ");
             return;
         }
 
         const balanceBefore = depositBalanceArr[token];
 
         const withdrawAmt = new BN(amount.toString());
-        console.log("withdraw amt is: " + withdrawAmt.toString())
+        dPrint(2, "Withdraw amt is: " + withdrawAmt.toString());
+
         await this.savingAccount.withdraw(this.tokenAddrs[token], withdrawAmt, {
             from: user
         });
@@ -822,8 +824,8 @@ export class ScenarioTestEngine {
 
         const balanceAfter = depositBalanceArr[token];
 
-        console.log(balanceBefore.toString());
-        console.log(balanceAfter.toString());
+        dPrint(2, "Balance before withdraw is: " + balanceBefore.toString());
+        dPrint(2, "Balance after withdraw is: " + balanceAfter.toString());
 
         // Check whether the change of the balance match
         expect(balanceBefore.eq(balanceAfter.plus(amount))).equal(true);
@@ -878,11 +880,6 @@ export class ScenarioTestEngine {
         const curUserBorrowBalanceArr = this.userBorrowBalanceCache.get(user);
 
         if (!userState || !curUserBorrowBalanceArr || !curUserDepositBalanceArr) {
-            // console.log("user " + user);
-            // console.log(userState);
-            // console.log(curUserDepositBalanceArr);
-            // console.log(curUserBorrowBalanceArr);
-            // console.log("get here borrow move");
             return;
         }
 
@@ -901,7 +898,7 @@ export class ScenarioTestEngine {
 
         if (shouldSuccess) {
             const actualAmt = this.getRandBigWithBigRange(new BigNumber(1), maxBorrowAmt);
-            console.log("User " + user + " tries to borrow " + actualAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
+            dPrint(3, "User " + user + " tries to borrow " + actualAmt.toString() + " " + this.tokenNames[token] + " from DeFiner, should succeed.");
             await this.borrowExecSucc(user, token, actualAmt);
         } else {
 
@@ -909,22 +906,22 @@ export class ScenarioTestEngine {
             var kind = rand % 3;
 
             if (userDepositETH.eq(0)) {
-                console.log("User " + user + " tries to borrow from DeFiner but doesn't have any deposits, should fail.");
+                dPrint(3, "User " + user + " tries to borrow from DeFiner but doesn't have any deposits, should fail.");
                 await this.borrowExecFail(user, token, 2, new BigNumber(100));
             } else if (definerRemaining.lt(userBorrowPowerLeftToken)) {
-                console.log("User " + user + " borrow more " + this.tokenNames[token] + " tokens DeFiner's pool currently have, should fail.");
-                // console.log("User power left ETH: " + userBorrowPowerLeftToken.times(tokenInfo.price).div(10 ** this.decimals[token]).toString());
-                // console.log("User power left computed: " + userBorrowPowerLeftETH);
-                // console.log("User amount: " + userBorrowPowerLeftToken);
+                dPrint(3, "User " + user + " borrow more " + this.tokenNames[token] + " tokens DeFiner's pool currently have, should fail.");
+                dPrint(2, "User power left ETH: " + userBorrowPowerLeftToken.times(tokenInfo.price).div(10 ** this.decimals[token]).toString());
+                dPrint(2, "User power left computed: " + userBorrowPowerLeftETH);
+                dPrint(2, "User amount: " + userBorrowPowerLeftToken);
                 await this.borrowExecFail(user, token, 3, userBorrowPowerLeftToken);
             } else if (kind == 0 || definerRemaining.eq(0)) {
-                console.log("User " + user + " tries to borrow " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to borrow " + 0 + " " + this.tokenNames[token] + " from DeFiner, should fail.");
                 await this.borrowExecFail(user, token, 0, new BigNumber(0));
             } else if (kind == 1) {
-                console.log("User " + user + " tries to borrow an unsupported token" + " from DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to borrow an unsupported token" + " from DeFiner, should fail.");
                 await this.borrowExecFail(user, token, 1, maxBorrowAmt);
             } else {
-                console.log("User " + user + " borrow more " + this.tokenNames[token] + " tokens than its borrowing power, should fail.");
+                dPrint(3, "User " + user + " borrow more " + this.tokenNames[token] + " tokens than its borrowing power, should fail.");
                 await this.borrowExecFail(user, token, 4, definerRemaining);
             }
         }
@@ -936,14 +933,14 @@ export class ScenarioTestEngine {
         const borrowBalanceArr = this.userBorrowBalanceCache.get(user);
 
         if (!borrowBalanceArr) {
-            console.log("get here borrow exec succ");
+            dPrint(2, "Get here borrow exec succ");
             return;
         }
 
         const balanceBefore = borrowBalanceArr[token];
 
         const borrowAmt = new BN(amount.toString());
-        console.log("borrow amt is: " + borrowAmt.toString());
+        dPrint(2, "Borrow amt is: " + borrowAmt.toString());
         await this.savingAccount.borrow(this.tokenAddrs[token], borrowAmt, {
             from: user
         });
@@ -954,8 +951,8 @@ export class ScenarioTestEngine {
 
         const balanceAfter = borrowBalanceArr[token];
 
-        console.log(balanceBefore.toString());
-        console.log(balanceAfter.toString());
+        dPrint(2, "Balance before borrow: " + balanceBefore.toString());
+        dPrint(2, "Balance after borrow: " + balanceAfter.toString());
 
         // Check whether the change of borrow balance matches or not
         expect(balanceBefore.plus(amount).eq(balanceAfter)).equal(true);
@@ -1015,7 +1012,7 @@ export class ScenarioTestEngine {
         const curUserDepositBalanceArr = this.userDepositBalanceCache.get(user);
 
         if (!userState || !curUserDepositBalanceArr) {
-            // console.log("get here transfer move");
+            dPrint(2, "Get here transfer move.");
             return;
         }
 
@@ -1042,9 +1039,9 @@ export class ScenarioTestEngine {
         if (shouldSuccess) {
 
             const execAmt = this.getRandBigWithBigRange(new BigNumber(1), maxTransAmt);
-            console.log("User " + user + " tries to transfer " + execAmt.toString() + " " + this.tokenNames[token] + " to user " + targetUser + ", should succeed.");
-            // console.log("Maximum transfer amt is: " + maxTransAmt.toString());
-            // console.log("execAmt amt is: " + execAmt.toString());
+            dPrint(3, "User " + user + " tries to transfer " + execAmt.toString() + " " + this.tokenNames[token] + " to user " + targetUser + ", should succeed.");
+            dPrint(2, "Maximum transfer amt is: " + maxTransAmt.toString());
+            dPrint(2, "Actual transfer amt is: " + execAmt.toString())
 
             await this.transExecSucc(user, targetUser, token, execAmt);
 
@@ -1053,10 +1050,10 @@ export class ScenarioTestEngine {
             var num = rand % 3;
 
             if (maxTransAmt.eq(0)) {
-                console.log("User " + user + " tries to transfer " + 0 + " " + this.tokenNames[token] + " to user " + targetUser + ", should fail.");
+                dPrint(3, "User " + user + " tries to transfer " + 0 + " " + this.tokenNames[token] + " to user " + targetUser + ", should fail.");
                 await this.transExecFail(user, targetUser, token, 0, new BigNumber(0));
             } else if (num == 0) {
-                console.log("User " + user + " tries to transfer an invalid token to user " + targetUser + ", should fail.");
+                dPrint(3, "User " + user + " tries to transfer an invalid token to user " + targetUser + ", should fail.");
                 await this.transExecFail(user, targetUser, token, 1, maxTransAmt);
             } else {
 
@@ -1066,14 +1063,14 @@ export class ScenarioTestEngine {
                 const actualAmt = this.getRandBigWithBigRange(theoMaxTransAmt.plus(1), curTokenDepositBalance.times(2));
 
                 if (actualAmt.gt(curTokenDepositBalance)) {
-                    console.log("User " + user + " tries to transfer more tokens to user " + targetUser + " than it deposit, should fail.");
-                    // console.log("Actual amt is: " + actualAmt.toString());
-                    // console.log("max amt is: " + maxTransAmt.toString());
+                    dPrint(3, "User " + user + " tries to transfer more tokens to user " + targetUser + " than it deposit, should fail.");
+                    dPrint(2, "Actual amt is: " + actualAmt.toString());
+                    dPrint(2, "Max amt is: " + maxTransAmt.toString())
                     await this.transExecFail(user, targetUser, token, 2, actualAmt);
                 } else {
-                    console.log("User " + user + " tries to transfer more tokens to user " + targetUser + " than its left borrowing power, should fail.");
-                    // console.log("Actual amt is: " + actualAmt.toString());
-                    // console.log("max amt is: " + maxTransAmt.toString());
+                    dPrint(3, "User " + user + " tries to transfer more tokens to user " + targetUser + " than its left borrowing power, should fail.");
+                    dPrint(2, "Actual amt is: " + actualAmt.toString());
+                    dPrint(2, "Max amt is: " + maxTransAmt.toString())
                     await this.transExecFail(user, targetUser, token, 3, actualAmt);
                 }
             }
@@ -1092,7 +1089,7 @@ export class ScenarioTestEngine {
         // await this.updateUserState(target);
 
         if (!userDepositBalanceArr || !targetDepositBalanceArr) {
-            console.log("get here transfer exec suscc");
+            dPrint(2, "get here transfer exec suscc");
             return;
         }
         if (target == user) return;
@@ -1103,7 +1100,8 @@ export class ScenarioTestEngine {
 
         const transferAmt = new BN(amount.toString());
 
-        console.log("transferAmt is: " + transferAmt);
+        dPrint(2, "TransferAmt is: " + transferAmt);
+
         await this.savingAccount.transfer(target, this.tokenAddrs[token], transferAmt, {
             from: user
         });
@@ -1116,15 +1114,11 @@ export class ScenarioTestEngine {
         const userBalanceAfter = userDepositBalanceArr[token];
         const targetBalanceAfter = targetDepositBalanceArr[token];
 
+        dPrint(2, "User balance before transfer: " + userBalanceBefore.toString());
+        dPrint(2, "User balance after transfer: " + userBalanceAfter.toString());
+        dPrint(2, "Target balance before transfer: " + targetBalanceBefore.toString());
+        dPrint(2, "Target balance after transfer: " + targetBalanceAfter.toString());
 
-        console.log(userBalanceBefore.toString());
-        console.log(userBalanceAfter.toString());
-
-        console.log(targetBalanceBefore.toString());
-        console.log(targetBalanceAfter.toString());
-
-        console.log(userBalanceBefore.minus(userBalanceAfter).toString());
-        console.log(targetBalanceAfter.minus(targetBalanceBefore).toString());
         expect(userBalanceBefore.minus(userBalanceAfter).eq(targetBalanceAfter.minus(targetBalanceBefore))).equal(true);
     }
 
@@ -1169,7 +1163,7 @@ export class ScenarioTestEngine {
 
         // Null check guardian
         if (!userState || !curUserDepositBalanceArr) {
-            console.log("get here withdraw all move");
+            dPrint(2, "Get here withdraw all move");
             return;
         }
 
@@ -1189,9 +1183,9 @@ export class ScenarioTestEngine {
         if (curTokenDepositAmt.eq(0) || definerRemainingAmt.lt(curTokenDepositAmt)) shouldSuccess = false;
 
         if (shouldSuccess) {
-            // console.log("Token remains before withdraw all: " + definerRemainingAmt.toString());
-            // console.log("cur Token Deposit amt: " + curTokenDepositAmt.toString());
-            console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, should succeed.");
+            dPrint(2, "Token remains before withdraw all: " + definerRemainingAmt.toString());
+            dPrint(2, "Cur Token Deposit amt: " + curTokenDepositAmt.toString());
+            dPrint(3, "User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, should succeed.");
             await this.withdrawAllExecSucc(user, token);
 
         } else {
@@ -1203,21 +1197,14 @@ export class ScenarioTestEngine {
 
                 // Due to precision issue, cureTokenDepositETH will be a little bigger than extraBorrow power even if they are actually the same
                 // So add five to the extra borrow power to avoid that.
-                // console.log("Token remains before withdraw all: " + curTokenDepositAmt.toString());
-                // console.log("extra Borrow Power amt: " + extraBorrowAmt.toString());
-                // console.log("cur Token Deposit amt: " + curTokenDepositAmt.toString());
-                // console.log("Extra borrow power ETH: " + extraBorrowPower.toString());
-                // console.log("cur Token Deposit ETH: " + curTokenDepositETH.toString());
-                // console.log("userBorrowETH :" + userBorrowETH.toString());
-                // console.log("userDepositETH :" + userDepositETH.toString());
-                console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but it will not have enough collateral, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but it will not have enough collateral, should fail.");
                 await this.withdrawAllExecFail(user, token, 1);
 
             } else if (curTokenDepositAmt.gt(definerRemainingAmt)) {
-                console.log("User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but DeFiner will not have enough tokens, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw all " + this.tokenNames[token] + " from DeFiner, but DeFiner will not have enough tokens, should fail.");
                 await this.withdrawAllExecFail(user, token, 2);
             } else {
-                console.log("User " + user + " tries to withdraw all unsupported token from DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to withdraw all unsupported token from DeFiner, should fail.");
                 await this.withdrawAllExecFail(user, token, 3);
             }
         }
@@ -1229,8 +1216,7 @@ export class ScenarioTestEngine {
 
         // Null guard
         if (!userDepositBalanceArr) {
-            console.log("get here withdraw all exec succ");
-
+            dPrint(2, "Get here withdraw all exec succ");
             return;
         }
 
@@ -1283,7 +1269,7 @@ export class ScenarioTestEngine {
 
         // Null check guardian
         if (!curUserBorrowBalanceArr) {
-            console.log("get here repay move");
+            dPrint(2, "Get here repay move");
             return;
         }
 
@@ -1295,7 +1281,7 @@ export class ScenarioTestEngine {
         const repayAmt = this.getRandBigWithBigRange(new BigNumber(1), debtAmt.times(1.5));
 
         if (shouldSuccess) {
-            console.log("User " + user + " has " + debtAmt.toString() + " debt in " + this.tokenNames[token] + ", and tries to repay " + repayAmt.toString() + ", should succeed");
+            dPrint(3, "User " + user + " has " + debtAmt.toString() + " debt in " + this.tokenNames[token] + ", and tries to repay " + repayAmt.toString() + ", should succeed");
             await this.repayExecSucc(user, token, repayAmt);
         } else {
 
@@ -1303,13 +1289,13 @@ export class ScenarioTestEngine {
             var num = rand % 2;
 
             if (debtAmt.eq(0)) {
-                console.log("User " + user + " has " + debtAmt.toString() + " debt in " + this.tokenNames[token] + ", and tries to repay " + 100 + ", should fail");
+                dPrint(3, "User " + user + " has " + debtAmt.toString() + " debt in " + this.tokenNames[token] + ", and tries to repay " + 100 + ", should fail");
                 await this.repayExecFail(user, token, new BigNumber(100), 2);
             } else if (num == 0) {
-                console.log("User " + user + " tries to repay 0 " + this.tokenNames[token] + " to DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to repay 0 " + this.tokenNames[token] + " to DeFiner, should fail.");
                 await this.repayExecFail(user, token, new BigNumber(0), 0);
             } else {
-                console.log("User " + user + " tries to repay an unsupported token to DeFiner, should fail.");
+                dPrint(3, "User " + user + " tries to repay an unsupported token to DeFiner, should fail.");
                 await this.repayExecFail(user, token, repayAmt, 1);
             }
         }
@@ -1326,7 +1312,7 @@ export class ScenarioTestEngine {
         const borrowBalanceArr = this.userBorrowBalanceCache.get(user);
 
         if (!borrowBalanceArr) {
-            console.log("get here repay succ")
+            dPrint(2, "Get here repay succ");
             return;
         }
 
@@ -1426,21 +1412,21 @@ export class ScenarioTestEngine {
         if (targetLiquidatable == false) shouldSuccess = false;
 
         if (shouldSuccess) {
-            console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", should succeed.");
+            dPrint(3, "User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", should succeed.");
             await this.liquidateExecSucc(user, target, token);
         } else {
             if (userBorrowLtv.lt(0.85)) {
-                console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the collateral is not enough, should fail.");
+                dPrint(3, "User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the collateral is not enough, should fail.");
                 await expectRevert(this.liquidateExecFail(user, target, token, 0),
                     "The borrower is not liquidatable."
                 );
             } else if (userState.userBorrowPower.lte(userState.userBorrowETH)) {
-                console.log("User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the borrower is not liquidatbale, should fail.");
+                dPrint(3, "User " + user + " tries to liquidate user " + target + " using " + this.tokenNames[token] + ", but the borrower is not liquidatbale, should fail.");
                 await expectRevert(this.liquidateExecFail(user, target, token, 1),
                     "No extra funds are used for liquidation."
                 );
             } else {
-                console.log("User " + user + " tries to liquidate user " + target + " using an unsupported token, should fail.");
+                dPrint(3, "User " + user + " tries to liquidate user " + target + " using an unsupported token, should fail.");
                 await expectRevert(this.liquidateExecFail(user, target, token, 1),
                     "Unsupported token"
                 );
@@ -1461,7 +1447,7 @@ export class ScenarioTestEngine {
     // 5. The collateral not sufficient to be liquidated (LTV > 0.95)
     // 6. Unsupported token.
     private liquidateExecFail = async (user: string, target: string, token: Tokens, kind: number) => {
-        console.log("LiquidateExecFail not implemented yet.")
+        dPrint(2, "LiquidateExecFail not implemented yet.");
     }
 
     // Randomly increase the block number between 1000 and 10000
@@ -1471,7 +1457,7 @@ export class ScenarioTestEngine {
 
         const incNum = this.getRandBigWithBigRange(lowerBound, upperBound);
 
-        console.log("Increase " + incNum.toString() + " blocks.");
+        dPrint(3, "Increase " + incNum.toString() + " blocks.");
         await this.savingAccount.fastForward(100000);
 
         // Update the status for all users
@@ -1495,7 +1481,7 @@ export class ScenarioTestEngine {
         const updatedPrice = tokenInfo.price.times(fluctuation).div(100).integerValue();
         const chainlinkAggregator = this.aggregatorInstances[token];
 
-        console.log("Change the token " + this.tokenNames[token] + " price to " + updatedPrice.toString());
+        dPrint(3, "Change the token " + this.tokenNames[token] + " price to " + updatedPrice.toString());
         await chainlinkAggregator.updateAnswer(new BN(updatedPrice.toString()));
 
         // Update the status for all users
