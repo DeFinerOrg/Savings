@@ -1,3 +1,12 @@
-const Web3 = require("web3");
-const web3 = new Web3.providers.HttpProvider("http://24.22.133.15:8545");
-web3.eth.getAccounts(console.log);
+const Web3 = require('web3');
+var web3 = new Web3('ws://52.147.196.54:8545/');
+
+const getAccounts = async () => {
+    await web3.eth.getAccounts(console.log);
+}
+
+
+(async () => {
+    await getAccounts();
+    process.exit(0);
+})();
