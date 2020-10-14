@@ -24,7 +24,7 @@ const SavingAccountProxy = artifacts.require("SavingAccountProxy");
 const AccountsProxy = artifacts.require("AccountsProxy");
 const BankProxy = artifacts.require("BankProxy");
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     // Deploy Libs
     await deployer.deploy(AccountTokenLib);
     console.log("=========================Deploy AccountTokenLib============================");

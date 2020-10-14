@@ -28,6 +28,7 @@ const BankProxy = artifacts.require("BankProxy");
 const MockERC20 = artifacts.require("MockERC20");
 const MockCToken = artifacts.require("MockCToken");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
+var compoundTokens;
 
 // This is to resolve "Invalid JSON RPC response" error when using expectRevert.
 // Code taken from
@@ -44,9 +45,14 @@ const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 let net_work;
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
 
-    console.log("++++++++++++++++"+network+"+++++++++++++++++++");
+    if (network == "endtoend") {
+        const configFile = "../compound-protocol/networks/development";
+        compoundTokens = require(configFile);
+    }
+
+    console.log("++++++++++++++++" + network + "+++++++++++++++++++");
     net_work = network;
 
     const erc20Tokens = await getERC20Tokens();
@@ -54,6 +60,7 @@ module.exports = async function(deployer, network) {
     const chainLinkAggregators = await getChainLinkAggregators();
     console.log("=========================getChainLinkAggregators============================");
     const cTokens = await getCTokens(erc20Tokens);
+
     console.log("=========================getCTokens============================");
 
     // Deploy TokenRegistry
@@ -174,15 +181,57 @@ const initializeTokenInfoRegistry = async (
     console.log("initializeTokenInfoRegistry: " + "ETH");
 };
 
+const getERC20AddressesFromCompound = () => {
+    console.log("get here1")
+    const network = process.env.NETWORK;
+    var erc20TokensFromCompound = new Array();
+    const ETH_ADDR = "0x000000000000000000000000000000000000000E";
+
+    erc20TokensFromCompound.push(compoundTokens.Contracts.DAI);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.USDC);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.USDT);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.TUSD);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.MKR);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.BAT);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
+    erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+    erc20TokensFromCompound.push(ETH_ADDR);
+    return erc20TokensFromCompound;
+}
+
+
+const getCompoundAddresses = () => {
+    var cTokensCompound = new Array();
+    const addressZero = "0x0000000000000000000000000000000000000000";
+
+    cTokensCompound.push(compoundTokens.Contracts.cDAI);
+    cTokensCompound.push(compoundTokens.Contracts.cUSDC);
+    cTokensCompound.push(compoundTokens.Contracts.cUSDT);
+    cTokensCompound.push(addressZero);
+    cTokensCompound.push(addressZero);
+    cTokensCompound.push(compoundTokens.Contracts.cBAT);
+    cTokensCompound.push(compoundTokens.Contracts.cZRX);
+    cTokensCompound.push(compoundTokens.Contracts.cREP);
+    cTokensCompound.push(compoundTokens.Contracts.cWBTC);
+    cTokensCompound.push(compoundTokens.Contracts.cETH);
+
+    return cTokensCompound;
+}
+
 const getCTokens = async (erc20Tokens) => {
     // const network = process.env.NETWORK;
     const network = net_work;
 
-    console.log("*************"+network+"***********");
+    console.log("*************" + network + "***********");
 
     var cTokens = new Array();
 
     let isSupportedByCompoundArray = tokenData.tokens.map((token) => token.isSupportedByCompound);
+
+    if (network == "endtoend") {
+        return getCompoundAddresses();
+    }
 
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
@@ -217,6 +266,10 @@ const getERC20Tokens = async () => {
 
     const tokensToMint = new BN(10000);
     var erc20TokenAddresses = new Array();
+    if (network == "endtoend") {
+        return getERC20AddressesFromCompound();
+    }
+
 
     await Promise.all(
         tokenData.tokens.map(async (token) => {

@@ -19,7 +19,7 @@
  */
 
 require("ts-node/register");
-
+const Web3 = require('web3');
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
@@ -47,6 +47,15 @@ module.exports = {
         // options below to some value.
         //
         development: {
+            host: "127.0.0.1",
+            port: 8545,
+            network_id: "*",
+            gas: 20000000,
+        },
+        endtoend: {
+            provider: () =>
+                new Web3.providers.HttpProvider("http://localhost:8545"),
+            from: "0xaA817b67d605f45e7759031303b04422734834eD", // default address to use for any transaction Truffle makes during migrations
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
@@ -100,7 +109,6 @@ module.exports = {
     // Set default mocha options here, use special reporters etc.
     mocha: {
         reporter: "eth-gas-reporter",
-        // timeout: 120000,
         enableTimeouts: false,
     },
 
