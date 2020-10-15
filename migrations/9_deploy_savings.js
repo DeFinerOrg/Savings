@@ -9,6 +9,7 @@ const Utils = artifacts.require("Utils");
 const BitmapLib = artifacts.require("BitmapLib");
 const Accounts = artifacts.require("Accounts");
 const Bank = artifacts.require("Bank");
+const fs = require('fs')
 
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
@@ -136,6 +137,45 @@ module.exports = async function (deployer, network) {
     console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
+
+    const addresses = {
+        GlobalConfig: globalConfig.address,
+        Constant: constant.address,
+        Accounts: accountsProxy.address,
+        Bank: bankProxy.address,
+        TokenRegistry: tokenInfoRegistry.address,
+        ChainLinkAggregator: chainLinkOracle.address,
+        SavingAccount: savingAccountProxy.address,
+        DAI: erc20Tokens[0],
+        USDC: erc20Tokens[1],
+        USDT: erc20Tokens[2],
+        TUSD: erc20Tokens[3],
+        MKR: erc20Tokens[4],
+        BAT: erc20Tokens[5],
+        ZRX: erc20Tokens[6],
+        REP: erc20Tokens[7],
+        WBTC: erc20Tokens[8],
+        ETH: ETH_ADDR,
+        cDAI: cTokens[0],
+        cUSDC: cTokens[1],
+        cUSDT: cTokens[2],
+        cTUSD: cTokens[3],
+        cMKR: cTokens[4],
+        cBAT: cTokens[5],
+        cZRX: cTokens[6],
+        cREP: cTokens[7],
+        cWBTC: cTokens[8],
+        cETH: cTokens[9],
+    }
+
+    const jsonString = JSON.stringify(addresses)
+    fs.writeFile('./test-helpers/' + network + '.json', jsonString, err => {
+        if (err) {
+            console.log('Error writing file', err);
+        } else {
+            console.log('Successfully wrote file to test-helpers/' + network + '.json');
+        }
+    });
 };
 
 const initializeTokenInfoRegistry = async (

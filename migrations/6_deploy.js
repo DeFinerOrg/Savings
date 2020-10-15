@@ -16,6 +16,7 @@ const SavingAccountWithController = artifacts.require("SavingAccountWithControll
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry = artifacts.require("TokenRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
+
 const Constant = artifacts.require("Constant");
 
 // Upgradablility contracts
@@ -24,7 +25,7 @@ const SavingAccountProxy = artifacts.require("SavingAccountProxy");
 const AccountsProxy = artifacts.require("AccountsProxy");
 const BankProxy = artifacts.require("BankProxy");
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     const accountsProxy = await deployer.deploy(AccountsProxy);
     console.log("=========================Deploy AccountsProxy============================");
     const accounts = await deployer.deploy(Accounts);
