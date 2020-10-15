@@ -88,28 +88,28 @@ contract("SavingAccount.COMP", async (accounts) => {
         });
 
         context("should succeed", async () => {
-            it("Withdraw COMP token", async () => {
-                //1. set deFinerCommunityFund address.
-                /* await globalConfig.updateDeFinerCommunityFund(owner);
-                //2. set COMPToken address.
-                await globalConfig.updateCompoundAddress(COMPTokenAddress);
-                //3. Deposit token.
-                const ONE_DAI = eighteenPrecision.mul(new BN(10000));
-                await erc20DAI.approve(savingAccount.address, ONE_DAI);
-                await savingAccount.deposit(erc20DAI.address, ONE_DAI);
-                //4. After a while.
-                var beforeAmount = await erc20COMP.balanceOf(savingAccount.address);
-                await savingAccount.fastForward(100000);
-                await savingAccount.withdraw(erc20DAI.address, eighteenPrecision);
-                var afterAmount = await erc20COMP.balanceOf(savingAccount.address);
-                console.log("beforeAmount: " + beforeAmount);
-                console.log("afterAmount: " + afterAmount);
-                //5. Withdraw COMP token.
-                await savingAccount.withdrawComp(new BN(afterAmount));
-                var afterAmount1 = await erc20COMP.balanceOf(savingAccount.address);
-                console.log("afterAmount1: " + afterAmount1); */
-                //6. Compare the results..
-            });
+            // it("Withdraw COMP token", async () => {
+            //     //1. set deFinerCommunityFund address.
+            //     await globalConfig.updatedeFinerCommunityFund(owner);
+            //     //2. set COMPToken address.
+            //     await globalConfig.updateCompoundAddress(COMPTokenAddress);
+            //     //3. Deposit token.
+            //     const ONE_DAI = eighteenPrecision.mul(new BN(10000));
+            //     await erc20DAI.approve(savingAccount.address, ONE_DAI);
+            //     await savingAccount.deposit(erc20DAI.address, ONE_DAI);
+            //     //4. After a while.
+            //     var beforeAmount = await erc20COMP.balanceOf(savingAccount.address);
+            //     await savingAccount.fastForward(100000);
+            //     await savingAccount.withdraw(erc20DAI.address, eighteenPrecision);
+            //     var afterAmount = await erc20COMP.balanceOf(savingAccount.address);
+            //     console.log("beforeAmount: " + beforeAmount);
+            //     console.log("afterAmount: " + afterAmount);
+            //     //5. Withdraw COMP token.
+            //     await savingAccount.withdrawComp(new BN(afterAmount));
+            //     var afterAmount1 = await erc20COMP.balanceOf(savingAccount.address);
+            //     console.log("afterAmount1: " + afterAmount1);
+            //     //6. Compare the results..
+            // });
         });
     });
 });
