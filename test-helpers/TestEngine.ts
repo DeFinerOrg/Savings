@@ -18,7 +18,6 @@ const BitmapLib = artifacts.require("BitmapLib");
 const Utils: any = artifacts.require('Utils');
 const SavingLib = artifacts.require('SavingLib');
 
-var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
 
