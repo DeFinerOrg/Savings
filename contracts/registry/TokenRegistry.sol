@@ -115,7 +115,7 @@ contract TokenRegistry is Ownable {
         if (tokenInfo[_token].borrowLTV == _borrowLTV)
             return;
 
-        require(_borrowLTV != 0, "Borrow LTV is zero");
+        // require(_borrowLTV != 0, "Borrow LTV is zero");
         require(_borrowLTV < SCALE, "Borrow LTV must be less than Scale");
         // require(liquidationThreshold > _borrowLTV, "Liquidation threshold must be greater than Borrow LTV");
 
