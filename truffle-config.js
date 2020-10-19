@@ -20,6 +20,7 @@
 
 require("ts-node/register");
 
+const Web3 = require('web3');
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
@@ -51,6 +52,15 @@ module.exports = {
             port: 8545,
             network_id: "*",
             gas: 20000000,
+        },
+	privatechain: {
+            provider: () =>
+                new Web3.providers.HttpProvider("http://localhost:8545"),
+            from: "0x6719195c0e07be70f3d1ebe5718259ab1a699475", // default address to use for any transaction Truffle makes during migrations
+            host: "127.0.0.1",
+            port: 8545,
+            network_id: "*",
+            gas: 8000000,
         },
         coverage: {
             host: "127.0.0.1",
