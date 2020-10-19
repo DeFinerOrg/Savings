@@ -55,12 +55,15 @@ module.exports = {
         },
 	privatechain: {
             provider: () =>
-                new Web3.providers.HttpProvider("http://localhost:8545"),
-            from: "0x6719195c0e07be70f3d1ebe5718259ab1a699475", // default address to use for any transaction Truffle makes during migrations
+            new HDWalletProvider(
+                    "order direct okay lecture potato bulb ticket pave cram biology siege budget"
+		    ,"http://localhost:8545") ,
+            from: "0xaA817b67d605f45e7759031303b04422734834eD", // default address to use for any transaction Truffle makes during migrations
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
             gas: 20000000,
+	    gasPrice: 15000000000,
         },
         coverage: {
             host: "127.0.0.1",
@@ -95,11 +98,8 @@ module.exports = {
 
         kovan: {
             provider: () =>
-                new HDWalletProvider(
-                    mnemonic,
-                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
-                ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
+                new HDWalletProvider("order direct okay lecture potato bulb ticket pave cram biology siege budget","http://localhost:8545"),
+            from: "0x0xaA817b67d605f45e7759031303b04422734834eD", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei
