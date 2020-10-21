@@ -4,7 +4,9 @@
 
 **`cd Savings && git submodule init && git submodule update`**
 
-**`cd compound-protocol && git checkout definer/compound && npm i`**
+**`cd compound-protocol && npm i`**
+
+**`cd compound-protocol/scenario  && npm i`**
 
 **2)** Install dependencies:
 
@@ -16,7 +18,7 @@
 
 **4)** Run test scripts
 
-**`npx buidler test --network development`**
+**`yarn test`**
 
 ## Passing Tests:
 
