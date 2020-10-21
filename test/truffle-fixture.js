@@ -40,14 +40,19 @@ const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function (deployer, network) {
-    // Deploy Libs
+    /*
+	// Deploy Libs
+    console.log("get here1");
     const globalConfig = await GlobalConfig.new();
     GlobalConfig.setAsDeployed(globalConfig);
+    console.log("get here2");
     const accountTokenLib = await AccountTokenLib.new();
+    console.log("get here3");
     const bitMapLib = await BitmapLib.new();
+    console.log("get here4");
     const utils = await Utils.new();
     Utils.setAsDeployed(utils);
-
+    console.log("get here5");
     try {
         await SavingLib.link(utils);
     } catch (err) {
@@ -155,6 +160,7 @@ module.exports = async function (deployer, network) {
     console.log("TokenRegistry:", tokenInfoRegistry.address);
     console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
+*/
 };
 
 const initializeTokenInfoRegistry = async (

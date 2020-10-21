@@ -13,6 +13,7 @@ const getBalance = async (account) => {
 
 // Example code showing how to assign erc20 tokens to test accounts
 (async () => {
+	await getAccounts();
     const bankjson = require("../../build/contracts/Bank.json");
     const accountsjson = require("../../build/contracts/Accounts.json");
     const savingAccountjson = require("../../build/contracts/SavingAccount.json");

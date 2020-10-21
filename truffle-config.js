@@ -19,10 +19,6 @@
  */
 
 require("ts-node/register");
-<<<<<<< HEAD
-
-=======
->>>>>>> yichun/deploy-on-vm
 const Web3 = require('web3');
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
@@ -58,10 +54,8 @@ module.exports = {
         },
 	privatechain: {
             provider: () =>
-            new HDWalletProvider(
-                    "order direct okay lecture potato bulb ticket pave cram biology siege budget"
-		    ,"http://localhost:8545") ,
-            from: "0xaA817b67d605f45e7759031303b04422734834eD", // default address to use for any transaction Truffle makes during migrations
+            new Web3.providers.HttpProvider("http://localhost:8545"),
+            from: "0x35f806427b5578453d74903b549df81127b683e5", // default address to use for any transaction Truffle makes during migrations
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
@@ -123,6 +117,7 @@ module.exports = {
     // Set default mocha options here, use special reporters etc.
     mocha: {
         reporter: "eth-gas-reporter",
+	timeout: 10000000,
         enableTimeouts: false,
     },
 

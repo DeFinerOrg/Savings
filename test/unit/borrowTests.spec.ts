@@ -78,7 +78,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.settimeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;

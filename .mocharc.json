@@ -3,6 +3,7 @@
         "@nomiclabs/buidler/register"
     ],
     "recursive": "test",
+    "timeout": 10000000,
     "enableTimeouts": false,
     "reporter": "eth-gas-reporter"
 }
