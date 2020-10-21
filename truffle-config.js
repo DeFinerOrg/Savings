@@ -23,6 +23,7 @@ const Web3 = require('web3');
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
+web3.eth.accounts.privateKeyToAccount('0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709');
 
 module.exports = {
     contracts_build_directory: "./build/contracts",

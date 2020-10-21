@@ -293,6 +293,7 @@ const getCTokens = async (erc20Tokens) => {
                 // Create MockCToken for given ERC20 token address
                 addr = ZERO_ADDRESS;
             }
+            console.log("Deployed one")
             cTokens.push(addr);
         })
     );
@@ -327,6 +328,8 @@ const getERC20Tokens = async () => {
                 addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
                     .address;
             }
+            console.log("Deployed one")
+
             erc20TokenAddresses.push(addr);
         })
     );
