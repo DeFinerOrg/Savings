@@ -51,6 +51,8 @@ jobs:
 
       - run: cd compound-protocol && yarn install
       - run: cd compound-protocol/scenario && yarn install
+      - run: npm i @typechain/ethers-v5
+      - run: npm i buidler-typechain@0.1.1
       - run: yarn
 
       - save_cache:
