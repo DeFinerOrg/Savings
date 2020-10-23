@@ -49,9 +49,9 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install
+      - run: cd compound-protocol && yarn install --lock-file
       - run: cd compound-protocol/scenario && yarn install
-      - run: yarn
+      - run: sudo npm i
 
       - save_cache:
           paths:
