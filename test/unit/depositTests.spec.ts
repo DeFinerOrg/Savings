@@ -8,7 +8,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -32,10 +32,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
     let cETH: t.MockCTokenInstance;
 
     before(function () {
