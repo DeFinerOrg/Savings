@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -46,22 +46,22 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20USDT: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20BAT: t.Erc20Instance;
-    let erc20ZRX: t.Erc20Instance;
-    let erc20REP: t.Erc20Instance;
-    let erc20WBTC: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20BAT: t.MockErc20Instance;
+    let erc20ZRX: t.MockErc20Instance;
+    let erc20REP: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
-    let erc20contr: t.Erc20Instance;
+    let erc20contr: t.MockErc20Instance;
 
     before(function () {
         this.timeout(0);
