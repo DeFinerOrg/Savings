@@ -46,12 +46,13 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cUSDC_addr: any;
     let cUSDT_addr: any;
     let cWBTC_addr: any;
+    let cETH_addr: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let cTokenETH: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -73,7 +74,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -112,10 +113,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
         cTokenDAI = await MockCToken.at(cDAI_addr);
         cTokenUSDC = await MockCToken.at(cUSDC_addr);
         cTokenUSDT = await MockCToken.at(cUSDT_addr);
         cTokenWBTC = await MockCToken.at(cWBTC_addr);
+        cETH = await MockCToken.at(cETH_addr);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -155,6 +158,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+
+                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
 
                         //Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -213,6 +218,24 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(
                             withdrawAmount
                         );
+
+                        // Amount in Compound
+                        const expectedTokensAtCToken = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCToken = await web3.eth.getBalance(cETH_addr);
+                        expect(
+                            new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
+                        ).to.be.bignumber.equal(balCToken);
+
+                        // 4.4 cToken must be minted for SavingAccount
+                        const expectedCTokensAtSavingAccount = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await cETH.balanceOf(savingAccount.address);
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                            balCTokens.div(new BN(10))
+                        );
                     });
 
                     it("C6: when 1000 whole ETH withdrawn", async () => {
@@ -222,6 +245,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
 
                         //Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -268,6 +292,24 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(
                             withdrawAmount
                         );
+
+                        // Amount in Compound
+                        const expectedTokensAtCToken = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCToken = await web3.eth.getBalance(cETH_addr);
+                        expect(
+                            new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
+                        ).to.be.bignumber.equal(balCToken);
+
+                        // 4.4 cToken must be minted for SavingAccount
+                        const expectedCTokensAtSavingAccount = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await cETH.balanceOf(savingAccount.address);
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                            balCTokens.div(new BN(10))
+                        );
                     });
 
                     it("C4: when full ETH withdrawn", async () => {
@@ -276,6 +318,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -317,6 +360,18 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             owner
                         );
                         expect(new BN(totalDefinerBalancAfterWithdraw)).to.be.bignumber.equal(ZERO);
+
+                        // Verify Compound balance
+                        const compETHfter = await web3.eth.getBalance(cETH_addr);
+                        expect(ZERO).to.be.bignumber.equal(
+                            BN(compETHfter).sub(BN(balCTokenContractBefore))
+                        );
+
+                        // Verify CToken balance
+                        const compCETHfter = await cTokenDAI.balanceOf(savingAccount.address);
+                        expect(ZERO).to.be.bignumber.equal(
+                            BN(compCETHfter).sub(BN(balCTokenContractBefore))
+                        );
                     });
                 });
             });
@@ -648,7 +703,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             BN(compCDAIAfter).sub(BN(compCDAIBefore))
                         );
                     });
-
 
                     it("when tokens are withdrawn with interest", async () => {
                         const depositAmount = new BN(1000);
