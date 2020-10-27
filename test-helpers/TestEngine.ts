@@ -275,14 +275,14 @@ export class TestEngine {
                 );
             })
         );
-        await this.tokenInfoRegistry.addToken(
-            ETH_ADDR,
-            18,
-            false,
-            true,
-            cTokens[9],
-            aggregators[9]
-        );
+        // await this.tokenInfoRegistry.addToken(
+        //     ETH_ADDR,
+        //     18,
+        //     false,
+        //     true,
+        //     cTokens[9],
+        //     aggregators[9]
+        // );
     }
 
     public async getCOMPTokenAddress(): Promise<string> {
