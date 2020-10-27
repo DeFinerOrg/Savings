@@ -80,9 +80,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
@@ -109,6 +110,26 @@ contract("SavingAccount.deposit", async (accounts) => {
                             totalDefinerBalanceAfterDeposit
                         ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+
+                        // Some tokens are sent to Compound contract
+                        const expectedTokensAtCTokenContract = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                        expect(
+                            new BN(balCTokenContractBefore).add(
+                                new BN(expectedTokensAtCTokenContract)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContract);
+
+                        // cToken must be minted for SavingAccount
+                        const expectedCTokensAtSavingAccount = depositAmount
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await cETH.balanceOf(savingAccount.address);
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                            new BN(balCTokens).div(new BN(10))
+                        );
                     });
 
                     it("C6: when 1000 whole ETH are deposited", async () => {
@@ -122,7 +143,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
