@@ -109,6 +109,25 @@ contract("SavingAccount.transfer", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
+                    const expectedTokensAtSavingAccountContract = new BN(numOfToken)
+                        .mul(new BN(15))
+                        .div(new BN(100));
+
+                    const balSavingAccountUser1 = await erc20DAI.balanceOf(savingAccount.address, {
+                        from: user1
+                    });
+                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccountUser1
+                    );
+
+                    const balSavingAccountUser2 = await erc20DAI.balanceOf(savingAccount.address, {
+                        from: user2
+                    });
+                    expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccountUser2
+                    );
+
                     expect(
                         new BN(user1BalanceAfterDeposit).sub(new BN(user1TotalBalanceBefore))
                     ).to.be.bignumber.equal(numOfToken);
@@ -139,6 +158,27 @@ contract("SavingAccount.transfer", async (accounts) => {
                     //1. Deposit DAI & USDC
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
+
+                    const expectedDAIAtSavingAccountContract = new BN(numOfDAI)
+                        .mul(new BN(15))
+                        .div(new BN(100));
+                    const expectedUSDCAtSavingAccountContract = new BN(numOfDAI)
+                        .mul(new BN(15))
+                        .div(new BN(100));
+
+                    const balSavingAccountUser2 = await erc20DAI.balanceOf(savingAccount.address, {
+                        from: user2
+                    });
+                    expect(expectedDAIAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccountUser2
+                    );
+
+                    const balSavingAccountUser1 = await erc20USDC.balanceOf(savingAccount.address, {
+                        from: user1
+                    });
+                    expect(expectedUSDCAtSavingAccountContract).to.be.bignumber.equal(
+                        balSavingAccountUser1
+                    );
 
                     // 2. Borrow USDC
                     const user2USDCBalanceBefore = await erc20USDC.balanceOf(user2);
@@ -215,6 +255,30 @@ contract("SavingAccount.transfer", async (accounts) => {
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
 
+                        const expectedDAIAtSavingAccountContract = new BN(numOfToken)
+                            .mul(new BN(15))
+                            .div(new BN(100));
+
+                        const balSavingAccountUser1 = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            {
+                                from: user1
+                            }
+                        );
+                        expect(expectedDAIAtSavingAccountContract).to.be.bignumber.equal(
+                            balSavingAccountUser1
+                        );
+
+                        const balSavingAccountUser2 = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            {
+                                from: user2
+                            }
+                        );
+                        expect(expectedDAIAtSavingAccountContract).to.be.bignumber.equal(
+                            balSavingAccountUser2
+                        );
+
                         // Verify balances of user1 & user2 after deposit
                         let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             addressDAI,
@@ -288,6 +352,30 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
+
+                        const expectedDAIAtSavingAccountContract = new BN(numOfToken)
+                            .mul(new BN(15))
+                            .div(new BN(100));
+
+                        const balSavingAccountUser1 = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            {
+                                from: user1
+                            }
+                        );
+                        expect(expectedDAIAtSavingAccountContract).to.be.bignumber.equal(
+                            balSavingAccountUser1
+                        );
+
+                        const balSavingAccountUser2 = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            {
+                                from: user2
+                            }
+                        );
+                        expect(expectedDAIAtSavingAccountContract).to.be.bignumber.equal(
+                            balSavingAccountUser2
+                        );
 
                         // Verify balances of user1 & user2 after deposit
                         let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
