@@ -74,6 +74,8 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(ETH_ADDR);
 
         return erc20TokensFromCompound;
@@ -91,14 +93,17 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
+
 
         return cTokensCompound;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
-        //var aggregators = new Array();
         const network = process.env.NETWORK;
+        if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
                 let addr;
@@ -132,9 +137,8 @@ export class TestEngine {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
 
         const cTokens: Array<string> = await this.getCompoundAddresses();
-
+        this.cTokens = cTokens;
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
-
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
 
@@ -149,7 +153,7 @@ export class TestEngine {
         try {
             await SavingLib.link(utils);
         } catch (err) {
-            // console.log(err);
+            // Do nothing
         }
 
         const savingLib = await SavingLib.new();
@@ -179,8 +183,9 @@ export class TestEngine {
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
         const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
-            this.tokenInfoRegistry.address
+            // this.tokenInfoRegistry.address
         );
+        await chainLinkOracle.initialize(this.globalConfig.address);
 
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
@@ -204,8 +209,7 @@ export class TestEngine {
 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         SavingAccountWithController.setAsDeployed(savingAccount);
-        // console.log("ERC20", this.erc20Tokens);
-        // console.log("cTokens", cTokens);
+
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
@@ -275,14 +279,14 @@ export class TestEngine {
                 );
             })
         );
-        // await this.tokenInfoRegistry.addToken(
-        //     ETH_ADDR,
-        //     18,
-        //     false,
-        //     true,
-        //     cTokens[9],
-        //     aggregators[9]
-        // );
+        await this.tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            18,
+            false,
+            true,
+            cTokens[11],
+            aggregators[11]
+        );
     }
 
     public async getCOMPTokenAddress(): Promise<string> {

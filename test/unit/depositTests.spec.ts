@@ -50,6 +50,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressTUSD = tokens[3];
@@ -61,6 +62,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
+
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);

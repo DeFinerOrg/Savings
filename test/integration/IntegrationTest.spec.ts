@@ -109,20 +109,20 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit all tokens and withdraw all tokens", async () => {
+            it("should deposit all tokens and withdraw all tokens", async function () {
+                this.timeout(0);
                 const numOfToken = new BN(1000);
 
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
 
-                    if (i != 3 && i != 4) {
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
                         addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                             tempContractAddress
                         );
                         cTokenTemp = await MockCToken.at(addressCTokenTemp);
                     }
-
                     await erc20contr.transfer(user1, numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken, {
                         from: user1
@@ -131,10 +131,12 @@ contract("Integration Tests", async (accounts) => {
                     const balSavingAccountBeforeDeposit = await erc20contr.balanceOf(
                         savingAccount.address
                     );
+
                     const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                         erc20contr.address,
                         user1
                     );
+
                     const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                     await savingAccount.deposit(erc20contr.address, numOfToken, {
@@ -158,7 +160,7 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify if deposit was successful
                     // checking if token index is not that of a Compound unsupported token
-                    if (i != 3 && i != 4) {
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
                         const expectedTokensAtSavingAccountContract = numOfToken
                             .mul(new BN(15))
                             .div(new BN(100));
@@ -172,7 +174,7 @@ contract("Integration Tests", async (accounts) => {
                     }
 
                     // Verify balance on Compound
-                    if (i != 3 && i != 4) {
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -209,11 +211,11 @@ contract("Integration Tests", async (accounts) => {
                 }
 
                 // Withdraw all tokens of each Address
-                for (let j = 0; j < 9; j++) {
+                for (let j = 0; j < 11; j++) {
                     tempContractAddress = tokens[j];
                     erc20contr = await ERC20.at(tempContractAddress);
 
-                    if (j != 3 && j != 4) {
+                    if (j != 3 && j != 4 && j != 9 && j != 10) {
                         addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                             tempContractAddress
                         );
@@ -244,12 +246,13 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async () => {
+            it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async function () {
+                this.timeout(0)
                 // failing at BAT -- safeERC20 low level call failed
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
 
@@ -265,7 +268,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -283,7 +286,7 @@ contract("Integration Tests", async (accounts) => {
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
-                //Withdraw TUSD & MKR
+                // Withdraw TUSD & MKR
                 for (let i = 3; i <= 4; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
@@ -303,12 +306,13 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw Compound supported tokens", async () => {
+            it("should deposit all and withdraw Compound supported tokens", async function () {
+                this.timeout(0)
                 // failing at BAT -- safeERC20 low level call failed
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
@@ -324,7 +328,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -342,8 +346,8 @@ contract("Integration Tests", async (accounts) => {
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
-                for (let i = 0; i < 9; i++) {
-                    if (i != 3 && i != 4) {
+                for (let i = 0; i < 11; i++) {
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
                         addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
@@ -368,11 +372,12 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw only token with less than 18 decimals", async () => {
+            it("should deposit all and withdraw only token with less than 18 decimals", async function () {
+                this.timeout(0)
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
 
@@ -388,7 +393,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -406,7 +411,7 @@ contract("Integration Tests", async (accounts) => {
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                 }
 
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     if (i == 1 || i == 2 || i == 8) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -426,11 +431,12 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit 1 million of each token, wait for a week, withdraw all", async () => {
+            it("should deposit 1 million of each token, wait for a week, withdraw all", async function () {
+                this.timeout(0)
                 const numOfToken = new BN(10).pow(new BN(6));
 
                 // Deposit all tokens
-                for (let i = 0; i < 9; i++) {
+                for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
 
@@ -446,7 +452,7 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -466,7 +472,7 @@ contract("Integration Tests", async (accounts) => {
 
                 await time.increase(ONE_WEEK);
 
-                for (let j = 0; j < 9; j++) {
+                for (let j = 0; j < 11; j++) {
                     tempContractAddress = tokens[j];
                     erc20contr = await ERC20.at(tempContractAddress);
 
@@ -491,7 +497,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
-            it("should deposit $1 million value and borrow 0.6 million", async () => {
+            it("should deposit $1 million value and borrow 0.6 million", async function () {
+                this.timeout(0)
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(7)));
                 const borrowTokens = eighteenPrecision
@@ -574,7 +581,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowtDAIUser2).to.be.bignumber.equal(borrowTokens);
             });
 
-            it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async () => {
+            it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async function () {
+                this.timeout(0)
                 //user1 deposits 1000 full tokens of DAI
                 //user2 deposits 1000 full of USDC
                 //user1 borrows 300 full tokens of USDC which are more than reserve(150 full tokens)
@@ -645,7 +653,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
             });
 
-            it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async () => {
+            it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async function () {
+                this.timeout(0)
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
@@ -712,7 +721,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
             });
 
-            it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async () => {
+            it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async function () {
+                this.timeout(0)
                 // 1. User 1 deposits 100,000 USDC
                 const numOfUSDC = new BN(100000);
                 const numOfToken = new BN(1000);
@@ -801,7 +811,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("when user deposits DAI, borrows USDC and tries to deposit his borrowed tokens", async () => {
+            it("when user deposits DAI, borrows USDC and tries to deposit his borrowed tokens", async function () {
+                this.timeout(0)
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
@@ -871,7 +882,8 @@ contract("Integration Tests", async (accounts) => {
         });
 
         context("should fail", async () => {
-            it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async () => {
+            it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async function () {
+                this.timeout(0)
                 const numOfToken = new BN(2000);
                 const depositTokens = new BN(1000);
                 const borrowTokens = new BN(600);
@@ -939,7 +951,8 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
             // Borrow and repay of tokens with less than 18 decimals
-            it("should deposit DAI, borrow USDC and repay after one month", async () => {
+            it("should deposit DAI, borrow USDC and repay after one month", async function () {
+                this.timeout(0)
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision;
                 const numOfUSDC = new BN(1000);
@@ -1017,7 +1030,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterRepayUSDCUser1).to.be.bignumber.equal(ZERO);
             });
 
-            it("User deposits DAI , borrows USDC, deposits DAI again, borrows USDC again and then repays", async () => {
+            it("User deposits DAI , borrows USDC, deposits DAI again, borrows USDC again and then repays", async function () {
+                this.timeout(0)
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision;
                 const numOfUSDC = sixPrecision;
@@ -1098,7 +1112,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async () => {
+            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async function () {
+                this.timeout(0)
                 const numOfDAI = eighteenPrecision.mul(new BN(10));
                 const numOfUSDC = sixPrecision.mul(new BN(10));
                 const borrowAmount = numOfUSDC.div(new BN(10));
@@ -1204,7 +1219,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("with ETH", async () => {
         context("should succeed", async () => {
-            it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async () => {
+            it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async function () {
+                this.timeout(0)
                 const numOfETH = eighteenPrecision.mul(new BN(10));
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
@@ -1285,7 +1301,8 @@ contract("Integration Tests", async (accounts) => {
                 //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft); // minute difference between the two
             });
 
-            it("should deposit ETH, borrow more than reserve if collateral is sufficient", async () => {
+            it("should deposit ETH, borrow more than reserve if collateral is sufficient", async function () {
+                this.timeout(0)
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
 
@@ -1312,7 +1329,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(new BN(user1DAIBalance)).to.be.bignumber.equal(new BN(200));
             });
 
-            it("should deposit ETH, borrow different tokens deposited by multiple users", async () => {
+            it("should deposit ETH, borrow different tokens deposited by multiple users", async function () {
+                this.timeout(0)
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
