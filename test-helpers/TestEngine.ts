@@ -172,7 +172,7 @@ export class TestEngine {
             await TokenRegistry.link(utils);
 
         } catch (error) {
-            // console.log(error);
+            // Do nothing
         }
 
         this.accounts = await Accounts.new();

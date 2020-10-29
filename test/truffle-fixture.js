@@ -51,7 +51,7 @@ module.exports = async function (deployer, network) {
     try {
         await SavingLib.link(utils);
     } catch (err) {
-        console.log(err);
+        // Do nothing
     }
 
     const savingLib = await SavingLib.new();
@@ -72,7 +72,7 @@ module.exports = async function (deployer, network) {
         await TokenRegistry.link(utils);
 
     } catch (error) {
-        console.log(error);
+        // Do nothing
     }
     // await deployer.deploy(AccountTokenLib);
     // await deployer.link(AccountTokenLib, Accounts);
