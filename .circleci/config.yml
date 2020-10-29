@@ -8,7 +8,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.15.3
+      - image: circleci/node:12.19.0
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -49,9 +49,9 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install
+      - run: cd compound-protocol && yarn install --lock-file
       - run: cd compound-protocol/scenario && yarn install
-      - run: yarn
+      - run: sudo npm i
 
       - save_cache:
           paths:
