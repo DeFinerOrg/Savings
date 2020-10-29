@@ -1,20 +1,30 @@
 pragma solidity 0.5.14;
 
 import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
-import "../registry/TokenRegistry.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../config/GlobalConfig.sol";
+// import "../registry/TokenRegistry.sol";
 
 /**
  */
-contract ChainLinkAggregator {
+contract ChainLinkAggregator is Ownable{
 
-    TokenRegistry public tokenRegistry;
+    // TokenRegistry public import "../config/GlobalConfig.sol";;
+    GlobalConfig public globalConfig;
 
     /**
      * Constructor
      */
-    constructor(TokenRegistry _tokenRegistry) public {
-        require(address(_tokenRegistry) != address(0), "TokenRegistry address is zero");
-        tokenRegistry = _tokenRegistry;
+    // constructor(TokenRegistry _tokenRegistry) public {
+    //     require(address(_tokenRegistry) != address(0), "TokenRegistry address is zero");
+    //     tokenRegistry = _tokenRegistry;
+    // }
+
+    /**
+     *  initializes the symbols structure
+     */
+    function initialize(GlobalConfig _globalConfig) public onlyOwner{
+        globalConfig = _globalConfig;
     }
 
     /**
@@ -62,6 +72,7 @@ contract ChainLinkAggregator {
      * @param _token token address
      */
     function getAggregator(address _token) internal view returns (AggregatorInterface) {
-        return AggregatorInterface(tokenRegistry.getChainLinkAggregator(_token));
+        // return AggregatorInterface(tokenRegistry.getChainLinkAggregator(_token));
+        return AggregatorInterface(globalConfig.tokenInfoRegistry().getChainLinkAggregator(_token));
     }
 }

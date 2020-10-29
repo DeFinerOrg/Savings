@@ -68,13 +68,14 @@ module.exports = async function(deployer, network) {
     );
 
     // Configure ChainLinkAggregator
-    const chainLinkOracle = await deployer.deploy(ChainLinkAggregator, tokenInfoRegistry.address);
+    const chainLinkOracle = await deployer.deploy(ChainLinkAggregator);
     console.log("=========================Deploy chainLinkOracle============================");
 
     const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
+    await chainLinkOracle.initialize(globalConfig.address);
     console.log(
-        "=========================tokenInfoRegistry.initialize============================"
+        "=========================tokenInfoRegistry.initialize & chainLinkOracle.initialize============================"
     );
 
     // Deploy Upgradability
