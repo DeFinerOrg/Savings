@@ -77,7 +77,7 @@ jobs:
       - run: 
           name: Start EVM
           background: true
-          command: yarn buidler-evm --max-memory 3000
+          command: yarn buidler-evm --max-memory 2048
 
       - run: yarn generate # Generate typings@
       - run: yarn test # triggers truffle test
