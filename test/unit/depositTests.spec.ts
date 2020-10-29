@@ -417,9 +417,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const expectedTokensAtSavingAccountContract = numOfToken
                             .mul(new BN(15))
                             .div(new BN(100));
-                        const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
+                        const balSavingAccountUser1 = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
+                        );
                         expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                            balSavingAccount
+                            balSavingAccountUser1
                         );
 
                         // Validate the total balance on DeFiner
