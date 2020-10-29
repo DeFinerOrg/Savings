@@ -133,7 +133,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
     context("liquidate()", async () => {
         context("With multiple kinds of tokens", async () => {
             context("Should fail", async () => {
-                it("Borrow multiple compound supported tokens, liquidate with compound supported token, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound supported token, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -201,7 +202,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -271,7 +273,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -345,7 +348,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -421,7 +425,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -491,7 +496,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and there is not engough collteral.", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and there is not engough collteral.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -563,7 +569,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "Collateral is not sufficient to be liquidated."
                     );
                 });
-                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -645,7 +652,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound supported tokens, liquidate with compound supported token, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound supported token, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -722,7 +730,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -805,7 +814,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -890,7 +900,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -969,7 +980,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and the liqudiator don't have enough tokens", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens, and the liqudiator don't have enough tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1054,7 +1066,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "No extra funds are used for liquidation."
                     );
                 });
-                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token.", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound unsupported token.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1125,7 +1138,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "The borrower doesn't own any debt token specified by the liquidator."
                     );
                 });
-                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens", async () => {
+                it("Borrow multiple compound unsupported tokens, liquidate with compound supported tokens", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1205,7 +1219,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
             });
 
             context("Should succeed", async () => {
-                it("Borrow multiple compound supported tokens, liquidate with compound supported token.", async () => {
+                it("Borrow multiple compound supported tokens, liquidate with compound supported token.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1286,7 +1301,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.be.false;
                 });
 
-                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens.", async () => {
+                it("Borrow multiple compound unsupported tokens, liqudiate with compound unsupported tokens.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1363,7 +1379,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens.", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound supported tokens.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1446,7 +1463,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
-                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens.", async () => {
+                it("Borrow multiple compound supported and unsupported tokens, liquidate with compound unsupported tokens.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1519,7 +1537,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
-                it("Liquidate a huge amount of multiple kinds of compound supported tokens.", async () => {
+                it("Liquidate a huge amount of multiple kinds of compound supported tokens.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 20000 DAI
@@ -1602,7 +1621,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateBefore).to.be.true;
                     expect(liquidateAfter).to.be.false;
                 });
-                it("Liquidate a huge amount of multiple kinds of compound unsupported tokens.", async () => {
+                it("Liquidate a huge amount of multiple kinds of compound unsupported tokens.", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 20000 DAI
@@ -1691,7 +1711,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
         });
         context("LTV rates changing tests.", async () => {
             context("Should fail.", async () => {
-                it("Account is liquidatable, and becomes unliquidatable after LTV changing", async () => {
+                it("Account is liquidatable, and becomes unliquidatable after LTV changing", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1767,7 +1788,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 });
             });
             context("Should succeed.", async () => {
-                it("Account is unliquidatable, and becomes liquidatable after LTV changing", async () => {
+                it("Account is unliquidatable, and becomes liquidatable after LTV changing", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1847,7 +1869,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
         });
         context("Token with 6 decimals", async () => {
             context("Should suceed", async () => {
-                it("Partial liqiuidate", async () => {
+                it("Partial liqiuidate", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1918,7 +1941,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.true;
                 });
-                it("Full liqiuidate", async () => {
+                it("Full liqiuidate", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -1987,7 +2011,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.false;
                 });
-                it("Low amount value, partially", async () => {
+                it("Low amount value, partially", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -2052,7 +2077,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableBefore).to.be.true;
                     expect(liquidatableAfter).to.be.true;
                 });
-                it("Large amount, full liqiuidate", async () => {
+                it("Large amount, full liqiuidate", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 20000 DAI
@@ -2134,7 +2160,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
         });
         context("Liquidate multiple times", async () => {
             context("Should succeed", async () => {
-                it("With 6 decimals, liquidate partially the first time then liquidate fully", async () => {
+                it("With 6 decimals, liquidate partially the first time then liquidate fully", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI
@@ -2219,7 +2246,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidatableAfterSecond).to.be.false;
                 });
 
-                it("With 18 decimals, liquidate partially the first time then liquidate fully", async () => {
+                it("With 18 decimals, liquidate partially the first time then liquidate fully", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 2 DAI

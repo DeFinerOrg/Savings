@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-interface ERC20{
+interface ERC20Interface{
     function balanceOf(address owner) external view returns (uint);
     function totalSupply() external view returns (uint256);
 }
@@ -155,8 +155,8 @@ contract ETHPerLPToken {
     address public uniswap = 0x486792bcdb13F8aaCf85288D98850FA2804F95c7;
     
     function latestAnswer() public view returns (int256){
-        uint balance = ERC20(WETH).balanceOf(uniswap);
-        uint totalSupply = ERC20(uniswap).totalSupply();
+        uint balance = ERC20Interface(WETH).balanceOf(uniswap);
+        uint totalSupply = ERC20Interface(uniswap).totalSupply();
         return int(balance.mul(2).mul(10 ** 18).div(totalSupply));
     }
 }

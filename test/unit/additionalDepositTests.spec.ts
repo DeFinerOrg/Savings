@@ -10,7 +10,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -154,7 +154,8 @@ contract("SavingAccount.deposit", async (accounts) => {
     context("Additional tests for Deposit", async () => {
         context("With multiple tokens", async () => {
             context("Should suceed", async () => {
-                it("Deposit DAI and USDC, both compound supported", async () => {
+                it("Deposit DAI and USDC, both compound supported", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 DAI and 1 USDC
@@ -242,7 +243,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(savingAccountUSDCToken).sub(BN(savingAccountUSDCTokenBefore))
                     ).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(15)));
                 });
-                it("Deposit WBTC and TUSD, compound supported and unsupported", async () => {
+                it("Deposit WBTC and TUSD, compound supported and unsupported", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 WBTC and 1 TUSD
@@ -332,7 +334,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                 });
-                it("Deposit MKR and TUSD, both compound unsupported", async () => {
+                it("Deposit MKR and TUSD, both compound unsupported", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 MKR and 1 TUSD

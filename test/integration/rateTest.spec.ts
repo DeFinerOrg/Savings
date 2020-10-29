@@ -108,7 +108,8 @@ contract("Integration Tests", async (accounts) => {
                 cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
                 cTokenZRX = await MockCToken.at(addressCTokenForZRX);
             });
-            it("Deposit DAI and checkout the output rate", async () => {
+            it("Deposit DAI and checkout the output rate", async function () {
+                this.timeout(0)
                 console.log("-------------------------Initial Value---------------------------");
                 // 1. Check the compound rate before deposit
                 const borrowRateBeforeDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });

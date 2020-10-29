@@ -154,7 +154,8 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     context("withdraw()", async () => {
         context("with Token", async () => {
             context("should succeed", async () => {
-                it("RateTest2: when tokens are withdrawn with interest", async () => {
+                it("RateTest2: when tokens are withdrawn with interest", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });

@@ -93,7 +93,8 @@ contract("SavingAccount.repay", async (accounts) => {
         context(
             "Borrow out all the tokens in DeFiner, then repay, verify CToken and tokens in saving account",
             async () => {
-                it("Deposit DAI, borrows USDC and wants to withdraw", async () => {
+                it("Deposit DAI, borrows USDC and wants to withdraw", async function () {
+                    this.timeout(0)
                     /*
                      * Step 1
                      * Account 1 deposit 2 whole DAI and Account 1 deposit 1 whole USDC
@@ -164,7 +165,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), { from: user2 });
                 });
-                it("Repay all the outstandings DAI token", async () => {
+                it("Repay all the outstandings DAI token", async function () {
+                    this.timeout(0)
                     /*
                      * Repay all the outstandings
                      * After repayment, saving account balance: 1.5*10^17 DAI, 8.5*10^17 cDAI
@@ -183,7 +185,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     expect(expectedCTokenBalance).to.be.bignumber.equal(realCTokenBalance);
                     expect(expectedDAIBalance).to.be.bignumber.equal(realDAIBalance);
                 });
-                it("Repay half the outstandings DAI token", async () => {
+                it("Repay half the outstandings DAI token", async function () {
+                    this.timeout(0)
                     /*
                      * Repay 1/4 * 10^18 DAI
                      * After repayment, saving account balance: 1.5*10^17 DAI, 6*10^17 cDAI
@@ -203,7 +206,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     expect(BN(realCTokenBalance)).to.be.bignumber.equal(expectedCTokenBalance);
                     expect(BN(realDAIBalance)).to.be.bignumber.equal(expectedDAIBalance);
                 });
-                it("Repay with a small amount of DAI token", async () => {
+                it("Repay with a small amount of DAI token", async function () {
+                    this.timeout(0)
                     /*
                      * Repay 1/4 * 10^18 DAI
                      * After repayment, saving account balance: 1.5*10^17 DAI + 10 DAI, 8.5*10^17 - 5*10^17
@@ -242,7 +246,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         from: user2
                     });
                 });
-                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async () => {
+                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async function () {
+                    this.timeout(0)
                     const quaterOfDAI = numOfDAI.div(new BN(4));
                     const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressDAI,
@@ -287,7 +292,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         from: user1
                     });
                 });
-                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async () => {
+                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async function () {
+                    this.timeout(0)
                     const quaterOfUSDC = numOfUSDC.div(new BN(4));
                     const USDCBalance = await erc20USDC.balanceOf(user1);
                     const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
@@ -330,7 +336,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.deposit(addressWBTC, numOfWBTC, { from: user2 });
                 });
 
-                it("When the repayment DAI Amount is less than the loan amount.", async () => {
+                it("When the repayment DAI Amount is less than the loan amount.", async function () {
+                    this.timeout(0)
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
@@ -343,7 +350,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is equal than the loan amount.", async () => {
+                it("When the repayment DAI Amount is equal than the loan amount.", async function () {
+                    this.timeout(0)
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
@@ -356,7 +364,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is greater than the loan amount.", async () => {
+                it("When the repayment DAI Amount is greater than the loan amount.", async function () {
+                    this.timeout(0)
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     // 2.1 Prepare more DAI.
@@ -371,7 +380,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is less than the loan amount.", async () => {
+                it("When the repayment WBTC Amount is less than the loan amount.", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });
@@ -388,7 +398,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is equal to the loan amount.", async () => {
+                it("When the repayment WBTC Amount is equal to the loan amount.", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });
@@ -405,7 +416,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is greater than the loan amount.", async () => {
+                it("When the repayment WBTC Amount is greater than the loan amount.", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });

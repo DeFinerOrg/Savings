@@ -151,7 +151,8 @@ contract("SavingAccount.multiTokenBorrowRepay", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("RateTest6: Multiple transactions", async () => {
+                it("RateTest6: Multiple transactions", async function () {
+                    this.timeout(0)
                     //user 1 deposits DAI and borrows ETH
                     //fastforward
                     //User2 deposits USDC to borrow DAI

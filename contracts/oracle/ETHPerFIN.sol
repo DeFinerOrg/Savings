@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-interface ERC20{
+interface ERC20Interface{
     function balanceOf(address owner) external view returns (uint);
 }
 
@@ -155,8 +155,8 @@ contract ETHPerFIN {
     address public uniswap = 0x486792bcdb13F8aaCf85288D98850FA2804F95c7;
     
     function latestAnswer() public view returns (int256){
-        uint balance0 = ERC20(FIN).balanceOf(uniswap); // 383328811522809054672340
-        uint balance1 = ERC20(WETH).balanceOf(uniswap); // 646683755097326209560
+        uint balance0 = ERC20Interface(FIN).balanceOf(uniswap); // 383328811522809054672340
+        uint balance1 = ERC20Interface(WETH).balanceOf(uniswap); // 646683755097326209560
         return int(balance1.mul(10 ** 18).div(balance0));
     }
 }

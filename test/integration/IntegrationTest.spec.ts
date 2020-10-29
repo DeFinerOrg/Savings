@@ -1410,7 +1410,8 @@ contract("Integration Tests", async (accounts) => {
             });
         });
 
-        it("should deposit DAI and borrow DAI only after withdrawing first", async () => {
+        it("should deposit DAI and borrow DAI only after withdrawing first", async function () {
+            this.timeout(0)
             /* const numOfToken = new BN(1000);
                 // 1. Transfer 1000 DAI to user 1 & 2, 1000 USDC to user 1
                 await erc20DAI.transfer(user1, numOfDAI);
