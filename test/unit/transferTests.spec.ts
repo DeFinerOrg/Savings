@@ -652,6 +652,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
+                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr, {
+                        from: user1
+                    });
+
                     let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
@@ -692,6 +696,31 @@ contract("SavingAccount.transfer", async (accounts) => {
                         new BN(2000).mul(new BN(15)).div(new BN(100))
                     );
 
+                    // Some tokens are sent to Compound contract (User 1)
+                    const expectedTokensAtCTokenContract = depositAmount
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    const balCTokenContract = await web3.eth.getBalance(cETH_addr, {
+                        from: user1
+                    });
+                    expect(
+                        new BN(balCETHContractBeforeUser1).add(
+                            new BN(expectedTokensAtCTokenContract)
+                        )
+                    ).to.be.bignumber.equal(balCTokenContract);
+
+                    // cToken must be minted for SavingAccount (User1)
+                    const expectedCTokensAtSavingAccount = depositAmount
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    // get exchange rate and then verify
+                    const balCTokens = await cETH.balanceOf(savingAccount.address, {
+                        from: user1
+                    });
+                    expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                        new BN(balCTokens).div(new BN(10))
+                    );
+
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
@@ -727,6 +756,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
+                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr, {
+                        from: user1
+                    });
+
                     // deposit ETH
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
@@ -752,6 +785,31 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
                         new BN(2000).mul(new BN(15)).div(new BN(100))
+                    );
+
+                    // Some tokens are sent to Compound contract (User 1)
+                    const expectedTokensAtCTokenContract = depositAmount
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    const balCTokenContract = await web3.eth.getBalance(cETH_addr, {
+                        from: user1
+                    });
+                    expect(
+                        new BN(balCETHContractBeforeUser1).add(
+                            new BN(expectedTokensAtCTokenContract)
+                        )
+                    ).to.be.bignumber.equal(balCTokenContract);
+
+                    // cToken must be minted for SavingAccount (User1)
+                    const expectedCTokensAtSavingAccount = depositAmount
+                        .mul(new BN(85))
+                        .div(new BN(100));
+                    // get exchange rate and then verify
+                    const balCTokens = await cETH.balanceOf(savingAccount.address, {
+                        from: user1
+                    });
+                    expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                        new BN(balCTokens).div(new BN(10))
                     );
 
                     // transfer ETH from user 2 to user 1
