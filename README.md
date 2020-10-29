@@ -3,8 +3,8 @@
 **1)** Download the compound-protocol as a submodule & install dependencies:
 
 **`cd Savings && git submodule init && git submodule update`**
-
-**`cd compound-protocol && git checkout definer/compound && npm i`**
+**`cd compound-protocol && yarn install --lock-file`**
+**`cd scenario && npm i`**
 
 **2)** Install dependencies:
 
@@ -16,7 +16,7 @@
 
 **4)** Run test scripts
 
-**`npx buidler test --network development`**
+**`yarn test`**
 
 ## Passing Tests:
 
