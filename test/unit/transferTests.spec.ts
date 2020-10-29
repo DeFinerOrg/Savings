@@ -7,6 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
+const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.transfer", async (accounts) => {
@@ -36,6 +37,14 @@ contract("SavingAccount.transfer", async (accounts) => {
     let erc20MKR: t.MockErc20Instance;
     let erc20TUSD: t.MockErc20Instance;
     let numOfToken: any;
+
+    let cETH_addr: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
@@ -60,6 +69,12 @@ contract("SavingAccount.transfer", async (accounts) => {
         erc20USDC = await ERC20.at(addressUSDC);
         erc20MKR = await ERC20.at(addressMKR);
         erc20TUSD = await ERC20.at(addressTUSD);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cETH = await MockCToken.at(cETH_addr);
         numOfToken = new BN(1000);
     });
 
@@ -228,6 +243,20 @@ contract("SavingAccount.transfer", async (accounts) => {
                         let user1BalanceBefore = await erc20DAI.balanceOf(user1);
                         let user2BalanceBefore = await erc20DAI.balanceOf(user2);
 
+                        const balCDAIContractBeforeUser1 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user1
+                        });
+                        const balCDAIBeforeUser1 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user1
+                        });
+
+                        const balCDAIContractBeforeUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
+                        const balCDAIBeforeUser2 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user2
+                        });
+
                         await erc20DAI.transfer(user1, numOfToken);
                         await erc20DAI.transfer(user2, numOfToken);
                         await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -295,6 +324,50 @@ contract("SavingAccount.transfer", async (accounts) => {
                             new BN(user2BalanceAfterDeposit).sub(new BN(user2TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
 
+                        // Some tokens are sent to Compound contract (User 1)
+                        const expectedTokensAtCTokenContract = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user1
+                        });
+                        expect(
+                            new BN(balCDAIContractBeforeUser1).add(
+                                new BN(expectedTokensAtCTokenContract)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContract);
+
+                        // cToken must be minted for SavingAccount (User1)
+                        const expectedCTokensAtSavingAccount = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        // get exchange rate and then verify
+                        const balCTokens = await cDAI.balanceOf(savingAccount.address, {
+                            from: user1
+                        });
+                        expect(
+                            expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
+                        ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
+                        // Some tokens are sent to Compound contract (User 2)
+                        const balCTokenContractUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
+                        expect(
+                            new BN(balCDAIContractBeforeUser2).add(
+                                new BN(expectedTokensAtCTokenContract)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContractUser2);
+
+                        // cToken must be minted for SavingAccount (User2)
+                        // get exchange rate and then verify
+                        const balCTokensUser2 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user2
+                        });
+                        expect(
+                            expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
+                        ).to.be.bignumber.equal(new BN(balCTokensUser2).div(new BN(10)));
+
                         // Transfer 100 tokens from user2 to user1
                         await savingAccount.transfer(user1, addressDAI, new BN(100), {
                             from: user2
@@ -324,6 +397,20 @@ contract("SavingAccount.transfer", async (accounts) => {
                         // 3. Verify the new balance
                         let user1BalanceBefore = await erc20DAI.balanceOf(user1);
                         let user2BalanceBefore = await erc20DAI.balanceOf(user2);
+
+                        const balCDAIContractBeforeUser1 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user1
+                        });
+                        const balCDAIBeforeUser1 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user1
+                        });
+
+                        const balCDAIContractBeforeUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
+                        const balCDAIBeforeUser2 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user2
+                        });
 
                         const numOfToken = new BN(1000);
                         await erc20DAI.transfer(user1, numOfToken);
@@ -392,6 +479,50 @@ contract("SavingAccount.transfer", async (accounts) => {
                         expect(
                             new BN(user2BalanceAfterDeposit).sub(new BN(user2TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
+
+                        // Some tokens are sent to Compound contract (User 1)
+                        const expectedTokensAtCTokenContract = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user1
+                        });
+                        expect(
+                            new BN(balCDAIContractBeforeUser1).add(
+                                new BN(expectedTokensAtCTokenContract)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContract);
+
+                        // cToken must be minted for SavingAccount (User1)
+                        const expectedCTokensAtSavingAccount = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        // get exchange rate and then verify
+                        const balCTokens = await cDAI.balanceOf(savingAccount.address, {
+                            from: user1
+                        });
+                        expect(
+                            expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
+                        ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
+                        // Some tokens are sent to Compound contract (User 2)
+                        const balCTokenContractUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
+                        expect(
+                            new BN(balCDAIContractBeforeUser2).add(
+                                new BN(expectedTokensAtCTokenContract)
+                            )
+                        ).to.be.bignumber.equal(balCTokenContractUser2);
+
+                        // cToken must be minted for SavingAccount (User2)
+                        // get exchange rate and then verify
+                        const balCTokensUser2 = await cDAI.balanceOf(savingAccount.address, {
+                            from: user2
+                        });
+                        expect(
+                            expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
+                        ).to.be.bignumber.equal(new BN(balCTokensUser2).div(new BN(10)));
 
                         // transfer more than reserve
                         await savingAccount.transfer(user1, addressDAI, new BN(500), {
