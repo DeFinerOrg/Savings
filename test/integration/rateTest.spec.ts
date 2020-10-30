@@ -71,7 +71,8 @@ contract("Integration Tests", async (accounts) => {
                 testEngine.deploy("whitePaperModel.scen");
             });
 
-            beforeEach(async () => {
+            beforeEach(async function () {
+                this.timeout(0)
                 savingAccount = await testEngine.deploySavingAccount();
                 // 1. initialization.
                 tokens = await testEngine.erc20Tokens;

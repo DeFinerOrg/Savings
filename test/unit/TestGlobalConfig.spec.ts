@@ -30,7 +30,8 @@ contract("GlobalConfig", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
     });

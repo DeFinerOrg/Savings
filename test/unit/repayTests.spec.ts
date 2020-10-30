@@ -46,7 +46,8 @@ contract("SavingAccount", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -65,7 +66,8 @@ contract("SavingAccount", async (accounts) => {
     context("repay()", async () => {
         context("with Token", async () => {
             context("should fail", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -98,7 +100,8 @@ contract("SavingAccount", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -261,7 +264,8 @@ contract("SavingAccount", async (accounts) => {
         });
 
         context("with ETH", async () => {
-            beforeEach(async () => {
+            beforeEach(async function () {
+                this.timeout(0)
                 // 1.1 Set up collateral.
                 const numOfUSDC = sixPrecision.mul(new BN(10));
                 await erc20USDC.transfer(user2, numOfUSDC);

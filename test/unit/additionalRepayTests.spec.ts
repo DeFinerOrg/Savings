@@ -60,7 +60,8 @@ contract("SavingAccount.repay", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -148,7 +149,8 @@ contract("SavingAccount.repay", async (accounts) => {
         // These tests can't be verified after integrated with compound
         context("Checking saving account's value after repayment", async () => {
             context("Should succeed.", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -228,7 +230,8 @@ contract("SavingAccount.repay", async (accounts) => {
         });
         context("Repay partially several times.", async () => {
             context("Use DAI, should succeed", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -274,7 +277,8 @@ contract("SavingAccount.repay", async (accounts) => {
                 });
             });
             context("Use USDC, should succeed", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -325,7 +329,8 @@ contract("SavingAccount.repay", async (accounts) => {
         });
         context("with WBTC, 8 decimals token", async () => {
             context("should succeed", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20WBTC.transfer(user2, numOfWBTC);
