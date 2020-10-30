@@ -10,7 +10,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -49,10 +49,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
@@ -70,7 +70,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -118,12 +119,14 @@ contract("SavingAccount.liquidate", async (accounts) => {
     context("liquidate()", async () => {
         context("with Token", async () => {
             context("should fail", async () => {
-                it("when unsupported token address is passed", async () => {
+                it("when unsupported token address is passed", async function () {
+                    this.timeout(0)
                     //Try depositting unsupported Token to SavingContract
                     await expectRevert(savingAccount.liquidate(owner, dummy), "Unsupported token");
                 });
 
-                it("when tokenAddress is zero", async () => {
+                it("when tokenAddress is zero", async function () {
+                    this.timeout(0)
                     //Try depositting zero address
                     await expectRevert(
                         savingAccount.liquidate(owner, addressZero),
@@ -131,7 +134,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
 
-                it("when the ratio of borrowed money and collateral is less than 85%", async () => {
+                it("when the ratio of borrowed money and collateral is less than 85%", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
@@ -147,7 +151,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
 
-                it("when collateral is not sufficient to be liquidated", async () => {
+                it("when collateral is not sufficient to be liquidated", async function () {
+                    this.timeout(0)
                     // 2. Approve 1000 tokens
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
@@ -176,7 +181,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("When user tries to liquidate partially", async () => {
+                it("When user tries to liquidate partially", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
@@ -268,7 +274,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 });
 
-                it("When user tries to liquidate fully", async () => {
+                it("When user tries to liquidate fully", async function () {
+                    this.timeout(0)
                     // 2. Approve 1000 tokens
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
@@ -373,7 +380,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 });
 
-                it("Borrow USDC, when user tries to liquidate partially", async () => {
+                it("Borrow USDC, when user tries to liquidate partially", async function () {
+                    this.timeout(0)
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
@@ -463,7 +471,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 });
 
-                it("Borrow USDC, When user tries to liquidate fully", async () => {
+                it("Borrow USDC, When user tries to liquidate fully", async function () {
+                    this.timeout(0)
                     // 2. Approve 1000 tokens
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
@@ -574,7 +583,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("when the ratio of borrowed money and collateral is less than 85%", async () => {
+                it("when the ratio of borrowed money and collateral is less than 85%", async function () {
+                    this.timeout(0)
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
@@ -596,7 +606,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
 
-                it("when collateral is not sufficient to be liquidated", async () => {
+                it("when collateral is not sufficient to be liquidated", async function () {
+                    this.timeout(0)
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
@@ -627,7 +638,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("When user tries to liquidate partially", async () => {
+                it("When user tries to liquidate partially", async function () {
+                    this.timeout(0)
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
@@ -699,7 +711,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 });
 
-                it("When user tries to liquidate fully", async () => {
+                it("When user tries to liquidate fully", async function () {
+                    this.timeout(0)
                     // 2. Approve 1000 tokens
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))

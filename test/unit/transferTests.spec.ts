@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 
 contract("SavingAccount.transfer", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -31,10 +31,10 @@ contract("SavingAccount.transfer", async (accounts) => {
     let addressUSDC: any;
     let addressMKR: any;
     let addressTUSD: any;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
     let numOfToken: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
@@ -46,7 +46,8 @@ contract("SavingAccount.transfer", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -66,7 +67,8 @@ contract("SavingAccount.transfer", async (accounts) => {
     context("transfer()", async () => {
         context("with Token", async () => {
             context("should fail", async () => {
-                it("B9: Not enough balance for transfer", async () => {
+                it("B9: Not enough balance for transfer", async function () {
+                    this.timeout(0)
                     const numOfToken = new BN(1000);
                     // 1. Transfer DAI to user1 & user2.
                     // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
@@ -124,7 +126,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("N9: Not enough collatral for borrowed asset if transfer", async () => {
+                it("N9: Not enough collatral for borrowed asset if transfer", async function () {
+                    this.timeout(0)
                     // 1. Transfer DAI to user1 & user2.
                     // 2. User2 borrow USDC and uses it's DAI as collateral
                     // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
@@ -179,7 +182,8 @@ contract("SavingAccount.transfer", async (accounts) => {
 
             context("Compound Supported 18 decimals Token", async () => {
                 context("should succeed", async () => {
-                    it("E9: Transfer small amount balance", async () => {
+                    it("E9: Transfer small amount balance", async function () {
+                        this.timeout(0)
                         const numOfToken = new BN(1000);
                         // 1. Transfer DAI to user1 & user2.
                         // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
@@ -253,7 +257,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                         );
                     });
 
-                    it("F9: Transfer large amount of balance", async () => {
+                    it("F9: Transfer large amount of balance", async function () {
+                        this.timeout(0)
                         // 1. Transfer DAI to user1 & user2.
                         // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
                         // withdraw of user2 and compound token deposit of user1.
@@ -332,7 +337,8 @@ contract("SavingAccount.transfer", async (accounts) => {
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("H9: Not enough balance for transfer", async () => {
+                it("H9: Not enough balance for transfer", async function () {
+                    this.timeout(0)
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
                     const ETHtransferAmount = eighteenPrecision.mul(eighteenPrecision);
@@ -348,7 +354,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("Not enough collatral for borrowed asset if transfer (for ETH)", async () => {
+                it("Not enough collatral for borrowed asset if transfer (for ETH)", async function () {
+                    this.timeout(0)
                     // 1. Transfer ETH to user1 & user2.
                     // 2. User2 borrow USDC and use it's ETH as collateral
                     // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
@@ -420,7 +427,8 @@ contract("SavingAccount.transfer", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                it("K9: Transfer small amount balance", async () => {
+                it("K9: Transfer small amount balance", async function () {
+                    this.timeout(0)
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
@@ -496,7 +504,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                 });
 
-                it("L9: Transfer large amount of balance", async () => {
+                it("L9: Transfer large amount of balance", async function () {
+                    this.timeout(0)
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.

@@ -8,7 +8,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 
@@ -33,22 +33,25 @@ contract("InitializablePausable", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
     });
 
     context("constructor", async () => {
         context("should fail", async () => {
-            it("The non-owner calls the function that can be suspended.", async () => {
+            it("The non-owner calls the function that can be suspended.", async function () {
+                this.timeout(0)
                 await expectRevert(
-                    savingAccount.pause({from: user1}),
+                    savingAccount.pause({ from: user1 }),
                     "PauserRole: caller does not have the Pauser role"
                 );
             });
         });
 
         context("should succeed", async () => {
-            it("The test turns on the pause function.", async () => {
+            it("The test turns on the pause function.", async function () {
+                this.timeout(0)
 
                 const depositAmount = new BN(100);
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -69,7 +72,8 @@ contract("InitializablePausable", async (accounts) => {
                 expect(afterPaused).to.equal(true);
             });
 
-            it("The test turns off the pause function.", async () => {
+            it("The test turns off the pause function.", async function () {
+                this.timeout(0)
                 const depositAmount = new BN(100);
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                     value: depositAmount

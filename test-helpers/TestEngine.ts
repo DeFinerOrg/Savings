@@ -49,12 +49,23 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
 
     public deploy(script: String) {
+        if (process.env.flywheel == "yes" && script == "scriptFlywheel.scen") {
+
+        }
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
         const portNumber = process.env.COVERAGE ? "8546" : "8545";
         const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
-        const log = shell.exec(command);
+        if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
+            // Do nothing
+        } else if (script == "whitePaperModel.scen") {
+            const log = shell.exec(command);
+            process.env.FLYWHEEL = "no"
+        } else {
+            const log = shell.exec(command);
+            process.env.FLYWHEEL = "yes"
+        }
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
@@ -172,7 +183,7 @@ export class TestEngine {
             await TokenRegistry.link(utils);
 
         } catch (error) {
-            // console.log(error);
+            // Do nothing
         }
 
         this.accounts = await Accounts.new();
