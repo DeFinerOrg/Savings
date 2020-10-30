@@ -79,5 +79,4 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: truffle compile
       - run: yarn test # triggers truffle test
