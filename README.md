@@ -12,7 +12,7 @@
 
 **3)** Launch buidler evm:
 
-**`npx buidler node`**
+**`npx hardhat node`**
 
 **4)** Run test scripts
 
