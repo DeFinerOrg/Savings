@@ -47,6 +47,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let cUSDT_addr: any;
     let cWBTC_addr: any;
     let cETH_addr: any;
+    let cETH: any;
 
     let cTokenDAI: t.MockCTokenInstance;
     let cTokenUSDC: t.MockCTokenInstance;
