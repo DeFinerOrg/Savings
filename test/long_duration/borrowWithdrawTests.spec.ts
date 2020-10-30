@@ -85,7 +85,8 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
@@ -157,7 +158,8 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw after 1 week", async () => {
+            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw after 1 week", async function () {
+                this.timeout(0)
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = ONE_USDC;
                 const borrowAmount = numOfUSDC.div(new BN(10));

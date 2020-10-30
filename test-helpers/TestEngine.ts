@@ -49,12 +49,23 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
 
     public deploy(script: String) {
+        if (process.env.flywheel == "yes" && script == "scriptFlywheel.scen") {
+
+        }
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
         const portNumber = process.env.COVERAGE ? "8546" : "8545";
         const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
-        const log = shell.exec(command);
+        if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
+            // Do nothing
+        } else if (script == "whitePaperModel.scen") {
+            const log = shell.exec(command);
+            process.env.FLYWHEEL = "no"
+        } else {
+            const log = shell.exec(command);
+            process.env.FLYWHEEL = "yes"
+        }
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
@@ -74,6 +85,8 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(ETH_ADDR);
 
         return erc20TokensFromCompound;
@@ -91,14 +104,17 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
+
 
         return cTokensCompound;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
-        //var aggregators = new Array();
         const network = process.env.NETWORK;
+        if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
                 let addr;
@@ -132,9 +148,8 @@ export class TestEngine {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
 
         const cTokens: Array<string> = await this.getCompoundAddresses();
-
+        this.cTokens = cTokens;
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
-
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
 
@@ -149,7 +164,7 @@ export class TestEngine {
         try {
             await SavingLib.link(utils);
         } catch (err) {
-            // console.log(err);
+            // Do nothing
         }
 
         const savingLib = await SavingLib.new();
@@ -168,7 +183,7 @@ export class TestEngine {
             await TokenRegistry.link(utils);
 
         } catch (error) {
-            // console.log(error);
+            // Do nothing
         }
 
         this.accounts = await Accounts.new();
@@ -179,8 +194,9 @@ export class TestEngine {
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
         const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
-            this.tokenInfoRegistry.address
+            // this.tokenInfoRegistry.address
         );
+        await chainLinkOracle.initialize(this.globalConfig.address);
 
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
@@ -204,8 +220,7 @@ export class TestEngine {
 
         const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         SavingAccountWithController.setAsDeployed(savingAccount);
-        // console.log("ERC20", this.erc20Tokens);
-        // console.log("cTokens", cTokens);
+
         const initialize_data = savingAccount.contract.methods
             .initialize(
                 this.erc20Tokens,
@@ -280,8 +295,8 @@ export class TestEngine {
             18,
             false,
             true,
-            cTokens[9],
-            aggregators[9]
+            cTokens[11],
+            aggregators[11]
         );
     }
 

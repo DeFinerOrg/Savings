@@ -82,7 +82,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -153,7 +154,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("RateTest5: Deposit DAI then borrow DAI, repay the loan amount and then winthdraw all", async () => {
+                it("RateTest5: Deposit DAI then borrow DAI, repay the loan amount and then winthdraw all", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);

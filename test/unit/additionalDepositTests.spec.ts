@@ -10,7 +10,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -83,7 +83,8 @@ contract("SavingAccount.deposit", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -154,7 +155,8 @@ contract("SavingAccount.deposit", async (accounts) => {
     context("Additional tests for Deposit", async () => {
         context("With multiple tokens", async () => {
             context("Should suceed", async () => {
-                it("Deposit DAI and USDC, both compound supported", async () => {
+                it("Deposit DAI and USDC, both compound supported", async function () {
+                    this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 DAI and 1 USDC
@@ -188,14 +190,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                         { from: user1 }
                     );
                     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     /*
                      * To verify:
@@ -221,9 +223,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     // verify 1.
-                    expect(
-                        BN(userDAIBalance).sub(BN(userDAIBalanceBefore))
-                    ).to.be.bignumber.equals(eighteenPrecision);
+                    expect(BN(userDAIBalance).sub(BN(userDAIBalanceBefore))).to.be.bignumber.equals(
+                        eighteenPrecision
+                    );
                     expect(
                         BN(userUSDCBalance).sub(BN(userUSDCBalanceBefore))
                     ).to.be.bignumber.equals(sixPrecision);
@@ -242,7 +244,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(savingAccountUSDCToken).sub(BN(savingAccountUSDCTokenBefore))
                     ).to.be.bignumber.equals(sixPrecision.div(new BN(100)).mul(new BN(15)));
                 });
-                it("Deposit WBTC and TUSD, compound supported and unsupported", async () => {
+                it("Deposit WBTC and TUSD, compound supported and unsupported", async function () {
+                    this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 WBTC and 1 TUSD
@@ -273,7 +276,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     await erc20TUSD.transfer(user1, eighteenPrecision);
 
                     await erc20WBTC.approve(savingAccount.address, eightPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await erc20TUSD.approve(
                         savingAccount.address,
@@ -282,10 +285,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision, {
-                        from: user1
+                        from: user1,
                     });
                     /*
                      * To verify:
@@ -332,7 +335,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                 });
-                it("Deposit MKR and TUSD, both compound unsupported", async () => {
+                it("Deposit MKR and TUSD, both compound unsupported", async function () {
+                    this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
                      * Account1: deposits 1 MKR and 1 TUSD
@@ -372,15 +376,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     /*
                      * To verify:
                      * 1. User 1's token balance should be 1 MKR and 1 TUSD
-                     * 
+                     *
                      * 2. Token left in saving account should be 100% of total tokens
                      */
                     const userMKRBalance = await accountsContract.getDepositBalanceCurrent(
@@ -395,9 +399,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                     const savingAccountTUSDToken = await erc20TUSD.balanceOf(savingAccount.address);
 
                     // verify 1.
-                    expect(
-                        BN(userMKRBalance).sub(BN(userMKRBalanceBefore))
-                    ).to.be.bignumber.equals(eighteenPrecision);
+                    expect(BN(userMKRBalance).sub(BN(userMKRBalanceBefore))).to.be.bignumber.equals(
+                        eighteenPrecision
+                    );
                     expect(
                         BN(userTUSDBalance).sub(BN(userTUSDBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);

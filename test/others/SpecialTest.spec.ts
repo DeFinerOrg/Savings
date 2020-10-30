@@ -68,7 +68,8 @@ contract("Integration Tests", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -107,7 +108,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Special test.", async () => {
         context("should succeed", async () => {
-            it("Special test 1", async () => {
+            it("Special test 1", async function () {
+                this.timeout(0)
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
                 const numOfBAT = eighteenPrecision.mul(new BN(100));
@@ -159,7 +161,8 @@ contract("Integration Tests", async (accounts) => {
 
             });
 
-            it("Special test 2", async () => {
+            it("Special test 2", async function () {
+                this.timeout(0)
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
                 const numOfBAT = eighteenPrecision.mul(new BN(100));
@@ -247,7 +250,8 @@ contract("Integration Tests", async (accounts) => {
 
             });
 
-            it("Special test 3", async () => {
+            it("Special test 3", async function () {
+                this.timeout(0)
                 // const
                 const numOfDAI = eighteenPrecision.mul(new BN(100));
                 console.log("const");

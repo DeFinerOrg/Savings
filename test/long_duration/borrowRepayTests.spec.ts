@@ -83,7 +83,8 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -153,7 +154,8 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC and repay after one month", async () => {
+            it("should deposit DAI, borrow USDC and repay after one month", async function () {
+                this.timeout(0)
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
