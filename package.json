@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test": "truffle compile && npx hardhat test ./test/**/*  --network development",
+    "test": "npx hardhat test ./test/**/*  --network development",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
