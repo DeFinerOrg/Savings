@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test": "npx hardhat test ./test/**/*  --network development",
+    "test": "yarn prepare && npx hardhat test ./test/**/*  --network development",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
@@ -54,7 +54,7 @@
     "solc": "0.5.14",
     "solidity-coverage": "^0.6.7",
     "surya": "^0.4.0",
-    "truffle": "^4.1.17",
+    "truffle": "^5.1.30",
     "truffle-hdwallet-provider": "^1.0.0-web3one.5",
     "truffle-typings": "^1.0.7",
     "ts-generator": "^0.1.1",
