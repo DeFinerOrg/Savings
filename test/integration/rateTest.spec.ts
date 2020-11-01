@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const MockERC20: t.MockErc20Contract = artifacts.require("MockERC20");
+const MockERC20: t.MockErc20Contract = artifacts.require("MockErc20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
