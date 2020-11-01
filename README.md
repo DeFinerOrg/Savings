@@ -16,7 +16,7 @@
 
 **4)** Run test scripts
 
-**`yarn test`**
+**`yarn test ./test/**/*`**
 
 ## Passing Tests:
 
