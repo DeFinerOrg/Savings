@@ -88,12 +88,12 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
         erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(ETH_ADDR);
-
         return erc20TokensFromCompound;
     }
 
     public async getCompoundAddresses(): Promise<Array<string>> {
         const network = process.env.NETWORK;
+
         var cTokensCompound = new Array();
         cTokensCompound.push(compoundTokens.Contracts.cDAI);
         cTokensCompound.push(compoundTokens.Contracts.cUSDC);
@@ -107,7 +107,6 @@ export class TestEngine {
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-
 
         return cTokensCompound;
     }
@@ -181,9 +180,7 @@ export class TestEngine {
             await Accounts.link(utils);
             await Accounts.link(accountTokenLib);
             await TokenRegistry.link(utils);
-
         } catch (error) {
-            // Do nothing
         }
 
         this.accounts = await Accounts.new();
@@ -303,7 +300,101 @@ export class TestEngine {
     public async getCOMPTokenAddress(): Promise<string> {
         const network = process.env.NETWORK;
         var COMPTokenAddress = compoundTokens.Contracts.COMP;
-
         return COMPTokenAddress;
     }
+
+
+    // This acts the same as deploySavingAccount, but this one can be used in truffle test suite.
+
+    public async deploySavingAccountTruffle(): Promise<t.SavingAccountWithControllerInstance> {
+        this.erc20Tokens = await this.getERC20AddressesFromCompound();
+        const cTokens: Array<string> = await this.getCompoundAddresses();
+        const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
+
+        this.globalConfig = await GlobalConfig.new();
+        this.constant = await Constant.new();
+
+        this.bank = await Bank.new();
+        await this.bank.initialize(this.globalConfig.address);
+
+        this.accounts = await Accounts.new();
+        await this.accounts.initialize(this.globalConfig.address);
+
+        this.tokenInfoRegistry = await TokenRegistry.new();
+        await this.initializeTokenInfoRegistry(cTokens, aggregators);
+
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
+            // this.tokenInfoRegistry.address
+        );
+
+        await chainLinkOracle.initialize(this.globalConfig.address);
+
+        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+
+        // Deploy Upgradability contracts
+        const proxyAdmin = await ProxyAdmin.new();
+        const savingAccountProxy = await SavingAccountProxy.new();
+        const accountsProxy = await AccountsProxy.new();
+        const bankProxy = await BankProxy.new();
+
+        // Global Config initialize
+        await this.globalConfig.initialize(
+            bankProxy.address,
+            savingAccountProxy.address,
+            this.tokenInfoRegistry.address,
+            accountsProxy.address,
+            this.constant.address,
+            chainLinkOracle.address
+        );
+
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+
+        const initialize_data = savingAccount.contract.methods
+            .initialize(
+                this.erc20Tokens,
+                cTokens,
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            )
+            .encodeABI();
+
+        const accounts_initialize_data = this.bank.contract.methods
+            .initialize(
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            )
+            .encodeABI();
+
+        const bank_initialize_data = this.accounts.contract.methods
+            .initialize(
+                this.globalConfig.address,
+                compoundTokens.Contracts.Comptroller
+            )
+            .encodeABI();
+
+        await savingAccountProxy.initialize(
+            savingAccount.address,
+            proxyAdmin.address,
+            initialize_data
+        );
+
+        await accountsProxy.initialize(
+            this.accounts.address,
+            proxyAdmin.address,
+            accounts_initialize_data
+        );
+
+        await bankProxy.initialize(
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
+
+        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+
+        return proxy;
+
+    }
+
+
 }

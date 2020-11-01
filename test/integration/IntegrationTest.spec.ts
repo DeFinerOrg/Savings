@@ -72,7 +72,7 @@ contract("Integration Tests", async (accounts) => {
 
     beforeEach(async function () {
         this.timeout(0)
-        savingAccount = await testEngine.deploySavingAccount();
+        savingAccount = await testEngine.deploySavingAccountTruffle();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
         // 1. initialization.
