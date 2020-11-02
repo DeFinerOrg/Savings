@@ -49,14 +49,13 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
 
     public deploy(script: String) {
-        if (process.env.flywheel == "yes" && script == "scriptFlywheel.scen") {
 
-        }
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
         const portNumber = process.env.COVERAGE ? "8546" : "8545";
         const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+
         if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
             // Do nothing
         } else if (script == "whitePaperModel.scen") {
@@ -66,6 +65,24 @@ export class TestEngine {
             const log = shell.exec(command);
             process.env.FLYWHEEL = "yes"
         }
+
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
+        const configFile = "../compound-protocol/networks/" + fileName;
+        // clean import caches
+        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
+        compoundTokens = require(configFile);
+    }
+
+    public deployTruffle(script: String) {
+
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const scriptPath = `${compound}/script/scen/${script}`;
+        const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+
+        const log = shell.exec(command);
+
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
@@ -88,7 +105,8 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
         erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(ETH_ADDR);
-        return erc20TokensFromCompound;
+        this.erc20Tokens = erc20TokensFromCompound
+        return this.erc20Tokens;
     }
 
     public async getCompoundAddresses(): Promise<Array<string>> {
@@ -107,8 +125,8 @@ export class TestEngine {
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-
-        return cTokensCompound;
+        this.cTokens = cTokensCompound
+        return this.cTokens;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
@@ -143,16 +161,15 @@ export class TestEngine {
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
-
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
 
         const cTokens: Array<string> = await this.getCompoundAddresses();
-        this.cTokens = cTokens;
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
+
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
-
         this.bank = await Bank.new();
+
         await this.bank.initialize(this.globalConfig.address);
 
         const accountTokenLib = await AccountTokenLib.new();
@@ -227,14 +244,14 @@ export class TestEngine {
             )
             .encodeABI();
 
-        const accounts_initialize_data = this.bank.contract.methods
+        const accounts_initialize_data = this.accounts.contract.methods
             .initialize(
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
-        const bank_initialize_data = this.accounts.contract.methods
+        const bank_initialize_data = this.bank.contract.methods
             .initialize(
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
@@ -313,7 +330,6 @@ export class TestEngine {
 
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
-
         this.bank = await Bank.new();
         await this.bank.initialize(this.globalConfig.address);
 
@@ -329,7 +345,7 @@ export class TestEngine {
 
         await chainLinkOracle.initialize(this.globalConfig.address);
 
-        await this.tokenInfoRegistry.initialize(chainLinkOracle.address);
+        await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
@@ -358,14 +374,14 @@ export class TestEngine {
             )
             .encodeABI();
 
-        const accounts_initialize_data = this.bank.contract.methods
+        const bank_initialize_data = this.bank.contract.methods
             .initialize(
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
-        const bank_initialize_data = this.accounts.contract.methods
+        const accounts_initialize_data = this.accounts.contract.methods
             .initialize(
                 this.globalConfig.address,
                 compoundTokens.Contracts.Comptroller
@@ -391,6 +407,8 @@ export class TestEngine {
         );
 
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = Accounts.at(accountsProxy.address);
+        this.bank = Bank.at(bankProxy.address);
 
         return proxy;
 
