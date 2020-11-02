@@ -629,9 +629,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
-                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr, {
-                        from: user1
-                    });
+                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr);
 
                     let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
@@ -676,10 +674,9 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // Some tokens are sent to Compound contract (User 1)
                     const expectedTokensAtCTokenContract = depositAmount
                         .mul(new BN(85))
-                        .div(new BN(100));
-                    const balCTokenContract = await web3.eth.getBalance(cETH_addr, {
-                        from: user1
-                    });
+                        .div(new BN(100))
+                        .mul(new BN(2));
+                    const balCTokenContract = await web3.eth.getBalance(cETH_addr);
                     expect(
                         new BN(balCETHContractBeforeUser1).add(
                             new BN(expectedTokensAtCTokenContract)
@@ -689,7 +686,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // cToken must be minted for SavingAccount (User1)
                     const expectedCTokensAtSavingAccount = depositAmount
                         .mul(new BN(85))
-                        .div(new BN(100));
+                        .div(new BN(100))
+                        .mul(new BN(2));
                     // get exchange rate and then verify
                     const balCTokens = await cETH.balanceOf(savingAccount.address, {
                         from: user1
@@ -734,9 +732,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
-                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr, {
-                        from: user1
-                    });
+                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr);
 
                     // deposit ETH
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -768,10 +764,9 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // Some tokens are sent to Compound contract (User 1)
                     const expectedTokensAtCTokenContract = depositAmount
                         .mul(new BN(85))
-                        .div(new BN(100));
-                    const balCTokenContract = await web3.eth.getBalance(cETH_addr, {
-                        from: user1
-                    });
+                        .div(new BN(100))
+                        .mul(new BN(2));
+                    const balCTokenContract = await web3.eth.getBalance(cETH_addr);
                     expect(
                         new BN(balCETHContractBeforeUser1).add(
                             new BN(expectedTokensAtCTokenContract)
@@ -781,7 +776,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // cToken must be minted for SavingAccount (User1)
                     const expectedCTokensAtSavingAccount = depositAmount
                         .mul(new BN(85))
-                        .div(new BN(100));
+                        .div(new BN(100))
+                        .mul(new BN(2));
                     // get exchange rate and then verify
                     const balCTokens = await cETH.balanceOf(savingAccount.address, {
                         from: user1
