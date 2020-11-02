@@ -1,3 +1,4 @@
+import { MaxReserveRatioUpdated } from "./../../types/GlobalConfig.d";
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
 
@@ -629,7 +630,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const ETHbalanceBeforeDepositUser = await web3.eth.getBalance(user1);
 
-                    const balCETHContractBeforeUser1 = await web3.eth.getBalance(cETH_addr);
+                    const balCETHContractBefore = await web3.eth.getBalance(cETH_addr);
 
                     let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
@@ -678,20 +679,16 @@ contract("SavingAccount.transfer", async (accounts) => {
                         .mul(new BN(2));
                     const balCTokenContract = await web3.eth.getBalance(cETH_addr);
                     expect(
-                        new BN(balCETHContractBeforeUser1).add(
-                            new BN(expectedTokensAtCTokenContract)
-                        )
+                        new BN(balCETHContractBefore).add(new BN(expectedTokensAtCTokenContract))
                     ).to.be.bignumber.equal(balCTokenContract);
 
-                    // cToken must be minted for SavingAccount (User1)
+                    // cToken must be minted for SavingAccount
                     const expectedCTokensAtSavingAccount = depositAmount
                         .mul(new BN(85))
                         .div(new BN(100))
                         .mul(new BN(2));
                     // get exchange rate and then verify
-                    const balCTokens = await cETH.balanceOf(savingAccount.address, {
-                        from: user1
-                    });
+                    const balCTokens = await cETH.balanceOf(savingAccount.address);
                     expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
                         new BN(balCTokens).div(new BN(10))
                     );
@@ -700,6 +697,13 @@ contract("SavingAccount.transfer", async (accounts) => {
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
                     });
+
+                    const ETHbalanceAfterTransfer = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+                    expect(ETHbalanceAfterTransfer).to.be.bignumber.equal(
+                        new BN(2000).mul(new BN(15)).div(new BN(100))
+                    );
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
@@ -724,8 +728,8 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
                     // 3. Verify the new balance
-                    const depositAmount = new BN(1000);
-                    const ETHtransferAmount = new BN(500);
+                    const depositAmount = web3.utils.toWei("1000", "ether");
+                    const ETHtransferAmount = web3.utils.toWei("500", "ether");
 
                     const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                         savingAccount.address
@@ -753,28 +757,33 @@ contract("SavingAccount.transfer", async (accounts) => {
                         ETH_ADDRESS,
                         user2
                     );
+
                     expect(new BN(user1BalanceAfterDeposit)).to.be.bignumber.equal(depositAmount);
                     expect(new BN(user2BalanceAfterDeposit)).to.be.bignumber.equal(depositAmount);
                     // validate savingAccount ETH balance
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                    const expectedTokensInReserveAfterDeposit = new BN(depositAmount)
+                        .mul(new BN(15))
+                        .div(new BN(100))
+                        .mul(new BN(2));
                     expect(ETHbalanceAfterDeposit).to.be.bignumber.equal(
-                        new BN(2000).mul(new BN(15)).div(new BN(100))
+                        expectedTokensInReserveAfterDeposit
                     );
 
                     // Some tokens are sent to Compound contract (User 1)
-                    const expectedTokensAtCTokenContract = depositAmount
+                    const expectedTokensAtCTokenContract = new BN(depositAmount)
                         .mul(new BN(85))
                         .div(new BN(100))
                         .mul(new BN(2));
-                    const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                    const balCETHContract = await web3.eth.getBalance(cETH_addr);
                     expect(
                         new BN(balCETHContractBeforeUser1).add(
                             new BN(expectedTokensAtCTokenContract)
                         )
-                    ).to.be.bignumber.equal(balCTokenContract);
+                    ).to.be.bignumber.equal(balCETHContract);
 
                     // cToken must be minted for SavingAccount (User1)
-                    const expectedCTokensAtSavingAccount = depositAmount
+                    const expectedCTokensAtSavingAccount = new BN(depositAmount)
                         .mul(new BN(85))
                         .div(new BN(100))
                         .mul(new BN(2));
@@ -791,6 +800,14 @@ contract("SavingAccount.transfer", async (accounts) => {
                         from: user2
                     });
 
+                    const balCETHContractAfterTransfer = await web3.eth.getBalance(cETH_addr);
+                    const balCTokensAfterTransfer = await cETH.balanceOf(savingAccount.address, {
+                        from: user1
+                    });
+
+                    expect(balCETHContractAfterTransfer).to.be.bignumber.equal(balCETHContract);
+                    expect(balCTokensAfterTransfer).to.be.bignumber.equal(balCTokens);
+
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
@@ -801,10 +818,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         user2
                     );
                     expect(new BN(user1BalanceAfterTransfer)).to.be.bignumber.equal(
-                        new BN(user1BalanceAfterDeposit).add(ETHtransferAmount)
+                        new BN(user1BalanceAfterDeposit).add(new BN(ETHtransferAmount))
                     );
                     expect(new BN(user2BalanceAfterTransfer)).to.be.bignumber.equal(
-                        new BN(user1BalanceAfterDeposit).sub(ETHtransferAmount)
+                        new BN(user1BalanceAfterDeposit).sub(new BN(ETHtransferAmount))
                     );
                 });
             });
