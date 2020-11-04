@@ -112,6 +112,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+
         cTokenDAI = await MockCToken.at(addressCTokenForDAI);
         cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
         cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
