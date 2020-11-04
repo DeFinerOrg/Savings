@@ -216,91 +216,18 @@ contract("RemainingCoverage", async (accounts) => {
         });
     });
 
-    //------------Not high priority as of now-----------
-    /*
-    context("getAccountTotalUsdValue", async () => {
-        context("should succeed", async () => {
-            it("when ETH address is passed");
 
-            it("when user's address is passed, who hasn't borrowed", async () => {
-                await savingAccount.getAccountTotalETHValue(user1);
-            });
 
-            it("when user's address is passed, who has borrowed before", async () => {
-                const numOfDAI = eighteenPrecision.mul(new BN(1000));
-                const numOfUSDC = sixPrecision.mul(new BN(1000));
-
-                await erc20DAI.transfer(user1, numOfDAI);
-                await erc20USDC.transfer(user2, numOfUSDC);
-                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
-
-                //1. Deposit DAI
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
-
-                // 2. Borrow USDC
-                await savingAccount.borrow(addressUSDC, sixPrecision.mul(new BN(100)), {
-                    from: user1
-                });
-
-                // 3. Verify the loan amount
-                const user1BalanceAfter = await erc20USDC.balanceOf(user1);
-                expect(BN(user1BalanceAfter).sub(user1BalanceBefore)).to.be.bignumber.equal(sixPrecision.mul(new BN(100)));
-
-                await savingAccount.getAccountTotalETHValue(user1);
-            });
-        });
-    });
-    */
-    /*
-    context("getMarketState", async () => {
-        context("should succeed", async () => {
-            it("when all conditions are satisfied", async () => {
-                const numOfToken = new BN(1000);
-
-                // Deposit tokens
-                await erc20DAI.transfer(user1, numOfToken);
-                await erc20USDC.transfer(user2, numOfToken);
-                await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
-                await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
-                await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
-
-                let marktST = await savingAccount.getMarketState();
-                console.log("marktST", marktST);
-            });
-        });
-    });
-    */
-    // context("getTokenState", async () => {
-    //     // Also being called by getMarketState
-    //     context("should fail", async () => {});
-    //
-    //     context("should succeed", async () => {
-    //         it("when all conditions are satisfied", async () => {
-    //             let tokenST = await savingAccount.getTokenState(addressDAI);
-    //             console.log("marktST", tokenST);
-    //         });
-    //     });
-    // });
-    /*
-    context("getBalances", async () => {
+    context("getTokenState", async () => {
+        // Also being called by getMarketState
         context("should fail", async () => { });
 
         context("should succeed", async () => {
-            it("when sender's address is valid", async () => {
-                const numOfDAI = new BN(1000);
-                const numOfUSDC = new BN(1000);
-
-                await erc20DAI.transfer(user1, numOfDAI);
-                await erc20USDC.transfer(user2, numOfUSDC);
-
-                let balances = await savingAccount.getBalances({ from: user1 });
-                console.log("balances", balances);
+            it("when all conditions are satisfied", async () => {
+                let tokenST = await savingAccount.getTokenState(addressDAI);
+                console.log("marktST", tokenST);
             });
         });
     });
-    */
+
 });
