@@ -644,7 +644,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
-                        .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(11)));
+
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
@@ -668,6 +669,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(user1);
+
                     const ownerETHBefore = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         owner
@@ -718,7 +720,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
-                        .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(11)));
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
