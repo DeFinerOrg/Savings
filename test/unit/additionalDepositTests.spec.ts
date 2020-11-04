@@ -175,12 +175,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                     const savingAccountUSDCTokenBefore = await erc20USDC.balanceOf(
                         savingAccount.address
                     );
+
                     const savingAccountCDAITokenBefore = await cTokenDAI.balanceOfUnderlying.call(
                         savingAccount.address
                     );
                     const savingAccountCUSDCTokenBefore = await cTokenUSDC.balanceOfUnderlying.call(
                         savingAccount.address
                     );
+
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1)));
                     await erc20USDC.transfer(user1, sixPrecision.mul(new BN(1)));
 
@@ -189,6 +191,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         eighteenPrecision.mul(new BN(1)),
                         { from: user1 }
                     );
+
                     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
                         from: user1
                     });
@@ -196,6 +199,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
                         from: user1
                     });
+
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), {
                         from: user1
                     });
@@ -209,12 +213,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
                     const userUSDCBalance = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         user1
                     );
+
                     const savingAccountDAIToken = await erc20DAI.balanceOf(savingAccount.address);
                     const savingAccountUSDCToken = await erc20USDC.balanceOf(savingAccount.address);
+
                     const savingAccountCDAIToken = await cTokenDAI.balanceOfUnderlying.call(
                         savingAccount.address
                     );
@@ -309,9 +316,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                     const savingAccountCWBTCToken = await cTokenWBTC.balanceOfUnderlying.call(
                         savingAccount.address
                     );
-                    // const savingAccountCTUSDToken = await cTokenTUSD.balanceOfUnderlying.call(
-                    //     savingAccount.address
-                    // );
 
                     // verify 1.
                     expect(
@@ -324,9 +328,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     expect(
                         BN(savingAccountCWBTCToken).sub(BN(savingAccountCWBTCTokenBefore))
                     ).to.be.bignumber.equals(eightPrecision.div(new BN(100)).mul(new BN(85)));
-                    // expect(
-                    //     BN(savingAccountCTUSDToken).sub(BN(savingAccountCTUSDTokenBefore))
-                    // ).to.be.bignumber.equals(eighteenPrecision.div(new BN(100)).mul(new BN(85)));
+
                     // verify 3.
                     expect(
                         BN(savingAccountWBTCToken).sub(BN(savingAccountWBTCTokenBefore))
@@ -412,6 +414,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     expect(
                         BN(savingAccountTUSDToken).sub(BN(savingAccountTUSDTokenBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
+
                 });
             });
         });
