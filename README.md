@@ -16,7 +16,12 @@
 
 **4)** Run test scripts
 
-**`yarn test`**
+**`yarn test ./test/**/*`**
+
+**4)** If you want to use truffle test suite to run the test
+- Replace **`await testEngine.deploySavingAccount()`** to **`await testEngine.deploySavingAccountTruffle()`** 
+- Replace **`await testEngine.deploy()`** to **`await testEngine.deployTruffle()`** 
+- Then run **`truffle test`**
 
 ## Passing Tests:
 

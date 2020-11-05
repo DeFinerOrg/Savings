@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -157,6 +157,7 @@ contract("Integration Tests", async (accounts) => {
                     const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
                         new BN(totalDefinerBalanceBeforeDeposit)
                     );
+
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
 
                     // Verify if deposit was successful
@@ -220,7 +221,9 @@ contract("Integration Tests", async (accounts) => {
                         addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
                             tempContractAddress
                         );
+
                         cTokenTemp = await MockCToken.at(addressCTokenTemp);
+
                     }
 
                     await savingAccount.withdrawAll(erc20contr.address, {
