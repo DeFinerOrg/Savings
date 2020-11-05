@@ -2,9 +2,9 @@
 
 **1)** Download the compound-protocol as a submodule & install dependencies:
 
-**`cd Savings && git submodule init && git submodule update`**
-**`cd compound-protocol && yarn install --lock-file`**
-**`cd scenario && npm i`**
+- **`cd Savings && git submodule init && git submodule update`**  
+- **`cd compound-protocol && yarn install --lock-file`**  
+- **`cd scenario && npm i`**
 
 **2)** Install dependencies:
 
