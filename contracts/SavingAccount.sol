@@ -367,9 +367,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
         vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_liquidateToken, _borrower);
         vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_liquidateToken);
-        uint liquidateTokendivisor = _liquidateToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_liquidateToken));
+        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_liquidateToken));
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowToken);
-        uint divisor = _borrowToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowToken));
+        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowToken));
         // liquidationDebtValue 是被清算者能被清算掉的最大金额
         vars.liquidationDebtValue = vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor).mul(vars.liquidationDiscountRatio).div(100);
 
