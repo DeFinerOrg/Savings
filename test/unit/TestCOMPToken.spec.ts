@@ -8,7 +8,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -40,11 +40,11 @@ contract("SavingAccount.COMP", async (accounts) => {
     let addressCTokenForUSDC: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20COMP: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20COMP: t.MockErc20Instance;
 
     before(function () {
         // Things to initialize before all test
@@ -53,7 +53,8 @@ contract("SavingAccount.COMP", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
         COMPTokenAddress = await testEngine.getCOMPTokenAddress();
