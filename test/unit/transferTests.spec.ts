@@ -359,6 +359,9 @@ contract("SavingAccount.transfer", async (accounts) => {
                                 from: user2
                             })
                         );
+                        const balCDAIContractBeforeTransfer = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
                         // Transfer 100 tokens from user2 to user1
                         await savingAccount.transfer(user1, addressDAI, new BN(100), {
                             from: user2
@@ -380,12 +383,19 @@ contract("SavingAccount.transfer", async (accounts) => {
                             new BN(user1BalanceAfterDeposit).sub(new BN(100))
                         );
 
+                        // Verify Compound balance after transfer
+                        const balCDAIContractAfterTransfer = await erc20DAI.balanceOf(cDAI_addr, {
+                            from: user2
+                        });
+                        expect(balCDAIContractAfterTransfer).to.be.bignumber.equal(
+                            balCDAIContractBeforeTransfer
+                        );
+
                         const balCDAIAfterTransfer = BN(
                             await cDAI.balanceOfUnderlying.call(savingAccount.address, {
                                 from: user2
                             })
                         );
-                        console.log("balCETH1", balCDAIAfterTransfer.toString());
 
                         expect(
                             BN(balCDAIAfterTransfer).sub(BN(balCDAIBeforeTransfer))
@@ -411,10 +421,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                         const balCDAIContractBeforeUser2 = await erc20DAI.balanceOf(cDAI_addr, {
                             from: user2
                         });
-                        console.log(
-                            "balCDAIContractBeforeUser2",
-                            balCDAIContractBeforeUser2.toString()
-                        );
 
                         const balCDAIBeforeUser2 = await cDAI.balanceOf(savingAccount.address, {
                             from: user2
@@ -474,7 +480,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                             new BN(user2BalanceAfterDeposit).sub(new BN(user2TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
 
-                        // Some tokens are sent to Compound contract (User 1)
+                        // Some tokens are sent to Compound contract
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100))
@@ -501,42 +507,28 @@ contract("SavingAccount.transfer", async (accounts) => {
                             expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
                         ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
-                        // Some tokens are sent to Compound contract (User 2)
-                        const balCTokenContractUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                        const balCDAIContractBeforeTransfer = await erc20DAI.balanceOf(cDAI_addr, {
                             from: user2
                         });
-                        expect(
-                            new BN(balCDAIContractBeforeUser2).add(
-                                new BN(expectedTokensAtCTokenContract)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContractUser2);
-
-                        // cToken must be minted for SavingAccount (User2)
-                        // get exchange rate and then verify
-                        const balCTokensUser2 = await cDAI.balanceOf(savingAccount.address, {
+                        const balcDAIBeforeTransfer = await cDAI.balanceOf(savingAccount.address, {
                             from: user2
                         });
-                        expect(
-                            expectedCTokensAtSavingAccount.sub(new BN(balCDAIBeforeUser1))
-                        ).to.be.bignumber.equal(new BN(balCTokensUser2).div(new BN(10)));
 
                         // transfer more than reserve
                         await savingAccount.transfer(user1, addressDAI, new BN(500), {
                             from: user2
                         });
 
-                        const balCDAIContractAfterUser2 = await erc20DAI.balanceOf(cDAI_addr, {
+                        // Verify Compound balance after transfer
+                        const balCDAIContractAfterTransfer = await erc20DAI.balanceOf(cDAI_addr, {
                             from: user2
                         });
-                        console.log(
-                            "balCDAIContractAfterUser2",
-                            balCDAIContractAfterUser2.toString()
+                        expect(balCDAIContractAfterTransfer).to.be.bignumber.equal(
+                            balCDAIContractBeforeTransfer
                         );
 
-                        const cDAIDifference = BN(balCDAIContractAfterUser2).sub(
-                            BN(balCDAIContractBeforeUser2)
-                        );
-                        console.log("cDAIDifference", cDAIDifference.toString());
+                        const balcDAIAfterTransfer = await cDAI.balanceOf(savingAccount.address);
+                        expect(balcDAIAfterTransfer).to.be.bignumber.equal(balcDAIBeforeTransfer);
 
                         // Verify balances of user1 & user2 after transfer
                         let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
@@ -711,10 +703,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         .mul(new BN(85))
                         .div(new BN(100))
                         .mul(new BN(2));
-                    const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                    const balCETHContract = await web3.eth.getBalance(cETH_addr);
                     expect(
                         new BN(balCETHContractBefore).add(new BN(expectedTokensAtCTokenContract))
-                    ).to.be.bignumber.equal(balCTokenContract);
+                    ).to.be.bignumber.equal(balCETHContract);
 
                     // cToken must be minted for SavingAccount
                     const expectedCTokensAtSavingAccount = depositAmount
@@ -730,7 +722,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const balCETHBeforeTransfer = BN(
                         await cETH.balanceOfUnderlying.call(savingAccount.address, { from: user2 })
                     );
-                    console.log("balCETH0", balCETHBeforeTransfer.toString());
 
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
@@ -763,9 +754,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const balCETHAfterTransfer = BN(
                         await cETH.balanceOfUnderlying.call(savingAccount.address, { from: user2 })
                     );
-                    console.log("balCETH1", balCETHAfterTransfer.toString());
+                    const balCETHContractAfterTransfer = await web3.eth.getBalance(cETH_addr);
 
+                    // Verify the Compound balance after transfer
                     expect(balCETHBeforeTransfer).to.be.bignumber.equals(balCETHAfterTransfer);
+                    expect(balCETHContract).to.be.bignumber.equals(balCETHContractAfterTransfer);
                 });
 
                 it("L9: Transfer large amount of balance", async function() {
@@ -841,11 +834,6 @@ contract("SavingAccount.transfer", async (accounts) => {
                         new BN(balCTokens).div(new BN(10))
                     );
 
-                    const balCETH0 = BN(
-                        await cETH.balanceOfUnderlying.call(savingAccount.address, { from: user2 })
-                    );
-                    console.log("balCETH0", balCETH0.toString());
-
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                         from: user2
@@ -853,18 +841,12 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     const balCETHContractAfterTransfer = await web3.eth.getBalance(cETH_addr);
                     const balCTokensAfterTransfer = await cETH.balanceOf(savingAccount.address, {
-                        from: user1
+                        from: user2
                     });
 
-                    const balCETH1 = BN(
-                        await cETH.balanceOfUnderlying.call(savingAccount.address, {
-                            from: user2
-                        })
-                    );
-                    console.log("balCETH1", balCETH1.toString());
-
+                    // Verify the Compound balance after transfer
                     expect(balCETHContractAfterTransfer).to.be.bignumber.equal(balCETHContract);
-                    expect(balCTokensAfterTransfer).to.be.bignumber.equal(balCTokens); //balanceOfUnderlying
+                    expect(balCTokensAfterTransfer).to.be.bignumber.equal(balCTokens);
 
                     // Verify balances of user1 & user2 after transfer
                     let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
