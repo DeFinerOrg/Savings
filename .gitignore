@@ -25,3 +25,6 @@ cache
 artifacts
 
 .openzeppelin/.session
+
+# Local network file
+test-helpers/development.json
