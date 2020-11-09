@@ -375,7 +375,8 @@ contract Accounts is Constant, Initializable{
         // );
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) && totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio)
     }
 
     struct LiquidationVars {
