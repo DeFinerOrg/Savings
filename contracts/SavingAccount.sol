@@ -315,7 +315,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         // address token;
         // uint256 tokenPrice;
         // uint256 coinValue;
-        uint256 liquidationDebtValue;
+        uint256 borrowerCollateralValue;
         // uint256 tokenAmount;
         // uint256 tokenDivisor;
         uint256 msgTotalBorrow;
@@ -362,7 +362,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         vars.borrowPower = globalConfig.accounts().getBorrowPower(_borrower);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowToken);
-        // limitRepaymentValue 是被清算者能被清算的最大金额
+        // limitRepaymentValue 是被清算者能清算的最大金额
         vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(vars.liquidationDiscountRatio).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
 
         vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_liquidateToken, _borrower);
@@ -370,22 +370,22 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_liquidateToken));
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowToken);
         uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowToken));
-        // liquidationDebtValue 是被清算者能被清算掉的最大金额
-        vars.liquidationDebtValue = vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor).mul(vars.liquidationDiscountRatio).div(100);
+        // borrowerCollateralValue 是被清算者能被清算掉的最大金额
+        vars.borrowerCollateralValue = vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).mul(vars.liquidationDiscountRatio).div(liquidateTokendivisor).div(100);
 
-        //判断targetTokenBalance targetTokenBalanceBorrowed limitRepaymentValue liquidationDebtValue 的最小值参与计算
-        if (vars.limitRepaymentValue < vars.targetTokenBalance && vars.limitRepaymentValue < vars.targetTokenBalanceBorrowed && vars.limitRepaymentValue < vars.liquidationDebtValue) {
+        //判断targetTokenBalance targetTokenBalanceBorrowed limitRepaymentValue borrowerCollateralValue 的最小值参与计算
+        if (vars.limitRepaymentValue < vars.targetTokenBalance && vars.limitRepaymentValue < vars.targetTokenBalanceBorrowed && vars.limitRepaymentValue < vars.borrowerCollateralValue) {
             // vars.targetTokenBalance = vars.limitRepaymentValue;
             vars.repayAmount = vars.limitRepaymentValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
             vars.payAmount = vars.limitRepaymentValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        } else if (vars.targetTokenBalanceBorrowed < vars.targetTokenBalance && vars.targetTokenBalanceBorrowed < vars.limitRepaymentValue && vars.targetTokenBalanceBorrowed < vars.liquidationDebtValue) {
+        } else if (vars.targetTokenBalanceBorrowed < vars.targetTokenBalance && vars.targetTokenBalanceBorrowed < vars.limitRepaymentValue && vars.targetTokenBalanceBorrowed < vars.borrowerCollateralValue) {
             // vars.targetTokenBalance = vars.targetTokenBalanceBorrowed;
             vars.repayAmount = vars.targetTokenBalanceBorrowed.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
             vars.payAmount = vars.targetTokenBalanceBorrowed.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        } else if (vars.liquidationDebtValue < vars.targetTokenBalance && vars.liquidationDebtValue < vars.targetTokenBalanceBorrowed && vars.liquidationDebtValue < vars.limitRepaymentValue) {
-            // vars.targetTokenBalance = vars.liquidationDebtValue;
-            vars.repayAmount = vars.liquidationDebtValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-            vars.payAmount = vars.liquidationDebtValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
+        } else if (vars.borrowerCollateralValue < vars.targetTokenBalance && vars.borrowerCollateralValue < vars.targetTokenBalanceBorrowed && vars.borrowerCollateralValue < vars.limitRepaymentValue) {
+            // vars.targetTokenBalance = vars.borrowerCollateralValue;
+            vars.repayAmount = vars.borrowerCollateralValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
+            vars.payAmount = vars.borrowerCollateralValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
         } else {
             if (vars.targetTokenBalance.mul(100).div(vars.liquidationDiscountRatio) > vars.liquidateTokenBalance){
                 vars.repayAmount = vars.liquidateTokenBalance.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
@@ -397,7 +397,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         }
 
         globalConfig.accounts().withdraw(msg.sender, _borrowToken, vars.repayAmount);
-        globalConfig.accounts().deposit(_borrower, _borrowToken, vars.repayAmount);
+        globalConfig.accounts().repay(_borrower, _borrowToken, vars.repayAmount);
         globalConfig.accounts().withdraw(_borrower, _liquidateToken, vars.payAmount);
         globalConfig.accounts().deposit(msg.sender, _liquidateToken, vars.payAmount);
     }
