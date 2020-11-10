@@ -191,27 +191,6 @@ contract("Integration Tests", async (accounts) => {
                             savingAccount.address
                         );
                         expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
-
-                        /* if (i == 1 || i == 2) {
-                            // Decimal precision for USDC & USDT
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } else if (i == 6) {
-                            // Decimal precision for ZRX
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } else if (i == 8) {
-                            // Decimal precision for WBTC
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } else {
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } */
                     }
                 }
 
