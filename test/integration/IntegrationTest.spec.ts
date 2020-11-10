@@ -63,15 +63,15 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function () {
+    before(function() {
         this.timeout(0);
         // Things to initialize before all test
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0)
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -110,7 +110,7 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit all tokens and withdraw all tokens", async function () {
+            it("should deposit all tokens and withdraw all tokens", async function() {
                 this.timeout(0);
                 const numOfToken = new BN(1000);
 
@@ -187,27 +187,31 @@ contract("Integration Tests", async (accounts) => {
                         const expectedCTokensAtSavingAccount = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
-                        const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
-                        if (i == 1 || i == 2) {
+                        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+
+                        /* if (i == 1 || i == 2) {
                             // Decimal precision for USDC & USDT
                             expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens.div(new BN(10).pow(new BN(5)))
+                                balCTokens
                             );
                         } else if (i == 6) {
                             // Decimal precision for ZRX
                             expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens.div(new BN(10).pow(new BN(6)))
+                                balCTokens
                             );
                         } else if (i == 8) {
                             // Decimal precision for WBTC
                             expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens.div(new BN(10).pow(new BN(4)))
+                                balCTokens
                             );
                         } else {
                             expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens.div(new BN(10))
+                                balCTokens
                             );
-                        }
+                        } */
                     }
                 }
 
@@ -247,9 +251,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async function () {
-                this.timeout(0)
-                // failing at BAT -- safeERC20 low level call failed
+            it("should deposit all and withdraw only non-Compound tokens (MKR, TUSD)", async function() {
+                this.timeout(0);
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
@@ -264,16 +267,68 @@ contract("Integration Tests", async (accounts) => {
                         erc20contr.address,
                         owner
                     );
+                    const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10
+                            ? numOfToken
+                            : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
                     );
+
+                    console.log("check1");
+
+                    /* // Verify balance on Compound
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
+                        const expectedTokensAtCTokenContract = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await erc20contr.balanceOf(addressCTokenTemp);
+                        console.log("i=", i);
+
+                        console.log("balCTokenContract", balCTokenContract.toString());
+                        console.log("balCTokenContractInit", balCTokenContractInit.toString());
+
+                        expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
+                            new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
+                        );
+                        console.log("check11");
+
+                        const expectedCTokensAtSavingAccount = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        console.log("check12");
+
+                        if (i == 1 || i == 2) {
+                            // Decimal precision for USDC & USDT
+                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                                balCTokens
+                            );
+                            console.log("check2");
+                        } else if (i == 6) {
+                            // Decimal precision for ZRX
+                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                                balCTokens
+                            );
+                        } else if (i == 8) {
+                            // Decimal precision for WBTC
+                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                                balCTokens
+                            );
+                        } else {
+                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                                balCTokens
+                            );
+                        }
+                    } */
 
                     // Validate the total balance on DeFiner after deposit
                     const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -307,9 +362,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw Compound supported tokens", async function () {
-                this.timeout(0)
-                // failing at BAT -- safeERC20 low level call failed
+            it("should deposit all and withdraw Compound supported tokens", async function() {
+                this.timeout(0);
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
@@ -329,7 +383,9 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10
+                            ? numOfToken
+                            : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -373,8 +429,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit all and withdraw only token with less than 18 decimals", async function () {
-                this.timeout(0)
+            it("should deposit all and withdraw only token with less than 18 decimals", async function() {
+                this.timeout(0);
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
@@ -394,7 +450,9 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10
+                            ? numOfToken
+                            : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -432,8 +490,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("should deposit 1 million of each token, wait for a week, withdraw all", async function () {
-                this.timeout(0)
+            it("should deposit 1 million of each token, wait for a week, withdraw all", async function() {
+                this.timeout(0);
                 const numOfToken = new BN(10).pow(new BN(6));
 
                 // Deposit all tokens
@@ -453,7 +511,9 @@ contract("Integration Tests", async (accounts) => {
 
                     //Verify if deposit was successful
                     const expectedTokensAtSavingAccountContract =
-                        i == 3 || i == 4 || i == 9 || i == 10 ? numOfToken : numOfToken.mul(new BN(15)).div(new BN(100));
+                        i == 3 || i == 4 || i == 9 || i == 10
+                            ? numOfToken
+                            : numOfToken.mul(new BN(15)).div(new BN(100));
                     const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
                     expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
                         balSavingAccount
@@ -498,8 +558,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit and Borrow", async () => {
         context("should succeed", async () => {
-            it("should deposit $1 million value and borrow 0.6 million", async function () {
-                this.timeout(0)
+            it("should deposit $1 million value and borrow 0.6 million", async function() {
+                this.timeout(0);
                 const numOfToken = eighteenPrecision.mul(new BN(10).pow(new BN(6)));
                 const numOfUSDC = sixPrecision.mul(new BN(10).pow(new BN(7)));
                 const borrowTokens = eighteenPrecision
@@ -582,8 +642,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowtDAIUser2).to.be.bignumber.equal(borrowTokens);
             });
 
-            it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async function () {
-                this.timeout(0)
+            it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async function() {
+                this.timeout(0);
                 //user1 deposits 1000 full tokens of DAI
                 //user2 deposits 1000 full of USDC
                 //user1 borrows 300 full tokens of USDC which are more than reserve(150 full tokens)
@@ -654,8 +714,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
             });
 
-            it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async function () {
-                this.timeout(0)
+            it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async function() {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
@@ -722,8 +782,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
             });
 
-            it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async function () {
-                this.timeout(0)
+            it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async function() {
+                this.timeout(0);
                 // 1. User 1 deposits 100,000 USDC
                 const numOfUSDC = new BN(100000);
                 const numOfToken = new BN(1000);
@@ -812,8 +872,8 @@ contract("Integration Tests", async (accounts) => {
                 }
             });
 
-            it("when user deposits DAI, borrows USDC and tries to deposit his borrowed tokens", async function () {
-                this.timeout(0)
+            it("when user deposits DAI, borrows USDC and tries to deposit his borrowed tokens", async function() {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
@@ -883,8 +943,8 @@ contract("Integration Tests", async (accounts) => {
         });
 
         context("should fail", async () => {
-            it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async function () {
-                this.timeout(0)
+            it("when user deposits USDC, borrows DAI and wants to deposit DAI without repaying", async function() {
+                this.timeout(0);
                 const numOfToken = new BN(2000);
                 const depositTokens = new BN(1000);
                 const borrowTokens = new BN(600);
@@ -952,8 +1012,8 @@ contract("Integration Tests", async (accounts) => {
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
             // Borrow and repay of tokens with less than 18 decimals
-            it("should deposit DAI, borrow USDC and repay after one month", async function () {
-                this.timeout(0)
+            it("should deposit DAI, borrow USDC and repay after one month", async function() {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision;
                 const numOfUSDC = new BN(1000);
@@ -1031,8 +1091,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(totalDefinerBalanceAfterRepayUSDCUser1).to.be.bignumber.equal(ZERO);
             });
 
-            it("User deposits DAI , borrows USDC, deposits DAI again, borrows USDC again and then repays", async function () {
-                this.timeout(0)
+            it("User deposits DAI , borrows USDC, deposits DAI again, borrows USDC again and then repays", async function() {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision;
                 const numOfUSDC = sixPrecision;
@@ -1113,8 +1173,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async function () {
-                this.timeout(0)
+            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw", async function() {
+                this.timeout(0);
                 const numOfDAI = eighteenPrecision.mul(new BN(10));
                 const numOfUSDC = sixPrecision.mul(new BN(10));
                 const borrowAmount = numOfUSDC.div(new BN(10));
@@ -1202,7 +1262,7 @@ contract("Integration Tests", async (accounts) => {
                 );
             });
 
-            context("should fail", async () => { });
+            context("should fail", async () => {});
         });
     });
 
@@ -1220,8 +1280,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("with ETH", async () => {
         context("should succeed", async () => {
-            it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async function () {
-                this.timeout(0)
+            it("should deposit ETH, borrow DAI & USDC, withdraw all remaining ETH", async function() {
+                this.timeout(0);
                 const numOfETH = eighteenPrecision.mul(new BN(10));
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
@@ -1302,8 +1362,8 @@ contract("Integration Tests", async (accounts) => {
                 //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft); // minute difference between the two
             });
 
-            it("should deposit ETH, borrow more than reserve if collateral is sufficient", async function () {
-                this.timeout(0)
+            it("should deposit ETH, borrow more than reserve if collateral is sufficient", async function() {
+                this.timeout(0);
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
 
@@ -1330,8 +1390,8 @@ contract("Integration Tests", async (accounts) => {
                 expect(new BN(user1DAIBalance)).to.be.bignumber.equal(new BN(200));
             });
 
-            it("should deposit ETH, borrow different tokens deposited by multiple users", async function () {
-                this.timeout(0)
+            it("should deposit ETH, borrow different tokens deposited by multiple users", async function() {
+                this.timeout(0);
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
@@ -1411,8 +1471,8 @@ contract("Integration Tests", async (accounts) => {
             });
         });
 
-        it("should deposit DAI and borrow DAI only after withdrawing first", async function () {
-            this.timeout(0)
+        it("should deposit DAI and borrow DAI only after withdrawing first", async function() {
+            this.timeout(0);
             /* const numOfToken = new BN(1000);
                 // 1. Transfer 1000 DAI to user 1 & 2, 1000 USDC to user 1
                 await erc20DAI.transfer(user1, numOfDAI);
@@ -1463,9 +1523,9 @@ contract("Integration Tests", async (accounts) => {
                 expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
         });
 
-        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
+        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
     });
-    context("should fail", async () => { });
+    context("should fail", async () => {});
 
     context("Deposit, Borrow and liquidate", async () => {
         it("");

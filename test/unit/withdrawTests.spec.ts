@@ -564,7 +564,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                         ).to.be.bignumber.equal(balCToken);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccount = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -620,7 +620,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -746,7 +746,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -845,7 +845,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -959,7 +959,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1041,7 +1041,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1102,7 +1102,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                         ).to.be.bignumber.equal(balCToken);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccount = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1160,7 +1160,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1281,7 +1281,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1378,7 +1378,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1505,7 +1505,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             )
                         ).to.be.bignumber.equal(balCTokenAfterDeposit);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccountAfterDeposit = depositAmount
                             .mul(new BN(85))
                             .div(new BN(100));
@@ -1667,7 +1667,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCToken))
                         ).to.be.bignumber.equal(balCToken);
 
-                        // 4.4 cToken must be minted for SavingAccount
+                        // cToken must be minted for SavingAccount
                         const expectedCTokensAtSavingAccount = numOfTokens
                             .mul(new BN(85))
                             .div(new BN(100));
