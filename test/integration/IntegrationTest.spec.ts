@@ -260,6 +260,13 @@ contract("Integration Tests", async (accounts) => {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
 
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
+                        addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                            tempContractAddress
+                        );
+                        cTokenTemp = await MockCToken.at(addressCTokenTemp);
+                    }
+
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
@@ -281,23 +288,16 @@ contract("Integration Tests", async (accounts) => {
                         balSavingAccount
                     );
 
-                    console.log("check1");
-
-                    /* // Verify balance on Compound
+                    // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
                         const expectedTokensAtCTokenContract = numOfToken
                             .mul(new BN(85))
                             .div(new BN(100));
                         const balCTokenContract = await erc20contr.balanceOf(addressCTokenTemp);
-                        console.log("i=", i);
-
-                        console.log("balCTokenContract", balCTokenContract.toString());
-                        console.log("balCTokenContractInit", balCTokenContractInit.toString());
 
                         expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
                             new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
                         );
-                        console.log("check11");
 
                         const expectedCTokensAtSavingAccount = numOfToken
                             .mul(new BN(85))
@@ -305,30 +305,8 @@ contract("Integration Tests", async (accounts) => {
                         const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
                             savingAccount.address
                         );
-                        console.log("check12");
-
-                        if (i == 1 || i == 2) {
-                            // Decimal precision for USDC & USDT
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                            console.log("check2");
-                        } else if (i == 6) {
-                            // Decimal precision for ZRX
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } else if (i == 8) {
-                            // Decimal precision for WBTC
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        } else {
-                            expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                                balCTokens
-                            );
-                        }
-                    } */
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                    }
 
                     // Validate the total balance on DeFiner after deposit
                     const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -370,6 +348,14 @@ contract("Integration Tests", async (accounts) => {
                 for (let i = 0; i < 11; i++) {
                     tempContractAddress = tokens[i];
                     erc20contr = await ERC20.at(tempContractAddress);
+
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
+                        addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                            tempContractAddress
+                        );
+                        cTokenTemp = await MockCToken.at(addressCTokenTemp);
+                    }
+
                     //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                     await erc20contr.approve(savingAccount.address, numOfToken);
                     //await erc20contr.approve(savingAccount.address, numOfToken);
@@ -378,6 +364,7 @@ contract("Integration Tests", async (accounts) => {
                         erc20contr.address,
                         owner
                     );
+                    const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                     await savingAccount.deposit(erc20contr.address, numOfToken);
 
@@ -401,6 +388,26 @@ contract("Integration Tests", async (accounts) => {
                         new BN(totalDefinerBalanceBeforeDeposit)
                     );
                     expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
+
+                    // Verify balance on Compound
+                    if (i != 3 && i != 4 && i != 9 && i != 10) {
+                        const expectedTokensAtCTokenContract = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokenContract = await erc20contr.balanceOf(addressCTokenTemp);
+
+                        expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
+                            new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
+                        );
+
+                        const expectedCTokensAtSavingAccount = numOfToken
+                            .mul(new BN(85))
+                            .div(new BN(100));
+                        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
+                    }
                 }
 
                 for (let i = 0; i < 11; i++) {
