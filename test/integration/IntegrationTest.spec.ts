@@ -244,9 +244,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify Compound balance
                     const balCToken = await erc20contr.balanceOf(addressCTokenTemp);
+                    //expect(ZERO).to.be.bignumber.equal(balCToken);
 
                     // Verify CToken balance
-                    const balCTokens = await cTokenTemp.balanceOf(savingAccount.address);
+                    const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     expect(ZERO).to.be.bignumber.equal(balCTokens);
 
                     // Verify DeFiner balance
@@ -425,6 +428,16 @@ contract("Integration Tests", async (accounts) => {
                             owner
                         );
                         expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
+
+                        // Verify Compound balance
+                        const balCToken = await erc20contr.balanceOf(addressCTokenTemp);
+                        //expect(ZERO).to.be.bignumber.equal(balCToken);
+
+                        // Verify CToken balance
+                        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        expect(ZERO).to.be.bignumber.equal(balCTokens);
                     }
                 }
             });
@@ -579,6 +592,13 @@ contract("Integration Tests", async (accounts) => {
                     tempContractAddress = tokens[j];
                     erc20contr = await ERC20.at(tempContractAddress);
 
+                    if (j != 3 && j != 4 && j != 9 && j != 10) {
+                        addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                            tempContractAddress
+                        );
+                        cTokenTemp = await MockCToken.at(addressCTokenTemp);
+                    }
+
                     await savingAccount.withdrawAll(erc20contr.address);
 
                     //Verify if withdrawAll was successful
@@ -591,10 +611,14 @@ contract("Integration Tests", async (accounts) => {
                         owner
                     );
                     expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
+
+                    // Verify CToken balance
+                    const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
+                    expect(ZERO).to.be.bignumber.equal(balCTokens);
                 }
             });
-
-            it("should deposit and withdraw with interest");
         });
     });
 
@@ -686,6 +710,15 @@ contract("Integration Tests", async (accounts) => {
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
                 // 2. Borrow $0.6 million
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
 
@@ -704,6 +737,27 @@ contract("Integration Tests", async (accounts) => {
                     user2
                 );
                 expect(totalDefinerBalanceAfterBorrowtDAIUser2).to.be.bignumber.equal(borrowTokens);
+
+                // Verify Compound after Borrow
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCDAIContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCDAIContractAfterBorrow)
+                );
+                expect(BN(balCDAIBeforeBorrow)).to.be.bignumber.greaterThan(BN(balCDAIAfterBorrow));
+
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCUSDCContractAfterBorrow)
+                );
+                expect(BN(balCUSDCBeforeBorrow)).to.be.bignumber.equal(BN(balCUSDCAfterBorrow));
             });
 
             it("should allow the borrow of tokens which are more than reserve if user has enough collateral", async function() {
@@ -767,6 +821,15 @@ contract("Integration Tests", async (accounts) => {
 
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
 
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
                 // 2. Borrow USDC
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
                     from: user1
@@ -790,6 +853,34 @@ contract("Integration Tests", async (accounts) => {
                     user1
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
+
+                // Verify Compound after Borrow
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCDAIContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCDAIContractAfterBorrow)
+                );
+                console.log("check1");
+
+                expect(BN(balCDAIBeforeBorrow)).to.be.bignumber.equal(BN(balCDAIAfterBorrow));
+                console.log("check2");
+
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCUSDCContractAfterBorrow)
+                );
+                console.log("check3");
+                expect(BN(balCUSDCBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCUSDCAfterBorrow)
+                );
+                console.log("check4");
             });
 
             it("should deposit DAI and borrow USDC tokens whose amount is equal to ILTV of collateral", async function() {
@@ -825,9 +916,6 @@ contract("Integration Tests", async (accounts) => {
                 );
                 expect(totalDefinerBalanceChangeDAI).to.be.bignumber.equal(numOfDAI);
 
-                // Verify Compound balance (cDAI)
-                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
-
                 const totalDefinerBalanceAfterDepositUSDC = await accountsContract.getDepositBalanceCurrent(
                     erc20USDC.address,
                     user2
@@ -837,6 +925,9 @@ contract("Integration Tests", async (accounts) => {
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
+                // Verify Compound balance (cDAI)
+                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
+
                 // Verify Compound balance (cUSDC)
                 await compoundVerify(
                     cUSDC_addr,
@@ -844,6 +935,15 @@ contract("Integration Tests", async (accounts) => {
                     BN(balCUSDCContractInit),
                     erc20USDC,
                     cUSDC
+                );
+
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
                 );
 
                 // 2. Start borrowing.
@@ -872,6 +972,34 @@ contract("Integration Tests", async (accounts) => {
                     user1
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
+
+                // Verify Compound after Borrow
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCDAIContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCDAIContractAfterBorrow)
+                );
+                console.log("check1");
+
+                expect(BN(balCDAIBeforeBorrow)).to.be.bignumber.equal(BN(balCDAIAfterBorrow));
+                console.log("check2");
+
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCUSDCContractAfterBorrow)
+                );
+                console.log("check3");
+                expect(BN(balCUSDCBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCUSDCAfterBorrow)
+                );
+                console.log("check4");
             });
 
             it("should deposit DAI and 3 different users should borrow USDC in gaps of 1 month", async function() {
@@ -1057,6 +1185,15 @@ contract("Integration Tests", async (accounts) => {
                     cUSDC
                 );
 
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
                 // 2. Start borrowing.
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
                 const borrowAmount = sixPrecision.mul(new BN(10));
@@ -1078,6 +1215,32 @@ contract("Integration Tests", async (accounts) => {
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
 
+                // Verify Compound after Borrow
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCDAIContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCDAIContractAfterBorrow)
+                );
+                console.log("check1");
+
+                expect(BN(balCDAIBeforeBorrow)).to.be.bignumber.equal(BN(balCDAIAfterBorrow));
+                console.log("check2");
+
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCUSDCContractAfterBorrow)
+                );
+                console.log("check3");
+                expect(BN(balCUSDCBeforeBorrow)).to.be.bignumber.equal(BN(balCUSDCAfterBorrow));
+                console.log("check4");
+
                 const balCUSDCContractBeforeDeposit2 = await erc20USDC.balanceOf(cUSDC_addr);
 
                 // TODO: balance verify for USDC
@@ -1085,8 +1248,6 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.deposit(addressUSDC, new BN(1000), {
                     from: user1
                 });
-
-                console.log("check666");
 
                 // Verify Compound balance (cUSDC)
                 /* await compoundVerify(
@@ -1162,6 +1323,15 @@ contract("Integration Tests", async (accounts) => {
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(depositTokens);
 
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
                 const user2BalanceBeforeBorrow = await erc20DAI.balanceOf(user2);
 
                 // 2. Borrow
@@ -1178,6 +1348,32 @@ contract("Integration Tests", async (accounts) => {
                     user2
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser2).to.be.bignumber.equal(borrowTokens);
+
+                // Verify Compound after Borrow
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCDAIContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    BN(balCDAIContractAfterBorrow)
+                );
+                console.log("check1");
+
+                expect(BN(balCDAIBeforeBorrow)).to.be.bignumber.greaterThan(BN(balCDAIAfterBorrow));
+                console.log("check2");
+
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+
+                expect(BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.equal(
+                    BN(balCUSDCContractAfterBorrow)
+                );
+                console.log("check3");
+                expect(BN(balCUSDCBeforeBorrow)).to.be.bignumber.equal(BN(balCUSDCAfterBorrow));
+                console.log("check4");
 
                 await expectRevert(
                     savingAccount.deposit(addressDAI, borrowTokens, { from: user2 }),
