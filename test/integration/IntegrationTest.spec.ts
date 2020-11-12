@@ -2336,6 +2336,7 @@ contract("Integration Tests", async (accounts) => {
                 // Verify Compound balance (cZRX)
                 /* await compoundVerify(cZRX_addr, numOfZRX, BN(balCZRXContractInit), erc20ZRX, cZRX);
                 console.log("cZRX-n"); */
+                // Check deposit bal of user5
 
                 let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
                 console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
