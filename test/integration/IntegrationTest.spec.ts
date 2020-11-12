@@ -42,10 +42,17 @@ contract("Integration Tests", async (accounts) => {
     let cUSDC_addr: any;
     let cUSDT_addr: any;
     let cWBTC_addr: any;
+    let cETH_addr: any;
+    let cBAT_addr: any;
+    let cZRX_addr: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
     let cUSDT: t.MockCTokenInstance;
     let cWBTC: t.MockCTokenInstance;
+    let cBAT: t.MockCTokenInstance;
+    let cZRX: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
+
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
@@ -55,6 +62,7 @@ contract("Integration Tests", async (accounts) => {
     let erc20ZRX: t.MockErc20Instance;
     let erc20REP: t.MockErc20Instance;
     let erc20WBTC: t.MockErc20Instance;
+
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
@@ -102,10 +110,17 @@ contract("Integration Tests", async (accounts) => {
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cBAT_addr = await testEngine.tokenInfoRegistry.getCToken(addressBAT);
+        cZRX_addr = await testEngine.tokenInfoRegistry.getCToken(addressZRX);
+        cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
+
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+        cBAT = await MockCToken.at(cBAT_addr);
+        cZRX = await MockCToken.at(cZRX_addr);
+        cETH = await MockCToken.at(cETH_addr);
     });
 
     // Funtion to verify Compound balance in tests
@@ -121,14 +136,10 @@ contract("Integration Tests", async (accounts) => {
         expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
             new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
         );
-        //console.log("balCTokenContract", balCTokenContract.toString());
 
         const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
         const balCTokens = await cTokenTemp.balanceOfUnderlying.call(savingAccount.address);
         expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
-        //console.log("balCTokens", balCTokens.toString());
-
-        //return true;
     };
 
     context("Deposit and Withdraw", async () => {
@@ -1193,14 +1204,16 @@ contract("Integration Tests", async (accounts) => {
                     erc20USDC.address,
                     user2
                 );
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
 
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
 
                 // Validate the total balance on DeFiner after deposit
                 const totalDefinerBalanceAfterDepositDAI = await accountsContract.getDepositBalanceCurrent(
@@ -1222,19 +1235,35 @@ contract("Integration Tests", async (accounts) => {
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
+                // Verify Compound balance (cDAI)
+                await compoundVerify(
+                    cDAI_addr,
+                    depositAmount,
+                    BN(balCDAIContractInit),
+                    erc20DAI,
+                    cDAI
+                );
+
+                // Verify Compound balance (cUSDC)
+                await compoundVerify(
+                    cUSDC_addr,
+                    numOfUSDC,
+                    BN(balCUSDCContractInit),
+                    erc20USDC,
+                    cUSDC
+                );
+
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
 
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
-                const user1BalanceBefore = await erc20USDC.balanceOf(user1);
+                const user1BalanceBeforeRepay = await erc20USDC.balanceOf(user1);
 
                 const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
                     erc20USDC.address,
                     user1
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(new BN(100));
-
-                const user1BalanceBeforeRepay = await erc20USDC.balanceOf(user1);
 
                 // fastforward
                 await savingAccount.fastForward(100000000);
@@ -1246,8 +1275,9 @@ contract("Integration Tests", async (accounts) => {
                 // 4. Verify the repay amount.
                 const user1BalanceAfter = await erc20USDC.balanceOf(user1);
                 expect(
-                    new BN(user1BalanceBefore).sub(new BN(user1BalanceBeforeBorrow))
+                    new BN(user1BalanceBeforeRepay).sub(new BN(user1BalanceBeforeBorrow))
                 ).to.be.bignumber.equal(new BN(100));
+                //TODO:
                 // 912949920
                 //expect(user1BalanceAfter).to.be.bignumber.equal(ZERO);
 
@@ -1273,6 +1303,8 @@ contract("Integration Tests", async (accounts) => {
                     erc20USDC.address,
                     user2
                 );
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
 
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
@@ -1301,6 +1333,24 @@ contract("Integration Tests", async (accounts) => {
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
+                // Verify Compound balance (cDAI)
+                await compoundVerify(
+                    cDAI_addr,
+                    depositAmount,
+                    BN(balCDAIContractInit),
+                    erc20DAI,
+                    cDAI
+                );
+
+                // Verify Compound balance (cUSDC)
+                await compoundVerify(
+                    cUSDC_addr,
+                    numOfUSDC,
+                    BN(balCUSDCContractInit),
+                    erc20USDC,
+                    cUSDC
+                );
+
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
 
                 // 2. Start borrowing.
@@ -1313,8 +1363,22 @@ contract("Integration Tests", async (accounts) => {
                 );
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(new BN(100));
 
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+
                 // Deposit and borrow again
                 await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+
+                /* console.log("deposit2");
+
+                // Verify Compound balance (cDAI)
+                await compoundVerify(
+                    cDAI_addr,
+                    depositAmount,
+                    BN(balCDAIContractAfterBorrow),
+                    erc20DAI,
+                    cDAI
+                ); */
+
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
 
                 const user1BalanceBeforeRepay = await erc20USDC.balanceOf(user1);
@@ -1353,6 +1417,8 @@ contract("Integration Tests", async (accounts) => {
                     erc20USDC.address,
                     user2
                 );
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
 
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
@@ -1384,6 +1450,18 @@ contract("Integration Tests", async (accounts) => {
                     totalDefinerBalanceAfterDepositUSDC
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
+
+                // Verify Compound balance (cDAI)
+                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
+
+                // Verify Compound balance (cUSDC)
+                await compoundVerify(
+                    cUSDC_addr,
+                    numOfUSDC,
+                    BN(balCUSDCContractInit),
+                    erc20USDC,
+                    cUSDC
+                );
 
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
                 // 2. Borrow USDC
@@ -1452,6 +1530,12 @@ contract("Integration Tests", async (accounts) => {
                 const numOfETH = eighteenPrecision.mul(new BN(10));
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
+                const balCETHContractInit = await web3.eth.getBalance(cETH_addr);
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCTokensBefore = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
 
                 // 1. Deposit collateral
                 await erc20DAI.transfer(user2, numOfDAI);
@@ -1469,6 +1553,34 @@ contract("Integration Tests", async (accounts) => {
                 });
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user3 });
+
+                // Some tokens are sent to Compound contract (ETH)
+                const expectedTokensAtCTokenContract = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                expect(
+                    new BN(balCETHContractInit).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
+
+                // cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokensAfter = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokensAfter.sub(balCTokensBefore)
+                );
+
+                // Verify Compound balance (cDAI)
+                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
+
+                // Verify Compound balance (cUSDC)
+                await compoundVerify(
+                    cUSDC_addr,
+                    numOfUSDC,
+                    BN(balCUSDCContractInit),
+                    erc20USDC,
+                    cUSDC
+                );
 
                 let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
 
@@ -1525,14 +1637,20 @@ contract("Integration Tests", async (accounts) => {
                 let accountBalanceDiff = new BN(ETHbalanceAfterWithdraw).sub(
                     new BN(ETHbalanceBeforeWithdraw)
                 );
+                //TODO:
                 // validate user 1 ETH balance
-                //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft); // minute difference between the two
+                //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft);
             });
 
             it("should deposit ETH, borrow more than reserve if collateral is sufficient", async function() {
                 this.timeout(0);
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
+                const balCETHContractInit = await web3.eth.getBalance(cETH_addr);
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCTokensBefore = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
 
                 // 1. Deposit collateral
                 await erc20DAI.transfer(user2, numOfDAI);
@@ -1545,6 +1663,25 @@ contract("Integration Tests", async (accounts) => {
                     value: numOfETH
                 });
                 await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
+
+                // Some tokens are sent to Compound contract (ETH)
+                const expectedTokensAtCTokenContract = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                expect(
+                    new BN(balCETHContractInit).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
+
+                // cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokensAfter = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokensAfter.sub(balCTokensBefore)
+                );
+
+                // Verify Compound balance (cDAI)
+                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
 
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, new BN(200), { from: user1 });
@@ -1559,6 +1696,16 @@ contract("Integration Tests", async (accounts) => {
 
             it("should deposit ETH, borrow different tokens deposited by multiple users", async function() {
                 this.timeout(0);
+
+                const balCETHContractInit = await web3.eth.getBalance(cETH_addr);
+                const balCTokensBefore = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
+                const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
+                const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCBATContractInit = await erc20BAT.balanceOf(cBAT_addr);
+                const balCZRXContractInit = await erc20ZRX.balanceOf(cZRX_addr);
+
                 const numOfETH = eighteenPrecision;
                 const numOfDAI = new BN(1000);
                 const numOfUSDC = new BN(1000);
@@ -1599,6 +1746,42 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.deposit(addressZRX, numOfZRX, { from: user5 });
                 await savingAccount.deposit(addressMKR, numOfMKR, { from: user6 });
 
+                // Some tokens are sent to Compound contract (ETH)
+                const expectedTokensAtCTokenContract = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+                expect(
+                    new BN(balCETHContractInit).add(new BN(expectedTokensAtCTokenContract))
+                ).to.be.bignumber.equal(balCTokenContract);
+
+                // cToken must be minted for SavingAccount
+                const expectedCTokensAtSavingAccount = numOfETH.mul(new BN(85)).div(new BN(100));
+                const balCTokensAfter = new BN(
+                    await cETH.balanceOfUnderlying.call(savingAccount.address)
+                );
+                expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+                    balCTokensAfter.sub(balCTokensBefore)
+                );
+
+                // Verify Compound balance (cDAI)
+                await compoundVerify(cDAI_addr, numOfDAI, BN(balCDAIContractInit), erc20DAI, cDAI);
+
+                // Verify Compound balance (cUSDC)
+                await compoundVerify(
+                    cUSDC_addr,
+                    numOfUSDC,
+                    BN(balCUSDCContractInit),
+                    erc20USDC,
+                    cUSDC
+                );
+
+                // Verify Compound balance (cBAT)
+                await compoundVerify(cBAT_addr, numOfBAT, BN(balCBATContractInit), erc20BAT, cBAT);
+
+                // Returning 849 instead of 850
+                // Verify Compound balance (cZRX)
+                /* await compoundVerify(cZRX_addr, numOfZRX, BN(balCZRXContractInit), erc20ZRX, cZRX);
+                console.log("cZRX-n"); */
+
                 let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
                 console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
 
@@ -1636,58 +1819,6 @@ contract("Integration Tests", async (accounts) => {
                 expect(new BN(user1ZRXBalance)).to.be.bignumber.equal(new BN(100));
                 expect(new BN(user1MKRBalance)).to.be.bignumber.equal(new BN(100));
             });
-        });
-
-        it("should deposit DAI and borrow DAI only after withdrawing first", async function() {
-            this.timeout(0);
-            /* const numOfToken = new BN(1000);
-                // 1. Transfer 1000 DAI to user 1 & 2, 1000 USDC to user 1
-                await erc20DAI.transfer(user1, numOfDAI);
-                await erc20USDC.transfer(user1, numOfUSDC);
-                await erc20DAI.transfer(user2, numOfDAI);
-                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
-                await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user1 });
-                await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
-                let userBalanceBeforeDeposit = await erc20DAI.balanceOf(user1);
-                // 2. User 1 & 2 deposit DAI
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
-                await savingAccount.deposit(addressDAI, numOfDAI, { from: user2 });
-                // Verify deposit
-                const expectedTokensAtSavingAccountContract = numOfDAI
-                    .mul(new BN(15))
-                    .div(new BN(100));
-                const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                expect(expectedTokensAtSavingAccountContract.mul(new BN(2))).to.be.bignumber.equal(
-                    balSavingAccount
-                );
-                // 3. User 1 tries to borrow DAI
-                await savingAccount.borrow(addressDAI, new BN(100), {
-                    from: user1
-                });
-                // 4. User 1 withdraws all DAI
-                await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
-                let userBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
-                // 4.1 Verify if withdraw was successful
-                expect(new BN(userBalanceBeforeDeposit).add(new BN(100))).to.be.bignumber.equal(
-                    userBalanceAfterWithdraw
-                );
-                // 5. Deposit USDC and borrow DAI
-                await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user1 });
-                const limitAmount = numOfUSDC
-                    .mul(eighteenPrecision)
-                    .mul(await tokenInfoRegistry.priceFromIndex(1))
-                    .mul(new BN(50))
-                    .div(new BN(100))
-                    .div(await tokenInfoRegistry.priceFromIndex(0))
-                    .div(sixPrecision);
-                await savingAccount.borrow(addressDAI, limitAmount, { from: user1 });
-                let userBalanceAfterBorrow = await erc20DAI.balanceOf(user1);
-                let expectedBalanceAfterBorrow = new BN(userBalanceAfterWithdraw).add(limitAmount);
-                console.log("limitAmount", limitAmount);
-                console.log("userBalanceAfterBorrow", userBalanceAfterBorrow);
-                console.log("expectedBalanceAfterBorrow", expectedBalanceAfterBorrow);
-                // Verify that borrow was successful
-                expect(expectedBalanceAfterBorrow).to.be.bignumber.equal(userBalanceAfterBorrow); */
         });
 
         it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
