@@ -134,16 +134,34 @@ contract Accounts is Constant, Initializable{
         return tokenInfo.getLastBorrowBlock();
     }
 
-    function getDepositInterest(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateDepositInterest(accruedRate);
+    /**
+     * Get deposit interest of an account for a specific token
+     * @param _account account address
+     * @param _token token address
+     * @dev The deposit interest may not have been updated in AccountTokenLib, so we need to explicited calcuate it.
+     */
+    function getDepositInterest(address _account, address _token) public view returns(uint256) {
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        // If the account has never deposited the token, return 0.
+        if (tokenInfo.getLastDepositBlock() == 0)
+            return 0;
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            return tokenInfo.calculateDepositInterest(accruedRate);
+        }
     }
 
     function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateBorrowInterest(accruedRate);
+        // If the account has never borrowed the token, return 0
+        if (tokenInfo.getLastBorrowBlock() == 0)
+            return 0;
+        else {
+            // As the last borrow block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            return tokenInfo.calculateBorrowInterest(accruedRate);
+        }
     }
 
     function borrow(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
@@ -157,10 +175,15 @@ contract Accounts is Constant, Initializable{
             <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
 
-        // Update the token principla and interest
-        tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+        if(tokenInfo.getLastBorrowBlock() == 0)
+            tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
+        else {
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            // Update the token principla and interest
+            tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+        }
+
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
         uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -188,8 +211,15 @@ contract Accounts is Constant, Initializable{
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+
+        if (tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        }
+
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -211,12 +241,17 @@ contract Accounts is Constant, Initializable{
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
-        tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+
+        if(tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
+        else {
+            uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+        }
     }
 
     function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
@@ -227,8 +262,13 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.repay(amount, accruedRate, getBlockNumber());
+        if(tokenInfo.getLastBorrowBlock() == 0)
+            tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
+        else {
+            uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            tokenInfo.repay(amount, accruedRate, getBlockNumber());
+        }
+
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
@@ -236,6 +276,7 @@ contract Accounts is Constant, Initializable{
         return remain;
     }
 
+    // sichaoy: switch the order of the parameters
     function getDepositBalanceCurrent(
         address _token,
         address _accountAddr
