@@ -43,17 +43,17 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
-    let addressCTokenForWBTC: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cTUSD_addr: any;
+    let cMKR_addr: any;
+    let cWBTC_addr: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -76,15 +76,15 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0)
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -112,16 +112,16 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cTUSD_addr = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
+        cMKR_addr = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(cWBTC_addr);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -154,8 +154,8 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC and repay after one month", async function () {
-                this.timeout(0)
+            it("should deposit DAI, borrow USDC and repay after one month", async function() {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
@@ -207,15 +207,13 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(new BN(100));
 
                 const compoundBeforeFastForwardUSDC = BN(
-                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                 );
-                const cUSDCBeforeFastForward = BN(
-                    await cTokenUSDC.balanceOf(savingAccount.address)
-                );
+                const cUSDCBeforeFastForward = BN(await cUSDC.balanceOf(savingAccount.address));
                 const compoundBeforeFastForwardDAI = BN(
-                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    await cDAI.balanceOfUnderlying.call(savingAccount.address)
                 );
-                const cDAIBeforeFastForward = BN(await cTokenDAI.balanceOf(savingAccount.address));
+                const cDAIBeforeFastForward = BN(await cDAI.balanceOf(savingAccount.address));
 
                 // 3. Fastforward
                 await savingAccount.fastForward(100000);
@@ -234,25 +232,25 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 // Verifty that compound equals cToken underlying balance in pool's address
                 // It also verifies that (Deposit = Loan + Compound + Reservation)
                 const compoundAfterFastForwardUSDC = BN(
-                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                 );
                 const compoundAfterFastForwardDAI = BN(
-                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    await cDAI.balanceOfUnderlying.call(savingAccount.address)
                 );
 
-                const cUSDCAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
-                const cDAIAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
+                const cUSDCAfterFastForward = BN(await cUSDC.balanceOf(savingAccount.address));
+                const cDAIAfterFastForward = BN(await cUSDC.balanceOf(savingAccount.address));
 
                 const compoundPrincipalUSDC = compoundBeforeFastForwardUSDC.add(
                     cUSDCAfterFastForward
                         .sub(cUSDCBeforeFastForward)
-                        .mul(BN(await cTokenUSDC.exchangeRateCurrent.call()))
+                        .mul(BN(await cUSDC.exchangeRateCurrent.call()))
                         .div(sixPrecision)
                 );
                 const compoundPrincipalDAI = compoundBeforeFastForwardDAI.add(
                     cDAIAfterFastForward
                         .sub(cDAIBeforeFastForward)
-                        .mul(BN(await cTokenDAI.exchangeRateCurrent.call()))
+                        .mul(BN(await cDAI.exchangeRateCurrent.call()))
                         .div(eighteenPrecision)
                 );
                 /* expect(
@@ -283,7 +281,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                     from: user1
                 });
                 const compoundAfterRepay = BN(
-                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                 );
                 /* expect(
                     BN(tokenStateAfterRepay[0])

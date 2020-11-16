@@ -42,17 +42,17 @@ contract("SavingAccount.borrow", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cTUSD_addr: any;
+    let cMKR_addr: any;
     let addressCTokenForWBTC: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -74,15 +74,15 @@ contract("SavingAccount.borrow", async (accounts) => {
     let HALF_DAI: any;
     let ONE_USDC: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0)
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -111,15 +111,15 @@ contract("SavingAccount.borrow", async (accounts) => {
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
         addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cTUSD_addr = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
+        cMKR_addr = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(addressCTokenForWBTC);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -153,8 +153,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("RateTest1: Deposit DAI then borrow DAI", async function () {
-                    this.timeout(0)
+                it("RateTest1: Deposit DAI then borrow DAI", async function() {
+                    this.timeout(0);
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
@@ -171,19 +171,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                         HALF_DAI
                     );
                     const compoundBeforeFastForward = BN(
-                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
-                    const cDAIBeforeFastForward = BN(
-                        await cTokenDAI.balanceOf(savingAccount.address)
-                    );
-                    const cDAIBorrowRateBefore = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAIBeforeFastForward = BN(await cDAI.balanceOf(savingAccount.address));
+                    const cDAIBorrowRateBefore = BN(await cDAI.borrowRatePerBlock());
 
-                    const cDAISupplyRateBefore = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
-
+                    const cDAISupplyRateBefore = BN(await cDAI.borrowRatePerBlock());
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
@@ -193,13 +186,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
 
                     // await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
-                    const cDAIBorrowRateAfter = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAIBorrowRateAfter = BN(await cDAI.borrowRatePerBlock());
 
-                    const cDAISupplyRateAfter = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAISupplyRateAfter = BN(await cDAI.borrowRatePerBlock());
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
@@ -213,15 +202,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // Verifty that compound equals cToken underlying balance in pool's address
                     // It also verifies that (Deposit = Loan + Compound + Reservation)
                     const compoundAfterFastForward = BN(
-                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
-                    const cDAIAfterFastForward = BN(
-                        await cTokenDAI.balanceOf(savingAccount.address)
-                    );
+                    const cDAIAfterFastForward = BN(await cDAI.balanceOf(savingAccount.address));
                     const compoundPrincipal = compoundBeforeFastForward.add(
                         cDAIAfterFastForward
                             .sub(cDAIBeforeFastForward)
-                            .mul(BN(await cTokenDAI.exchangeRateCurrent.call()))
+                            .mul(BN(await cDAI.exchangeRateCurrent.call()))
                             .div(eighteenPrecision)
                     );
                     // expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);

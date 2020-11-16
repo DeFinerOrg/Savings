@@ -44,15 +44,15 @@ contract("SavingAccount.borrow", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForWBTC: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cWBTC_addr: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -74,15 +74,15 @@ contract("SavingAccount.borrow", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0)
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -108,14 +108,14 @@ contract("SavingAccount.borrow", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(cWBTC_addr);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -155,8 +155,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 "Use compound supported and unsupported tokens together (WBTC, TUSD)",
                 async () => {
                     context("Should fail", async () => {
-                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
-                            this.timeout(0)
+                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -200,8 +200,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Insufficient collateral when borrow."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
-                            this.timeout(0)
+                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -245,8 +245,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Insufficient collateral when borrow."
                             );
                         });
-                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
-                            this.timeout(0)
+                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -290,8 +290,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Borrow zero amount of token is not allowed."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
-                            this.timeout(0)
+                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -337,8 +337,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                         });
                     });
                     context("Should succeeed", async () => {
-                        it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
-                            this.timeout(0)
+                        it("Deposits WBTC, borrows a small amount of TUSD ", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -384,8 +384,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 borrow
                             );
                         });
-                        it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
-                            this.timeout(0)
+                        it("Deposits TUSD, borrows a small amount of WBTC ", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -431,8 +431,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 borrow
                             );
                         });
-                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
-                            this.timeout(0)
+                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -484,8 +484,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 borrow
                             );
                         });
-                        it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
-                            this.timeout(0)
+                        it("Deposits TUSD, borrows the same amount of borrowing power", async function() {
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -542,8 +542,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         });
         context("Call multiple times", async () => {
             context("Should succeed", async () => {
-                it("Uses 18 decimals, TUSD", async function () {
-                    this.timeout(0)
+                it("Uses 18 decimals, TUSD", async function() {
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 100 whole DAI tokens
@@ -592,8 +592,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                         BN(accTUSDAfterSecond).sub(BN(accTUSDBeforeFirst))
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
-                it("Uses 6 decimals, USDC", async function () {
-                    this.timeout(0)
+                it("Uses 6 decimals, USDC", async function() {
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 100 whole DAI tokens
@@ -640,8 +640,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                         BN(accUSDCAfterSecond).sub(BN(accUSDCBeforeFirst))
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
-                it("Uses 8 decimals, WBTC", async function () {
-                    this.timeout(0)
+                it("Uses 8 decimals, WBTC", async function() {
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 1000 whole DAI tokens

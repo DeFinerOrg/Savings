@@ -29,14 +29,14 @@ contract("SavingAccount.repay", async (accounts) => {
     let addressWBTC: any;
     let addressTUSD: any;
     let addressMKR: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForWBTC: any;
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cWBTC_addr: any;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
@@ -52,16 +52,15 @@ contract("SavingAccount.repay", async (accounts) => {
     const numOfWBTC = eightPrecision;
     const numOfUSDC = sixPrecision;
 
-
-    before(function () {
+    before(function() {
         // Things to initialize before all test
-        this.timeout(0)
+        this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0)
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -78,14 +77,14 @@ contract("SavingAccount.repay", async (accounts) => {
         erc20WBTC = await ERC20.at(addressWBTC);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(cWBTC_addr);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
     });
@@ -94,8 +93,8 @@ contract("SavingAccount.repay", async (accounts) => {
         context(
             "Borrow out all the tokens in DeFiner, then repay, verify CToken and tokens in saving account",
             async () => {
-                it("Deposit DAI, borrows USDC and wants to withdraw", async function () {
-                    this.timeout(0)
+                it("Deposit DAI, borrows USDC and wants to withdraw", async function() {
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1 deposit 2 whole DAI and Account 1 deposit 1 whole USDC
@@ -117,14 +116,14 @@ contract("SavingAccount.repay", async (accounts) => {
                      * USDC token left in saving account
                      */
                     const CTokenLeftBefore = new BN(
-                        await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
                     const TokenLeftBefore = new BN(
                         await erc20USDC.balanceOf(savingAccount.address)
                     );
                     await savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
                     const CTokenLeft = new BN(
-                        await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
                     const TokenLeft = new BN(await erc20USDC.balanceOf(savingAccount.address));
                     expect(CTokenLeft).to.be.bignumber.equal(ZERO);
@@ -133,7 +132,7 @@ contract("SavingAccount.repay", async (accounts) => {
 
                     await savingAccount.repay(addressUSDC, numOfUSDC, { from: user1 });
                     const CTokenLeftAfter = new BN(
-                        await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
                     const TokenLeftAfter = new BN(await erc20USDC.balanceOf(savingAccount.address));
                     const CTokenExpected = new BN(numOfUSDC).mul(new BN(85)).div(new BN(100));
@@ -141,7 +140,6 @@ contract("SavingAccount.repay", async (accounts) => {
 
                     expect(CTokenLeftAfter).to.be.bignumber.equal(CTokenExpected);
                     expect(TokenLeftAfter).to.be.bignumber.equal(TokenExpected);
-
                 });
             }
         );
@@ -149,8 +147,8 @@ contract("SavingAccount.repay", async (accounts) => {
         // These tests can't be verified after integrated with compound
         context("Checking saving account's value after repayment", async () => {
             context("Should succeed.", async () => {
-                beforeEach(async function () {
-                    this.timeout(0)
+                beforeEach(async function() {
+                    this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -165,62 +163,88 @@ contract("SavingAccount.repay", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user2 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
-                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), { from: user2 });
+                    await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
+                        from: user2
+                    });
                 });
-                it("Repay all the outstandings DAI token", async function () {
-                    this.timeout(0)
+                it("Repay all the outstandings DAI token", async function() {
+                    this.timeout(0);
                     /*
                      * Repay all the outstandings
                      * After repayment, saving account balance: 1.5*10^17 DAI, 8.5*10^17 cDAI
                      */
 
-                    const realCTokenBalanceBefore = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const realCTokenBalanceBefore = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalanceBefore = await erc20DAI.balanceOf(savingAccount.address);
                     await savingAccount.repay(addressDAI, numOfDAI.div(new BN(2)), { from: user2 });
 
                     const expectedCTokenBalance = numOfDAI.mul(new BN(85)).div(new BN(100));
                     const expectedDAIBalance = numOfDAI.mul(new BN(15)).div(new BN(100));
 
-                    const realCTokenBalance = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const realCTokenBalance = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalance = await erc20DAI.balanceOf(savingAccount.address);
 
                     expect(expectedCTokenBalance).to.be.bignumber.equal(realCTokenBalance);
                     expect(expectedDAIBalance).to.be.bignumber.equal(realDAIBalance);
                 });
-                it("Repay half the outstandings DAI token", async function () {
-                    this.timeout(0)
+                it("Repay half the outstandings DAI token", async function() {
+                    this.timeout(0);
                     /*
                      * Repay 1/4 * 10^18 DAI
                      * After repayment, saving account balance: 1.5*10^17 DAI, 6*10^17 cDAI
                      */
                     // 8.5*10^17 - 5*10^17 = 3.5*10^17 cDAI
-                    const expectedBeforeCTokenBalance = numOfDAI.mul(new BN(85)).div(new BN(100)).sub(numOfDAI.div(new BN(2)));
+                    const expectedBeforeCTokenBalance = numOfDAI
+                        .mul(new BN(85))
+                        .div(new BN(100))
+                        .sub(numOfDAI.div(new BN(2)));
                     // 8.5*10^17 - 2.5*10^17 = 6*10^17 cDAI
-                    const expectedCTokenBalance = numOfDAI.mul(new BN(85)).div(new BN(100)).sub(numOfDAI.div(new BN(4)));
+                    const expectedCTokenBalance = numOfDAI
+                        .mul(new BN(85))
+                        .div(new BN(100))
+                        .sub(numOfDAI.div(new BN(4)));
                     const expectedDAIBalance = numOfDAI.mul(new BN(15)).div(new BN(100));
 
-                    const realCTokenBalanceBefore = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const realCTokenBalanceBefore = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalanceBefore = await erc20DAI.balanceOf(savingAccount.address);
                     await savingAccount.repay(addressDAI, numOfDAI.div(new BN(4)), { from: user2 });
-                    const realCTokenBalance = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const realCTokenBalance = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalance = await erc20DAI.balanceOf(savingAccount.address);
 
                     expect(BN(realCTokenBalance)).to.be.bignumber.equal(expectedCTokenBalance);
                     expect(BN(realDAIBalance)).to.be.bignumber.equal(expectedDAIBalance);
                 });
-                it("Repay with a small amount of DAI token", async function () {
-                    this.timeout(0)
+                it("Repay with a small amount of DAI token", async function() {
+                    this.timeout(0);
                     /*
                      * Repay 1/4 * 10^18 DAI
                      * After repayment, saving account balance: 1.5*10^17 DAI + 10 DAI, 8.5*10^17 - 5*10^17
                      */
-                    const realCTokenBalanceBefore = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const realCTokenBalanceBefore = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalanceBefore = await erc20DAI.balanceOf(savingAccount.address);
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
                     // 8.5*10^17 - 5*10^17 + 10 cDAI
-                    const expectedCTokenBalance = numOfDAI.mul(new BN(85)).div(new BN(100)).sub(numOfDAI.div(new BN(2)));
-                    const expectedDAIBalance = numOfDAI.mul(new BN(15)).div(new BN(100)).add(new BN(10));
-                    const realCTokenBalance = await cTokenDAI.balanceOfUnderlying.call(savingAccount.address);
+                    const expectedCTokenBalance = numOfDAI
+                        .mul(new BN(85))
+                        .div(new BN(100))
+                        .sub(numOfDAI.div(new BN(2)));
+                    const expectedDAIBalance = numOfDAI
+                        .mul(new BN(15))
+                        .div(new BN(100))
+                        .add(new BN(10));
+                    const realCTokenBalance = await cDAI.balanceOfUnderlying.call(
+                        savingAccount.address
+                    );
                     const realDAIBalance = await erc20DAI.balanceOf(savingAccount.address);
 
                     expect(BN(realCTokenBalance)).to.be.bignumber.equal(expectedCTokenBalance);
@@ -230,8 +254,8 @@ contract("SavingAccount.repay", async (accounts) => {
         });
         context("Repay partially several times.", async () => {
             context("Use DAI, should succeed", async () => {
-                beforeEach(async function () {
-                    this.timeout(0)
+                beforeEach(async function() {
+                    this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -249,8 +273,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         from: user2
                     });
                 });
-                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async function () {
-                    this.timeout(0)
+                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async function() {
+                    this.timeout(0);
                     const quaterOfDAI = numOfDAI.div(new BN(4));
                     const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
                         addressDAI,
@@ -277,8 +301,8 @@ contract("SavingAccount.repay", async (accounts) => {
                 });
             });
             context("Use USDC, should succeed", async () => {
-                beforeEach(async function () {
-                    this.timeout(0)
+                beforeEach(async function() {
+                    this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
                      * User1 deposit a whole DAI, and user2 deposit a whole USDC.
@@ -296,8 +320,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         from: user1
                     });
                 });
-                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async function () {
-                    this.timeout(0)
+                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async function() {
+                    this.timeout(0);
                     const quaterOfUSDC = numOfUSDC.div(new BN(4));
                     const USDCBalance = await erc20USDC.balanceOf(user1);
                     const userBalanceBeforeRepay = await accountsContract.getBorrowBalanceCurrent(
@@ -329,8 +353,8 @@ contract("SavingAccount.repay", async (accounts) => {
         });
         context("with WBTC, 8 decimals token", async () => {
             context("should succeed", async () => {
-                beforeEach(async function () {
-                    this.timeout(0)
+                beforeEach(async function() {
+                    this.timeout(0);
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20WBTC.transfer(user2, numOfWBTC);
@@ -341,8 +365,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     await savingAccount.deposit(addressWBTC, numOfWBTC, { from: user2 });
                 });
 
-                it("When the repayment DAI Amount is less than the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment DAI Amount is less than the loan amount.", async function() {
+                    this.timeout(0);
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
@@ -355,8 +379,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is equal than the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment DAI Amount is equal than the loan amount.", async function() {
+                    this.timeout(0);
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     const user2BalanceBefore = await erc20DAI.balanceOf(user2);
@@ -369,8 +393,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is greater than the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment DAI Amount is greater than the loan amount.", async function() {
+                    this.timeout(0);
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
                     // 2.1 Prepare more DAI.
@@ -385,8 +409,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is less than the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment WBTC Amount is less than the loan amount.", async function() {
+                    this.timeout(0);
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });
@@ -403,8 +427,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is equal to the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment WBTC Amount is equal to the loan amount.", async function() {
+                    this.timeout(0);
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });
@@ -421,8 +445,8 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is greater than the loan amount.", async function () {
-                    this.timeout(0)
+                it("When the repayment WBTC Amount is greater than the loan amount.", async function() {
+                    this.timeout(0);
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20WBTC.approve(savingAccount.address, numOfWBTC, { from: user1 });
