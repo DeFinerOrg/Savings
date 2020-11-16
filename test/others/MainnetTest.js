@@ -2,7 +2,8 @@ const ERC20 = artifacts.require("ERC20Detailed");
 let BN = web3.utils.BN;
 
 contract("MainnetTest", (accounts) => {
-    it("should mint mainnet tokens", async () => {
+    it("should mint mainnet tokens", async function () {
+        this.timeout(0)
         if (process.env.NETWORK != "fork") return;
 
         const DAI = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
@@ -28,11 +29,11 @@ contract("MainnetTest", (accounts) => {
 
             console.log(
                 "Token:: Symbol: " +
-                    tokenSymbol +
-                    " Decimals: " +
-                    tokenDecimals +
-                    " BitFinex Balance: " +
-                    bal.toString()
+                tokenSymbol +
+                " Decimals: " +
+                tokenDecimals +
+                " BitFinex Balance: " +
+                bal.toString()
             );
 
             for (j = 0; j < accounts.length; j++) {

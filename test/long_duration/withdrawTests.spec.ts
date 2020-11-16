@@ -10,7 +10,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.withdrawLongDuration", async (accounts) => {
@@ -55,12 +55,12 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20USDT: t.Erc20Instance;
-    let erc20WBTC: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -83,7 +83,8 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -154,7 +155,8 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     context("withdraw()", async () => {
         context("with Token", async () => {
             context("should succeed", async () => {
-                it("RateTest2: when tokens are withdrawn with interest", async () => {
+                it("RateTest2: when tokens are withdrawn with interest", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });

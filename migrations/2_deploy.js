@@ -12,6 +12,7 @@ const Bank = artifacts.require("Bank");
 
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
+const AccountsWithController = artifacts.require("AccountsWithController");
 
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry = artifacts.require("TokenRegistry");
@@ -24,7 +25,7 @@ const SavingAccountProxy = artifacts.require("SavingAccountProxy");
 const AccountsProxy = artifacts.require("AccountsProxy");
 const BankProxy = artifacts.require("BankProxy");
 
-module.exports = async function(deployer, network) {
+module.exports = async function (deployer, network) {
     // Deploy Libs
     await deployer.deploy(AccountTokenLib);
     console.log("=========================Deploy AccountTokenLib============================");
@@ -34,6 +35,10 @@ module.exports = async function(deployer, network) {
     await deployer.link(BitmapLib, Accounts);
     console.log("=========================Link BitmapLib library============================");
     await deployer.link(AccountTokenLib, Accounts);
+    console.log(
+        "=========================Link AccountTokenLib library============================"
+    );
+    await deployer.link(AccountTokenLib, AccountsWithController);
     console.log(
         "=========================Link AccountTokenLib library============================"
     );
