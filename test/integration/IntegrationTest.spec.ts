@@ -1949,6 +1949,7 @@ contract("Integration Tests", async (accounts) => {
                 const balCTokensBefore = new BN(
                     await cETH.balanceOfUnderlying.call(savingAccount.address)
                 );
+                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(savingAccount.address);
 
                 // 1. Deposit collateral
                 await erc20DAI.transfer(user2, numOfDAI);
@@ -1968,6 +1969,17 @@ contract("Integration Tests", async (accounts) => {
                 await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user3 });
 
                 // Verify if deposit was successful
+                const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
+                const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
+                    new BN(ETHbalanceBeforeDeposit)
+                );
+                const expectedTokensAtSavingAccountContractETH = new BN(numOfETH)
+                    .mul(new BN(15))
+                    .div(new BN(100));
+                expect(userBalanceDiff).to.be.bignumber.equal(
+                    expectedTokensAtSavingAccountContractETH
+                );
+
                 const expectedTokensAtSavingAccountContractDAI = numOfDAI
                     .mul(new BN(15))
                     .div(new BN(100));
@@ -2083,30 +2095,27 @@ contract("Integration Tests", async (accounts) => {
                     new BN(totalLockedAmount)
                 );
 
-                let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(user1);
-
-                console.log("lockedAmountDAI", lockedAmountDAI.toString());
-                console.log("lockedAmountUSDC", lockedAmountUSDC.toString());
-                console.log("totalLockedAmount", totalLockedAmount.toString());
-                console.log("ETHbalanceBeforeWithdraw", ETHbalanceBeforeWithdraw.toString());
-                console.log("totalAmountLeft", totalAmountLeft.toString());
+                const ETHbalanceBeforeWithdrawContr = await accountsContract.getDepositBalanceCurrent(
+                    ETH_ADDRESS,
+                    user1
+                );
 
                 // 4. Withdraw remaining ETH
                 await savingAccount.withdraw(ETH_ADDRESS, totalAmountLeft, {
                     from: user1
                 });
 
-                let ETHbalanceAfterWithdraw = await web3.eth.getBalance(user1);
-                console.log("ETHbalanceAfterWithdraw", ETHbalanceAfterWithdraw.toString());
-
-                let accountBalanceDiff = new BN(ETHbalanceAfterWithdraw).sub(
-                    new BN(ETHbalanceBeforeWithdraw)
+                const ETHbalanceAfterWithdrawContr = await accountsContract.getDepositBalanceCurrent(
+                    ETH_ADDRESS,
+                    user1
                 );
-                console.log("accountBalanceDiff", accountBalanceDiff.toString());
 
-                //TODO:
+                let accountBalanceDiff = new BN(ETHbalanceBeforeWithdrawContr).sub(
+                    new BN(ETHbalanceAfterWithdrawContr)
+                );
+
                 // validate user 1 ETH balance
-                //expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft);
+                expect(accountBalanceDiff).to.be.bignumber.equal(totalAmountLeft);
             });
 
             it("should deposit ETH, borrow more than reserve if collateral is sufficient", async function() {
