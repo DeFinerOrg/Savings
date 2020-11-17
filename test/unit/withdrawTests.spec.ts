@@ -924,6 +924,10 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             owner
                         );
                         const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
+                        const compCDAIBefore = await cDAI.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        const compDAIBefore = await erc20DAI.balanceOf(cDAI_addr);
 
                         // deposit tokens
                         await savingAccount.deposit(erc20DAI.address, depositAmount, {
@@ -986,6 +990,18 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             userBalanceAfterWithdraw
                         );
                         expect(accountBalanceAfterWithdraw).to.be.bignumber.equal(ZERO);
+
+                        // Verify Compound balance
+                        const compDAIAfter = await erc20DAI.balanceOf(cDAI_addr);
+                        expect(ZERO).to.be.bignumber.equal(BN(compDAIAfter).sub(BN(compDAIBefore)));
+
+                        // Verify CToken balance
+                        const compCDAIAfter = await cDAI.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+                        expect(ZERO).to.be.bignumber.equal(
+                            BN(compCDAIAfter).sub(BN(compCDAIBefore))
+                        );
                     });
                 });
             });
