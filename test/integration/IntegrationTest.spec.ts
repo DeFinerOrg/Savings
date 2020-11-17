@@ -1294,6 +1294,11 @@ contract("Integration Tests", async (accounts) => {
                     erc20USDC.address,
                     user1
                 );
+                const balCUSDCContractBeforeDposit = await erc20USDC.balanceOf(cUSDC_addr);
+                console.log(
+                    "balCUSDCContractBeforeDposit",
+                    balCUSDCContractBeforeDposit.toString()
+                );
 
                 // 4. User1 tries to deposit his borrowed USDC
                 await savingAccount.deposit(addressUSDC, new BN(1000), {
@@ -1308,15 +1313,6 @@ contract("Integration Tests", async (accounts) => {
                     totalDefinerBalanceAfterDepositUSDC2
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC2));
                 expect(totalDefinerBalanceChangeUSDC2).to.be.bignumber.equal(new BN(1000));
-
-                // TODO: Verify Compound balance (cUSDC)
-                /* await compoundVerify(
-                    cUSDC_addr,
-                    new BN(1000),
-                    BN(balCUSDCContractBeforeDeposit2),
-                    erc20USDC,
-                    cUSDC
-                ); */
             });
         });
 
@@ -2337,6 +2333,29 @@ contract("Integration Tests", async (accounts) => {
                 let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
                 console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
 
+                // cDAI before borrow
+                const balCDAIContractBeforeBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIBeforeBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                // cUSDC before borrow
+                const balCUSDCBeforeBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCUSDCContractBeforeBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+
+                // cBAT before borrow
+                const balCBATBeforeBorrow = await cBAT.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCBATContractBeforeBorrow = await erc20BAT.balanceOf(cBAT_addr);
+
+                // cZRX before borrow
+                const balCZRXBeforeBorrow = await cZRX.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                const balCZRXContractBeforeBorrow = await erc20ZRX.balanceOf(cZRX_addr);
+
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
@@ -2370,6 +2389,43 @@ contract("Integration Tests", async (accounts) => {
                 expect(new BN(user1BATBalance)).to.be.bignumber.equal(new BN(100));
                 expect(new BN(user1ZRXBalance)).to.be.bignumber.equal(new BN(100));
                 expect(new BN(user1MKRBalance)).to.be.bignumber.equal(new BN(100));
+
+                // cDAI
+                const balCDAIContractAfterBorrow = await erc20DAI.balanceOf(cDAI_addr);
+                const balCDAIAfterBorrow = await cDAI.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                // cUSDC
+                const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
+                const balCUSDCAfterBorrow = await cUSDC.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                // cBAT
+                const balCBATContractAfterBorrow = await erc20BAT.balanceOf(cBAT_addr);
+                const balCBATAfterBorrow = await cBAT.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                // cZRX
+                const balCZRXContractAfterBorrow = await erc20ZRX.balanceOf(cZRX_addr);
+                const balCZRXAfterBorrow = await cZRX.balanceOfUnderlying.call(
+                    savingAccount.address
+                );
+                /* expect(new BN(balCDAIBeforeBorrow)).to.be.bignumber.greaterThan(
+                    new BN(balCDAIContractAfterBorrow)
+                ); */
+
+                expect(new BN(balCDAIContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    new BN(balCDAIAfterBorrow)
+                );
+                expect(new BN(balCUSDCContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    new BN(balCUSDCAfterBorrow)
+                );
+                expect(new BN(balCBATContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    new BN(balCBATAfterBorrow)
+                );
+                expect(new BN(balCZRXContractBeforeBorrow)).to.be.bignumber.greaterThan(
+                    new BN(balCZRXAfterBorrow)
+                );
             });
         });
 
