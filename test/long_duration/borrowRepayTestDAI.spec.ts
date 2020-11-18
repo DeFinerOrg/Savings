@@ -283,7 +283,6 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    // TODO:
                     expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650800000)); // 3007210014379.6274/2 || 1503559214300
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
