@@ -46,6 +46,10 @@ contract TokenRegistry is Ownable {
 
     // TokenAddress to TokenInfo mapping
     mapping (address => TokenInfo) public tokenInfo;
+
+    mapping(address => uint) public depositeMiningSpeeds;
+    mapping(address => uint) public borrowMiningSpeeds;
+    uint256 public lastMiningSpeedsCheckpoint;
     // TokenAddress array
     address[] public tokens;
     GlobalConfig public globalConfig;
@@ -62,6 +66,18 @@ contract TokenRegistry is Ownable {
      */
     function initialize(GlobalConfig _globalConfig) public onlyOwner{
         globalConfig = _globalConfig;
+    }
+
+    function updateMiningSpeed(address _token, uint _depositeMiningSpeed, uint _borrowMiningSpeed) public onlyOwner{
+        if(_depositeMiningSpeed != depositeMiningSpeeds[_token]) {
+            depositeMiningSpeeds[_token] = _depositeMiningSpeed;
+        }
+        
+        if(_borrowMiningSpeed != borrowMiningSpeeds[_token]) {
+            borrowMiningSpeeds[_token] = _borrowMiningSpeed;
+        }
+
+        emit TokenUpdated(_token);
     }
 
     /**

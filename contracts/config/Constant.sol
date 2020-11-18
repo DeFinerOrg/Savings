@@ -7,5 +7,7 @@ contract Constant {
     address payable public constant EMERGENCY_ADDR = 0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c;
     uint256 public constant ACCURACY = 10 ** 18;
     uint256 public constant BLOCKS_PER_YEAR = 2102400;
+    uint256 public constant MINING_START_BLOCK = 11241825;
+    address public constant FIN = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
 
 }

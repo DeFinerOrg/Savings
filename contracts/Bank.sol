@@ -18,10 +18,14 @@ contract Bank is Constant, Initializable{
     mapping(address => mapping(uint => uint)) public depositeRateIndex; // the index curve of deposit rate
     // Token => block-num => rate
     mapping(address => mapping(uint => uint)) public borrowRateIndex;   // the index curve of borrow rate
+    mapping(address => mapping(uint => uint)) public depositeFINRateIndex;
+    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
     // token address => block number
     mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
+    mapping(address => uint) public lastDepositeFINRateCheckpoint;
+    mapping(address => uint) public lastBorrowFINRateCheckpoint;
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
     GlobalConfig globalConfig;            // global configuration contract address
@@ -156,10 +160,58 @@ contract Bank is Constant, Initializable{
     }
 
      function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
+         // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
+    }
+
+    function updateDepositeFINIndex(address _token) public onlyInternal{
+        uint currentBlock = getBlockNumber();
+        uint miningSpeed = globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token);
+        uint deltaBlock;
+        uint totalDeposit = getTotalDepositStore(_token);
+        if(currentBlock <= MINING_START_BLOCK) {
+            return;
+        } else {
+            if(lastDepositeFINRateCheckpoint[_token] < MINING_START_BLOCK) {
+                deltaBlock = currentBlock.sub(MINING_START_BLOCK);
+            } else {
+                deltaBlock = currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
+            }
+            if(totalDeposit != 0) 
+                depositeFINRateIndex[_token][currentBlock] = depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalDeposit));
+            
+            lastDepositeFINRateCheckpoint[_token] = currentBlock;
+        }
+    }
+
+    function updateBorrowFINIndex(address _token) public onlyInternal{
+        uint currentBlock = getBlockNumber();
+        uint miningSpeed = globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token);
+        uint deltaBlock;
+        uint totalborrow = totalLoans[_token];
+        if(currentBlock <= MINING_START_BLOCK) {
+            return;
+        } else {
+            if(lastBorrowFINRateCheckpoint[_token] < MINING_START_BLOCK) {
+                deltaBlock = currentBlock.sub(MINING_START_BLOCK);
+            } else {
+                deltaBlock = currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
+            }
+            if(totalborrow != 0) 
+                borrowFINRateIndex[_token][currentBlock] = borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalborrow));
+
+            lastBorrowFINRateCheckpoint[_token] = currentBlock;
+        }
+    }
+
+    function updateMining(address _token) public onlyInternal{
+        newRateIndexCheckpoint(_token);
+        updateTotalCompound(_token);
     }
 
     /**
@@ -381,20 +433,20 @@ contract Bank is Constant, Initializable{
     function getPoolAmount(address _token) public view returns(uint) {
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
+
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
     function deposit(address _to, address _token, uint256 _amount) public onlyInternal {
 
         require(_amount != 0, "Amount is zero");
 
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(_token);
-
-        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        globalConfig.accounts().deposit(_to, _token, _amount);
-
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, uint8(0));
+
+        updateDepositeFINIndex(_token);
+
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        globalConfig.accounts().deposit(_to, _token, _amount);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().toCompound(_token, compoundAmount);
@@ -402,17 +454,16 @@ contract Bank is Constant, Initializable{
     }
 
     function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
-
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(_token);
-
-        // Update tokenInfo for the user
-        globalConfig.accounts().borrow(_from, _token, _amount);
-
+        
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, uint8(2));
+
+        updateBorrowFINIndex(_token);
+
+        // Update tokenInfo for the user
+        globalConfig.accounts().borrow(_from, _token, _amount);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().fromCompound(_token, compoundAmount);
@@ -421,8 +472,7 @@ contract Bank is Constant, Initializable{
 
     function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
 
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(_token);
+        updateBorrowFINIndex(_token);
 
         // Sanity check
         require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
@@ -454,16 +504,15 @@ contract Bank is Constant, Initializable{
 
         require(_amount != 0, "Amount is zero");
 
-        // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(_token);
-
-        // Withdraw from the account
-        uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);
-
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
-        uint compoundAmount = update(_token, amount, uint8(1));
+        uint compoundAmount = update(_token, _amount, uint8(1));
+
+        updateDepositeFINIndex(_token);
+
+        // Withdraw from the account
+        uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);
 
         // Check if there are enough tokens in the pool.
         if(compoundAmount > 0) {

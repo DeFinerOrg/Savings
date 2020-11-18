@@ -15,6 +15,7 @@ contract Accounts is Constant, Initializable{
     using SafeMath for uint256;
 
     mapping(address => Account) public accounts;
+    mapping(address => uint) public FINAmount;
 
     GlobalConfig globalConfig;
 
@@ -146,6 +147,60 @@ contract Accounts is Constant, Initializable{
         return tokenInfo.calculateBorrowInterest(accruedRate);
     }
 
+    function claim(address _accountAddr) public onlyInternal returns(uint){
+        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+            if (isUserHasDeposits(_accountAddr, i) || isUserHasBorrows(_accountAddr, i)) {
+                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
+                AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[token];
+                uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+                uint256 currentBlock = getBlockNumber(); 
+                globalConfig.bank().updateMining(token);
+
+                if (isUserHasDeposits(_accountAddr, i)) {
+                    globalConfig.bank().updateDepositeFINIndex(token);
+                    uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(token, lastDepositBlock);
+                    uint256 indexDifference;
+                    if(currentBlock > MINING_START_BLOCK) {
+                        if(lastDepositBlock < MINING_START_BLOCK) {
+                            indexDifference = globalConfig.bank().depositeFINRateIndex(token, currentBlock);
+                        } else {
+                            indexDifference = globalConfig.bank().depositeFINRateIndex(token, currentBlock).sub(globalConfig.bank().depositeFINRateIndex(token, lastDepositBlock));
+                        }
+                        uint getFIN = getDepositBalanceCurrent(token, _accountAddr).mul(indexDifference).div(ACCURACY);
+                        FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+                        tokenInfo.deposit(0, accruedRate, currentBlock);
+                    }
+                }
+
+                if (isUserHasBorrows(_accountAddr, i)) {
+                    globalConfig.bank().updateBorrowFINIndex(token);
+                    uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(token, lastDepositBlock);
+                    uint256 indexDifference;
+                    if(currentBlock > MINING_START_BLOCK) {
+                        if(lastDepositBlock < MINING_START_BLOCK) {
+                            indexDifference = globalConfig.bank().borrowFINRateIndex(token, currentBlock);
+                        } else {
+                            indexDifference = globalConfig.bank().borrowFINRateIndex(token, currentBlock).sub(globalConfig.bank().borrowFINRateIndex(token, lastDepositBlock));
+                        }
+                        uint getFIN = getDepositBalanceCurrent(token, _accountAddr).mul(indexDifference).div(ACCURACY);
+                        FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+                        tokenInfo.borrow(0, accruedRate, currentBlock);
+                    }
+                }
+            }
+        }
+        uint _FINAmount = FINAmount[_accountAddr];
+        FINAmount[_accountAddr] = 0;
+        return _FINAmount;
+    }
+
+    struct MiningVars {
+        uint256 lastBlock;
+        uint256 accruedRate;
+        uint256 currentBlock;
+        uint256 indexDifference;
+    }
+
     function borrow(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
@@ -157,10 +212,26 @@ contract Accounts is Constant, Initializable{
             <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        MiningVars memory vars;
+        // uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+
+        vars.lastBlock = tokenInfo.getLastBorrowBlock();
+        vars.accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, vars.lastBlock);
+        vars.currentBlock = getBlockNumber(); 
+        vars.indexDifference;
+
+        if(vars.currentBlock > MINING_START_BLOCK) {
+            if(vars.lastBlock < MINING_START_BLOCK) {
+                vars.indexDifference = globalConfig.bank().borrowFINRateIndex(_token, vars.currentBlock);
+            } else {
+                vars.indexDifference = globalConfig.bank().borrowFINRateIndex(_token, vars.currentBlock).sub(globalConfig.bank().borrowFINRateIndex(_token, vars.lastBlock));
+            }
+            uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr).mul(vars.indexDifference).div(ACCURACY);
+            FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+        }
 
         // Update the token principla and interest
-        tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+        tokenInfo.borrow(_amount, vars.accruedRate, vars.currentBlock);
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
         uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -187,9 +258,26 @@ contract Accounts is Constant, Initializable{
                 ), "Insufficient collateral when withdraw.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        MiningVars memory vars;
+
+        vars.lastBlock = tokenInfo.getLastDepositBlock();
+        vars.accruedRate = globalConfig.bank().getDepositAccruedRate(_token, vars.lastBlock);
+        vars.currentBlock = getBlockNumber(); 
+        vars.indexDifference;
+
+        if(vars.currentBlock > MINING_START_BLOCK) {
+            if(vars.lastBlock < MINING_START_BLOCK) {
+                vars.indexDifference = globalConfig.bank().depositeFINRateIndex(_token, vars.currentBlock);
+            } else {
+                vars.indexDifference = globalConfig.bank().depositeFINRateIndex(_token, vars.currentBlock).sub(globalConfig.bank().depositeFINRateIndex(_token, vars.lastBlock));
+            }
+            uint getFIN = getDepositBalanceCurrent(_token, _accountAddr).mul(vars.indexDifference).div(ACCURACY);
+            FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+        }
+
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        // uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        tokenInfo.withdraw(_amount, vars.accruedRate, vars.currentBlock);
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -211,12 +299,28 @@ contract Accounts is Constant, Initializable{
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        MiningVars memory vars;
+
+        vars.lastBlock = tokenInfo.getLastDepositBlock();
+        vars.accruedRate = globalConfig.bank().getDepositAccruedRate(_token, vars.lastBlock);
+        vars.currentBlock = getBlockNumber(); 
+        vars.indexDifference;
+
+        if(vars.currentBlock > MINING_START_BLOCK) {
+            if(vars.lastBlock < MINING_START_BLOCK) {
+                vars.indexDifference = globalConfig.bank().depositeFINRateIndex(_token, vars.currentBlock);
+            } else {
+                vars.indexDifference = globalConfig.bank().depositeFINRateIndex(_token, vars.currentBlock).sub(globalConfig.bank().depositeFINRateIndex(_token, vars.lastBlock));
+            }
+            uint256 getFIN = getDepositBalanceCurrent(_token, _accountAddr).mul(vars.indexDifference).div(ACCURACY);
+            FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+        }
+
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
-        tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+        tokenInfo.deposit(_amount, vars.accruedRate, vars.currentBlock);
     }
 
     function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
@@ -225,10 +329,27 @@ contract Accounts is Constant, Initializable{
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        MiningVars memory vars;
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        tokenInfo.repay(amount, accruedRate, getBlockNumber());
+        // uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+
+        vars.lastBlock = tokenInfo.getLastBorrowBlock();
+        vars.accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, vars.lastBlock);
+        vars.currentBlock = getBlockNumber(); 
+        vars.indexDifference;
+
+        if(vars.currentBlock > MINING_START_BLOCK) {
+            if(vars.lastBlock < MINING_START_BLOCK) {
+                vars.indexDifference = globalConfig.bank().borrowFINRateIndex(_token, vars.currentBlock);
+            } else {
+                vars.indexDifference = globalConfig.bank().borrowFINRateIndex(_token, vars.currentBlock).sub(globalConfig.bank().borrowFINRateIndex(_token, vars.lastBlock));
+            }
+            uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr).mul(vars.indexDifference).div(ACCURACY);
+            FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+        }
+
+        tokenInfo.repay(amount, vars.accruedRate, vars.currentBlock);
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
