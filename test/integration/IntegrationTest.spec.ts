@@ -2324,11 +2324,9 @@ contract("Integration Tests", async (accounts) => {
                 // Verify Compound balance (cBAT)
                 await compoundVerify(cBAT_addr, numOfBAT, BN(balCBATContractInit), erc20BAT, cBAT);
 
-                // TODO: Returning 849 instead of 850
+                // Returning 849 instead of 850
                 // Verify Compound balance (cZRX)
-                /* await compoundVerify(cZRX_addr, numOfZRX, BN(balCZRXContractInit), erc20ZRX, cZRX);
-                console.log("cZRX-n"); */
-                // Check deposit bal of user5
+                await compoundVerify(cZRX_addr, numOfZRX, BN(balCZRXContractInit), erc20ZRX, cZRX);
 
                 let ETHbalanceBeforeBorrow = await web3.eth.getBalance(savingAccount.address);
                 console.log("ETHbalanceBeforeBorrow", ETHbalanceBeforeBorrow.toString());
