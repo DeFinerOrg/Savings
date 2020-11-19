@@ -210,14 +210,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
-                        expect(
-                            await compoundVerify(
-                                addressCTokenTemp,
-                                numOfToken,
-                                BN(balCTokenContractInit),
-                                erc20contr,
-                                cTokenTemp
-                            )
+                        await compoundVerify(
+                            addressCTokenTemp,
+                            numOfToken,
+                            BN(balCTokenContractInit),
+                            erc20contr,
+                            cTokenTemp
                         );
                     }
                 }
@@ -300,14 +298,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
-                        expect(
-                            await compoundVerify(
-                                addressCTokenTemp,
-                                numOfToken,
-                                BN(balCTokenContractInit),
-                                erc20contr,
-                                cTokenTemp
-                            )
+                        await compoundVerify(
+                            addressCTokenTemp,
+                            numOfToken,
+                            BN(balCTokenContractInit),
+                            erc20contr,
+                            cTokenTemp
                         );
                     }
 
@@ -394,14 +390,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
-                        expect(
-                            await compoundVerify(
-                                addressCTokenTemp,
-                                numOfToken,
-                                BN(balCTokenContractInit),
-                                erc20contr,
-                                cTokenTemp
-                            )
+                        await compoundVerify(
+                            addressCTokenTemp,
+                            numOfToken,
+                            BN(balCTokenContractInit),
+                            erc20contr,
+                            cTokenTemp
                         );
                     }
                 }
@@ -492,14 +486,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
-                        expect(
-                            await compoundVerify(
-                                addressCTokenTemp,
-                                numOfToken,
-                                BN(balCTokenContractInit),
-                                erc20contr,
-                                cTokenTemp
-                            )
+                        await compoundVerify(
+                            addressCTokenTemp,
+                            numOfToken,
+                            BN(balCTokenContractInit),
+                            erc20contr,
+                            cTokenTemp
                         );
                     }
                 }
@@ -574,14 +566,12 @@ contract("Integration Tests", async (accounts) => {
 
                     // Verify balance on Compound
                     if (i != 3 && i != 4 && i != 9 && i != 10) {
-                        expect(
-                            await compoundVerify(
-                                addressCTokenTemp,
-                                numOfToken,
-                                BN(balCTokenContractInit),
-                                erc20contr,
-                                cTokenTemp
-                            )
+                        await compoundVerify(
+                            addressCTokenTemp,
+                            numOfToken,
+                            BN(balCTokenContractInit),
+                            erc20contr,
+                            cTokenTemp
                         );
                     }
                 }
