@@ -70,6 +70,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         //console.log("addressCETH", addressCETH);
     });
 
+    // Function to verify reservation & total DeFiner balance
     const reserveVerify = async (
         tokenBalanceAfterDeposit: BN,
         tokenBalanceBeforeDeposit: BN,
@@ -362,8 +363,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
                         const balSavingAccountUserBefore = await erc20DAI.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20DAI.address,
@@ -381,8 +381,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
                         const balSavingAccountUserAfter = await erc20DAI.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
@@ -413,8 +412,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
                         const balSavingAccountUserBefore = await erc20DAI.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20DAI.address,
@@ -429,8 +427,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
                         const balSavingAccountUserAfter = await erc20DAI.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
@@ -462,8 +459,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
                         const balSavingAccountUserBefore = await erc20USDC.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20USDC.address,
@@ -478,8 +474,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
                         const balSavingAccountUserAfter = await erc20USDC.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
@@ -509,8 +504,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
                         const balSavingAccountUserBefore = await erc20USDC.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20USDC.address,
@@ -525,8 +519,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
                         const balSavingAccountUserAfter = await erc20USDC.balanceOf(
-                            savingAccount.address,
-                            { from: user1 }
+                            savingAccount.address
                         );
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
