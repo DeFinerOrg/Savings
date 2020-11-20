@@ -103,11 +103,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         return block.number;
     }
 
-    function claim() public {
-        uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        IERC20(FIN).safeTransfer(msg.sender, FINAmount);
-    }
-
     /**
      * Transfer the token between users inside DeFiner
      * @param _to the address that the token be transfered to
@@ -339,5 +334,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         SavingLib.emergencyWithdraw(globalConfig, _token);
+    }
+
+    address public constant FIN = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
+
+    function claim() public {
+        uint FINAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(FIN).safeTransfer(msg.sender, FINAmount);
     }
 }

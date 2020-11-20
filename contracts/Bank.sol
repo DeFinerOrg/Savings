@@ -18,8 +18,6 @@ contract Bank is Constant, Initializable{
     mapping(address => mapping(uint => uint)) public depositeRateIndex; // the index curve of deposit rate
     // Token => block-num => rate
     mapping(address => mapping(uint => uint)) public borrowRateIndex;   // the index curve of borrow rate
-    mapping(address => mapping(uint => uint)) public depositeFINRateIndex;
-    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
     // token address => block number
     mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
@@ -529,4 +527,9 @@ contract Bank is Constant, Initializable{
     function getBlockNumber() private view returns (uint) {
         return block.number;
     }
+
+    mapping(address => mapping(uint => uint)) public depositeFINRateIndex;
+    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
+
+    uint256 public constant MINING_START_BLOCK = 11241825;
 }
