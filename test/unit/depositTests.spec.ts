@@ -70,6 +70,33 @@ contract("SavingAccount.deposit", async (accounts) => {
         //console.log("addressCETH", addressCETH);
     });
 
+    const reserveVerify = async (
+        tokenBalanceAfterDeposit: BN,
+        tokenBalanceBeforeDeposit: BN,
+        depositAmount: BN,
+        totalDefinerBalanceBeforeDeposit: BN,
+        tokenAddr: string
+    ) => {
+        const userBalanceDiff = new BN(tokenBalanceAfterDeposit).sub(
+            new BN(tokenBalanceBeforeDeposit)
+        );
+        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+            .mul(new BN(15))
+            .div(new BN(100));
+
+        // validate savingAccount ETH balance
+        expect(userBalanceDiff).to.be.bignumber.equal(expectedTokensAtSavingAccountContract);
+
+        // Validate the total balance on DeFiner
+        const totalDefinerBalanceAfterDeposit = new BN(
+            await accountsContract.getDepositBalanceCurrent(tokenAddr, owner)
+        );
+        const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
+            new BN(totalDefinerBalanceBeforeDeposit)
+        );
+        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
+    };
+
     // Funtion to verify Compound balance in tests
     const compoundVerify = async (
         addressCToken: string,
@@ -135,27 +162,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                            new BN(ETHbalanceBeforeDeposit)
-                        );
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
 
-                        // validate savingAccount ETH balance
-                        expect(userBalanceDiff).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            ETHbalanceAfterDeposit,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
                         await compoundVerifyETH(
@@ -186,29 +200,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        console.log("ETHbalanceAfterDeposit", ETHbalanceAfterDeposit.toString());
 
-                        const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                            new BN(ETHbalanceBeforeDeposit)
+                        await reserveVerify(
+                            ETHbalanceAfterDeposit,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
-                        const expectedTokensAtSavingAccountContract = depositAmount
-                            .mul(new BN(15))
-                            .div(new BN(100));
-
-                        // validate savingAccount ETH balance
-                        expect(userBalanceDiff).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
-                        );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
                         await compoundVerifyETH(
@@ -240,27 +239,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
                         console.log("ETHbalanceAfterDeposit", ETHbalanceAfterDeposit.toString());
 
-                        const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                            new BN(ETHbalanceBeforeDeposit)
+                        await reserveVerify(
+                            ETHbalanceAfterDeposit,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-
-                        // validate savingAccount ETH balance
-                        expect(userBalanceDiff).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
-                        );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
                         await compoundVerifyETH(
@@ -268,7 +253,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                             balCTokenContractBefore,
                             BN(balCTokensBefore)
                         );
-                        console.log("check423");
 
                         // Deposit some ETH again
                         const depositAmount2 = new BN(1000);
@@ -282,6 +266,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify second deposit
+                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                            .mul(new BN(15))
+                            .div(new BN(100));
                         const expectedTokensAtSavingAccountContract2 = new BN(
                             expectedTokensAtSavingAccountContract
                         ).add(depositAmount2);
@@ -296,7 +283,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                             balCTokenContractBefore,
                             BN(balCTokensBefore)
                         );
-                        console.log("check425");
                     });
 
                     it("when 100 whole ETH are deposited then some ETH is deposited so that Compound is triggered", async () => {
@@ -319,29 +305,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        console.log("ETHbalanceAfterDeposit", ETHbalanceAfterDeposit.toString());
 
-                        const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
-                            new BN(ETHbalanceBeforeDeposit)
+                        await reserveVerify(
+                            ETHbalanceAfterDeposit,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-
-                        // validate savingAccount ETH balance
-                        expect(userBalanceDiff).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
-                        );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
                         await compoundVerifyETH(
@@ -360,6 +331,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify second deposit
+                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                            .mul(new BN(15))
+                            .div(new BN(100));
                         const expectedTokensAtSavingAccountContract2 = new BN(
                             expectedTokensAtSavingAccountContract
                         ).mul(new BN(2));
@@ -387,6 +361,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
+                        const balSavingAccountUserBefore = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
+                        );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20DAI.address,
                             owner
@@ -402,27 +380,17 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        const balSavingAccountUser1 = await erc20DAI.balanceOf(
+                        const balSavingAccountUserAfter = await erc20DAI.balanceOf(
                             savingAccount.address,
                             { from: user1 }
                         );
-                        expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                            balSavingAccountUser1
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfToken,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20DAI.address
                         );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20DAI.address,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
-
                         // 3.2 SavingAccount variables are changed
 
                         // 3.3 Some tokens are sent to Compound contract
@@ -444,6 +412,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("1000").mul(ONE_DAI);
                         await erc20DAI.approve(savingAccount.address, numOfToken);
 
+                        const balSavingAccountUserBefore = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
+                        );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20DAI.address,
                             owner
@@ -456,24 +428,17 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        const balSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                        expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                            balSavingAccount
+                        const balSavingAccountUserAfter = await erc20DAI.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
                         );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20DAI.address,
-                            owner
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfToken,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20DAI.address
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
-
                         // 3.2 SavingAccount variables are changed
 
                         // 3.3 Some tokens are sent to Compound contract
@@ -496,6 +461,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("100");
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
+                        const balSavingAccountUserBefore = await erc20USDC.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
+                        );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20USDC.address,
                             owner
@@ -508,24 +477,17 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        const balSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
-                        expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                            balSavingAccount
+                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
                         );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20USDC.address,
-                            owner
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfToken,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDC.address
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
-
                         // 3.2 SavingAccount variables are changed
 
                         // 3.3 Some tokens are sent to Compound contract
@@ -546,6 +508,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const numOfToken = new BN("1000").mul(ONE_USDC);
                         await erc20USDC.approve(savingAccount.address, numOfToken);
 
+                        const balSavingAccountUserBefore = await erc20USDC.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
+                        );
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20USDC.address,
                             owner
@@ -558,24 +524,17 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const expectedTokensAtSavingAccountContract = numOfToken
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        const balSavingAccount = await erc20USDC.balanceOf(savingAccount.address);
-                        expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
-                            balSavingAccount
+                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
+                            savingAccount.address,
+                            { from: user1 }
                         );
-
-                        // Validate the total balance on DeFiner
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20USDC.address,
-                            owner
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfToken,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDC.address
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
-
                         // 3.2 SavingAccount variables are changed
 
                         // 3.3 Some tokens are sent to Compound contract
