@@ -89,6 +89,26 @@ contract("SavingAccount.deposit", async (accounts) => {
         expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
     };
 
+    const compoundVerifyETH = async (
+        depositAmount: BN,
+        balCTokenContractBefore: BN,
+        balCTokensBefore: BN
+    ) => {
+        // Some tokens are sent to Compound contract
+        const expectedTokensAtCTokenContract = depositAmount.mul(new BN(85)).div(new BN(100));
+        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
+        expect(
+            new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
+        ).to.be.bignumber.equal(balCTokenContract);
+
+        // cToken must be minted for SavingAccount
+        const expectedCTokensAtSavingAccount = depositAmount.mul(new BN(85)).div(new BN(100));
+        const balCTokensAfter = new BN(await cETH.balanceOfUnderlying.call(savingAccount.address));
+        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
+            balCTokensAfter.sub(balCTokensBefore)
+        );
+    };
+
     context("deposit()", async () => {
         context("Single Token", async () => {
             context("ETH", async () => {
@@ -138,25 +158,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
-                        const expectedTokensAtCTokenContract = depositAmount
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(balCTokenContractBefore).add(
-                                new BN(expectedTokensAtCTokenContract)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContract);
-
-                        // cToken must be minted for SavingAccount
-                        const expectedCTokensAtSavingAccount = depositAmount
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokensAfter = new BN(
-                            await cETH.balanceOfUnderlying.call(savingAccount.address)
-                        );
-                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                            balCTokensAfter.sub(balCTokensBefore)
+                        await compoundVerifyETH(
+                            depositAmount,
+                            balCTokenContractBefore,
+                            balCTokensBefore
                         );
                     });
 
@@ -206,30 +211,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
-                        const expectedTokensAtCTokenContract = depositAmount
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(balCTokenContractBefore).add(
-                                new BN(expectedTokensAtCTokenContract)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContract);
-
-                        // cToken must be minted for SavingAccount
-                        const expectedCTokensAtSavingAccount = depositAmount
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokensAfter = new BN(
-                            await cETH.balanceOfUnderlying.call(savingAccount.address)
-                        );
-                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                            balCTokensAfter.sub(balCTokensBefore)
+                        await compoundVerifyETH(
+                            depositAmount,
+                            balCTokenContractBefore,
+                            balCTokensBefore
                         );
                     });
 
                     it("when 100 whole ETH are deposited then some small ETH is deposited so that Compound is not triggered", async () => {
-                        const depositAmount = web3.utils.toWei("100", "ether");
+                        const depositAmount = new BN(web3.utils.toWei("100", "ether"));
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
@@ -273,26 +263,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
-                        const expectedTokensAtCTokenContract = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(expectedTokensAtCTokenContract).add(
-                                new BN(balCTokenContractBefore)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContract);
-
-                        // cToken must be minted for SavingAccount
-                        const expectedCTokensAtSavingAccount = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokensAfter = new BN(
-                            await cETH.balanceOfUnderlying.call(savingAccount.address)
+                        await compoundVerifyETH(
+                            depositAmount,
+                            balCTokenContractBefore,
+                            BN(balCTokensBefore)
                         );
-                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                            balCTokensAfter.sub(balCTokensBefore)
-                        );
+                        console.log("check423");
 
                         // Deposit some ETH again
                         const depositAmount2 = new BN(1000);
@@ -315,23 +291,16 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify that deposit doesn't affect Compound balance
-                        const balCTokenContract2 = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(expectedTokensAtCTokenContract).add(
-                                new BN(balCTokenContractBefore)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContract2);
-
-                        const balCTokens2 = await cETH.balanceOfUnderlying.call(
-                            savingAccount.address
+                        await compoundVerifyETH(
+                            depositAmount,
+                            balCTokenContractBefore,
+                            BN(balCTokensBefore)
                         );
-                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                            new BN(balCTokens2)
-                        );
+                        console.log("check425");
                     });
 
                     it("when 100 whole ETH are deposited then some ETH is deposited so that Compound is triggered", async () => {
-                        const depositAmount = web3.utils.toWei("100", "ether");
+                        const depositAmount = new BN(web3.utils.toWei("100", "ether"));
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
@@ -375,25 +344,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
                         // Some tokens are sent to Compound contract
-                        const expectedTokensAtCTokenContract = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(expectedTokensAtCTokenContract).add(
-                                new BN(balCTokenContractBefore)
-                            )
-                        ).to.be.bignumber.equal(balCTokenContract);
-
-                        // cToken must be minted for SavingAccount
-                        const expectedCTokensAtSavingAccount = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokensAfter = new BN(
-                            await cETH.balanceOfUnderlying.call(savingAccount.address)
-                        );
-                        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-                            balCTokensAfter.sub(balCTokensBefore)
+                        await compoundVerifyETH(
+                            depositAmount,
+                            balCTokenContractBefore,
+                            BN(balCTokensBefore)
                         );
 
                         // Deposit some ETH again
@@ -415,25 +369,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify that deposit affects Compound balance
-                        const expectedTokensAtCTokenContract2 = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100));
-                        const balCTokenContract2 = await web3.eth.getBalance(cETH_addr);
-                        expect(
-                            new BN(expectedTokensAtCTokenContract)
-                                .add(new BN(balCTokenContractBefore))
-                                .add(new BN(expectedTokensAtCTokenContract2))
-                        ).to.be.bignumber.equal(balCTokenContract2);
-
-                        const expectedCTokensAtSavingAccount2 = new BN(depositAmount)
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                            .mul(new BN(2));
-                        const balCTokens2 = await cETH.balanceOfUnderlying.call(
-                            savingAccount.address
-                        );
-                        expect(expectedCTokensAtSavingAccount2).to.be.bignumber.equal(
-                            new BN(balCTokens2)
+                        await compoundVerifyETH(
+                            depositAmount.mul(new BN(2)),
+                            balCTokenContractBefore,
+                            BN(balCTokensBefore)
                         );
                     });
                 });
