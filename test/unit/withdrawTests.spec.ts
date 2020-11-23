@@ -69,7 +69,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
-    let numOfToken: any;
     let ONE_DAI: any;
     let ONE_USDC: any;
     let ZERO: any;
@@ -500,10 +499,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         const balSavingAccountUserAfter = await erc20DAI.balanceOf(
                             savingAccount.address
                         );
+
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
                             BN(balSavingAccountUserBefore),
-                            numOfToken,
+                            numOfTokens,
                             BN(totalDefinerBalanceBeforeDeposit),
                             erc20DAI.address
                         );
@@ -703,7 +703,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         await reserveVerify(
                             BN(balSavingAccountUserAfter),
                             BN(balSavingAccountUserBefore),
-                            numOfToken,
+                            depositAmount,
                             BN(totalDefinerBalanceBeforeDeposit),
                             erc20DAI.address
                         );
@@ -1764,7 +1764,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             new BN("1000").mul(ONE_MKR)
                         );
                         const newbalSavingAccount = await erc20MKR.balanceOf(savingAccount.address);
-                        console.log("newbalSavingAccount", newbalSavingAccount);
 
                         expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.equal(
                             newbalSavingAccount
