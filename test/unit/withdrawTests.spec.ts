@@ -228,10 +228,12 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
-
                         const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
                         const balCTokensBefore = new BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)
+                        );
+                        let ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                            savingAccount.address
                         );
 
                         // Depositting ETH Token to SavingContract
@@ -240,23 +242,20 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         });
 
                         // Validate the total balance on DeFiner after deposit
+                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             ETH_ADDRESS,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
-                            savingAccount.address
-                        );
-                        expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            ETHbalanceBeforeWithdraw,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
 
                         // Amount in Compound
@@ -311,6 +310,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         const balCTokensBefore = await cETH.balanceOfUnderlying.call(
                             savingAccount.address
                         );
+                        let ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -318,23 +320,20 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         });
 
                         // Validate the total balance on DeFiner after deposit
+                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             ETH_ADDRESS,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
-                            savingAccount.address
-                        );
-                        expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            ETHbalanceBeforeWithdraw,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
 
                         // Amount in Compound
@@ -402,6 +401,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         const balCTokensBefore = await cETH.balanceOfUnderlying.call(
                             savingAccount.address
                         );
+                        let ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
@@ -409,23 +411,20 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         });
 
                         // Validate the total balance on DeFiner after deposit
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
+                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             ETH_ADDRESS,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
 
-                        let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(
-                            savingAccount.address
-                        );
-                        expect(ETHbalanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            ETHbalanceBeforeWithdraw,
+                            ETHbalanceBeforeDeposit,
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            ETH_ADDRESS
                         );
 
                         // Amount in Compound
@@ -772,6 +771,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             savingAccount.address
                         );
                         const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
+                        const balSavingAccountUserBefore = await erc20DAI.balanceOf(
+                            savingAccount.address
+                        );
 
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20DAI.address,
@@ -786,12 +788,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         // deposit tokens
                         await savingAccount.deposit(erc20DAI.address, depositAmount);
 
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20DAI.balanceOf(savingAccount.address);
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        const balSavingAccountUserAfter = await erc20DAI.balanceOf(
+                            savingAccount.address
+                        );
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20DAI.address
                         );
 
                         // Verifying balance on Compound
@@ -879,6 +884,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
 
                         const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
+                        const balSavingAccountUserBefore = await erc20USDC.balanceOf(
+                            savingAccount.address
+                        );
 
                         // deposit tokens
                         await savingAccount.deposit(erc20USDC.address, numOfTokens);
@@ -888,19 +896,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20USDC.address,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
-
-                        const expectedTokensAtSavingAccountContract = new BN(numOfTokens)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20USDC.balanceOf(
+                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfTokens,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDC.address
                         );
 
                         // Verifying balance on Compound
@@ -972,6 +976,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20USDC.address,
                             owner
                         );
+                        const balSavingAccountUserBefore = await erc20USDC.balanceOf(
+                            savingAccount.address
+                        );
                         const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
                         const withdraws = new BN("100").mul(ONE_USDC);
 
@@ -987,19 +994,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20USDC.address,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
-
-                        const expectedTokensAtSavingAccountContract = new BN(numOfTokens)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20USDC.balanceOf(
+                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(balSavingAccountUserBefore),
+                            numOfTokens,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDC.address
                         );
 
                         // Verifying balance on Compound
@@ -1079,24 +1082,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         await savingAccount.deposit(erc20USDC.address, depositAmount);
 
                         // Validate the total balance on DeFiner after deposit
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20USDC.address,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20USDC.balanceOf(
+                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(accountBalanceBeforeWithdrawUSDC),
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDC.address
                         );
 
                         // Verifying balance on Compound
@@ -1158,6 +1152,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20USDT.address,
                             owner
                         );
+                        let accountBalanceBeforeWithdrawUSDT = await erc20USDT.balanceOf(
+                            savingAccount.address
+                        );
                         const balCTokenContractBefore = await erc20USDT.balanceOf(cUSDT_addr);
 
                         // deposit tokens
@@ -1168,19 +1165,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20USDT.address,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
-
-                        const expectedTokensAtSavingAccountContract = new BN(numOfTokens)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20USDT.balanceOf(
+                        const balSavingAccountUserAfter = await erc20USDT.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(accountBalanceBeforeWithdrawUSDT),
+                            numOfTokens,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDT.address
                         );
 
                         // Verifying balance on Compound
@@ -1271,23 +1264,15 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         await savingAccount.deposit(erc20USDT.address, depositAmount);
 
                         // Validate the total balance on DeFiner after deposit
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20USDT.address,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20USDT.balanceOf(
+                        const balSavingAccountUserAfter = await erc20USDT.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(accountBalanceBeforeWithdrawUSDT),
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20USDT.address
                         );
 
                         // Verifying balance on Compound
@@ -1352,31 +1337,29 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             erc20WBTC.address,
                             owner
                         );
+                        const accountBalanceBeforeWithdrawWBTC = await erc20WBTC.balanceOf(
+                            savingAccount.address
+                        );
                         const balCTokenContractBefore = await erc20WBTC.balanceOf(cWBTC_addr);
 
                         // deposit tokens
                         await savingAccount.deposit(erc20WBTC.address, numOfTokens);
 
                         // Validate the total balance on DeFiner after deposit
+                        let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
+                        const balSavingAccountUserAfter = await erc20WBTC.balanceOf(
+                            savingAccount.address
+                        );
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20WBTC.address,
                             owner
                         );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfTokens);
-
-                        let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
-
-                        const expectedTokensAtSavingAccountContract = new BN(numOfTokens)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20WBTC.balanceOf(
-                            savingAccount.address
-                        );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(accountBalanceBeforeWithdrawWBTC),
+                            numOfTokens,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20WBTC.address
                         );
 
                         // Verifying balance on Compound
@@ -1468,23 +1451,16 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         await savingAccount.deposit(erc20WBTC.address, depositAmount);
 
                         // Validate the total balance on DeFiner after deposit
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20WBTC.address,
-                            owner
-                        );
-                        const totalDefinerBalanceChange = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalanceBeforeDeposit));
-                        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        let balanceBeforeWithdraw = await erc20WBTC.balanceOf(
+                        let userBalanceBeforeWithdraw = await erc20WBTC.balanceOf(owner);
+                        const balSavingAccountUserAfter = await erc20WBTC.balanceOf(
                             savingAccount.address
                         );
-                        expect(balanceBeforeWithdraw).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract
+                        await reserveVerify(
+                            BN(balSavingAccountUserAfter),
+                            BN(accountBalanceBeforeWithdrawWBTC),
+                            depositAmount,
+                            BN(totalDefinerBalanceBeforeDeposit),
+                            erc20WBTC.address
                         );
 
                         // Verifying balance on Compound
