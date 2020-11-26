@@ -336,10 +336,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         SavingLib.emergencyWithdraw(globalConfig, _token);
     }
 
-    address public constant FIN = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
-
     function claim() public {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        IERC20(FIN).safeTransfer(msg.sender, FINAmount);
+        // 11 => FINAddress
+        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
     }
 }

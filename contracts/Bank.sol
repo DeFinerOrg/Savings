@@ -172,19 +172,9 @@ contract Bank is Constant, Initializable{
         uint miningSpeed = globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token);
         uint deltaBlock;
         uint totalDeposit = getTotalDepositStore(_token);
-        if(currentBlock <= MINING_START_BLOCK) {
-            return;
-        } else {
-            if(lastDepositeFINRateCheckpoint[_token] < MINING_START_BLOCK) {
-                deltaBlock = currentBlock.sub(MINING_START_BLOCK);
-            } else {
-                deltaBlock = currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
-            }
-            if(totalDeposit != 0) 
-                depositeFINRateIndex[_token][currentBlock] = depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalDeposit));
-            
-            lastDepositeFINRateCheckpoint[_token] = currentBlock;
-        }
+        deltaBlock = lastDepositeFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
+        depositeFINRateIndex[_token][currentBlock] = totalDeposit == 0 ? 0 : depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalDeposit));
+        lastDepositeFINRateCheckpoint[_token] = currentBlock;
     }
 
     function updateBorrowFINIndex(address _token) public onlyInternal{
@@ -192,19 +182,9 @@ contract Bank is Constant, Initializable{
         uint miningSpeed = globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token);
         uint deltaBlock;
         uint totalborrow = totalLoans[_token];
-        if(currentBlock <= MINING_START_BLOCK) {
-            return;
-        } else {
-            if(lastBorrowFINRateCheckpoint[_token] < MINING_START_BLOCK) {
-                deltaBlock = currentBlock.sub(MINING_START_BLOCK);
-            } else {
-                deltaBlock = currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
-            }
-            if(totalborrow != 0) 
-                borrowFINRateIndex[_token][currentBlock] = borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalborrow));
-
-            lastBorrowFINRateCheckpoint[_token] = currentBlock;
-        }
+        deltaBlock = lastBorrowFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
+        borrowFINRateIndex[_token][currentBlock] = totalborrow == 0 ? 0 : borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalborrow));
+        lastBorrowFINRateCheckpoint[_token] = currentBlock;
     }
 
     function updateMining(address _token) public onlyInternal{
@@ -531,5 +511,4 @@ contract Bank is Constant, Initializable{
     mapping(address => mapping(uint => uint)) public depositeFINRateIndex;
     mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
 
-    uint256 public constant MINING_START_BLOCK = 11241825;
 }
