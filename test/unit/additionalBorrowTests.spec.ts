@@ -2,6 +2,7 @@ import { BigNumber } from "bignumber.js";
 import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
+import { addSyntheticTrailingComment } from "typescript";
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -20,6 +21,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let accountsContract: t.AccountsInstance;
+    let bank: t.BankInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -71,22 +74,23 @@ contract("SavingAccount.borrow", async (accounts) => {
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_USDC: any;
-    // testEngine = new TestEngine();
-    // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        accountsContract = await testEngine.accounts;
+        bank = await testEngine.bank;
+
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -100,18 +104,20 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
-
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
+
         erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
+
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
@@ -146,7 +152,70 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+
     });
+
+    /**
+     * 
+     * @param actionType - 0 for deposit, 1 for withdraw, 2 for borrow, 3 for repay.
+     * @param amount - The amount involved in this behavior.
+     * @param tokenInstance - The erc20 token instance.
+     * @param cTokenInstance - The cToken instance.
+     * @param compBalanceBefore - The balance of this token in compound before this action.
+     * @param resBalanceBefore - The reserve balance of this token.
+     * @param account - The account that is conducting this action.
+     */
+    const savAccBalVerify = async (
+        actionType: number,
+        amount: BN,
+        tokenInstance: t.MockErc20Instance,
+        cTokenInstance: t.MockCTokenInstance,
+        compBalanceBefore: BN,
+        resBalanceBefore: BN) => {
+
+        var totalBalanceAfter = new BN(await bank.getTotalDepositStore(tokenInstance.address));
+        var expectedResAfter;
+        var expectedCompAfter;
+        const compBalanceAfter = new BN(await cTokenInstance.balanceOfUnderlying.call(savingAccount.address));
+        const resBalanceAfter = new BN(await tokenInstance.balanceOf(savingAccount.address));
+
+        switch (actionType) {
+            case 0:
+            case 3:
+                if (resBalanceBefore.add(amount).gt(totalBalanceAfter.mul(new BN(20)).div(new BN(100)))) {
+                    expectedResAfter = totalBalanceAfter.mul(new BN(15)).div(new BN(100));
+                    expectedCompAfter = compBalanceBefore.add(amount).sub(expectedResAfter).add(resBalanceBefore);
+                } else {
+                    expectedResAfter = resBalanceBefore.add(amount);
+                    expectedCompAfter = compBalanceBefore;
+                }
+                expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
+                expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
+                break;
+            case 1:
+            case 2:
+                if (compBalanceBefore.lte(amount)) {
+                    expect(compBalanceAfter.add(resBalanceAfter).add(amount)).to.be.bignumber.equals(compBalanceBefore.add(resBalanceBefore));
+                } else if (compBalanceBefore.add(resBalanceBefore).sub(amount).lte(totalBalanceAfter.mul(new BN(15)).div(new BN(100)))) {
+                    expectedCompAfter = new BN(0);
+                    expectedResAfter = compBalanceBefore.add(resBalanceBefore).sub(amount);
+                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
+                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
+                } else if (resBalanceBefore.lte(amount.add(totalBalanceAfter.mul(new BN(10)).div(new BN(100))))) {
+                    expectedResAfter = totalBalanceAfter.mul(new BN(15)).div(new BN(100));
+                    expectedCompAfter = compBalanceBefore.sub(amount).sub(expectedResAfter).add(resBalanceBefore);
+
+                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
+                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
+                } else {
+                    expectedResAfter = resBalanceBefore.sub(amount);
+                    expectedCompAfter = compBalanceBefore;
+                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
+                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
+                }
+                break;
+        }
+    };
 
     // extra tests by Yichun
     context("Additional tests for Borrow", async () => {
@@ -155,7 +224,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 "Use compound supported and unsupported tokens together (WBTC, TUSD)",
                 async () => {
                     context("Should fail", async () => {
-                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function() {
+                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -202,7 +271,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Insufficient collateral when borrow."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function() {
+                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -247,7 +316,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Insufficient collateral when borrow."
                             );
                         });
-                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function() {
+                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -292,7 +361,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Borrow zero amount of token is not allowed."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function() {
+                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -339,7 +408,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                         });
                     });
                     context("Should succeeed", async () => {
-                        it("Deposits WBTC, borrows a small amount of TUSD ", async function() {
+                        it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -422,7 +491,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             ).to.be.bignumber.equals(new BN(0));
                         });
 
-                        it("Deposits TUSD, borrows a small amount of WBTC ", async function() {
+                        it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -501,7 +570,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
                         });
-                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function() {
+                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -583,7 +652,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
                         });
-                        it("Deposits TUSD, borrows the same amount of borrowing power", async function() {
+                        it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -678,7 +747,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("Call multiple times", async () => {
             context("Should succeed", async () => {
-                it("Uses 18 decimals, TUSD", async function() {
+                it("Uses 18 decimals, TUSD", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -703,6 +772,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
 
+                    const savingsDAIBeforeDeposit = new BN(await erc20DAI.balanceOf(savingAccount.address));
+
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
                         from: user1
                     });
@@ -710,10 +781,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                         from: user2
                     });
 
-                    const savingsCompoundDAIAfterDeposit = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
-
+                    await savAccBalVerify(0,
+                        eighteenPrecision.mul(new BN(100)),
+                        erc20DAI, cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit);
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole TUSD twice
@@ -726,17 +798,9 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
 
-                    const savingsCompoundDAIAfterFirstBorrow = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
-
                     let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
 
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
-
-                    const savingsCompoundDAIAfterSecondBorrow = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
 
                     let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
 
@@ -750,25 +814,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                         BN(accTUSDAfterSecond).sub(BN(accTUSDBeforeFirst))
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
-                    expect(
-                        savingsCompoundDAIAfterDeposit.sub(savingsCompoundDAIBeforeDeposit)
-                    ).to.be.bignumber.equals(
-                        eighteenPrecision
-                            .mul(new BN(100))
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                    );
-
-                    expect(
-                        savingsCompoundDAIAfterSecondBorrow.sub(savingsCompoundDAIAfterFirstBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundDAIAfterFirstBorrow.sub(savingsCompoundDAIAfterSecondBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
                 });
 
-                it("Uses 6 decimals, USDC", async function() {
+                it("Uses 6 decimals, USDC", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -790,9 +838,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const savingsCompoundDAIBeforeDeposit = new BN(
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsDAIBeforeDeposit = new BN(await erc20DAI.balanceOf(savingAccount.address));
+
+
                     const savingsCompoundUSDCBeforeDeposit = new BN(
                         await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsUSDCBeforeDeposit = new BN(await erc20USDC.balanceOf(savingAccount.address));
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
                         from: user1
@@ -801,12 +855,25 @@ contract("SavingAccount.borrow", async (accounts) => {
                         from: user2
                     });
 
-                    const savingsCompoundDAIAfterDeposit = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
+                    await savAccBalVerify(0,
+                        eighteenPrecision.mul(new BN(100)),
+                        erc20DAI, cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit);
+
+                    await savAccBalVerify(0,
+                        sixPrecision.mul(new BN(100)),
+                        erc20USDC, cUSDC,
+                        savingsCompoundUSDCBeforeDeposit,
+                        savingsUSDCBeforeDeposit);
+
+
                     const savingsCompoundUSDCAfterDeposit = new BN(
                         await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsUSDCAfterDeposit = new BN(await erc20USDC.balanceOf(savingAccount.address));
+
                     /*
                      * Step 2
                      * Account 1: Borrows 10 whole USDC twice
@@ -819,23 +886,29 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
 
-                    const savingsCompoundDAIAfterFirstBorrow = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
+                    await savAccBalVerify(2,
+                        borrow,
+                        erc20USDC, cUSDC,
+                        savingsCompoundUSDCAfterDeposit,
+                        savingsUSDCAfterDeposit);
+
                     const savingsCompoundUSDCAfterFirstBorrow = new BN(
                         await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
 
+                    const savingsUSDCAfterFirstBorrow = new BN(await erc20USDC.balanceOf(savingAccount.address));
+
                     let accUSDCAfterFirst = await erc20USDC.balanceOf(user1);
+
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
+
                     let accUSDCAfterSecond = await erc20USDC.balanceOf(user1);
 
-                    const savingsCompoundDAIAfterSecondBorrow = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
-                    const savingsCompoundUSDCAfterSecondBorrow = new BN(
-                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
-                    );
+                    await savAccBalVerify(2,
+                        borrow,
+                        erc20USDC, cUSDC,
+                        savingsCompoundUSDCAfterFirstBorrow,
+                        savingsUSDCAfterFirstBorrow);
 
                     // Verify 1.
                     expect(
@@ -847,44 +920,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                         BN(accUSDCAfterSecond).sub(BN(accUSDCBeforeFirst))
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
-                    expect(
-                        savingsCompoundDAIAfterDeposit.sub(savingsCompoundDAIBeforeDeposit)
-                    ).to.be.bignumber.equals(
-                        eighteenPrecision
-                            .mul(new BN(100))
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                    );
 
-                    expect(
-                        savingsCompoundDAIAfterSecondBorrow.sub(savingsCompoundDAIAfterFirstBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundDAIAfterFirstBorrow.sub(savingsCompoundDAIAfterSecondBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundUSDCAfterDeposit.sub(savingsCompoundUSDCBeforeDeposit)
-                    ).to.be.bignumber.equals(
-                        sixPrecision
-                            .mul(new BN(100))
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                    );
-
-                    expect(
-                        savingsCompoundUSDCAfterDeposit.sub(savingsCompoundUSDCAfterFirstBorrow)
-                    ).to.be.bignumber.equals(borrow);
-
-                    expect(
-                        savingsCompoundUSDCAfterFirstBorrow.sub(
-                            savingsCompoundUSDCAfterSecondBorrow
-                        )
-                    ).to.be.bignumber.equals(borrow);
                 });
 
-                it("Uses 8 decimals, WBTC", async function() {
+                it("Uses 8 decimals, WBTC", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -908,9 +947,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const savingsCompoundDAIBeforeDeposit = new BN(
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsDAIBeforeDeposit = new BN(await erc20DAI.balanceOf(savingAccount.address));
+
+
                     const savingsCompoundWBTCBeforeDeposit = new BN(
                         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsWBTCBeforeDeposit = new BN(await erc20WBTC.balanceOf(savingAccount.address));
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1000)), {
                         from: user1
@@ -919,12 +964,24 @@ contract("SavingAccount.borrow", async (accounts) => {
                         from: user2
                     });
 
-                    const savingsCompoundDAIAfterDeposit = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
+                    await savAccBalVerify(0,
+                        eighteenPrecision.mul(new BN(1000)),
+                        erc20DAI, cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit);
+
+                    await savAccBalVerify(0,
+                        eightPrecision.mul(new BN(1000)),
+                        erc20WBTC, cWBTC,
+                        savingsCompoundWBTCBeforeDeposit,
+                        savingsWBTCBeforeDeposit);
+
+
                     const savingsCompoundWBTCAfterDeposit = new BN(
                         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsWBTCAfterDeposit = new BN(await erc20WBTC.balanceOf(savingAccount.address));
 
                     /*
                      * Step 2
@@ -938,12 +995,17 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
 
-                    const savingsCompoundDAIAfterFirstBorrow = new BN(
-                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                    );
+                    await savAccBalVerify(2,
+                        borrow,
+                        erc20WBTC, cWBTC,
+                        savingsCompoundWBTCAfterDeposit,
+                        savingsWBTCAfterDeposit);
+
                     const savingsCompoundWBTCAfterFirstBorrow = new BN(
                         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
                     );
+
+                    const savingsWBTCAfterFirstBorrow = new BN(await erc20WBTC.balanceOf(savingAccount.address));
 
                     let accWBTCAfterFirst = await erc20WBTC.balanceOf(user1);
                     await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
@@ -956,6 +1018,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     let accWBTCAfterSecond = await erc20WBTC.balanceOf(user1);
+
+                    await savAccBalVerify(2,
+                        borrow,
+                        erc20WBTC, cWBTC,
+                        savingsCompoundWBTCAfterFirstBorrow,
+                        savingsWBTCAfterFirstBorrow);
+
                     // Verify 1.
                     expect(
                         BN(accWBTCAfterFirst).sub(BN(accWBTCAfterFirstBefore))
@@ -965,41 +1034,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                         BN(accWBTCAfterSecond).sub(BN(accWBTCAfterFirstBefore))
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
 
-                    expect(
-                        savingsCompoundDAIAfterDeposit.sub(savingsCompoundDAIBeforeDeposit)
-                    ).to.be.bignumber.equals(
-                        eighteenPrecision
-                            .mul(new BN(1000))
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                    );
 
-                    expect(
-                        savingsCompoundDAIAfterSecondBorrow.sub(savingsCompoundDAIAfterFirstBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundDAIAfterFirstBorrow.sub(savingsCompoundDAIAfterSecondBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundWBTCAfterDeposit.sub(savingsCompoundWBTCBeforeDeposit)
-                    ).to.be.bignumber.equals(
-                        eightPrecision
-                            .mul(new BN(1000))
-                            .mul(new BN(85))
-                            .div(new BN(100))
-                    );
-
-                    expect(
-                        savingsCompoundWBTCAfterDeposit.sub(savingsCompoundWBTCAfterFirstBorrow)
-                    ).to.be.bignumber.equals(new BN(0));
-
-                    expect(
-                        savingsCompoundWBTCAfterFirstBorrow.sub(
-                            savingsCompoundWBTCAfterSecondBorrow
-                        )
-                    ).to.be.bignumber.equals(new BN(0));
                 });
             });
         });
