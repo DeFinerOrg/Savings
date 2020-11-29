@@ -42,7 +42,7 @@ export const savAccBalVerify = async (
     var resBalanceAfter;
 
     if (tokenAddr == ETH_ADDRESS) {
-        resBalanceAfter = await web3.eth.getBalance(savingAccount.address);
+        resBalanceAfter = new BN((await web3.eth.getBalance(savingAccount.address)).toString());
     } else {
         const erc20Instance = await ERC20.at(tokenAddr);
         resBalanceAfter = await erc20Instance.balanceOf(savingAccount.address);

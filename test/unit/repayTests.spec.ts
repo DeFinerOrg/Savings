@@ -1,5 +1,6 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
+import { savAccBalVerify } from "../../test-helpers/lib/lib";
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -19,6 +20,7 @@ contract("SavingAccount", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
+    let bank: t.BankInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -46,11 +48,11 @@ contract("SavingAccount", async (accounts) => {
     let addressCTokenForWBTC: any;
     let addressCTokenForETH: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
-    let cTokenETH: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
 
     let numOfToken: any;
     // testEngine = new TestEngine();
@@ -69,6 +71,8 @@ contract("SavingAccount", async (accounts) => {
         accountsContract = await testEngine.accounts;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
+        bank = await testEngine.bank;
+
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -86,11 +90,11 @@ contract("SavingAccount", async (accounts) => {
         addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         addressCTokenForETH = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
 
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
-        cTokenETH = await MockCToken.at(addressCTokenForETH);
+        cDAI = await MockCToken.at(addressCTokenForDAI);
+        cUSDC = await MockCToken.at(addressCTokenForUSDC);
+        cUSDT = await MockCToken.at(addressCTokenForUSDT);
+        cWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cETH = await MockCToken.at(addressCTokenForETH);
 
         numOfToken = new BN(1000);
     });
@@ -106,10 +110,61 @@ contract("SavingAccount", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
+
+                    await savAccBalVerify(1,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
                 });
 
                 it("when unsupported token address passed", async function () {
@@ -142,38 +197,84 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
 
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
 
-                    const savingAccountCDAITokenAfterBorrow = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
+
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
 
-                    const savingAccountCDAITokenAfterRepay = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterBorrow,
+                        savingAccountDAITokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
@@ -182,18 +283,6 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user2BalanceBorrowAfter.sub(user2BalanceRepayAfter)
                     ).to.be.bignumber.equal(new BN(10));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterBorrow.sub(savingAccountCDAITokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
                 });
 
                 it("When the repayment tokenAmount is less than the loan amount.", async function () {
@@ -205,35 +294,81 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
 
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
-                    const savingAccountCDAITokenAfterBorrow = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(5), { from: user2 });
-                    const savingAccountCDAITokenAfterRepay = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(5),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterBorrow,
+                        savingAccountDAITokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
@@ -242,18 +377,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user2BalanceBorrowAfter.sub(user2BalanceRepayAfter)
                     ).to.be.bignumber.equal(new BN(5));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterBorrow.sub(savingAccountCDAITokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
+
                 });
 
                 it("When the repayment tokenAmount is equal than the loan amount.", async function () {
@@ -265,36 +389,84 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
 
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
-                    const savingAccountCDAITokenAfterBorrow = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
 
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(10), { from: user2 });
-                    const savingAccountCDAITokenAfterRepay = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterBorrow,
+                        savingAccountDAITokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
@@ -303,18 +475,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user2BalanceBorrowAfter.sub(user2BalanceRepayAfter)
                     ).to.be.bignumber.equal(new BN(10));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterBorrow.sub(savingAccountCDAITokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
+
                 });
 
                 it("When the repayment tokenAmount is greater than the loan amount.", async function () {
@@ -326,38 +487,85 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
                     await savingAccount.borrow(addressDAI, new BN(10), { from: user2 });
 
-                    const savingAccountCDAITokenAfterBorrow = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
                     // 2.1 Prepare more DAI.
                     await erc20DAI.transfer(user2, numOfToken);
                     const user2BalanceRepayBefore = BN(await erc20DAI.balanceOf(user2));
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, new BN(20), { from: user2 });
-                    const savingAccountCDAITokenAfterRepay = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterBorrow,
+                        savingAccountDAITokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
@@ -366,18 +574,6 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user2BalanceRepayBefore.sub(user2BalanceRepayAfter)
                     ).to.be.bignumber.equal(new BN(10));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterBorrow.sub(savingAccountCDAITokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
                 });
 
                 it("When the repayment USDCAmount is less than the loan amount.", async function () {
@@ -389,12 +585,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
@@ -404,28 +606,68 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken.add(numOfDAI),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20USDC.balanceOf(user1));
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user1 });
 
                     const user1BalanceBorrowAfter = BN(await erc20USDC.balanceOf(user1));
-                    const savingAccountCUSDCTokenAfterBorrow = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterDeposit,
+                        savingAccountUSDCTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterBorrow = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterBorrow = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+
                     // 3. Start repayment.
                     await savingAccount.repay(addressUSDC, new BN(5), { from: user1 });
                     // 4. Verify the repay amount.
                     const user1BalanceRepayAfter = BN(await erc20USDC.balanceOf(user1));
-                    const savingAccountCUSDCTokenAfterRepay = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(5),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterBorrow,
+                        savingAccountUSDCTokenAfterBorrow,
+                        bank,
+                        savingAccount);
 
                     expect(
                         user1BalanceBorrowAfter.sub(user1BalanceBorrowBefore)
@@ -433,18 +675,6 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(5));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).add(numOfDAI).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCUSDCTokenAfterBorrow.sub(savingAccountCUSDCTokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
                 });
 
                 it("When the repayment USDCAmount is equal than the loan amount.", async function () {
@@ -456,12 +686,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
@@ -471,27 +707,67 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken.add(numOfDAI),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20USDC.balanceOf(user1));
 
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user1 });
                     const user1BalanceBorrowAfter = BN(await erc20USDC.balanceOf(user1));
-                    const savingAccountCUSDCTokenAfterBorrow = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterDeposit,
+                        savingAccountUSDCTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterBorrow = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterBorrow = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     // 3. Start repayment.
                     await savingAccount.repay(addressUSDC, new BN(10), { from: user1 });
-                    const savingAccountCUSDCTokenAfterRepay = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterBorrow,
+                        savingAccountUSDCTokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user1BalanceRepayAfter = BN(await erc20USDC.balanceOf(user1));
                     expect(
@@ -500,18 +776,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).add(numOfDAI).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCUSDCTokenAfterBorrow.sub(savingAccountCUSDCTokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
+
                 });
 
                 it("When the repayment USDCAmount is greater than the loan amount.", async function () {
@@ -523,12 +788,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
@@ -538,29 +809,71 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken.add(numOfDAI),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20USDC.balanceOf(user1));
 
                     await savingAccount.borrow(addressUSDC, new BN(10), { from: user1 });
-                    const savingAccountCUSDCTokenAfterBorrow = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterDeposit,
+                        savingAccountUSDCTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterBorrow = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterBorrow = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+
                     const user1BalanceBorrowAfter = BN(await erc20USDC.balanceOf(user1));
                     // 2.1 Prepare more DAI.
                     await erc20USDC.transfer(user1, numOfToken);
-                    const user1BalanceRepayBefore = BN(await erc20USDC.balanceOf(user1));
+
                     // 3. Start repayment.
                     await savingAccount.repay(addressUSDC, new BN(20), { from: user1 });
-                    const savingAccountCUSDCTokenAfterRepay = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterBorrow,
+                        savingAccountUSDCTokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
+
                     // 4. Verify the repay amount.
                     const user1BalanceRepayAfter = BN(await erc20USDC.balanceOf(user1));
                     expect(
@@ -569,19 +882,8 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(numOfToken);
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).add(numOfDAI).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCUSDCTokenAfterBorrow.sub(savingAccountCUSDCTokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
                 });
+
             });
         });
 
@@ -635,12 +937,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.transfer(user2, numOfUSDC);
                     await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
-                    const savingAccountCETHTokenBeforeDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountCETHTokenBeforeDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenBeforeDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
@@ -648,25 +956,63 @@ contract("SavingAccount", async (accounts) => {
                     });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
-                    const savingAccountCETHTokenAfterDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfUSDC,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenBeforeDeposit,
+                        savingAccountETHTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
-                    const savingAccountCETHTokenAfterBorrow = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterDeposit,
+                        savingAccountETHTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterBorrow = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterBorrow = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
+
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, new BN(5), {
                         from: user2,
                         value: new BN(5)
                     });
-                    const savingAccountCETHTokenAfterRepay = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(5),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterBorrow,
+                        savingAccountETHTokenAfterBorrow,
+                        bank,
+                        savingAccount);
                     // 4. Verify the repay amount.
                     const user2ETHValueDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
@@ -679,18 +1025,6 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         new BN(user2ETHValueDeposit).add(new BN(user2ETHValueBorrow))
                     ).to.be.bignumber.equal(new BN(5));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfUSDC).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCETHTokenAfterBorrow.sub(savingAccountCETHTokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
                 });
 
                 it("when the repayment ETHAmount is greater than the loan amount.", async function () {
@@ -700,12 +1034,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.transfer(user2, numOfUSDC);
                     await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
-                    const savingAccountCETHTokenBeforeDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountCETHTokenBeforeDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenBeforeDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
@@ -713,25 +1053,64 @@ contract("SavingAccount", async (accounts) => {
                     });
                     await savingAccount.deposit(addressUSDC, numOfUSDC, { from: user2 });
 
-                    const savingAccountCETHTokenAfterDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfUSDC,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenBeforeDeposit,
+                        savingAccountETHTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
+
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 });
-                    const savingAccountCETHTokenAfterBorrow = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        new BN(10),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterDeposit,
+                        savingAccountETHTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterBorrow = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterBorrow = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
+
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, new BN(20), {
                         from: user2,
                         value: new BN(20)
                     });
-                    const savingAccountCETHTokenAfterRepay = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        new BN(10),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterBorrow,
+                        savingAccountETHTokenAfterBorrow,
+                        bank,
+                        savingAccount);
                     // 4. Verify the repay amount.
                     const user2ETHValueDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
@@ -744,21 +1123,11 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         new BN(user2ETHValueDeposit).add(new BN(user2ETHValueBorrow))
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfUSDC).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(new BN(0));
-                    expect(savingAccountCETHTokenAfterBorrow.sub(savingAccountCETHTokenAfterRepay))
-                        .to.be.bignumber
-                        .equal(new BN(0));
+
                 });
             });
         });
+
         context("Repayment of large amounts.", async () => {
             context("should succeed", async () => {
                 it("When the tokenAmount that needs to be repaid is the whole token.", async function () {
@@ -766,44 +1135,94 @@ contract("SavingAccount", async (accounts) => {
                     // 1.1 Set up collateral.
                     const DAINumOfToken = eighteenPrecision.mul(new BN(10));
                     const USDCNumOfToken = sixPrecision.mul(new BN(10));
+
                     await erc20DAI.transfer(user1, DAINumOfToken);
                     await erc20USDC.transfer(user2, USDCNumOfToken);
                     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, USDCNumOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, USDCNumOfToken, { from: user2 });
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(0,
+                        DAINumOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        USDCNumOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     // 2. Start borrowing.
                     const user2BalanceBorrowBefore = BN(await erc20DAI.balanceOf(user2));
 
                     await savingAccount.borrow(addressDAI, DAINumOfToken.div(new BN(10)), {
                         from: user2
                     });
-                    const savingAccountCDAITokenAfterBorrow = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        DAINumOfToken.div(new BN(10)),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterDeposit,
+                        savingAccountDAITokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCDAITokenAfterBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountDAITokenAfterBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     const user2BalanceBorrowAfter = BN(await erc20DAI.balanceOf(user2));
                     // 3. Start repayment.
                     await savingAccount.repay(addressDAI, DAINumOfToken.div(new BN(10)), {
                         from: user2
                     });
-                    const savingAccountCDAITokenAfterRepay = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        DAINumOfToken.div(new BN(10)),
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenAfterBorrow,
+                        savingAccountDAITokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user2BalanceRepayAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(
@@ -812,18 +1231,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user2BalanceRepayAfter.sub(user2BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(DAINumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(USDCNumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(DAINumOfToken.div(new BN(10)));
-                    expect(savingAccountCDAITokenAfterRepay.sub(savingAccountCDAITokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(DAINumOfToken.div(new BN(10)));
+
                 });
 
                 it("When the USDCAmount that needs to be repaid is the whole token.", async function () {
@@ -837,22 +1245,47 @@ contract("SavingAccount", async (accounts) => {
                     await erc20USDC.approve(savingAccount.address, USDCNumOfToken, { from: user2 });
                     await erc20USDC.approve(savingAccount.address, DAINumOfToken, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenBeforeDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, USDCNumOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCUSDCTokenAfterDeposit = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        DAINumOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        USDCNumOfToken,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20USDC.balanceOf(user1));
@@ -861,17 +1294,38 @@ contract("SavingAccount", async (accounts) => {
                         from: user1
                     });
 
-                    const savingAccountCUSDCTokenAfterBorrow = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(2,
+                        USDCNumOfToken.div(new BN(10)),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterDeposit,
+                        savingAccountUSDCTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCUSDCTokenAfterBorrow = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountUSDCTokenAfterBorrow = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+
                     const user1BalanceBorrowAfter = BN(await erc20USDC.balanceOf(user1));
                     // 3. Start repayment.
                     await savingAccount.repay(addressUSDC, USDCNumOfToken.div(new BN(10)), {
                         from: user1
                     });
-                    const savingAccountCUSDCTokenAfterRepay = BN(await cTokenUSDC.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        USDCNumOfToken.div(new BN(10)),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingAccountCUSDCTokenAfterBorrow,
+                        savingAccountUSDCTokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     // 4. Verify the repay amount.
                     const user1BalanceRepayAfter = BN(await erc20USDC.balanceOf(user1));
                     expect(
@@ -880,18 +1334,6 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(DAINumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(USDCNumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCUSDCTokenAfterDeposit.sub(savingAccountCUSDCTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(USDCNumOfToken.div(new BN(10)));
-                    expect(savingAccountCUSDCTokenAfterRepay.sub(savingAccountCUSDCTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(USDCNumOfToken.div(new BN(10)));
                 });
 
                 it("When the ETHAmount that needs to be repaid is the whole ETH.", async function () {
@@ -902,12 +1344,18 @@ contract("SavingAccount", async (accounts) => {
                     await erc20DAI.transfer(user1, DAINumOfToken);
                     await erc20DAI.approve(savingAccount.address, DAINumOfToken, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCETHTokenBeforeDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+                    const savingAccountCETHTokenBeforeDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenBeforeDeposit = new BN(
+                        (await web3.eth.getBalance(savingAccount.address)).toString()
+                    );
 
                     await savingAccount.deposit(addressDAI, DAINumOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, ETHNumOfToken, {
@@ -915,19 +1363,53 @@ contract("SavingAccount", async (accounts) => {
                         value: ETHNumOfToken
                     });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-                    const savingAccountCETHTokenAfterDeposit = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        DAINumOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    await savAccBalVerify(0,
+                        ETHNumOfToken,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenBeforeDeposit,
+                        savingAccountETHTokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterDeposit = new BN(
+                        (await web3.eth.getBalance(savingAccount.address)).toString()
+                    );
+
                     // 2. Start borrowing.
                     await savingAccount.borrow(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1
                     });
-                    const savingAccountCETHTokenAfterBorrow = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(2,
+                        ETHNumOfToken.div(new BN(10)),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterDeposit,
+                        savingAccountETHTokenAfterDeposit,
+                        bank,
+                        savingAccount);
+
+                    const savingAccountCETHTokenAfterBorrow = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
+                    const savingAccountETHTokenAfterBorrow = new BN(
+                        (await web3.eth.getBalance(savingAccount.address)).toString()
+                    );
+
                     const user1ETHValueBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
@@ -941,9 +1423,16 @@ contract("SavingAccount", async (accounts) => {
                         from: user1,
                         value: ETHNumOfToken.div(new BN(10))
                     });
-                    const savingAccountCETHTokenAfterRepay = BN(await cTokenETH.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(3,
+                        ETHNumOfToken.div(new BN(10)),
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterBorrow,
+                        savingAccountETHTokenAfterBorrow,
+                        bank,
+                        savingAccount);
+
                     const user1ETHValueAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user1
@@ -959,19 +1448,8 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         new BN(user1ETHValueAfterDeposit).add(new BN(user1ETHValueAfterBorrow))
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(DAINumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(ETHNumOfToken).mul(new BN(85)).div(new BN(100)));
-                    expect(savingAccountCETHTokenAfterDeposit.sub(savingAccountCETHTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(ETHNumOfToken.div(new BN(10)));
-                    expect(savingAccountCETHTokenAfterRepay.sub(savingAccountCETHTokenAfterBorrow))
-                        .to.be.bignumber
-                        .equal(ETHNumOfToken.div(new BN(10)));
                 });
+
             });
         });
 
@@ -985,8 +1463,26 @@ contract("SavingAccount", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressMKR, numOfToken, { from: user2 });
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressMKR, new BN(1), { from: user1 });
                     // 3. Start repayment.
@@ -1004,8 +1500,26 @@ contract("SavingAccount", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20TUSD.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20TUSD.approve(savingAccount.address, numOfToken, { from: user1 });
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfToken, { from: user2 });
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
                     // 2. Start borrowing.
                     await savingAccount.borrow(addressTUSD, new BN(1), { from: user1 });
                     // 3. Start repayment.
@@ -1024,17 +1538,26 @@ contract("SavingAccount", async (accounts) => {
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressMKR, numOfToken, { from: user2 });
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20MKR.balanceOf(user1));
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
 
                     await savingAccount.borrow(addressMKR, new BN(1), { from: user1 });
 
@@ -1050,9 +1573,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
+
                 });
 
                 it("When repaying a whole MKR.", async function () {
@@ -1065,16 +1586,25 @@ contract("SavingAccount", async (accounts) => {
                     await erc20MKR.approve(savingAccount.address, numOfMKR, { from: user2 });
                     await erc20MKR.approve(savingAccount.address, numOfMKR, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.deposit(addressMKR, numOfMKR, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+
+                    await savAccBalVerify(0,
+                        numOfDAI,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20MKR.balanceOf(user1));
@@ -1095,9 +1625,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfDAI).mul(new BN(85)).div(new BN(100)));
+
                 });
 
                 it("When repaying TUSD.", async function () {
@@ -1108,16 +1636,24 @@ contract("SavingAccount", async (accounts) => {
                     await erc20TUSD.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20TUSD.approve(savingAccount.address, numOfToken, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfToken, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfToken,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
 
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20TUSD.balanceOf(user1));
@@ -1133,9 +1669,7 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfToken).mul(new BN(85)).div(new BN(100)));
+
                 });
 
                 it("When repaying a whole TUSD.", async function () {
@@ -1148,16 +1682,24 @@ contract("SavingAccount", async (accounts) => {
                     await erc20TUSD.approve(savingAccount.address, numOfTUSD, { from: user2 });
                     await erc20TUSD.approve(savingAccount.address, numOfTUSD, { from: user1 });
 
-                    const savingAccountCDAITokenBeforeDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
-
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressDAI, numOfDAI, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfTUSD, { from: user2 });
 
-                    const savingAccountCDAITokenAfterDeposit = BN(await cTokenDAI.balanceOfUnderlying.call(
-                        savingAccount.address
-                    ));
+                    await savAccBalVerify(0,
+                        numOfDAI,
+                        erc20DAI.address,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount);
+
                     // 2. Start borrowing.
                     const user1BalanceBorrowBefore = BN(await erc20TUSD.balanceOf(user1));
                     await savingAccount.borrow(addressTUSD, new BN(1), { from: user1 });
@@ -1172,11 +1714,10 @@ contract("SavingAccount", async (accounts) => {
                     expect(
                         user1BalanceRepayAfter.sub(user1BalanceBorrowBefore)
                     ).to.be.bignumber.equal(new BN(0));
-                    expect(savingAccountCDAITokenAfterDeposit.sub(savingAccountCDAITokenBeforeDeposit))
-                        .to.be.bignumber
-                        .equal(new BN(numOfDAI).mul(new BN(85)).div(new BN(100)));
+
                 });
             });
         });
+
     });
 });
