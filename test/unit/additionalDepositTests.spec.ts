@@ -2,6 +2,7 @@ import { BigNumber } from "bignumber.js";
 import { MockChainLinkAggregatorInstance } from "../../types/truffle-contracts/index.d";
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
+import { savAccBalVerify } from "../../test-helpers/lib/lib";
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -77,14 +78,14 @@ contract("SavingAccount.deposit", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function () {
+    beforeEach(async function() {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -154,72 +155,11 @@ contract("SavingAccount.deposit", async (accounts) => {
         // await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
     });
 
-    /**
-    * 
-    * @param actionType - 0 for deposit, 1 for withdraw, 2 for borrow, 3 for repay.
-    * @param amount - The amount involved in this behavior.
-    * @param tokenInstance - The erc20 token instance.
-    * @param cTokenInstance - The cToken instance.
-    * @param compBalanceBefore - The balance of this token in compound before this action.
-    * @param resBalanceBefore - The reserve balance of this token.
-    * @param account - The account that is conducting this action.
-    */
-    const savAccBalVerify = async (
-        actionType: number,
-        amount: BN,
-        tokenInstance: t.MockErc20Instance,
-        cTokenInstance: t.MockCTokenInstance,
-        compBalanceBefore: BN,
-        resBalanceBefore: BN) => {
-
-        var totalBalanceAfter = new BN(await bank.getTotalDepositStore(tokenInstance.address));
-        var expectedResAfter;
-        var expectedCompAfter;
-        const compBalanceAfter = new BN(await cTokenInstance.balanceOfUnderlying.call(savingAccount.address));
-        const resBalanceAfter = new BN(await tokenInstance.balanceOf(savingAccount.address));
-
-        switch (actionType) {
-            case 0:
-            case 3:
-                if (resBalanceBefore.add(amount).gt(totalBalanceAfter.mul(new BN(20)).div(new BN(100)))) {
-                    expectedResAfter = totalBalanceAfter.mul(new BN(15)).div(new BN(100));
-                    expectedCompAfter = compBalanceBefore.add(amount).sub(expectedResAfter).add(resBalanceBefore);
-                } else {
-                    expectedResAfter = resBalanceBefore.add(amount);
-                    expectedCompAfter = compBalanceBefore;
-                }
-                expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
-                expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
-                break;
-            case 1:
-            case 2:
-                if (compBalanceBefore.lte(amount)) {
-                    expect(compBalanceAfter.add(resBalanceAfter).add(amount)).to.be.bignumber.equals(compBalanceBefore.add(resBalanceBefore));
-                } else if (compBalanceBefore.add(resBalanceBefore).sub(amount).lte(totalBalanceAfter.mul(new BN(15)).div(new BN(100)))) {
-                    expectedCompAfter = new BN(0);
-                    expectedResAfter = compBalanceBefore.add(resBalanceBefore).sub(amount);
-                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
-                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
-                } else if (resBalanceBefore.lte(amount.add(totalBalanceAfter.mul(new BN(10)).div(new BN(100))))) {
-                    expectedResAfter = totalBalanceAfter.mul(new BN(15)).div(new BN(100));
-                    expectedCompAfter = compBalanceBefore.sub(amount).sub(expectedResAfter).add(resBalanceBefore);
-
-                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
-                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
-                } else {
-                    expectedResAfter = resBalanceBefore.sub(amount);
-                    expectedCompAfter = compBalanceBefore;
-                    expect(expectedResAfter).to.be.bignumber.equals(resBalanceAfter);
-                    expect(expectedCompAfter).to.be.bignumber.equals(compBalanceAfter);
-                }
-                break;
-        }
-    };
     // extra tests by Yichun
     context("Additional tests for Deposit", async () => {
         context("With multiple tokens", async () => {
             context("Should suceed", async () => {
-                it("Deposit DAI and USDC, both compound supported", async function () {
+                it("Deposit DAI and USDC, both compound supported", async function() {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -238,15 +178,17 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
 
-                    const savingsDAIBeforeDeposit = new BN(await erc20DAI.balanceOf(savingAccount.address));
-
+                    const savingsDAIBeforeDeposit = new BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
                     const savingsCompoundUSDCBeforeDeposit = new BN(
                         await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                     );
 
-                    const savingsUSDCBeforeDeposit = new BN(await erc20USDC.balanceOf(savingAccount.address));
-
+                    const savingsUSDCBeforeDeposit = new BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1)));
                     await erc20USDC.transfer(user1, sixPrecision.mul(new BN(1)));
@@ -275,17 +217,27 @@ contract("SavingAccount.deposit", async (accounts) => {
                      * 2. CToken left in saving account should be 85% of total tokens
                      * 3. Token left in saving account should be 15% of total tokens
                      */
-                    await savAccBalVerify(0,
+                    await savAccBalVerify(
+                        0,
                         eighteenPrecision.mul(new BN(1)),
-                        erc20DAI, cDAI,
+                        erc20DAI.address,
+                        cDAI,
                         savingsCompoundDAIBeforeDeposit,
-                        savingsDAIBeforeDeposit);
+                        savingsDAIBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-                    await savAccBalVerify(0,
+                    await savAccBalVerify(
+                        0,
                         sixPrecision.mul(new BN(1)),
-                        erc20USDC, cUSDC,
+                        erc20USDC.address,
+                        cUSDC,
                         savingsCompoundUSDCBeforeDeposit,
-                        savingsUSDCBeforeDeposit);
+                        savingsUSDCBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
                     const userDAIBalance = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
@@ -304,9 +256,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     expect(
                         BN(userUSDCBalance).sub(BN(userUSDCBalanceBefore))
                     ).to.be.bignumber.equals(sixPrecision);
-
                 });
-                it("Deposit WBTC and TUSD, compound supported and unsupported", async function () {
+                it("Deposit WBTC and TUSD, compound supported and unsupported", async function() {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -340,7 +291,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
                     );
 
-                    const savingsWBTCBeforeDeposit = new BN(await erc20WBTC.balanceOf(savingAccount.address));
+                    const savingsWBTCBeforeDeposit = new BN(
+                        await erc20WBTC.balanceOf(savingAccount.address)
+                    );
 
                     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1)), {
                         from: user1
@@ -363,11 +316,16 @@ contract("SavingAccount.deposit", async (accounts) => {
                         user1
                     );
 
-                    await savAccBalVerify(0,
+                    await savAccBalVerify(
+                        0,
                         eightPrecision.mul(new BN(1)),
-                        erc20WBTC, cWBTC,
+                        erc20WBTC.address,
+                        cWBTC,
                         savingsCompoundWBTCBeforeDeposit,
-                        savingsWBTCBeforeDeposit);
+                        savingsWBTCBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
                     // verify 1.
                     expect(
@@ -376,9 +334,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     expect(
                         BN(userTUSDBalance).sub(BN(userTUSDBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
-
                 });
-                it("Deposit MKR and TUSD, both compound unsupported", async function () {
+                it("Deposit MKR and TUSD, both compound unsupported", async function() {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
