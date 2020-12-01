@@ -75,53 +75,6 @@ contract("SavingAccount.deposit", async (accounts) => {
         //console.log("addressCETH", addressCETH);
     });
 
-    // Function to verify reservation & total DeFiner balance
-    const reserveVerify = async (
-        tokenBalanceAfterDeposit: BN,
-        tokenBalanceBeforeDeposit: BN,
-        depositAmount: BN,
-        totalDefinerBalanceBeforeDeposit: BN,
-        tokenAddr: string
-    ) => {
-        const userBalanceDiff = new BN(tokenBalanceAfterDeposit).sub(
-            new BN(tokenBalanceBeforeDeposit)
-        );
-        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-            .mul(new BN(15))
-            .div(new BN(100));
-
-        // validate savingAccount ETH balance
-        expect(userBalanceDiff).to.be.bignumber.equal(expectedTokensAtSavingAccountContract);
-
-        // Validate the total balance on DeFiner
-        const totalDefinerBalanceAfterDeposit = new BN(
-            await accountsContract.getDepositBalanceCurrent(tokenAddr, owner)
-        );
-        const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
-            new BN(totalDefinerBalanceBeforeDeposit)
-        );
-        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-    };
-
-    // Funtion to verify Compound balance in tests
-    const compoundVerify = async (
-        addressCToken: string,
-        numOfToken: BN,
-        balCTokenContractInit: BN,
-        erc20contr: t.MockErc20Instance,
-        cTokenTemp: t.MockCTokenInstance
-    ) => {
-        const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
-        const balCTokenContract = await erc20contr.balanceOf(addressCToken);
-        expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
-            new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
-        );
-
-        const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(savingAccount.address);
-        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
-    };
-
     const compoundVerifyETH = async (
         depositAmount: BN,
         balCTokenContractBefore: BN,
@@ -270,7 +223,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             expectedTokensAtSavingAccountContract2
                         );
 
-                        // Verify that deposit doesn't affect Compound balance
+                        // Verify that deposit affects Compound balance
                         await compoundVerifyETH(
                             depositAmount,
                             balCTokenContractBefore,
@@ -332,10 +285,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify that deposit affects Compound balance
-                        await compoundVerifyETH(
+                        await savAccBalVerify(
+                            0,
                             depositAmount.mul(new BN(2)),
-                            balCTokenContractBefore,
-                            BN(balCTokensBefore)
+                            ETH_ADDRESS,
+                            cETH,
+                            balCTokensBefore,
+                            new BN(ETHbalanceBeforeDeposit),
+                            bank,
+                            savingAccount
                         );
                     });
                 });
@@ -414,23 +372,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const balSavingAccountUserAfter = await erc20DAI.balanceOf(
                             savingAccount.address
                         );
-                        await reserveVerify(
-                            BN(balSavingAccountUserAfter),
-                            BN(balSavingAccountUserBefore),
-                            numOfToken,
-                            BN(totalDefinerBalanceBeforeDeposit),
-                            erc20DAI.address
-                        );
-                        // 3.2 SavingAccount variables are changed
-
-                        // 3.3 Some tokens are sent to Compound contract
-                        await compoundVerify(
-                            cDAI_addr,
-                            numOfToken,
-                            BN(balCTokenContractBefore),
-                            erc20DAI,
-                            cDAI
-                        );
 
                         await savAccBalVerify(
                             0,
@@ -475,23 +416,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const balSavingAccountUserAfter = await erc20USDC.balanceOf(
                             savingAccount.address
                         );
-                        await reserveVerify(
-                            BN(balSavingAccountUserAfter),
-                            BN(balSavingAccountUserBefore),
-                            numOfToken,
-                            BN(totalDefinerBalanceBeforeDeposit),
-                            erc20USDC.address
-                        );
-                        // 3.2 SavingAccount variables are changed
-
-                        // 3.3 Some tokens are sent to Compound contract
-                        await compoundVerify(
-                            cUSDC_addr,
-                            numOfToken,
-                            BN(balCTokenContractBefore),
-                            erc20USDC,
-                            cUSDC
-                        );
 
                         await savAccBalVerify(
                             0,
@@ -533,23 +457,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         // 3.1 SavingAccount contract must received tokens
                         const balSavingAccountUserAfter = await erc20USDC.balanceOf(
                             savingAccount.address
-                        );
-                        await reserveVerify(
-                            BN(balSavingAccountUserAfter),
-                            BN(balSavingAccountUserBefore),
-                            numOfToken,
-                            BN(totalDefinerBalanceBeforeDeposit),
-                            erc20USDC.address
-                        );
-                        // 3.2 SavingAccount variables are changed
-
-                        // 3.3 Some tokens are sent to Compound contract
-                        await compoundVerify(
-                            cUSDC_addr,
-                            numOfToken,
-                            BN(balCTokenContractBefore),
-                            erc20USDC,
-                            cUSDC
                         );
 
                         await savAccBalVerify(
