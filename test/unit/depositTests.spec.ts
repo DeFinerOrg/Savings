@@ -202,6 +202,12 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // Deposit some ETH again
                         const depositAmount2 = new BN(1000);
+                        const balCTokensBefore2 = BN(
+                            await cETH.balanceOfUnderlying.call(savingAccount.address)
+                        );
+                        const ETHbalanceBeforeDeposit2 = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount2, {
                             value: depositAmount2
@@ -228,6 +234,20 @@ contract("SavingAccount.deposit", async (accounts) => {
                             depositAmount,
                             balCTokenContractBefore,
                             BN(balCTokensBefore)
+                        );
+
+                        let eth_temp = new BN(await bank.getTotalDepositStore(ETH_ADDRESS));
+                        console.log("eth_temp", eth_temp.toString());
+
+                        await savAccBalVerify(
+                            0,
+                            depositAmount2,
+                            ETH_ADDRESS,
+                            cETH,
+                            balCTokensBefore2,
+                            new BN(ETHbalanceBeforeDeposit2),
+                            bank,
+                            savingAccount
                         );
                     });
 
@@ -264,6 +284,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Deposit some ETH again
+                        const balCTokensBefore2 = BN(
+                            await cETH.balanceOfUnderlying.call(savingAccount.address)
+                        );
+                        const ETHbalanceBeforeDeposit2 = await web3.eth.getBalance(
+                            savingAccount.address
+                        );
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                             value: depositAmount
                         });
@@ -272,26 +298,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                             savingAccount.address
                         );
 
-                        // Verify second deposit
-                        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-                            .mul(new BN(15))
-                            .div(new BN(100));
-                        const expectedTokensAtSavingAccountContract2 = new BN(
-                            expectedTokensAtSavingAccountContract
-                        ).mul(new BN(2));
-
-                        expect(new BN(ETHbalanceAfterDepositAgain)).to.be.bignumber.equal(
-                            expectedTokensAtSavingAccountContract2
-                        );
-
                         // Verify that deposit affects Compound balance
                         await savAccBalVerify(
                             0,
-                            depositAmount.mul(new BN(2)),
+                            depositAmount,
                             ETH_ADDRESS,
                             cETH,
-                            balCTokensBefore,
-                            new BN(ETHbalanceBeforeDeposit),
+                            balCTokensBefore2,
+                            new BN(ETHbalanceBeforeDeposit2),
                             bank,
                             savingAccount
                         );

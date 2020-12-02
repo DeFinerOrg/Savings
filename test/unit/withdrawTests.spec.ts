@@ -584,38 +584,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         expect(withdrawAmount).to.be.bignumber.equal(userBalanceDiff);
 
                         // Validate Withdraw
-
-                        // Validate savingAccount contract balance
-                        const expectedTokenBalanceAfterWithdraw = numOfTokens
-                            .mul(new BN(15))
-                            .div(new BN(100))
-                            .sub(new BN("100").mul(ONE_DAI));
-                        const newbalSavingAccount = await erc20DAI.balanceOf(savingAccount.address);
-                        expect(expectedTokenBalanceAfterWithdraw).to.be.bignumber.lessThan(
-                            new BN(newbalSavingAccount)
-                        );
-
-                        // Validate DeFiner balance
-                        const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                            erc20DAI.address,
-                            owner
-                        );
-                        const totalDefinerBalancDifference = new BN(
-                            totalDefinerBalanceAfterDeposit
-                        ).sub(new BN(totalDefinerBalancAfterWithdraw));
-                        expect(new BN(totalDefinerBalancDifference)).to.be.bignumber.equal(
-                            withdrawAmount
-                        );
-
-                        // Verifying balance on Compound
-                        await compoundVerify(
-                            cDAI_addr,
-                            numOfTokens.sub(new BN("100").mul(ONE_DAI)),
-                            BN(balCTokenContractBefore),
-                            erc20DAI,
-                            cDAI
-                        );
-
                         await savAccBalVerify(
                             1,
                             withdrawAmount,
