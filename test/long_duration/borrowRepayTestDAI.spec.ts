@@ -83,7 +83,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -155,7 +155,6 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
             context("should succeed", async () => {
                 // modified
                 it("RateTest5: Deposit DAI then borrow DAI, repay the loan amount and then winthdraw all", async function () {
-                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
@@ -192,7 +191,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     const user2BorrowInterestBefore = await savingAccount.getBorrowInterest(
                         addressDAI,
                         {
-                            from: user2
+                            from: user2,
                         }
                     );
                     console.log(
@@ -216,7 +215,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -240,9 +239,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                             .div(eighteenPrecision)
                     );
                     expect(
-                        BN(tokenState[0])
-                            .sub(tokenState[1])
-                            .sub(tokenState[2])
+                        BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])
                     ).to.be.bignumber.equal(compoundAfterFastForward);
                     console.log("check6");
 
@@ -268,14 +265,14 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify the pricipal

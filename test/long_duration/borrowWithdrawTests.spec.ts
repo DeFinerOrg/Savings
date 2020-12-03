@@ -78,14 +78,14 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -159,7 +159,6 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
             it("RateTest3: should deposit DAI, borrow USDC, allow rest DAI amount to withdraw after 1 week", async () => {
-                this.timeout(0);
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = ONE_USDC;
                 const borrowAmount = numOfUSDC.div(new BN(10));
@@ -245,7 +244,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
                 // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                 const tokenState = await savingAccount.getTokenState(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
 
                 // Verify that reservation equals to the token in pool's address
