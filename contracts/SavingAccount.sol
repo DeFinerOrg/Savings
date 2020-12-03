@@ -77,8 +77,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         globalConfig = _globalConfig;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
-        uint tokenNum = _tokenAddresses.length;
-        for(uint i = 0;i < tokenNum;i++) {
+        //uint tokenNum = _tokenAddresses.length;
+        for(uint i = 0;i < _tokenAddresses.length;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
@@ -231,21 +231,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function liquidate(address _targetAccountAddr, address _targetToken) external onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
 
         require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
-        LiquidationVars memory vars = LiquidationVars({
-            token: address(0),
-            tokenPrice:0,
-            coinValue:0,
-            liquidationDebtValue:0,
-            tokenAmount:0,
-            tokenDivisor:0,
-            msgTotalBorrow:0,
-            targetTokenBalance:0,
-            targetTokenBalanceBorrowed:0,
-            targetTokenPrice:0,
-            liquidationDiscountRatio:0,
-            totalBorrow:0,
-            borrowPower:0
-            });
+        LiquidationVars memory vars;
 
         // It is required that the liquidator doesn't exceed it's borrow power.
         vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
