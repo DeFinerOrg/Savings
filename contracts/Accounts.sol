@@ -312,8 +312,8 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        uint tokeNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        for(uint i = 0; i < tokeNum; i++) {
+        //uint tokeNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
