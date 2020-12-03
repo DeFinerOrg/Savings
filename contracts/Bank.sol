@@ -221,7 +221,7 @@ contract Bank is Constant, Initializable{
     }
 
     /**
-     * Get the cummulative deposit rate in a block interval ending in current block
+     * It's a utility function. Get the cummulative deposit rate in a block interval ending in current block
      * @param _token token address
      * @param _depositRateRecordStart the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
@@ -230,13 +230,8 @@ contract Bank is Constant, Initializable{
     // sichaoy: require:what if a index point doesn't exist?
     function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
-        uint256 UNIT = INT_UNIT;
-        if (depositRate == 0) {
-            return UNIT;    // return UNIT if the checkpoint doesn't exist
-        } else {
-            // sichaoy: to check that the current block rate index already exist
-            return depositeRateIndex[_token][getBlockNumber()].mul(UNIT).div(depositRate); // index(current block)/index(start block)
-        }
+        require(depositRate != 0, "_depositRateRecordStart is not a check point on index curve.");
+        return depositRateIndexNow(_token).mul(INT_UNIT).div(depositRate);
     }
 
     /**
@@ -249,14 +244,8 @@ contract Bank is Constant, Initializable{
     // the checkpoint for current block exists.
     function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) external view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
-        uint256 UNIT = INT_UNIT;
-        if (borrowRate == 0) {
-            // when block is same
-            return UNIT;
-        } else {
-            // rate change
-            return borrowRateIndex[_token][getBlockNumber()].mul(UNIT).div(borrowRate);
-        }
+        require(borrowRate != 0, "_borrowRateRecordStart is not a check point on index curve.");
+        return borrowRateIndexNow(_token).mul(INT_UNIT).div(borrowRate);
     }
 
     /**
@@ -335,19 +324,18 @@ contract Bank is Constant, Initializable{
      * Calculate a token deposite rate of current block
      * @param _token token address
      * @dev This is an looking forward estimation from last checkpoint and not the exactly rate that the user will pay or earn.
-     * change name to depositRateIndexForward? or EstimateDepositRateIndex?
+     * sichaoy: to make the notation consistent, change the name from depositRateIndexNow to depositRateIndexCurrent
      */
     function depositRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
-        uint256 UNIT = INT_UNIT;
         // If this is the first checkpoint, set the index be 1.
         if(lcp == 0)
-            return UNIT;
+            return INT_UNIT;
 
         uint256 lastDepositeRateIndex = depositeRateIndex[_token][lcp];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
-        return lastDepositeRateIndex.mul(getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(UNIT)).div(UNIT);
+        return lastDepositeRateIndex.mul(getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(INT_UNIT)).div(INT_UNIT);
     }
 
     /**
@@ -356,13 +344,12 @@ contract Bank is Constant, Initializable{
      */
     function borrowRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
-        uint256 UNIT = INT_UNIT;
         // If this is the first checkpoint, set the index be 1.
         if(lcp == 0)
-            return UNIT;
+            return INT_UNIT;
         uint256 lastBorrowRateIndex = borrowRateIndex[_token][lcp];
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
-        return lastBorrowRateIndex.mul(getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(UNIT)).div(UNIT);
+        return lastBorrowRateIndex.mul(getBlockNumber().sub(lcp).mul(borrowRatePerBlock).add(INT_UNIT)).div(INT_UNIT);
     }
 
     /**

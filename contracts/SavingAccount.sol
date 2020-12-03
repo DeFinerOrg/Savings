@@ -114,7 +114,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
         globalConfig.bank().newRateIndexCheckpoint(_token);
         uint256 amount = globalConfig.accounts().withdraw(msg.sender, _token, _amount);
-        globalConfig.accounts().deposit(_to, _token, _amount);
+        globalConfig.accounts().deposit(_to, _token, amount);
 
         emit Transfer(_token, msg.sender, _to, amount);
     }
@@ -165,7 +165,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
         SavingLib.receive(globalConfig, _amount, _token);
-
         globalConfig.bank().deposit(msg.sender, _token, _amount);
 
         emit Deposit(_token, msg.sender, _amount);

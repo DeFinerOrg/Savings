@@ -7,7 +7,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("Integration Tests", async (accounts) => {
@@ -43,22 +43,22 @@ contract("Integration Tests", async (accounts) => {
     let cTokenUSDC: t.MockCTokenInstance;
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20USDT: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20BAT: t.Erc20Instance;
-    let erc20ZRX: t.Erc20Instance;
-    let erc20REP: t.Erc20Instance;
-    let erc20WBTC: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20BAT: t.MockErc20Instance;
+    let erc20ZRX: t.MockErc20Instance;
+    let erc20REP: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let ZERO: any;
     let ONE_WEEK: any;
     let ONE_MONTH: any;
     let tempContractAddress: any;
     let cTokenTemp: t.MockCTokenInstance;
     let addressCTokenTemp: any;
-    let erc20contr: t.Erc20Instance;
+    let erc20contr: t.MockErc20Instance;
 
     before(function () {
         // Things to initialize before all test
@@ -68,7 +68,8 @@ contract("Integration Tests", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -107,7 +108,8 @@ contract("Integration Tests", async (accounts) => {
 
     context("Special test.", async () => {
         context("should succeed", async () => {
-            it("Special test 1", async () => {
+            it("Special test 1", async function () {
+                this.timeout(0)
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
                 const numOfBAT = eighteenPrecision.mul(new BN(100));
@@ -119,7 +121,7 @@ contract("Integration Tests", async (accounts) => {
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
-                await savingAccount.deposit(ETH_ADDRESS, numOfETH, { 
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
                     value: numOfETH
                 });
@@ -138,7 +140,7 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow1: " + user1Borrow1.toString());
-                
+
                 // user1 repay 2BAT
                 await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), { from: user1 });
                 console.log("user1 repay 2BAT");
@@ -159,7 +161,8 @@ contract("Integration Tests", async (accounts) => {
 
             });
 
-            it("Special test 2", async () => {
+            it("Special test 2", async function () {
+                this.timeout(0)
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
                 const numOfBAT = eighteenPrecision.mul(new BN(100));
@@ -171,7 +174,7 @@ contract("Integration Tests", async (accounts) => {
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
-                await savingAccount.deposit(ETH_ADDRESS, numOfETH, { 
+                await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
                     value: numOfETH
                 });
@@ -190,7 +193,7 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(addressBAT, user1);
                 console.log("user1Borrow1: " + user1Borrow1.toString());
-                
+
                 // user1 repay 40BAT
                 await savingAccount.repay(addressBAT, borrowAmount.mul(new BN(2)), { from: user1 });
                 console.log("user1 repay 40BAT");
@@ -247,13 +250,14 @@ contract("Integration Tests", async (accounts) => {
 
             });
 
-            it("Special test 3", async () => {
+            it("Special test 3", async function () {
+                this.timeout(0)
                 // const
                 const numOfDAI = eighteenPrecision.mul(new BN(100));
                 console.log("const");
 
                 await erc20DAI.approve(savingAccount.address, numOfDAI);
-                
+
                 // owner deposit 100DAI
                 await savingAccount.deposit(addressDAI, numOfDAI);
                 console.log("owner deposit 100DAI");

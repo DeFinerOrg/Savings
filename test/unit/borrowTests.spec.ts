@@ -9,7 +9,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
@@ -52,12 +52,12 @@ contract("SavingAccount.borrow", async (accounts) => {
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20USDT: t.Erc20Instance;
-    let erc20WBTC: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -77,7 +77,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function () {
+        this.timeout(0)
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -145,7 +146,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     context("borrow()", async () => {
         context("with Token", async () => {
             context("should fail", async () => {
-                it("when unsupported token address is passed", async () => {
+                it("when unsupported token address is passed", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -159,7 +161,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when amount is zero", async () => {
+                it("when amount is zero", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -173,7 +176,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when user tries to borrow token, but he has not deposited any token before", async () => {
+                it("when user tries to borrow token, but he has not deposited any token before", async function () {
+                    this.timeout(0)
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
@@ -181,7 +185,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when there is no liquidity for the asked token", async () => {
+                it("when there is no liquidity for the asked token", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -198,7 +203,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
             context("should succeed", async () => {
                 // modified
-                it("Deposit DAI then borrow DAI", async () => {
+                it("Deposit DAI then borrow DAI", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
@@ -217,7 +223,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 // modified
-                it("Deposit DAI & USDC then borrow DAI", async () => {
+                it("Deposit DAI & USDC then borrow DAI", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
@@ -239,7 +246,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 // modified
-                it("Deposit DAI & USDC then borrow USDC", async () => {
+                it("Deposit DAI & USDC then borrow USDC", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user2.
                     await erc20DAI.transfer(user2, numOfToken);
                     // 1.2 Transfer USDC to user1 & user2.
@@ -260,7 +268,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("when supported token address is passed", async () => {
+                it("when supported token address is passed", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -277,7 +286,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
+                it("when borrow amount of token is equal to ILTV of his collateral value", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, eighteenPrecision);
                     await erc20USDC.transfer(user2, sixPrecision);
                     await erc20DAI.approve(savingAccount.address, eighteenPrecision, {
@@ -301,7 +311,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when borrowing a whole DAI", async () => {
+                it("when borrowing a whole DAI", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.mul(new BN(10));
                     const numOfUSDC = sixPrecision.mul(new BN(10));
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -327,7 +338,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("with ETH", async () => {
             context("should fail", async () => {
-                it("when unsupported token address is passed", async () => {
+                it("when unsupported token address is passed", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -342,7 +354,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when amount is zero", async () => {
+                it("when amount is zero", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -357,7 +370,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when user tries to borrow ETH, but he has not deposited any token before", async () => {
+                it("when user tries to borrow ETH, but he has not deposited any token before", async function () {
+                    this.timeout(0)
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
                         from: user1,
                         value: numOfToken
@@ -389,7 +403,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when there is no liquidity for the asked ETH", async () => {
+                it("when there is no liquidity for the asked ETH", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
@@ -406,7 +421,8 @@ contract("SavingAccount.borrow", async (accounts) => {
             });
 
             context("should succeed", async () => {
-                beforeEach(async () => {
+                beforeEach(async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(ETH_ADDRESS, numOfToken, {
@@ -539,7 +555,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("Token without Compound (MKR, TUSD)", async () => {
             context("should fail", async () => {
-                it("when borrow MKR，amount is zero", async () => {
+                it("when borrow MKR，amount is zero", async function () {
+                    this.timeout(0)
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -553,7 +570,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when borrow TUSD，amount is zero", async () => {
+                it("when borrow TUSD，amount is zero", async function () {
+                    this.timeout(0)
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -567,7 +585,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when user tries to borrow MKR, but he has not deposited any token before", async () => {
+                it("when user tries to borrow MKR, but he has not deposited any token before", async function () {
+                    this.timeout(0)
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressMKR, numOfToken, { from: user1 });
@@ -578,7 +597,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when user tries to borrow TUSD, but he has not deposited any token before", async () => {
+                it("when user tries to borrow TUSD, but he has not deposited any token before", async function () {
+                    this.timeout(0)
                     await erc20TUSD.transfer(user1, numOfToken);
                     await erc20TUSD.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfToken, { from: user1 });
@@ -590,7 +610,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 // yichun: this one is not doing what's it is described
-                it("when there is no liquidity for the asked MKR", async () => {
+                it("when there is no liquidity for the asked MKR", async function () {
+                    this.timeout(0)
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -604,7 +625,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when there is no liquidity for the asked TUSD", async () => {
+                it("when there is no liquidity for the asked TUSD", async function () {
+                    this.timeout(0)
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
                     await erc20MKR.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -621,7 +643,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
             context("should succeed", async () => {
                 // modified
-                it("Deposit MKR then borrow MKR", async () => {
+                it("Deposit MKR then borrow MKR", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20MKR.transfer(user2, numOfToken);
@@ -640,7 +663,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("Deposit TUSD then borrow TUSD", async () => {
+                it("Deposit TUSD then borrow TUSD", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20TUSD.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
@@ -660,7 +684,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                 });
 
                 // modified
-                it("Deposit MKR & TUSD then borrow MKR", async () => {
+                it("Deposit MKR & TUSD then borrow MKR", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20MKR.transfer(user1, numOfToken);
                     await erc20MKR.transfer(user2, numOfToken);
@@ -683,7 +708,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("Deposit MKR & TUSD then borrow TUSD", async () => {
+                it("Deposit MKR & TUSD then borrow TUSD", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20TUSD.transfer(user1, numOfToken);
                     await erc20MKR.transfer(user2, numOfToken);
@@ -705,7 +731,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("When depositing DAI to borrow MKR.", async () => {
+                it("When depositing DAI to borrow MKR.", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20MKR.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -722,7 +749,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("When depositing DAI to borrow TUSD.", async () => {
+                it("When depositing DAI to borrow TUSD.", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20TUSD.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -743,7 +771,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("Token with 6 decimal", async () => {
             context("should fail", async () => {
-                it("when borrow USDC, amount is zero", async () => {
+                it("when borrow USDC, amount is zero", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.div(new BN(1000));
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -758,7 +787,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when user tries to borrow USDC, but he has not deposited any token before", async () => {
+                it("when user tries to borrow USDC, but he has not deposited any token before", async function () {
+                    this.timeout(0)
                     await erc20USDC.transfer(user1, numOfToken);
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressUSDC, numOfToken, { from: user1 });
@@ -769,7 +799,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when there is no liquidity for the asked USDC", async () => {
+                it("when there is no liquidity for the asked USDC", async function () {
+                    this.timeout(0)
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -786,7 +817,8 @@ contract("SavingAccount.borrow", async (accounts) => {
 
             context("should succeed", async () => {
                 // modified
-                it("Deposit USDC then borrow USDC", async () => {
+                it("Deposit USDC then borrow USDC", async function () {
+                    this.timeout(0)
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20USDC.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -805,7 +837,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("When depositing DAI to borrow USDC.", async () => {
+                it("When depositing DAI to borrow USDC.", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.div(new BN(1000));
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20USDC.transfer(user2, numOfToken);
@@ -824,7 +857,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("when borrow amount of token is equal to ILTV of his collateral value", async () => {
+                it("when borrow amount of token is equal to ILTV of his collateral value", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.mul(new BN(1));
                     const numOfUSDC = sixPrecision.mul(new BN(1));
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -852,7 +886,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
 
-                it("When the DAI is large, deposit DAI to borrow USDC.", async () => {
+                it("When the DAI is large, deposit DAI to borrow USDC.", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.mul(new BN(10));
                     const numOfUSDC = sixPrecision.mul(new BN(10));
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -873,7 +908,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                 });
                 // modified
-                it("when borrow USDC of token is equal to ILTV of his collateral value", async () => {
+                it("when borrow USDC of token is equal to ILTV of his collateral value", async function () {
+                    this.timeout(0)
                     const numOfDAI = eighteenPrecision.div(new BN(1000));
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20USDC.transfer(user2, numOfToken);

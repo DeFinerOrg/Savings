@@ -10,7 +10,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.Erc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
@@ -55,12 +55,12 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let cTokenUSDT: t.MockCTokenInstance;
     let cTokenWBTC: t.MockCTokenInstance;
 
-    let erc20DAI: t.Erc20Instance;
-    let erc20USDC: t.Erc20Instance;
-    let erc20MKR: t.Erc20Instance;
-    let erc20TUSD: t.Erc20Instance;
-    let erc20USDT: t.Erc20Instance;
-    let erc20WBTC: t.Erc20Instance;
+    let erc20DAI: t.MockErc20Instance;
+    let erc20USDC: t.MockErc20Instance;
+    let erc20MKR: t.MockErc20Instance;
+    let erc20TUSD: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -83,7 +83,8 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async () => {
+    beforeEach(async function() {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -154,6 +155,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
             it("RateTest4: should deposit DAI, borrow USDC and repay after one month", async () => {
+                this.timeout(0);
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
