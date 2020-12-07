@@ -327,7 +327,6 @@ contract Accounts is Constant, Initializable{
      * Calculate an account's borrow power based on token's LTV
      */
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
-        // uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
         for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if (isUserHasDeposits(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
@@ -374,7 +373,6 @@ contract Accounts is Constant, Initializable{
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        //uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
         for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
@@ -397,7 +395,6 @@ contract Accounts is Constant, Initializable{
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
-        //uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
         for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
