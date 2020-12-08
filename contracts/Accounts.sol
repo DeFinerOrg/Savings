@@ -7,7 +7,7 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -352,8 +352,9 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        //uint tokeNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -373,7 +374,9 @@ contract Accounts is Constant, Initializable{
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -395,7 +398,9 @@ contract Accounts is Constant, Initializable{
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
-        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint8 i = 0; i < tokenNum; i++) {
             if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 globalConfig.bank().newRateIndexCheckpoint(token);

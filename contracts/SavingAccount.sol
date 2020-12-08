@@ -77,7 +77,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         globalConfig = _globalConfig;
 
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
-        for(uint i = 0;i < _tokenAddresses.length;i++) {
+        uint tokenNum = _tokenAddresses.length;
+        for(uint i = 0;i < tokenNum;i++) {
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
