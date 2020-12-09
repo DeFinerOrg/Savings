@@ -77,14 +77,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -152,78 +152,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
         ZERO = new BN(0);
     });
 
-    // Function to verify reservation & total DeFiner balance
-    const reserveVerify = async (
-        tokenBalanceAfterDeposit: BN,
-        tokenBalanceBeforeDeposit: BN,
-        depositAmount: BN,
-        totalDefinerBalanceBeforeDeposit: BN,
-        tokenAddr: string
-    ) => {
-        const userBalanceDiff = new BN(tokenBalanceAfterDeposit).sub(
-            new BN(tokenBalanceBeforeDeposit)
-        );
-        const expectedTokensAtSavingAccountContract = new BN(depositAmount)
-            .mul(new BN(15))
-            .div(new BN(100));
-
-        // validate savingAccount ETH balance
-        expect(userBalanceDiff).to.be.bignumber.equal(expectedTokensAtSavingAccountContract);
-
-        // Validate the total balance on DeFiner
-        const totalDefinerBalanceAfterDeposit = new BN(
-            await accountsContract.getDepositBalanceCurrent(tokenAddr, owner)
-        );
-        const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
-            new BN(totalDefinerBalanceBeforeDeposit)
-        );
-        expect(totalDefinerBalanceChange).to.be.bignumber.equal(depositAmount);
-    };
-
-    // Funtion to verify Compound balance in tests
-    const compoundVerify = async (
-        addressCToken: string,
-        numOfToken: BN,
-        balCTokenContractInit: BN,
-        erc20contr: t.MockErc20Instance,
-        cTokenTemp: t.MockCTokenInstance
-    ) => {
-        const expectedTokensAtCTokenContract = numOfToken.mul(new BN(85)).div(new BN(100));
-        const balCTokenContract = await erc20contr.balanceOf(addressCToken);
-        expect(expectedTokensAtCTokenContract).to.be.bignumber.equal(
-            new BN(balCTokenContract).sub(new BN(balCTokenContractInit))
-        );
-
-        const expectedCTokensAtSavingAccount = numOfToken.mul(new BN(85)).div(new BN(100));
-        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(savingAccount.address);
-        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(balCTokens);
-    };
-
-    const compoundVerifyETH = async (
-        depositAmount: BN,
-        balCTokenContractBefore: BN,
-        balCTokensBefore: BN
-    ) => {
-        // Some tokens are sent to Compound contract
-        const expectedTokensAtCTokenContract = depositAmount.mul(new BN(85)).div(new BN(100));
-        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-        expect(
-            new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
-        ).to.be.bignumber.equal(balCTokenContract);
-
-        // cToken must be minted for SavingAccount
-        const expectedCTokensAtSavingAccount = depositAmount.mul(new BN(85)).div(new BN(100));
-        const balCTokensAfter = new BN(await cETH.balanceOfUnderlying.call(savingAccount.address));
-        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-            balCTokensAfter.sub(balCTokensBefore)
-        );
-    };
-
     context("withdraw()", async () => {
         context("Single Token", async () => {
             context("ETH", async () => {
                 context("should succeed", async () => {
-                    it("C3: when partial ETH withdrawn", async function() {
+                    it("C3: when partial ETH withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
                         const withdrawAmount = new BN(20);
@@ -241,7 +174,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         // Validate the total balance on DeFiner after deposit
@@ -293,7 +226,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("C6: when 100 whole ETH withdrawn", async function() {
+                    it("C6: when 100 whole ETH withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(web3.utils.toWei("1000", "ether"));
                         const withdrawAmount = new BN(web3.utils.toWei("100", "ether"));
@@ -311,7 +244,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         // Validate the total balance on DeFiner after deposit
@@ -360,7 +293,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("C4: when full ETH withdrawn", async function() {
+                    it("C4: when full ETH withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(web3.utils.toWei("100", "ether"));
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -380,7 +313,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         // Depositting ETH Token to SavingContract
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         // Validate the total balance on DeFiner after deposit
@@ -426,7 +359,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
             context("Compound Supported 18 decimals Token", async () => {
                 context("Should suceed", async () => {
-                    it("D3: when partial tokens are withdrawn", async function() {
+                    it("D3: when partial tokens are withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -517,7 +450,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("D6: when 100 whole suported tokens are withdrawn", async function() {
+                    it("D6: when 100 whole suported tokens are withdrawn", async function () {
                         this.timeout(0);
                         const ONE_DAI = new BN(10).pow(new BN(18));
                         const numOfTokens = new BN("1000").mul(ONE_DAI);
@@ -596,7 +529,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("D4: when full tokens withdrawn", async function() {
+                    it("D4: when full tokens withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
                         const balSavingAccountUserBefore = await erc20DAI.balanceOf(
@@ -676,7 +609,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("D4: when full tokens withdrawn after some blocks", async function() {
+                    it("D4: when full tokens withdrawn after some blocks", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
                         await erc20DAI.approve(savingAccount.address, new BN(1500));
@@ -753,7 +686,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             context("Compound Supported 6 decimals Token", async () => {
                 context("Should succeed", async () => {
                     //Partial withdrawal of tokens with 6 decimals
-                    it("F3: when partial USDC withdrawn", async function() {
+                    it("F3: when partial USDC withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -831,7 +764,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("F6: when 100 whole USDC tokens are withdrawn", async function() {
+                    it("F6: when 100 whole USDC tokens are withdrawn", async function () {
                         this.timeout(0);
                         const ONE_USDC = new BN(10).pow(new BN(6));
                         const withdrawAmount = new BN("100").mul(ONE_USDC);
@@ -913,7 +846,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     });
 
                     // Full withdrawal of tokens with 6 decimals
-                    it("F4: when full USDC withdrawn", async function() {
+                    it("F4: when full USDC withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
                         await erc20USDC.approve(savingAccount.address, depositAmount);
@@ -984,7 +917,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("F3: when partial USDT withdrawn", async function() {
+                    it("F3: when partial USDT withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -1141,7 +1074,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             context("Compound Supported 8 decimals Token", async () => {
                 context("Should succeed", async () => {
                     //Partial withdrawal of tokens with 8 decimals
-                    it("E3: when partial WBTC withdrawn", async function() {
+                    it("E3: when partial WBTC withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -1219,7 +1152,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     });
 
                     // Full withdrawal of tokens with 8 decimals
-                    it("E4: when full WBTC withdrawn", async function() {
+                    it("E4: when full WBTC withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
 
@@ -1302,7 +1235,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
             context("Compound unsupported Token", async () => {
                 context("Should succeed", async () => {
-                    it("G3: when partial TUSD withdrawn", async function() {
+                    it("G3: when partial TUSD withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -1372,7 +1305,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("G6: when 1000 whole TUSD withdrawn", async function() {
+                    it("G6: when 1000 whole TUSD withdrawn", async function () {
                         this.timeout(0);
                         const ONE_TUSD = new BN(10).pow(new BN(18));
                         const newbalSavingAccountInit = await erc20TUSD.balanceOf(
@@ -1423,7 +1356,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("G3: when partial MKR withdrawn", async function() {
+                    it("G3: when partial MKR withdrawn", async function () {
                         this.timeout(0);
                         // Approve 1000 tokens
                         const numOfTokens = new BN(1000);
@@ -1492,7 +1425,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("G6: when 1000 whole MKR withdrawn", async function() {
+                    it("G6: when 1000 whole MKR withdrawn", async function () {
                         this.timeout(0);
                         const ONE_MKR = new BN(10).pow(new BN(18));
 
@@ -1539,7 +1472,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("G4: when full TUSD withdrawn", async function() {
+                    it("G4: when full TUSD withdrawn", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
 
@@ -1627,7 +1560,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             context("should fail", async () => {
-                it("when unsupported token address is passed", async function() {
+                it("when unsupported token address is passed", async function () {
                     this.timeout(0);
                     const withdrawAmount = new BN(20);
 
@@ -1638,7 +1571,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     );
                 });
 
-                it("when amount is zero", async function() {
+                it("when amount is zero", async function () {
                     this.timeout(0);
                     const withdrawAmount = ZERO;
 
@@ -1648,7 +1581,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     );
                 });
 
-                it("when a user tries to withdraw who has not deposited before", async function() {
+                it("when a user tries to withdraw who has not deposited before", async function () {
                     this.timeout(0);
                     const withdrawAmount = new BN(20);
 
@@ -1658,7 +1591,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     );
                 });
 
-                it("when user tries to withdraw more than his balance", async function() {
+                it("when user tries to withdraw more than his balance", async function () {
                     this.timeout(0);
                     const numOfTokens = new BN(10);
                     const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1667,7 +1600,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     );
 
                     await savingAccount.deposit(ETH_ADDRESS, numOfTokens, {
-                        value: numOfTokens
+                        value: numOfTokens,
                     });
 
                     // Validate the total balance on DeFiner after deposit
