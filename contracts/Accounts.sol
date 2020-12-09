@@ -16,7 +16,7 @@ contract Accounts is Constant, Initializable{
 
     mapping(address => Account) public accounts;
 
-    GlobalConfig public globalConfig;
+    GlobalConfig globalConfig;
 
     modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
