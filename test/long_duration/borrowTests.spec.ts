@@ -4,6 +4,8 @@ import { saveContract } from "../../compound-protocol/scenario/src/Networks";
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
+import { savAccBalVerify } from "../../test-helpers/lib/lib";
+
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../test-helpers/tokenData.json");
@@ -74,14 +76,14 @@ contract("SavingAccount.borrow", async (accounts) => {
     let HALF_DAI: any;
     let ONE_USDC: any;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
@@ -153,8 +155,15 @@ contract("SavingAccount.borrow", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("RateTest1: Deposit DAI then borrow DAI", async function() {
+                it("RateTest1: Deposit DAI then borrow DAI", async function () {
                     this.timeout(0);
+                    const balSavingAccountUserBefore = await erc20DAI.balanceOf(
+                        savingAccount.address
+                    );
+                    const balCTokensBefore = new BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
@@ -162,6 +171,19 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+
+                    // Verify deposit
+                    // -1700000000000000001
+                    // await savAccBalVerify(
+                    //     0,
+                    //     ONE_DAI.mul(new BN(2)),
+                    //     addressDAI,
+                    //     cDAI,
+                    //     balCTokensBefore,
+                    //     BN(balSavingAccountUserBefore),
+                    //     bank,
+                    //     savingAccount
+                    // );
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
@@ -192,7 +214,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -235,14 +257,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify the pricipal
