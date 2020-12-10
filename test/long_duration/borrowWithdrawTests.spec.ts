@@ -20,7 +20,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
-    let bank: t.BankInstance
+    let bank: t.BankInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -86,7 +86,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
@@ -158,8 +158,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
     context("Deposit, Borrow and Withdraw", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC, allow rest DAI amount to withdraw after 1 week", async function () {
-                this.timeout(0)
+            it("RateTest3: should deposit DAI, borrow USDC, allow rest DAI amount to withdraw after 1 week", async () => {
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = ONE_USDC;
                 const borrowAmount = numOfUSDC.div(new BN(10));
@@ -245,7 +244,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
                 // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                 const tokenState = await savingAccount.getTokenState(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
 
                 // Verify that reservation equals to the token in pool's address
@@ -279,16 +278,21 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 ); */
 
                 const ownerDAIBefore = await erc20DAI.balanceOf(owner);
-                const ownerDepositDAIBefore = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
+                const ownerDepositDAIBefore = await accountsContract.getDepositBalanceCurrent(
+                    erc20DAI.address,
+                    owner
+                );
                 console.log("ownerDAIBefore: " + ownerDAIBefore.toString());
                 console.log("ownerDepositDAIBefore: " + ownerDepositDAIBefore.toString());
 
                 await savingAccount.withdrawAll(erc20DAI.address);
                 const ownerDAIAfter = await erc20DAI.balanceOf(owner);
-                const ownerDepositDAIAfter = await accountsContract.getDepositBalanceCurrent(erc20DAI.address, owner);
+                const ownerDepositDAIAfter = await accountsContract.getDepositBalanceCurrent(
+                    erc20DAI.address,
+                    owner
+                );
                 console.log("ownerDAIAfter: " + ownerDAIAfter.toString());
                 console.log("ownerDepositDAIAfter: " + ownerDepositDAIAfter.toString());
-
             });
         });
     });

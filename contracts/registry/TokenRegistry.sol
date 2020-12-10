@@ -40,7 +40,6 @@ contract TokenRegistry is Ownable {
     event TokenAdded(address indexed token);
     event TokenUpdated(address indexed token);
 
-    address internal constant ETH_ADDR = 0x000000000000000000000000000000000000000E;
     uint256 public constant MAX_TOKENS = 128;
     uint256 public constant SCALE = 100;
 
@@ -193,7 +192,7 @@ contract TokenRegistry is Ownable {
 
 
     function enableToken(address _token) external onlyOwner whenTokenExists(_token) {
-        require(tokenInfo[_token].enabled == false, "Token already enabled");
+        require(!tokenInfo[_token].enabled, "Token already enabled");
 
         tokenInfo[_token].enabled = true;
 
@@ -201,7 +200,7 @@ contract TokenRegistry is Ownable {
     }
 
     function disableToken(address _token) external onlyOwner whenTokenExists(_token) {
-        require(tokenInfo[_token].enabled == true, "Token already disabled");
+        require(tokenInfo[_token].enabled, "Token already disabled");
 
         tokenInfo[_token].enabled = false;
 
