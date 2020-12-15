@@ -1,9 +1,11 @@
 ## Compile the contract and run the tests:
 
-**1)** Download the compound-protocol as a submodule & install dependencies:
+**1)** Download the compound-protocol as a submodule & install dependencies:  
+
+Use node version 10.23.0 with the following steps
 
 - **`cd Savings && git submodule init && git submodule update`**  
-- **`cd compound-protocol && yarn install --lock-file`**  
+- **`cd compound-protocol && sudo npm i`**  
 - **`cd scenario && npm i`**
 
 **2)** Install dependencies:
