@@ -40,14 +40,14 @@ contract("SavingAccount.deposit", async (accounts) => {
     let erc20MKR: t.MockErc20Instance;
     let cETH: t.MockCTokenInstance;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -75,31 +75,11 @@ contract("SavingAccount.deposit", async (accounts) => {
         //console.log("addressCETH", addressCETH);
     });
 
-    const compoundVerifyETH = async (
-        depositAmount: BN,
-        balCTokenContractBefore: BN,
-        balCTokensBefore: BN
-    ) => {
-        // Some tokens are sent to Compound contract
-        const expectedTokensAtCTokenContract = depositAmount.mul(new BN(85)).div(new BN(100));
-        const balCTokenContract = await web3.eth.getBalance(cETH_addr);
-        expect(
-            new BN(balCTokenContractBefore).add(new BN(expectedTokensAtCTokenContract))
-        ).to.be.bignumber.equal(balCTokenContract);
-
-        // cToken must be minted for SavingAccount
-        const expectedCTokensAtSavingAccount = depositAmount.mul(new BN(85)).div(new BN(100));
-        const balCTokensAfter = new BN(await cETH.balanceOfUnderlying.call(savingAccount.address));
-        expect(expectedCTokensAtSavingAccount).to.be.bignumber.equal(
-            balCTokensAfter.sub(balCTokensBefore)
-        );
-    };
-
     context("deposit()", async () => {
         context("Single Token", async () => {
             context("ETH", async () => {
                 context("should succeed", async () => {
-                    it("C5: when small amount of ETH is passed", async function() {
+                    it("C5: when small amount of ETH is passed", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(100);
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
@@ -115,7 +95,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
@@ -134,7 +114,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
                     });
 
-                    it("C6: when 1000 whole ETH are deposited", async function() {
+                    it("C6: when 1000 whole ETH are deposited", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(web3.utils.toWei("1000", "ether"));
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
@@ -150,7 +130,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
@@ -183,7 +163,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
@@ -210,7 +190,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount2, {
-                            value: depositAmount2
+                            value: depositAmount2,
                         });
 
                         const ETHbalanceAfterDepositAgain = await web3.eth.getBalance(
@@ -218,6 +198,17 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify second deposit
+                        await savAccBalVerify(
+                            0,
+                            depositAmount2,
+                            ETH_ADDRESS,
+                            cETH,
+                            balCTokensBefore2,
+                            BN(ETHbalanceBeforeDeposit2),
+                            bank,
+                            savingAccount
+                        );
+
                         const expectedTokensAtSavingAccountContract = new BN(depositAmount)
                             .mul(new BN(15))
                             .div(new BN(100));
@@ -230,15 +221,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         // Verify that deposit affects Compound balance
-                        await compoundVerifyETH(
-                            depositAmount,
-                            balCTokenContractBefore,
-                            BN(balCTokensBefore)
-                        );
-
-                        let eth_temp = new BN(await bank.getTotalDepositStore(ETH_ADDRESS));
-                        console.log("eth_temp", eth_temp.toString());
-
                         await savAccBalVerify(
                             0,
                             depositAmount2,
@@ -266,7 +248,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
@@ -291,7 +273,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             savingAccount.address
                         );
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                            value: depositAmount
+                            value: depositAmount,
                         });
 
                         const ETHbalanceAfterDepositAgain = await web3.eth.getBalance(
@@ -316,7 +298,7 @@ contract("SavingAccount.deposit", async (accounts) => {
             context("Compound Supported 18 decimals Token", async () => {
                 context("Should suceed", async () => {
                     //single token, small amount
-                    it("D5: when small amount of DAI is deposited", async function() {
+                    it("D5: when small amount of DAI is deposited", async function () {
                         this.timeout(0);
                         // 1. Approve 1000 tokens
                         const numOfToken = new BN(1000);
@@ -325,12 +307,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const balSavingAccountUserBefore = await erc20DAI.balanceOf(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20DAI.address,
-                            owner
-                        );
-
-                        const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
                         const balCTokensBefore = new BN(
                             await cDAI.balanceOfUnderlying.call(savingAccount.address)
                         );
@@ -357,7 +333,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     });
 
                     //single token, large amount
-                    it("D6: when 1000 whole DAI are deposited", async function() {
+                    it("D6: when 1000 whole DAI are deposited", async function () {
                         this.timeout(0);
                         const ONE_DAI = new BN(10).pow(new BN(18));
 
@@ -403,7 +379,7 @@ contract("SavingAccount.deposit", async (accounts) => {
 
             context("Compound Supported 6 decimals Token", async () => {
                 context("Should succeed", async () => {
-                    it("F5: when small amount of USDC tokens are deposited", async function() {
+                    it("F5: when small amount of USDC tokens are deposited", async function () {
                         this.timeout(0);
                         // 1. Approve 1000 tokens
                         const numOfToken = new BN("100");
@@ -443,7 +419,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         );
                     });
 
-                    it("F6: when 1000 whole USDC tokens are deposited", async function() {
+                    it("F6: when 1000 whole USDC tokens are deposited", async function () {
                         this.timeout(0);
                         const ONE_USDC = new BN(10).pow(new BN(6));
 
@@ -490,7 +466,7 @@ contract("SavingAccount.deposit", async (accounts) => {
             context("Compound unsupported Token", async () => {
                 context("Should succeed", async () => {
                     // When Compound unsupported tokens are passed
-                    it("G5: when TUSD address is passed", async function() {
+                    it("G5: when TUSD address is passed", async function () {
                         this.timeout(0);
                         // 1. Approve 1000 tokens
                         const numOfToken = new BN(1000);
@@ -523,7 +499,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
-                    it("G4: when 1000 whole TUSD tokens are deposited", async function() {
+                    it("G4: when 1000 whole TUSD tokens are deposited", async function () {
                         this.timeout(0);
                         const ONE_TUSD = new BN(10).pow(new BN(18));
 
@@ -558,7 +534,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
-                    it("G5: when MKR address is passed", async function() {
+                    it("G5: when MKR address is passed", async function () {
                         this.timeout(0);
                         // 1. Approve 1000 tokens
                         const numOfToken = new BN(1000);
@@ -591,7 +567,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         expect(totalDefinerBalanceChange).to.be.bignumber.equal(numOfToken);
                     });
 
-                    it("G4: when 1000 whole MKR tokens are deposited", async function() {
+                    it("G4: when 1000 whole MKR tokens are deposited", async function () {
                         this.timeout(0);
                         const ONE_MKR = new BN(10).pow(new BN(18));
 
@@ -629,7 +605,7 @@ contract("SavingAccount.deposit", async (accounts) => {
             });
 
             context("should fail", async () => {
-                it("when unsupported token address is passed", async function() {
+                it("when unsupported token address is passed", async function () {
                     this.timeout(0);
                     const numOfToken = new BN(1000);
                     await expectRevert(
@@ -638,7 +614,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
                 });
 
-                it("when amount is zero", async function() {
+                it("when amount is zero", async function () {
                     this.timeout(0);
                     const deposits = new BN(0);
 
