@@ -1,10 +1,12 @@
 ## Compile the contract and run the tests:
 
-**1)** Download the compound-protocol as a submodule & install dependencies:
+**1)** Download the compound-protocol as a submodule & install dependencies:  
 
-**`cd Savings && git submodule init && git submodule update`**
-**`cd compound-protocol && yarn install --lock-file`**
-**`cd scenario && npm i`**
+Use node version 10.23.0 with the following steps
+
+- **`cd Savings && git submodule init && git submodule update`**  
+- **`cd compound-protocol && sudo npm i`**  
+- **`cd scenario && npm i`**
 
 **2)** Install dependencies:
 
@@ -16,7 +18,12 @@
 
 **4)** Run test scripts
 
-**`yarn test`**
+**`yarn test ./test/**/*`**
+
+**4)** If you want to use truffle test suite to run the test
+- Replace **`await testEngine.deploySavingAccount()`** to **`await testEngine.deploySavingAccountTruffle()`** 
+- Replace **`await testEngine.deploy()`** to **`await testEngine.deployTruffle()`** 
+- Then run **`truffle test`**
 
 ## Passing Tests:
 
