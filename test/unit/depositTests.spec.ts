@@ -120,11 +120,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
                         const balCTokensBefore = new BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)
                         );
@@ -182,11 +177,11 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         // Deposit some ETH again
                         const depositAmount2 = new BN(1000);
-                        const balCTokensBefore2 = BN(
+                        const balCTokensBefore2 = new BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)
                         );
-                        const ETHbalanceBeforeDeposit2 = await web3.eth.getBalance(
-                            savingAccount.address
+                        const ETHbalanceBeforeDeposit2 = new BN(
+                            await web3.eth.getBalance(savingAccount.address)
                         );
 
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount2, {
@@ -204,7 +199,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             ETH_ADDRESS,
                             cETH,
                             balCTokensBefore2,
-                            BN(ETHbalanceBeforeDeposit2),
+                            ETHbalanceBeforeDeposit2,
                             bank,
                             savingAccount
                         );
@@ -238,11 +233,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            ETH_ADDRESS,
-                            owner
-                        );
-                        const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
                         const balCTokensBefore = BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)
                         );
@@ -250,9 +240,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                             value: depositAmount,
                         });
-                        const ETHbalanceAfterDeposit = await web3.eth.getBalance(
-                            savingAccount.address
-                        );
 
                         await savAccBalVerify(
                             0,
@@ -275,10 +262,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                             value: depositAmount,
                         });
-
-                        const ETHbalanceAfterDepositAgain = await web3.eth.getBalance(
-                            savingAccount.address
-                        );
 
                         // Verify that deposit affects Compound balance
                         await savAccBalVerify(
@@ -344,15 +327,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const balSavingAccountUserBefore = await erc20DAI.balanceOf(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20DAI.address,
-                            owner
-                        );
 
                         const balCTokensBefore = new BN(
                             await cDAI.balanceOfUnderlying.call(savingAccount.address)
                         );
-                        const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
 
                         // 2. Deposit Token to SavingContract
                         await savingAccount.deposit(erc20DAI.address, numOfToken);
@@ -388,25 +366,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                         const balSavingAccountUserBefore = await erc20USDC.balanceOf(
                             savingAccount.address
                         );
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20USDC.address,
-                            owner
-                        );
-
                         const balCTokensBefore = new BN(
                             await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                         );
-                        const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
 
                         // 2. Deposit Token to SavingContract
                         await savingAccount.deposit(erc20USDC.address, numOfToken);
 
                         // 3. Validate that the tokens are deposited to SavingAccount
                         // 3.1 SavingAccount contract must received tokens
-                        const balSavingAccountUserAfter = await erc20USDC.balanceOf(
-                            savingAccount.address
-                        );
-
                         await savAccBalVerify(
                             0,
                             numOfToken,
