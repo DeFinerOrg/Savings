@@ -76,14 +76,14 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -154,8 +154,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
-            it("should deposit DAI, borrow USDC and repay after one month", async function() {
-                this.timeout(0);
+            it("RateTest4: should deposit DAI, borrow USDC and repay after one month", async () => {
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
@@ -171,7 +170,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, {
-                    from: user1
+                    from: user1,
                 });
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
                 await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
@@ -222,7 +221,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
                 // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                 const tokenState = await savingAccount.getTokenState(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
 
                 // Verify that reservation equals to the token in pool's address
@@ -278,7 +277,7 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
                 // Verify Compound after repay
                 const tokenStateAfterRepay = await savingAccount.getTokenState(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
                 const compoundAfterRepay = BN(
                     await cUSDC.balanceOfUnderlying.call(savingAccount.address)
@@ -291,28 +290,28 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
                 // 3.2 Vefity rate
                 const user1DepositPrincipal = await savingAccount.getDepositPrincipal(addressDAI, {
-                    from: user1
+                    from: user1,
                 });
                 const user1DepositInterest = await savingAccount.getDepositInterest(addressDAI, {
-                    from: user1
+                    from: user1,
                 });
                 const user2DepositPrincipal = await savingAccount.getDepositPrincipal(addressUSDC, {
-                    from: user2
+                    from: user2,
                 });
                 const user2DepositInterest = await savingAccount.getDepositInterest(addressUSDC, {
-                    from: user2
+                    from: user2,
                 });
                 const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
                 const user1BorrowInterest = await savingAccount.getBorrowInterest(addressUSDC, {
-                    from: user1
+                    from: user1,
                 });
                 const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(addressDAI, {
-                    from: user2
+                    from: user2,
                 });
                 const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                    from: user2
+                    from: user2,
                 });
 
                 console.log("user1DepositPrincipal", user1DepositPrincipal.toString());
