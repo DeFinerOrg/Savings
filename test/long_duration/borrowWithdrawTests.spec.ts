@@ -45,17 +45,17 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
-    let addressCTokenForWBTC: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cTUSD_addr: any;
+    let cMKR_addr: any;
+    let cWBTC_addr: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -116,16 +116,16 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cTUSD_addr = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
+        cMKR_addr = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(cWBTC_addr);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -231,11 +231,9 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 const remainingDAI = ONE_DAI.sub(new BN(collateralLocked));
 
                 const compoundBeforeFastForward = BN(
-                    await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                    await cDAI.balanceOfUnderlying.call(savingAccount.address)
                 );
-                const cUSDCBeforeFastForward = BN(
-                    await cTokenUSDC.balanceOf(savingAccount.address)
-                );
+                const cUSDCBeforeFastForward = BN(await cUSDC.balanceOf(savingAccount.address));
 
                 // 3. Fastforward
                 await savingAccount.fastForward(100000);
@@ -254,13 +252,13 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 // Verifty that compound equals cToken underlying balance in pool's address
                 // It also verifies that (Deposit = Loan + Compound + Reservation)
                 const compoundAfterFastForward = BN(
-                    await cTokenUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    await cUSDC.balanceOfUnderlying.call(savingAccount.address)
                 );
-                const cUSDCAfterFastForward = BN(await cTokenUSDC.balanceOf(savingAccount.address));
+                const cUSDCAfterFastForward = BN(await cUSDC.balanceOf(savingAccount.address));
                 const compoundPrincipal = compoundBeforeFastForward.add(
                     cUSDCAfterFastForward
                         .sub(cUSDCBeforeFastForward)
-                        .mul(BN(await cTokenUSDC.exchangeRateCurrent.call()))
+                        .mul(BN(await cUSDC.exchangeRateCurrent.call()))
                         .div(sixPrecision)
                 );
                 /* expect(
