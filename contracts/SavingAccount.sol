@@ -206,112 +206,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         emit WithdrawAll(_token, msg.sender, actualAmount);
     }
 
-    // struct LiquidationVars {
-    //     address token;
-    //     uint256 tokenPrice;
-    //     uint256 coinValue;
-    //     // uint256 targetTokenAmount;
-    //     uint256 liquidationDebtValue;
-    //     uint256 tokenAmount;
-    //     uint256 tokenDivisor;
-    //     uint256 msgTotalBorrow;
-    //     uint256 targetTokenBalance;
-    //     uint256 targetTokenBalanceBorrowed;
-    //     uint256 targetTokenPrice;
-    //     uint256 liquidationDiscountRatio;
-    //     uint256 totalBorrow;
-    //     uint256 borrowPower;
-    // }
-
-    /**
-     * Liquidate function
-     * @param _targetAccountAddr account to be liquidated
-     * @param _targetToken token used for purchasing collaterals
-     */
-    // function liquidate(address _targetAccountAddr, address _targetToken) public onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
-
-    //     require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
-    //     LiquidationVars memory vars;
-
-    //     // It is required that the liquidator doesn't exceed it's borrow power.
-    //     vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
-    //     require(
-    //         vars.msgTotalBorrow.mul(100) < globalConfig.accounts().getBorrowPower(msg.sender),
-    //         "No extra funds are used for liquidation."
-    //     );
-
-    //     // Get the available amount of debt token for liquidation. It equals to the amount of target token
-    //     // that the liquidator has, or the amount of target token that the borrower has borrowed, whichever
-    //     // is smaller.
-    //     vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
-    //     require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
-
-    //     vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
-    //     require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
-
-    //     if (vars.targetTokenBalance > vars.targetTokenBalanceBorrowed)
-    //         vars.targetTokenBalance = vars.targetTokenBalanceBorrowed;
-
-    //     // The value of the maximum amount of debt token that could transfered from the liquidator to the borrower
-    //     uint divisor = _targetToken == ETH_ADDR ? INT_UNIT : 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_targetToken));
-    //     vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_targetToken);
-    //     vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-    //     vars.liquidationDebtValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).mul(100).div(vars.liquidationDiscountRatio).div(divisor);
-
-    //     // The collaterals are liquidate in the order of their market liquidity. The liquidation would stop if one
-    //     // of the following conditions are true. 1) The maximum amount of debt token has transfered from the
-    //     // liquidator to the borrower, which we call a partial liquidation. 2) The mount of loan reaches the
-    //     // borrowPower, which we call a full liquidation.
-    //     // Here we assume that there are always enough collaterals to be purchased to finish the liquidation process,
-    //     // given the 15% margin set by the liquidation threshold.
-    //     vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
-    //     vars.borrowPower = globalConfig.accounts().getBorrowPower(_targetAccountAddr);
-
-    //     uint256 totalBorrowBeforeLiquidation = vars.totalBorrow;
-    //     for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
-    //         vars.token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-    //         if(globalConfig.accounts().isUserHasDeposits(_targetAccountAddr, uint8(i))) {
-    //             // Get the collateral token price and divisor
-    //             vars.tokenPrice = globalConfig.tokenInfoRegistry().priceFromIndex(i);
-    //             vars.tokenDivisor = vars.token == ETH_ADDR ? INT_UNIT : 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(vars.token));
-
-    //             // Get the collateral token value
-    //             vars.coinValue = globalConfig.accounts().getDepositBalanceCurrent(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
-
-    //             // Checkout if the coin value is enough to set the borrow amount back to borrow power
-    //             uint256 fullLiquidationValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(
-    //                         vars.liquidationDiscountRatio.sub(globalConfig.tokenInfoRegistry().getBorrowLTV(vars.token)));
-
-    //             // Derive the true liquidation value.
-    //             if (vars.coinValue > fullLiquidationValue)
-    //                 vars.coinValue = fullLiquidationValue;
-    //             if(vars.coinValue > vars.liquidationDebtValue)
-    //                 vars.coinValue = vars.liquidationDebtValue;
-
-    //             // Update the totalBorrow and borrowPower
-    //             vars.totalBorrow = vars.totalBorrow.sub(vars.coinValue.mul(vars.liquidationDiscountRatio).div(100));
-    //             vars.borrowPower = vars.borrowPower.sub(vars.coinValue.mul(globalConfig.tokenInfoRegistry().getBorrowLTV(vars.token)).div(100));
-    //             vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
-
-    //             // Update the account balance after the collateral is transfered.
-    //             vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
-    //             uint256 amount = globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
-    //             globalConfig.accounts().deposit(msg.sender, vars.token, amount);
-    //         }
-
-    //         if(vars.totalBorrow <= vars.borrowPower || vars.liquidationDebtValue == 0) {
-    //             break;
-    //         }
-    //     }
-
-    //     // Trasfer the debt token from borrower to the liquidator
-    //     // We call the withdraw/repay functions in SavingAccount instead of in Accounts because the total amount
-    //     // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
-    //     uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(divisor).div(vars.targetTokenPrice);
-    //     uint256 amount = globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
-    //     globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
-    // }
-
     struct LiquidationVars {
         // address token;
         // uint256 tokenPrice;
@@ -347,74 +241,43 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             "No extra funds are used for liquidation."
         );
 
-        // Get the available amount of debt token for liquidation. It equals to the amount of target token
-        // that the liquidator has, or the amount of target token that the borrower has borrowed, whichever
-        // is smaller.
-
-        // targetTokenBalance 是清算者_borrowedToken的总金额
+        // _borrowedToken balance of the liquidator (deposit balance)
         vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_borrowedToken, msg.sender);
         require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
 
-        // targetTokenBalanceBorrowed 是被清算者_borrowedToken的总金额
+        // _borrowedToken balance of the borrower (borrow balance)
         vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_borrowedToken, _borrower);
         require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
 
+        // _borrowedToken available for liquidation
+        uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
+
+        // _collateralToken balance of the borrower (deposit balance)
+        vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_collateralToken, _borrower);
+        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
+
+        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
+        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
+
+        // _collateralToken to purchase so that borrower's balance matches its borrow power
         vars.totalBorrow = globalConfig.accounts().getBorrowETH(_borrower);
         vars.borrowPower = globalConfig.accounts().getBorrowPower(_borrower);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowedToken);
-        // limitRepaymentValue 是被清算者能清算的最大金额
-        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(vars.liquidationDiscountRatio).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
 
-        vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_collateralToken, _borrower);
-        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
-        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
+        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
-        // borrowerCollateralValue 是被清算者能被清算掉的最大金额
-        vars.borrowerCollateralValue = vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).mul(vars.liquidationDiscountRatio).div(liquidateTokendivisor).div(100);
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
 
-        //判断targetTokenBalance targetTokenBalanceBorrowed limitRepaymentValue borrowerCollateralValue 的最小值参与计算
-        // if (vars.limitRepaymentValue < vars.targetTokenBalance && vars.limitRepaymentValue < vars.targetTokenBalanceBorrowed && vars.limitRepaymentValue < vars.borrowerCollateralValue) {
-        //     // vars.targetTokenBalance = vars.limitRepaymentValue;
-        //     vars.repayAmount = vars.limitRepaymentValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-        //     vars.payAmount = vars.limitRepaymentValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        // } else if (vars.targetTokenBalanceBorrowed < vars.targetTokenBalance && vars.targetTokenBalanceBorrowed < vars.limitRepaymentValue && vars.targetTokenBalanceBorrowed < vars.borrowerCollateralValue) {
-        //     // vars.targetTokenBalance = vars.targetTokenBalanceBorrowed;
-        //     vars.repayAmount = vars.targetTokenBalanceBorrowed.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-        //     vars.payAmount = vars.targetTokenBalanceBorrowed.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        // } else if (vars.borrowerCollateralValue < vars.targetTokenBalance && vars.borrowerCollateralValue < vars.targetTokenBalanceBorrowed && vars.borrowerCollateralValue < vars.limitRepaymentValue) {
-        //     // vars.targetTokenBalance = vars.borrowerCollateralValue;
-        //     vars.repayAmount = vars.borrowerCollateralValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-        //     vars.payAmount = vars.borrowerCollateralValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        // } else {
-        //     if (vars.targetTokenBalance.mul(100).div(vars.liquidationDiscountRatio) > vars.liquidateTokenBalance){
-        //         vars.repayAmount = vars.liquidateTokenBalance.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-        //         vars.payAmount = vars.liquidateTokenBalance.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        //     } else {
-        //         vars.repayAmount = vars.targetTokenBalance.mul(divisor).div(vars.targetTokenPrice);
-        //         vars.payAmount = vars.targetTokenBalance.mul(100).div(vars.liquidationDiscountRatio).mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        //     }
-        // }
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
+        vars.payAmount = liquidationValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
 
-        uint min = vars.limitRepaymentValue.min(vars.targetTokenBalanceBorrowed).min(vars.borrowerCollateralValue);
-        if (min <= vars.targetTokenBalance) {
-            vars.repayAmount = min.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-            vars.payAmount = min.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-        } else {
-            if (vars.targetTokenBalance.mul(100).div(vars.liquidationDiscountRatio) > vars.liquidateTokenBalance) {
-                vars.repayAmount = vars.liquidateTokenBalance.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-                vars.payAmount = vars.liquidateTokenBalance.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-            } else {
-                vars.repayAmount = vars.targetTokenBalance.mul(divisor).div(vars.targetTokenPrice);
-                vars.payAmount = vars.targetTokenBalance.mul(100).div(vars.liquidationDiscountRatio).mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
-            }
-        }
-
-        globalConfig.accounts().withdraw(msg.sender, _borrowedToken, vars.repayAmount);
-        globalConfig.accounts().repay(_borrower, _borrowedToken, vars.repayAmount);
-        globalConfig.accounts().withdraw(_borrower, _collateralToken, vars.payAmount);
         globalConfig.accounts().deposit(msg.sender, _collateralToken, vars.payAmount);
+        globalConfig.accounts().withdraw(msg.sender, _borrowedToken, vars.repayAmount);
+        globalConfig.accounts().withdraw(_borrower, _collateralToken, vars.payAmount);
+        globalConfig.accounts().repay(_borrower, _borrowedToken, vars.repayAmount);
     }
 
     /**
