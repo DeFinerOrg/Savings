@@ -19,6 +19,8 @@ contract("SavingAccount.deposit", async (accounts) => {
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
+    const sixPrecision = new BN(10).pow(new BN(6));
+    const eightPrecision = new BN(10).pow(new BN(8));
     const eighteenPrecision = new BN(10).pow(new BN(18));
 
     let tokens: any;
@@ -147,6 +149,9 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const block = new BN(await time.latestBlock());
                             console.log("block", block.toString());
 
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
                             await savingAccount.fastForward(100000);
                             //await time.advanceBlockTo(block.add(new BN(10000)));
 
@@ -262,9 +267,181 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                 context("Compound Supported 6 decimals Token", async () => {
                     context("Should succeed", async () => {
-                        it("when small amount of USDC tokens are deposited");
+                        it("when small amount of USDC tokens are deposited", async () => {
+                            //this.timeout(0);
+                            // 1. Approve 1000 tokens
+                            const numOfToken = new BN(10000);
+                            await erc20USDC.transfer(user1, numOfToken);
+                            await erc20USDC.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
 
-                        it("when large amount of USDC tokens are deposited");
+                            const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20USDC.address,
+                                user1
+                            );
+
+                            const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
+                            const balCTokensBefore = await cUSDC.balanceOf(savingAccount.address);
+
+                            // const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                            // console.log("Block number = ", b1.toString());
+
+                            // 2. Deposit Token to SavingContract
+                            await savingAccount.deposit(erc20USDC.address, new BN(5000), {
+                                from: user1,
+                            });
+
+                            // 3. Validate that the tokens are deposited to SavingAccount
+                            const expectedTokensAtSavingAccountContract = new BN(5000)
+                                .mul(new BN(15))
+                                .div(new BN(100));
+                            const balSavingAccount = await erc20USDC.balanceOf(
+                                savingAccount.address
+                            );
+                            expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                                balSavingAccount
+                            );
+
+                            const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20USDC.address,
+                                user1
+                            );
+                            const totalDefinerBalanceChange = new BN(
+                                totalDefinerBalanceAfterDeposit
+                            ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                            expect(totalDefinerBalanceChange).to.be.bignumber.equal(new BN(5000));
+
+                            const expectedTokensAtCTokenContract = new BN(5000)
+                                .mul(new BN(85))
+                                .div(new BN(100));
+                            const balCTokenContract = await erc20USDC.balanceOf(cUSDC_addr);
+                            expect(
+                                new BN(balCTokenContractBefore).add(
+                                    new BN(expectedTokensAtCTokenContract)
+                                )
+                            ).to.be.bignumber.equal(balCTokenContract);
+
+                            const expectedCTokensAtSavingAccount = new BN(5000)
+                                .mul(new BN(85))
+                                .div(new BN(100));
+                            const balCTokens = await cUSDC.balanceOf(savingAccount.address);
+                            expect(
+                                expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                            ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
+
+                            // 4. Claim the minted tokens
+
+                            // fastforward
+                            const block = new BN(await time.latestBlock());
+                            console.log("block", block.toString());
+
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            //await savingAccount.fastForward(100000);
+                            await time.advanceBlockTo(block.add(new BN(1000)));
+
+                            const block2 = await time.latestBlock();
+                            console.log("block2", block2.toString());
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.deposit(erc20USDC.address, new BN(1000), {
+                                from: user1,
+                            });
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
+
+                        it("when large amount of USDC tokens are deposited", async () => {
+                            //this.timeout(0);
+                            // 1. Approve 1000 tokens
+                            const numOfToken = sixPrecision;
+                            await erc20USDC.transfer(user1, numOfToken);
+                            await erc20USDC.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+
+                            const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20USDC.address,
+                                user1
+                            );
+
+                            const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
+                            const balCTokensBefore = await cUSDC.balanceOf(savingAccount.address);
+
+                            // const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                            // console.log("Block number = ", b1.toString());
+
+                            // 2. Deposit Token to SavingContract
+                            await savingAccount.deposit(erc20USDC.address, new BN(5000), {
+                                from: user1,
+                            });
+
+                            // 3. Validate that the tokens are deposited to SavingAccount
+                            const expectedTokensAtSavingAccountContract = new BN(5000)
+                                .mul(new BN(15))
+                                .div(new BN(100));
+                            const balSavingAccount = await erc20USDC.balanceOf(
+                                savingAccount.address
+                            );
+                            expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                                balSavingAccount
+                            );
+
+                            const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20USDC.address,
+                                user1
+                            );
+                            const totalDefinerBalanceChange = new BN(
+                                totalDefinerBalanceAfterDeposit
+                            ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                            expect(totalDefinerBalanceChange).to.be.bignumber.equal(new BN(5000));
+
+                            const expectedTokensAtCTokenContract = new BN(5000)
+                                .mul(new BN(85))
+                                .div(new BN(100));
+                            const balCTokenContract = await erc20USDC.balanceOf(cUSDC_addr);
+                            expect(
+                                new BN(balCTokenContractBefore).add(
+                                    new BN(expectedTokensAtCTokenContract)
+                                )
+                            ).to.be.bignumber.equal(balCTokenContract);
+
+                            const expectedCTokensAtSavingAccount = new BN(5000)
+                                .mul(new BN(85))
+                                .div(new BN(100));
+                            const balCTokens = await cUSDC.balanceOf(savingAccount.address);
+                            expect(
+                                expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                            ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
+
+                            // 4. Claim the minted tokens
+
+                            // fastforward
+                            const block = new BN(await time.latestBlock());
+                            console.log("block", block.toString());
+
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            //await savingAccount.fastForward(100000);
+                            await time.advanceBlockTo(block.add(new BN(1000)));
+
+                            const block2 = await time.latestBlock();
+                            console.log("block2", block2.toString());
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.deposit(erc20USDC.address, new BN(1000), {
+                                from: user1,
+                            });
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
                     });
                 });
 
@@ -273,6 +450,14 @@ contract("SavingAccount.deposit", async (accounts) => {
                         it("when small amount of WBTC tokens are deposited");
 
                         it("when large amount of WBTC tokens are deposited");
+                    });
+                });
+
+                context("Compound unsupported 18 decimal Token", async () => {
+                    context("Should succeed", async () => {
+                        it("when small amount of MKR tokens are deposited");
+
+                        it("when large amount of MKR tokens are deposited");
                     });
                 });
             });
