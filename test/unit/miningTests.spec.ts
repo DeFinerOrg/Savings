@@ -544,6 +544,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await savingAccount.claim({ from: user1 });
 
                             const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
                         });
 
                         it("when large amount of WBTC tokens are deposited", async () => {
@@ -631,15 +632,150 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await savingAccount.claim({ from: user1 });
 
                             const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
                         });
                     });
                 });
 
                 context("Compound unsupported 18 decimal Token", async () => {
                     context("Should succeed", async () => {
-                        it("when small amount of MKR tokens are deposited");
+                        it("when small amount of MKR tokens are deposited", async function () {
+                            this.timeout(0);
+                            const ONE_MKR = new BN(10).pow(new BN(18));
 
-                        it("when large amount of MKR tokens are deposited");
+                            // 1. Approve 1000 tokens
+                            const numOfToken = new BN(10000);
+                            await erc20MKR.transfer(user1, numOfToken);
+                            await erc20MKR.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+
+                            const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20MKR.address,
+                                user1
+                            );
+
+                            // 2. Deposit Token to SavingContract
+                            await savingAccount.deposit(erc20MKR.address, new BN(5000), {
+                                from: user1,
+                            });
+
+                            // 3. Validate that the tokens are deposited to SavingAccount
+                            // 3.1 SavingAccount contract must received tokens
+                            const expectedTokensAtSavingAccountContract = new BN(5000);
+                            const balSavingAccount = await erc20MKR.balanceOf(
+                                savingAccount.address
+                            );
+                            expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                                balSavingAccount
+                            );
+
+                            // Validate the total balance on DeFiner
+                            const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20MKR.address,
+                                user1
+                            );
+                            const totalDefinerBalanceChange = new BN(
+                                totalDefinerBalanceAfterDeposit
+                            ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                            expect(totalDefinerBalanceChange).to.be.bignumber.equal(new BN(5000));
+
+                            // 4. Claim the minted tokens
+
+                            // fastforward
+                            const block = new BN(await time.latestBlock());
+                            console.log("block", block.toString());
+
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            //await savingAccount.fastForward(100000);
+                            await time.advanceBlockTo(block.add(new BN(1000)));
+
+                            const block2 = await time.latestBlock();
+                            console.log("block2", block2.toString());
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.deposit(erc20MKR.address, new BN(1000), {
+                                from: user1,
+                            });
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
+
+                        it("when large amount of MKR tokens are deposited", async () => {
+                            //this.timeout(0);
+                            const ONE_MKR = new BN(10).pow(new BN(18));
+
+                            // 1. Approve 1000 tokens
+                            const numOfToken = ONE_MKR.mul(new BN(10000));
+                            await erc20MKR.transfer(user1, numOfToken);
+                            await erc20MKR.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+
+                            const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20MKR.address,
+                                user1
+                            );
+
+                            // 2. Deposit Token to SavingContract
+                            await savingAccount.deposit(
+                                erc20MKR.address,
+                                ONE_MKR.mul(new BN(5000)),
+                                {
+                                    from: user1,
+                                }
+                            );
+
+                            // 3. Validate that the tokens are deposited to SavingAccount
+                            // 3.1 SavingAccount contract must received tokens
+                            const expectedTokensAtSavingAccountContract = ONE_MKR.mul(new BN(5000));
+                            const balSavingAccount = await erc20MKR.balanceOf(
+                                savingAccount.address
+                            );
+                            expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                                balSavingAccount
+                            );
+
+                            // Validate the total balance on DeFiner
+                            const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                erc20MKR.address,
+                                user1
+                            );
+                            const totalDefinerBalanceChange = new BN(
+                                totalDefinerBalanceAfterDeposit
+                            ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                            expect(totalDefinerBalanceChange).to.be.bignumber.equal(
+                                ONE_MKR.mul(new BN(5000))
+                            );
+
+                            // 4. Claim the minted tokens
+
+                            // fastforward
+                            const block = new BN(await time.latestBlock());
+                            console.log("block", block.toString());
+
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            //await savingAccount.fastForward(100000);
+                            await time.advanceBlockTo(block.add(new BN(1000)));
+
+                            const block2 = await time.latestBlock();
+                            console.log("block2", block2.toString());
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.deposit(erc20MKR.address, new BN(1000), {
+                                from: user1,
+                            });
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
                     });
                 });
             });
