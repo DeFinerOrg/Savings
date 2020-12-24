@@ -253,13 +253,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                             // fastforward
                             const block = new BN(await time.latestBlock());
-                            console.log("block", block.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(10000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(1000), {
@@ -351,11 +346,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20USDC.address, new BN(1000), {
@@ -439,11 +430,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20USDC.address, new BN(1000), {
@@ -531,11 +518,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20WBTC.address, new BN(1000), {
@@ -619,11 +602,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20WBTC.address, new BN(1000), {
@@ -689,11 +668,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20MKR.address, new BN(1000), {
@@ -761,11 +736,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
 
-                            //await savingAccount.fastForward(100000);
-                            await time.advanceBlockTo(block.add(new BN(1000)));
-
-                            const block2 = await time.latestBlock();
-                            console.log("block2", block2.toString());
+                            await savingAccount.fastForward(100000);
 
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.deposit(erc20MKR.address, new BN(1000), {
