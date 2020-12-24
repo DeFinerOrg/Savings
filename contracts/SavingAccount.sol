@@ -339,6 +339,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function claim() public {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
         // 11 => FINAddress
-        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(9)).safeTransfer(msg.sender, FINAmount);
+        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
     }
 }
