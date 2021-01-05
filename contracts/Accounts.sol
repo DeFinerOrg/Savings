@@ -448,14 +448,20 @@ contract Accounts is Constant, Initializable{
     }
 
     function calculateDepositFIN(uint256 _lastBlock, address _token, address _accountAddr, uint _currentBlock) internal {
-        uint indexDifference = globalConfig.bank().depositeFINRateIndex(_token, _lastBlock) == 0 ? 0 : globalConfig.bank().depositeFINRateIndex(_token, _currentBlock).sub(globalConfig.bank().depositeFINRateIndex(_token, _lastBlock));
-        uint getFIN = getDepositBalanceCurrent(_token, _accountAddr).mul(indexDifference).div(ACCURACY);
+        uint indexDifference = globalConfig.bank().depositeFINRateIndex(_token, _currentBlock)
+                                .sub(globalConfig.bank().depositeFINRateIndex(_token, _lastBlock));
+        uint getFIN = getDepositBalanceCurrent(_token, _accountAddr)
+                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()))
+                        .mul(indexDifference);
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
     function calculateBorrowFIN(uint256 _lastBlock, address _token, address _accountAddr, uint _currentBlock) internal {
-        uint indexDifference = globalConfig.bank().borrowFINRateIndex(_token, _lastBlock) == 0 ? 0 : globalConfig.bank().borrowFINRateIndex(_token, _currentBlock).sub(globalConfig.bank().borrowFINRateIndex(_token, _lastBlock));
-        uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr).mul(indexDifference).div(ACCURACY);
+        uint indexDifference = globalConfig.bank().borrowFINRateIndex(_token, _currentBlock)
+                                .sub(globalConfig.bank().borrowFINRateIndex(_token, _lastBlock));
+        uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
+                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()))
+                        .mul(indexDifference);
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }

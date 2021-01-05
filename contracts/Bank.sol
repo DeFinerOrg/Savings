@@ -169,21 +169,31 @@ contract Bank is Constant, Initializable{
 
     function updateDepositeFINIndex(address _token) public onlyInternal{
         uint currentBlock = getBlockNumber();
-        uint miningSpeed = globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token);
         uint deltaBlock;
-        uint totalDeposit = getTotalDepositStore(_token);
+        // sichaoy: newRateIndexCheckpoint should never be called before this line, so the total deposit
+        // derived here is the total deposit in the last checkpoint without latest interests.
         deltaBlock = lastDepositeFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
-        depositeFINRateIndex[_token][currentBlock] = totalDeposit == 0 ? 0 : depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalDeposit));
+        // sichaoy: How to deal with the case that totalDeposit = 0?
+        depositeFINRateIndex[_token][currentBlock] = getTotalDepositStore(_token) == 0 ?
+            0 : depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]]
+                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
+                    .mul(deltaBlock)
+                    .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
+                    .div(getTotalDepositStore(_token))
+                );
         lastDepositeFINRateCheckpoint[_token] = currentBlock;
     }
 
     function updateBorrowFINIndex(address _token) public onlyInternal{
         uint currentBlock = getBlockNumber();
-        uint miningSpeed = globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token);
         uint deltaBlock;
-        uint totalborrow = totalLoans[_token];
         deltaBlock = lastBorrowFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
-        borrowFINRateIndex[_token][currentBlock] = totalborrow == 0 ? 0 : borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]].add(deltaBlock.mul(miningSpeed).mul(ACCURACY).div(totalborrow));
+        borrowFINRateIndex[_token][currentBlock] = totalLoans[_token] == 0 ?
+            0 : borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]]
+                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
+                    .mul(deltaBlock)
+                    .mul(globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token))
+                    .div(totalLoans[_token]));
         lastBorrowFINRateCheckpoint[_token] = currentBlock;
     }
 

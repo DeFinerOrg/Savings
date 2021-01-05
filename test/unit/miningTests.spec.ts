@@ -77,6 +77,12 @@ contract("SavingAccount.deposit", async (accounts) => {
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
 
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressDAI, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressUSDC, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, 100, 100);
+
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
@@ -90,6 +96,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("should succeed", async () => {
                         it("when small amount of DAI is deposited", async function () {
                             this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
                             await erc20DAI.transfer(user1, numOfToken);
@@ -178,6 +186,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of DAI is deposited", async function () {
                             this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = eighteenPrecision.mul(new BN(10));
                             await erc20DAI.transfer(user1, numOfToken);
@@ -276,6 +286,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of USDC tokens are deposited", async () => {
                             //this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
                             await erc20USDC.transfer(user1, numOfToken);
@@ -360,6 +372,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of USDC tokens are deposited", async () => {
                             //this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 100 whole tokens
                             const numOfToken = sixPrecision.mul(new BN(100));
                             await erc20USDC.transfer(user1, numOfToken);
@@ -448,6 +462,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of WBTC tokens are deposited", async () => {
                             //this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
                             await erc20WBTC.transfer(user1, numOfToken);
@@ -532,6 +548,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of WBTC tokens are deposited", async () => {
                             //this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             // 1. Approve 100 whole tokens
                             const numOfToken = eightPrecision.mul(new BN(100));
                             await erc20WBTC.transfer(user1, numOfToken);
@@ -620,6 +638,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of MKR tokens are deposited", async function () {
                             this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             const ONE_MKR = new BN(10).pow(new BN(18));
 
                             // 1. Approve 1000 tokens
@@ -682,6 +702,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of MKR tokens are deposited", async () => {
                             //this.timeout(0);
+                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.fastForward(100000);
                             const ONE_MKR = new BN(10).pow(new BN(18));
 
                             // 1. Approve 1000 tokens
@@ -755,6 +777,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                 context("should succeed", async () => {
                     it("Deposit DAI then borrow small amount of DAI", async function () {
                         this.timeout(0);
+                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await savingAccount.fastForward(100000);
 
                         const numOfToken = new BN(10000);
                         // 1.1 Transfer DAI to user1 & user2.
@@ -794,6 +818,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     it("Deposit DAI then borrow large amount of DAI", async function () {
                         this.timeout(0);
+                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await savingAccount.fastForward(100000);
 
                         const numOfToken = new BN(1000).mul(eightPrecision);
                         const deposiAmount = new BN(500).mul(eightPrecision);
@@ -835,6 +861,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     it("Deposit USDC and borrow large amount of DAI", async function () {
                         this.timeout(0);
+                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await savingAccount.fastForward(100000);
 
                         const numOfDAI = eighteenPrecision.mul(new BN(1000));
                         const numOfUSDC = sixPrecision.mul(new BN(1000));
@@ -874,6 +902,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
                             from: user1,
                         });
+
                         await savingAccount.claim({ from: user2 });
 
                         const balFIN = await erc20FIN.balanceOf(user2);
