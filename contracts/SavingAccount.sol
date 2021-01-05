@@ -271,8 +271,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
         uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
 
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).div(100).mul(divisor).div(vars.targetTokenPrice);
-        vars.payAmount = liquidationValue.mul(liquidateTokendivisor).div(vars.liquidateTokenPrice);
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
+        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
+        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
 
         globalConfig.accounts().deposit(msg.sender, _collateralToken, vars.payAmount);
         globalConfig.accounts().withdraw(msg.sender, _borrowedToken, vars.repayAmount);
