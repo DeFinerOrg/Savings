@@ -451,8 +451,8 @@ contract Accounts is Constant, Initializable{
         uint indexDifference = globalConfig.bank().depositeFINRateIndex(_token, _currentBlock)
                                 .sub(globalConfig.bank().depositeFINRateIndex(_token, _lastBlock));
         uint getFIN = getDepositBalanceCurrent(_token, _accountAddr)
-                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()))
-                        .mul(indexDifference);
+                        .mul(indexDifference)
+                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
@@ -460,8 +460,8 @@ contract Accounts is Constant, Initializable{
         uint indexDifference = globalConfig.bank().borrowFINRateIndex(_token, _currentBlock)
                                 .sub(globalConfig.bank().borrowFINRateIndex(_token, _lastBlock));
         uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
-                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()))
-                        .mul(indexDifference);
+                        .mul(indexDifference)
+                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }
