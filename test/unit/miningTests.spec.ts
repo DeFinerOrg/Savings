@@ -65,7 +65,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
-        addressFIN = tokens[9];
+        addressFIN = tokens[11];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20TUSD = await ERC20.at(addressTUSD);
@@ -96,7 +96,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("should succeed", async () => {
                         it("when small amount of DAI is deposited", async function () {
                             this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
@@ -186,7 +189,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of DAI is deposited", async function () {
                             this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = eighteenPrecision.mul(new BN(10));
@@ -286,7 +292,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of USDC tokens are deposited", async () => {
                             //this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
@@ -372,7 +381,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of USDC tokens are deposited", async () => {
                             //this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 100 whole tokens
                             const numOfToken = sixPrecision.mul(new BN(100));
@@ -462,7 +474,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of WBTC tokens are deposited", async () => {
                             //this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 1000 tokens
                             const numOfToken = new BN(10000);
@@ -548,7 +563,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of WBTC tokens are deposited", async () => {
                             //this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             // 1. Approve 100 whole tokens
                             const numOfToken = eightPrecision.mul(new BN(100));
@@ -638,7 +656,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     context("Should succeed", async () => {
                         it("when small amount of MKR tokens are deposited", async function () {
                             this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             const ONE_MKR = new BN(10).pow(new BN(18));
 
@@ -702,7 +723,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("when large amount of MKR tokens are deposited", async () => {
                             //this.timeout(0);
-                            await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
                             await savingAccount.fastForward(100000);
                             const ONE_MKR = new BN(10).pow(new BN(18));
 
@@ -777,7 +801,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                 context("should succeed", async () => {
                     it("Deposit DAI then borrow small amount of DAI", async function () {
                         this.timeout(0);
-                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await erc20FIN.transfer(
+                            savingAccount.address,
+                            eighteenPrecision.mul(new BN(100))
+                        );
                         await savingAccount.fastForward(100000);
 
                         const numOfToken = new BN(10000);
@@ -818,7 +845,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     it("Deposit DAI then borrow large amount of DAI", async function () {
                         this.timeout(0);
-                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await erc20FIN.transfer(
+                            savingAccount.address,
+                            eighteenPrecision.mul(new BN(100))
+                        );
                         await savingAccount.fastForward(100000);
 
                         const numOfToken = new BN(1000).mul(eightPrecision);
@@ -861,7 +891,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                     it("Deposit USDC and borrow large amount of DAI", async function () {
                         this.timeout(0);
-                        await erc20FIN.transfer(savingAccount.address, eighteenPrecision.mul(new BN(100)));
+                        await erc20FIN.transfer(
+                            savingAccount.address,
+                            eighteenPrecision.mul(new BN(100))
+                        );
                         await savingAccount.fastForward(100000);
 
                         const numOfDAI = eighteenPrecision.mul(new BN(1000));
