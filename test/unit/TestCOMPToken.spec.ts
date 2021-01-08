@@ -54,7 +54,7 @@ contract("SavingAccount.COMP", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
         COMPTokenAddress = await testEngine.getCOMPTokenAddress();
@@ -81,6 +81,7 @@ contract("SavingAccount.COMP", async (accounts) => {
     context("constructor", async () => {
         context("should fail", async () => {
             it("When executing updateCommunityFundRatio, the input parameter is zero.", async () => {
+                await savingAccount.fastForward(1000);
                 // await expectRevert(
                 //     globalConfig.updateCommunityFundRatio(new BN(0)),
                 //     "Community fund is zero"

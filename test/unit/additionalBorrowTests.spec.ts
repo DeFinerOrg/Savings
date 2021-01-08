@@ -82,7 +82,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -156,7 +156,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                 async () => {
                     context("Should fail", async () => {
                         it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -175,6 +175,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 eighteenPrecision.mul(new BN(100)),
                                 { from: user2 }
                             );
+
+                            await savingAccount.fastForward(1000);
 
                             await savingAccount.deposit(
                                 addressWBTC,
@@ -197,11 +199,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Insufficient collateral when borrow."
+                                "Lack of liquidity when borrow."
                             );
                         });
                         it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -246,7 +248,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
                         });
                         it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -291,7 +293,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
                         });
                         it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -338,7 +340,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     });
                     context("Should succeeed", async () => {
                         it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -385,7 +387,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
                         });
                         it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -432,7 +434,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
                         });
                         it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
@@ -485,7 +487,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
                         });
                         it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
-                            this.timeout(0)
+                            this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 100 WBTC
@@ -543,7 +545,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         context("Call multiple times", async () => {
             context("Should succeed", async () => {
                 it("Uses 18 decimals, TUSD", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 100 whole DAI tokens
@@ -564,10 +566,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
 
                     /*
@@ -593,7 +595,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
                 it("Uses 6 decimals, USDC", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 100 whole DAI tokens
@@ -608,14 +610,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
                     /*
                      * Step 2
@@ -641,7 +643,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
                 it("Uses 8 decimals, WBTC", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     /*
                      * Step 1
                      * Account 1: Deposits 1000 whole DAI tokens
@@ -662,10 +664,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1000)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1000)), {
-                        from: user2
+                        from: user2,
                     });
                     /*
                      * Step 2

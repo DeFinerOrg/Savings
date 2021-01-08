@@ -47,7 +47,7 @@ contract("SavingAccount.transfer", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -68,13 +68,14 @@ contract("SavingAccount.transfer", async (accounts) => {
         context("with Token", async () => {
             context("should fail", async () => {
                 it("B9: Not enough balance for transfer", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     const numOfToken = new BN(1000);
                     // 1. Transfer DAI to user1 & user2.
                     // 2. Transfer DAI from user2 to user1, the amount of transfer is larger than user2's balance on DAI
                     let user1BalanceBefore = await erc20DAI.balanceOf(user1);
                     let user2BalanceBefore = await erc20DAI.balanceOf(user2);
 
+                    await savingAccount.fastForward(1000);
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
@@ -120,14 +121,14 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
-                            from: user2
+                            from: user2,
                         }),
                         "Insufficient balance."
                     );
                 });
 
                 it("N9: Not enough collatral for borrowed asset if transfer", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1. Transfer DAI to user1 & user2.
                     // 2. User2 borrow USDC and uses it's DAI as collateral
                     // 3. Transfer DAI from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
@@ -172,7 +173,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                             addressDAI,
                             remainingDAI.add(eighteenPrecision),
                             {
-                                from: user2
+                                from: user2,
                             }
                         ),
                         "Insufficient collateral when withdraw."
@@ -183,7 +184,7 @@ contract("SavingAccount.transfer", async (accounts) => {
             context("Compound Supported 18 decimals Token", async () => {
                 context("should succeed", async () => {
                     it("E9: Transfer small amount balance", async function () {
-                        this.timeout(0)
+                        this.timeout(0);
                         const numOfToken = new BN(1000);
                         // 1. Transfer DAI to user1 & user2.
                         // 2. Transfer DAI from user2 to user1. The amount of transfer should NOT trigger the compound token
@@ -237,7 +238,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                         // Transfer 100 tokens from user2 to user1
                         await savingAccount.transfer(user1, addressDAI, new BN(100), {
-                            from: user2
+                            from: user2,
                         });
 
                         // Verify balances of user1 & user2 after transfer
@@ -258,7 +259,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     });
 
                     it("F9: Transfer large amount of balance", async function () {
-                        this.timeout(0)
+                        this.timeout(0);
                         // 1. Transfer DAI to user1 & user2.
                         // 2. Transfer DAI from user2 to user1. The amount of transfer should trigger the compound token
                         // withdraw of user2 and compound token deposit of user1.
@@ -312,7 +313,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                         // transfer more than reserve
                         await savingAccount.transfer(user1, addressDAI, new BN(500), {
-                            from: user2
+                            from: user2,
                         });
 
                         // Verify balances of user1 & user2 after transfer
@@ -338,7 +339,7 @@ contract("SavingAccount.transfer", async (accounts) => {
         context("with ETH", async () => {
             context("should fail", async () => {
                 it("H9: Not enough balance for transfer", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1, the amount of transfer is larger than user2's balance on ETH
                     const ETHtransferAmount = eighteenPrecision.mul(eighteenPrecision);
@@ -348,14 +349,14 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                            from: user2
+                            from: user2,
                         }),
                         "Insufficient balance."
                     );
                 });
 
                 it("Not enough collatral for borrowed asset if transfer (for ETH)", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1. Transfer ETH to user1 & user2.
                     // 2. User2 borrow USDC and use it's ETH as collateral
                     // 3. Transfer ETH from user2 to user1. The amount of transfer will let the LTV of user2 be larger than BORROW_LTV
@@ -371,7 +372,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // User 1 deposits USDC
                     await erc20USDC.transfer(user1, depositAmount);
                     await erc20USDC.approve(savingAccount.address, depositAmount, {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressUSDC, depositAmount, { from: user1 });
 
@@ -391,22 +392,19 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
                         value: eighteenPrecision,
-                        from: user1
+                        from: user1,
                     });
 
                     // User 2 deposits ETH
                     await savingAccount.deposit(ETH_ADDRESS, eighteenPrecision, {
                         value: eighteenPrecision,
-                        from: user2
+                        from: user2,
                     });
 
                     // verify deposit
                     const ETHbalanceAfterDeposit = await web3.eth.getBalance(savingAccount.address);
                     expect(new BN(ETHbalanceAfterDeposit)).to.be.bignumber.equal(
-                        new BN(eighteenPrecision)
-                            .mul(new BN(2))
-                            .mul(new BN(15))
-                            .div(new BN(100))
+                        new BN(eighteenPrecision).mul(new BN(2)).mul(new BN(15)).div(new BN(100))
                     );
 
                     const user2BalanceUSDCBeforeBorrow = await erc20USDC.balanceOf(user2);
@@ -421,14 +419,14 @@ contract("SavingAccount.transfer", async (accounts) => {
                     ).to.be.bignumber.equal(new BN(600));
 
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
                 });
             });
 
             context("should succeed", async () => {
                 it("K9: Transfer small amount balance", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should NOT trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
@@ -452,11 +450,11 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after deposit
@@ -483,7 +481,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // transfer ETH from user2 to user1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
                     // Error: -- Reason given: Insufficient collateral..
 
@@ -505,7 +503,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                 });
 
                 it("L9: Transfer large amount of balance", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1. Transfer ETH to user1 & user2.
                     // 2. Transfer ETH from user2 to user1. The amount of transfer should trigger the compound token
                     // withdraw of user2 and compound token deposit of user1.
@@ -521,11 +519,11 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // deposit ETH
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                         value: depositAmount,
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after deposit
@@ -547,7 +545,7 @@ contract("SavingAccount.transfer", async (accounts) => {
 
                     // transfer ETH from user 2 to user 1
                     await savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify balances of user1 & user2 after transfer

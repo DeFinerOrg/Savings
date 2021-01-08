@@ -84,7 +84,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -156,7 +156,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 it("RateTest2: when tokens are withdrawn with interest", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1.1 Transfer DAI to user1.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
@@ -166,6 +166,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                         erc20DAI.address,
                         user1
                     );
+                    await savingAccount.fastForward(1000);
 
                     // deposit tokens
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
@@ -199,7 +200,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -221,9 +222,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                             .div(eighteenPrecision)
                     );
                     expect(
-                        BN(tokenState[0])
-                            .sub(tokenState[1])
-                            .sub(tokenState[2])
+                        BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])
                     ).to.be.bignumber.equal(compoundAfterFastForward);
                     console.log("check1");
 
@@ -254,7 +253,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
 
                     // Verify the pricipal

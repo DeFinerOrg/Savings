@@ -31,7 +31,7 @@ contract("GlobalConfig", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
     });
@@ -39,7 +39,8 @@ contract("GlobalConfig", async (accounts) => {
     context("constructor", async () => {
         context("should fail", async () => {
             it("When executing updateCommunityFundRatio, the input parameter is zero.", async function () {
-                this.timeout(0)
+                this.timeout(0);
+                await savingAccount.fastForward(1000);
                 await expectRevert(
                     globalConfig.updateCommunityFundRatio(new BN(0)),
                     "Invalid community fund ratio."
@@ -47,7 +48,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateMinReserveRatio, the input parameter is zero.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateMinReserveRatio(new BN(0)),
                     "Invalid min reserve ratio."
@@ -55,7 +56,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateMinReserveRatio, the input parameter is greater than maxReserveRatio.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateMinReserveRatio(new BN(21)),
                     "Invalid min reserve ratio."
@@ -63,7 +64,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateMaxReserveRatio, the input parameter is zero.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateMaxReserveRatio(new BN(0)),
                     "Invalid max reserve ratio."
@@ -71,7 +72,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateMaxReserveRatio, the input parameter is less than minReserveRatio.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateMaxReserveRatio(new BN(9)),
                     "Invalid max reserve ratio."
@@ -79,7 +80,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateLiquidationThreshold, the input parameter is zero.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateLiquidationThreshold(new BN(0)),
                     "Invalid liquidation threshold."
@@ -87,7 +88,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("When executing updateLiquidationDiscountRatio, the input parameter is zero.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updateLiquidationDiscountRatio(new BN(0)),
                     "Invalid liquidation discount ratio."
@@ -97,7 +98,7 @@ contract("GlobalConfig", async (accounts) => {
 
         context("should succeed", async () => {
             it("executing updateCommunityFundRatio", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeCommunityFundRatio = await globalConfig.communityFundRatio();
                 await globalConfig.updateCommunityFundRatio(new BN(20));
                 const afterCommunityFundRatio = await globalConfig.communityFundRatio();
@@ -106,7 +107,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("executing updateMinReserveRatio", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeMinReserveRatio = await globalConfig.minReserveRatio();
                 await globalConfig.updateMinReserveRatio(new BN(15));
                 const afterMinReserveRatio = await globalConfig.minReserveRatio();
@@ -115,7 +116,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("executing updateMaxReserveRatio", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeMaxReserveRatio = await globalConfig.maxReserveRatio();
                 await globalConfig.updateMaxReserveRatio(new BN(25));
                 const afterMaxReserveRatio = await globalConfig.maxReserveRatio();
@@ -124,7 +125,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("executing updateLiquidationThreshold", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeLiquidationThreshold = await globalConfig.liquidationThreshold();
                 await globalConfig.updateLiquidationThreshold(new BN(20));
                 const afterLiquidationThreshold = await globalConfig.liquidationThreshold();
@@ -133,7 +134,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("executing updateLiquidationDiscountRatio", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
                 await globalConfig.updateLiquidationThreshold(new BN(10));
                 await globalConfig.updateLiquidationDiscountRatio(new BN(20));
@@ -143,7 +144,7 @@ contract("GlobalConfig", async (accounts) => {
             });
 
             it("executing midReserveRatio", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const beforeLiquidationDiscountRatio = await globalConfig.midReserveRatio();
                 await globalConfig.updateMinReserveRatio(new BN(15));
                 await globalConfig.updateMaxReserveRatio(new BN(25));

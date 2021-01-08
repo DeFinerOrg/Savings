@@ -27,21 +27,22 @@ contract("InitializablePausable", async (accounts) => {
     // testEngine.deploy("scriptFlywheel.scen");
 
     before(function () {
-        // Things to initialize before all test  
+        // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
     });
 
     context("constructor", async () => {
         context("should fail", async () => {
             it("The non-owner calls the function that can be suspended.", async function () {
-                this.timeout(0)
+                this.timeout(0);
+                await savingAccount.fastForward(1000);
                 await expectRevert(
                     savingAccount.pause({ from: user1 }),
                     "PauserRole: caller does not have the Pauser role"
@@ -51,21 +52,18 @@ contract("InitializablePausable", async (accounts) => {
 
         context("should succeed", async () => {
             it("The test turns on the pause function.", async function () {
-                this.timeout(0)
+                this.timeout(0);
 
                 const depositAmount = new BN(100);
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                })
+                    value: depositAmount,
+                });
 
                 const beforePaused = await savingAccount.paused();
 
                 await savingAccount.pause();
 
-                await expectRevert(
-                    savingAccount.withdrawAll(ETH_ADDRESS),
-                    "Pausable: paused"
-                );
+                await expectRevert(savingAccount.withdrawAll(ETH_ADDRESS), "Pausable: paused");
                 const afterPaused = await savingAccount.paused();
 
                 expect(beforePaused).to.equal(false);
@@ -73,27 +71,24 @@ contract("InitializablePausable", async (accounts) => {
             });
 
             it("The test turns off the pause function.", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const depositAmount = new BN(100);
                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
-                    value: depositAmount
-                })
+                    value: depositAmount,
+                });
 
                 const beforePaused = await savingAccount.paused();
 
                 await savingAccount.pause();
 
                 const midPaused = await savingAccount.paused();
-                await expectRevert(
-                    savingAccount.withdrawAll(ETH_ADDRESS),
-                    "Pausable: paused"
-                );
+                await expectRevert(savingAccount.withdrawAll(ETH_ADDRESS), "Pausable: paused");
 
                 await savingAccount.unpause();
 
                 const afterPaused = await savingAccount.paused();
 
-                await savingAccount.withdrawAll(ETH_ADDRESS)
+                await savingAccount.withdrawAll(ETH_ADDRESS);
 
                 expect(beforePaused).to.equal(false);
                 expect(midPaused).to.equal(true);
@@ -101,5 +96,4 @@ contract("InitializablePausable", async (accounts) => {
             });
         });
     });
-
 });

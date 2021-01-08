@@ -82,7 +82,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -154,10 +154,11 @@ contract("SavingAccount.borrow", async (accounts) => {
             context("should succeed", async () => {
                 // modified
                 it("RateTest1: Deposit DAI then borrow DAI", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
+                    await savingAccount.fastForward(1000);
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
@@ -176,14 +177,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const cDAIBeforeFastForward = BN(
                         await cTokenDAI.balanceOf(savingAccount.address)
                     );
-                    const cDAIBorrowRateBefore = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAIBorrowRateBefore = BN(await cTokenDAI.borrowRatePerBlock());
 
-                    const cDAISupplyRateBefore = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
-
+                    const cDAISupplyRateBefore = BN(await cTokenDAI.borrowRatePerBlock());
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
@@ -193,17 +189,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
 
                     // await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
-                    const cDAIBorrowRateAfter = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAIBorrowRateAfter = BN(await cTokenDAI.borrowRatePerBlock());
 
-                    const cDAISupplyRateAfter = BN(
-                        await cTokenDAI.borrowRatePerBlock()
-                    );
+                    const cDAISupplyRateAfter = BN(await cTokenDAI.borrowRatePerBlock());
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -248,14 +240,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify the pricipal
