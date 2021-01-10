@@ -33,16 +33,16 @@ contract("Integration Tests", async (accounts) => {
     let addressZRX: any;
     let addressREP: any;
     let addressWBTC: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForWBTC: any;
-    let addressCTokenForZRX: any;
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
-    let cTokenZRX: t.MockCTokenInstance;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cWBTC_addr: any;
+    let cZRX_addr: any;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
+    let cZRX: t.MockCTokenInstance;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
@@ -64,15 +64,15 @@ contract("Integration Tests", async (accounts) => {
 
     context("Compound Model Validation", async () => {
         context("Uses WhitePaper Model", async () => {
-            before(function () {
+            before(function() {
                 // Things to initialize before all test
                 this.timeout(0);
                 testEngine = new TestEngine();
                 testEngine.deploy("whitePaperModel.scen");
             });
 
-            beforeEach(async function () {
-                this.timeout(0)
+            beforeEach(async function() {
+                this.timeout(0);
                 savingAccount = await testEngine.deploySavingAccount();
                 // 1. initialization.
                 tokens = await testEngine.erc20Tokens;
@@ -98,29 +98,29 @@ contract("Integration Tests", async (accounts) => {
                 ZERO = new BN(0);
                 ONE_WEEK = new BN(7).mul(new BN(24).mul(new BN(3600)));
                 ONE_MONTH = new BN(30).mul(new BN(24).mul(new BN(3600)));
-                addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-                addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-                addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-                addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-                addressCTokenForZRX = await testEngine.tokenInfoRegistry.getCToken(addressZRX);
-                cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-                cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-                cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-                cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
-                cTokenZRX = await MockCToken.at(addressCTokenForZRX);
+                cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+                cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+                cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+                cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+                cZRX_addr = await testEngine.tokenInfoRegistry.getCToken(addressZRX);
+                cDAI = await MockCToken.at(cDAI_addr);
+                cUSDC = await MockCToken.at(cUSDC_addr);
+                cUSDT = await MockCToken.at(cUSDT_addr);
+                cWBTC = await MockCToken.at(cWBTC_addr);
+                cZRX = await MockCToken.at(cZRX_addr);
             });
-            it("Deposit DAI and checkout the output rate", async function () {
-                this.timeout(0)
+            it("Deposit DAI and checkout the output rate", async function() {
+                this.timeout(0);
                 console.log("-------------------------Initial Value---------------------------");
                 // 1. Check the compound rate before deposit
-                const borrowRateBeforeDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });
-                const depositRateBeforeDeposit = await cTokenZRX.supplyRatePerBlock({
+                const borrowRateBeforeDeposit = await cZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateBeforeDeposit = await cZRX.supplyRatePerBlock({
                     from: user1
                 });
                 console.log("Borrow rate ", borrowRateBeforeDeposit.toString());
                 console.log("Deposit rate ", depositRateBeforeDeposit.toString());
 
-                const balCTokenContract = await cTokenZRX.balanceOfUnderlying.call(
+                const balCTokenContract = await cZRX.balanceOfUnderlying.call(
                     savingAccount.address
                 );
                 const balTokenZRX = await erc20ZRX.balanceOf(savingAccount.address);
@@ -140,7 +140,7 @@ contract("Integration Tests", async (accounts) => {
                 // await savingAccount.borrow(addressZRX, numOfZRX.div(new BN(2)), { from: user2 });
                 console.log("---------------------------After Deposit---------------------------");
 
-                const balCTokenContract1 = await cTokenZRX.balanceOfUnderlying.call(
+                const balCTokenContract1 = await cZRX.balanceOfUnderlying.call(
                     savingAccount.address
                 );
                 const balTokenZRX1 = await erc20ZRX.balanceOf(savingAccount.address);
@@ -149,8 +149,8 @@ contract("Integration Tests", async (accounts) => {
                 // 3. Advance 175,200 blocks, which roughly equals one month
                 // const b1 = await savingAccount.getBlockNumber({ from: user1 });
                 // console.log("Block number = ", b1.toString());
-                const borrowRateAfterDeposit = await cTokenZRX.borrowRatePerBlock({ from: user1 });
-                const depositRateAfterDeposit = await cTokenZRX.supplyRatePerBlock({ from: user1 });
+                const borrowRateAfterDeposit = await cZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateAfterDeposit = await cZRX.supplyRatePerBlock({ from: user1 });
                 console.log("Borrow rate ", borrowRateAfterDeposit.toString());
                 console.log("Deposit rate ", depositRateAfterDeposit.toString());
 
@@ -163,7 +163,7 @@ contract("Integration Tests", async (accounts) => {
 
                 // await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
 
-                const balCTokenContract2 = await cTokenZRX.balanceOfUnderlying.call(
+                const balCTokenContract2 = await cZRX.balanceOfUnderlying.call(
                     savingAccount.address
                 );
                 const balTokenZRX2 = await erc20ZRX.balanceOf(savingAccount.address);
@@ -171,15 +171,15 @@ contract("Integration Tests", async (accounts) => {
                 console.log("balTokenZRX = ", balTokenZRX2.toString());
 
                 // 4. Check the compound rate after deposit
-                const borrowRateAfterFastForward = await cTokenZRX.borrowRatePerBlock({ from: user1 });
-                const depositRateAfterFastForward = await cTokenZRX.supplyRatePerBlock({ from: user1 });
+                const borrowRateAfterFastForward = await cZRX.borrowRatePerBlock({ from: user1 });
+                const depositRateAfterFastForward = await cZRX.supplyRatePerBlock({ from: user1 });
                 console.log("Borrow rate ", borrowRateAfterFastForward.toString());
                 console.log("Deposit rate ", depositRateAfterFastForward.toString());
                 /*
                 console.log("--------------------------After Borrow--------------------------");
                 await savingAccount.borrow(addressZRX, numOfZRX.div(new BN(2)), { from: user2 });
-                const borrowRateAfterBorrow = await cTokenZRX.borrowRatePerBlock({from: user1});
-                const depositRateAfterBorrow = await cTokenZRX.supplyRatePerBlock({from: user1});
+                const borrowRateAfterBorrow = await cZRX.borrowRatePerBlock({from: user1});
+                const depositRateAfterBorrow = await cZRX.supplyRatePerBlock({from: user1});
                 console.log("Borrow rate ", borrowRateAfterBorrow.toString());
                 console.log("Deposit rate ", depositRateAfterBorrow.toString());*/
             });

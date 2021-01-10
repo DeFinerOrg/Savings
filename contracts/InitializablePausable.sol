@@ -1,4 +1,4 @@
-pragma solidity ^0.5.14;
+pragma solidity 0.5.14;
 
 import "./config/GlobalConfig.sol";
 
@@ -22,11 +22,11 @@ contract InitializablePausable {
      */
     event Unpaused(address account);
     
-    address private globalConfig;
+    address private globalConfigPausable;
     bool private _paused;
 
     function _initialize(address _globalConfig) internal {
-        globalConfig = _globalConfig;
+        globalConfigPausable = _globalConfig;
         _paused = false;
     }
 
@@ -58,7 +58,7 @@ contract InitializablePausable {
      */
     function pause() public onlyPauser whenNotPaused {
         _paused = true;
-        emit Paused(GlobalConfig(globalConfig).owner());
+        emit Paused(GlobalConfig(globalConfigPausable).owner());
     }
 
     /**
@@ -66,11 +66,11 @@ contract InitializablePausable {
      */
     function unpause() public onlyPauser whenPaused {
         _paused = false;
-        emit Unpaused(GlobalConfig(globalConfig).owner());
+        emit Unpaused(GlobalConfig(globalConfigPausable).owner());
     }
 
     modifier onlyPauser() {
-        require(msg.sender == GlobalConfig(globalConfig).owner(), "PauserRole: caller does not have the Pauser role");
+        require(msg.sender == GlobalConfig(globalConfigPausable).owner(), "PauserRole: caller does not have the Pauser role");
         _;
     }
 }

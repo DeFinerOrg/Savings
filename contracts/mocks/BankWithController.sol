@@ -10,7 +10,7 @@ contract BankWithController is Bank {
     function initialize(
         GlobalConfig _globalConfig,
         address _comptroller
-    ) public initializer {
+    ) external initializer {
         super.initialize(_globalConfig); // expected 3 passed 5 args
         comptroller = _comptroller;
     }

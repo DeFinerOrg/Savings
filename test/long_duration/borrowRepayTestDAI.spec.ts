@@ -43,17 +43,17 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
-    let addressCTokenForDAI: any;
-    let addressCTokenForUSDC: any;
-    let addressCTokenForUSDT: any;
-    let addressCTokenForTUSD: any;
-    let addressCTokenForMKR: any;
-    let addressCTokenForWBTC: any;
+    let cDAI_addr: any;
+    let cUSDC_addr: any;
+    let cUSDT_addr: any;
+    let cTUSD_addr: any;
+    let cMKR_addr: any;
+    let cWBTC_addr: any;
 
-    let cTokenDAI: t.MockCTokenInstance;
-    let cTokenUSDC: t.MockCTokenInstance;
-    let cTokenUSDT: t.MockCTokenInstance;
-    let cTokenWBTC: t.MockCTokenInstance;
+    let cDAI: t.MockCTokenInstance;
+    let cUSDC: t.MockCTokenInstance;
+    let cUSDT: t.MockCTokenInstance;
+    let cWBTC: t.MockCTokenInstance;
 
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -83,7 +83,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -111,16 +111,16 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
-        addressCTokenForWBTC = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        addressCTokenForDAI = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        addressCTokenForUSDC = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        addressCTokenForUSDT = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-        addressCTokenForTUSD = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
-        addressCTokenForMKR = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
-        cTokenDAI = await MockCToken.at(addressCTokenForDAI);
-        cTokenUSDC = await MockCToken.at(addressCTokenForUSDC);
-        cTokenUSDT = await MockCToken.at(addressCTokenForUSDT);
-        cTokenWBTC = await MockCToken.at(addressCTokenForWBTC);
+        cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
+        cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
+        cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
+        cTUSD_addr = await testEngine.tokenInfoRegistry.getCToken(addressTUSD);
+        cMKR_addr = await testEngine.tokenInfoRegistry.getCToken(addressMKR);
+        cDAI = await MockCToken.at(cDAI_addr);
+        cUSDC = await MockCToken.at(cUSDC_addr);
+        cUSDT = await MockCToken.at(cUSDT_addr);
+        cWBTC = await MockCToken.at(cWBTC_addr);
 
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
@@ -155,7 +155,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
             context("should succeed", async () => {
                 // modified
                 it("RateTest5: Deposit DAI then borrow DAI, repay the loan amount and then winthdraw all", async function () {
-                    this.timeout(0)
+                    this.timeout(0);
                     // 1.1 Transfer DAI to user1 & user2.
                     await erc20DAI.transfer(user1, TWO_DAIS);
                     await erc20DAI.transfer(user2, TWO_DAIS);
@@ -163,7 +163,6 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
-                    console.log("check1");
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
@@ -173,17 +172,14 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         HALF_DAI
                     );
                     const compoundBeforeFastForward = BN(
-                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
-                    const cDAIBeforeFastForward = BN(
-                        await cTokenDAI.balanceOf(savingAccount.address)
-                    );
+                    const cDAIBeforeFastForward = BN(await cDAI.balanceOf(savingAccount.address));
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
                     // Deposit an extra token to create a new rate check point
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    console.log("check2");
 
                     const user2BorrowPrincipalBefore = await savingAccount.getBorrowPrincipal(
                         addressDAI,
@@ -192,7 +188,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     const user2BorrowInterestBefore = await savingAccount.getBorrowInterest(
                         addressDAI,
                         {
-                            from: user2
+                            from: user2,
                         }
                     );
                     console.log(
@@ -203,10 +199,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // Repay DAI and withdraw all
                     await savingAccount.repay(addressDAI, ONE_DAI, { from: user2 });
-                    console.log("check3");
 
                     await savingAccount.withdrawAll(erc20DAI.address, { from: user2 });
-                    console.log("check4");
 
                     let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user2);
                     console.log(
@@ -216,35 +210,28 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify that reservation equals to the token in pool's address
                     const reservation = BN(await erc20DAI.balanceOf(savingAccount.address));
-                    // TODO:
                     expect(tokenState[2]).to.be.bignumber.equal(reservation);
-                    console.log("check5");
 
                     // Verifty that compound equals cToken underlying balance in pool's address
                     // It also verifies that (Deposit = Loan + Compound + Reservation)
                     const compoundAfterFastForward = BN(
-                        await cTokenDAI.balanceOfUnderlying.call(savingAccount.address)
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
-                    const cDAIAfterFastForward = BN(
-                        await cTokenDAI.balanceOf(savingAccount.address)
-                    );
+                    const cDAIAfterFastForward = BN(await cDAI.balanceOf(savingAccount.address));
                     const compoundPrincipal = compoundBeforeFastForward.add(
                         cDAIAfterFastForward
                             .sub(cDAIBeforeFastForward)
-                            .mul(BN(await cTokenDAI.exchangeRateCurrent.call()))
+                            .mul(BN(await cDAI.exchangeRateCurrent.call()))
                             .div(eighteenPrecision)
                     );
                     expect(
-                        BN(tokenState[0])
-                            .sub(tokenState[1])
-                            .sub(tokenState[2])
+                        BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])
                     ).to.be.bignumber.equal(compoundAfterFastForward);
-                    console.log("check6");
 
                     // 3.2 Vefity rate
                     const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
@@ -268,14 +255,14 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1
+                        from: user1,
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2
+                        from: user2,
                     });
 
                     // Verify the pricipal
@@ -294,7 +281,6 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    // TODO:
                     expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650800000)); // 3007210014379.6274/2 || 1503559214300
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));

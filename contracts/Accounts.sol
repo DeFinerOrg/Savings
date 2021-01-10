@@ -7,7 +7,7 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -18,7 +18,7 @@ contract Accounts is Constant, Initializable{
 
     GlobalConfig globalConfig;
 
-    modifier onlyInternal() {
+    modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
@@ -164,7 +164,7 @@ contract Accounts is Constant, Initializable{
         }
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         require(
@@ -193,7 +193,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -239,7 +239,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -254,7 +254,7 @@ contract Accounts is Constant, Initializable{
         }
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -352,7 +352,9 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -372,7 +374,9 @@ contract Accounts is Constant, Initializable{
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -390,11 +394,13 @@ contract Accounts is Constant, Initializable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) public returns (bool) {
+    function isAccountLiquidatable(address _borrower) external returns (bool) {
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
-        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint8 i = 0; i < tokenNum; i++) {
             if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 globalConfig.bank().newRateIndexCheckpoint(token);
