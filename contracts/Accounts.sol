@@ -416,13 +416,14 @@ contract Accounts is Constant, Initializable{
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that
         // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
+        // require(
+        //     totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+        //     "Collateral is not sufficient to be liquidated."
+        // );
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) && totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
     }
 
     struct LiquidationVars {
