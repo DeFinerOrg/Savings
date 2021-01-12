@@ -162,6 +162,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(1000), {
+                                from: user1,
+                            });
+
                             // 4. Claim the minted tokens
 
                             // fastforward
@@ -170,9 +176,11 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
 
                             await savingAccount.fastForward(100000);
-                            //await time.advanceBlockTo(block.add(new BN(10000)));
 
                             const block2 = await time.latestBlock();
                             console.log("block2", block2.toString());
@@ -265,10 +273,19 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+
                             // 4. Claim the minted tokens
 
                             // fastforward
                             const block = new BN(await time.latestBlock());
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
 
                             await savingAccount.fastForward(100000);
 
@@ -358,14 +375,22 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20USDC.address, new BN(10), {
+                                from: user1,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const block = new BN(await time.latestBlock());
                             console.log("block", block.toString());
 
                             const balFIN1 = await erc20FIN.balanceOf(user1);
                             console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.deposit(erc20USDC.address, new BN(10), {
+                                from: user1,
+                            });
 
                             await savingAccount.fastForward(100000);
 
@@ -446,6 +471,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                             expect(
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20USDC.address, new BN(10), {
+                                from: user1,
+                            });
 
                             // 4. Claim the minted tokens
 
@@ -540,6 +571,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10000)));
 
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20WBTC.address, new BN(10), {
+                                from: user1,
+                            });
+
                             // 4. Claim the minted tokens
 
                             // fastforward
@@ -629,6 +666,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
                             ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10000)));
 
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20WBTC.address, new BN(10), {
+                                from: user1,
+                            });
+
                             // 4. Claim the minted tokens
 
                             // fastforward
@@ -699,6 +742,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 totalDefinerBalanceAfterDeposit
                             ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                             expect(totalDefinerBalanceChange).to.be.bignumber.equal(new BN(5000));
+
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20MKR.address, new BN(10), {
+                                from: user1,
+                            });
 
                             // 4. Claim the minted tokens
 
@@ -773,8 +822,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 ONE_MKR.mul(new BN(5000))
                             );
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20MKR.address, new BN(10), {
+                                from: user1,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const block = new BN(await time.latestBlock());
                             console.log("block", block.toString());
@@ -830,8 +884,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 new BN(1000)
                             );
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
@@ -857,7 +916,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await savingAccount.fastForward(100000);
 
                             const numOfToken = new BN(1000).mul(eightPrecision);
-                            const deposiAmount = new BN(500).mul(eightPrecision);
+                            const depositAmount = new BN(500).mul(eightPrecision);
                             const borrowAmount = new BN(100).mul(eightPrecision);
                             // 1.1 Transfer DAI to user1 & user2.
                             await erc20DAI.transfer(user1, numOfToken);
@@ -868,8 +927,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
                                 from: user2,
                             });
-                            await savingAccount.deposit(addressDAI, deposiAmount, { from: user1 });
-                            await savingAccount.deposit(addressDAI, deposiAmount, { from: user2 });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
 
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
@@ -880,8 +939,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 borrowAmount
                             );
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
@@ -908,8 +972,8 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                             const numOfDAI = eighteenPrecision.mul(new BN(1000));
                             const numOfUSDC = sixPrecision.mul(new BN(1000));
-                            const deposiAmountDAI = new BN(500).mul(eightPrecision);
-                            const deposiAmountUSDC = new BN(500).mul(sixPrecision);
+                            const depositAmountDAI = new BN(500).mul(eightPrecision);
+                            const depositAmountUSDC = new BN(500).mul(sixPrecision);
                             const borrowAmount = new BN(10).mul(sixPrecision);
 
                             await erc20DAI.transfer(user1, numOfDAI);
@@ -920,10 +984,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
                                 from: user2,
                             });
-                            await savingAccount.deposit(addressDAI, deposiAmountDAI, {
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
                                 from: user1,
                             });
-                            await savingAccount.deposit(addressUSDC, deposiAmountUSDC, {
+                            await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
                                 from: user2,
                             });
 
@@ -940,8 +1004,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 borrowAmount
                             );
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
@@ -999,8 +1068,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 new BN(10)
                             );
 
-                            // 4. Claim the minted tokens
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user2,
+                            });
 
+                            // 4. Claim the minted tokens
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
@@ -1065,9 +1139,13 @@ contract("SavingAccount.deposit", async (accounts) => {
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
                                 new BN(10).mul(sixPrecision)
                             );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user2,
+                            });
 
                             // 4. Claim the minted tokens
-
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
