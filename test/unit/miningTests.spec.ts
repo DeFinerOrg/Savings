@@ -1164,6 +1164,119 @@ contract("SavingAccount.deposit", async (accounts) => {
                         });
                     });
                 });
+
+                context("Compound unsupported 18 decimal Token", async () => {
+                    context("Should succeed", async () => {
+                        it("Deposit DAI to borrow a small amount of MKR.", async function () {
+                            this.timeout(0);
+                            let numOfToken = new BN(100000);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
+                            await savingAccount.fastForward(100000);
+
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20MKR.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+                            await erc20MKR.approve(savingAccount.address, numOfToken, {
+                                from: user2,
+                            });
+
+                            await savingAccount.deposit(addressDAI, new BN(50000), {
+                                from: user1,
+                            });
+
+                            await savingAccount.deposit(addressMKR, new BN(50000), {
+                                from: user2,
+                            });
+
+                            // 2. Start borrowing.
+                            const user1BalanceBefore = BN(await erc20MKR.balanceOf(user1));
+                            await savingAccount.borrow(addressMKR, new BN(10), { from: user1 });
+
+                            // 3. Verify the loan amount.
+                            const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
+                            expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                                new BN(10)
+                            );
+
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            await savingAccount.fastForward(100000);
+
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
+
+                        it("Deposit DAI to borrow a large amount of MKR.", async function () {
+                            this.timeout(0);
+                            let numOfToken = new BN(100000).mul(eightPrecision);
+                            let borrowAmt = new BN(50000).mul(eightPrecision);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100))
+                            );
+                            await savingAccount.fastForward(100000);
+
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20MKR.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+                            await erc20MKR.approve(savingAccount.address, numOfToken, {
+                                from: user2,
+                            });
+
+                            await savingAccount.deposit(addressDAI, borrowAmt, {
+                                from: user1,
+                            });
+
+                            await savingAccount.deposit(addressMKR, borrowAmt, {
+                                from: user2,
+                            });
+
+                            // 2. Start borrowing.
+                            const user1BalanceBefore = BN(await erc20MKR.balanceOf(user1));
+                            await savingAccount.borrow(addressMKR, new BN(10), { from: user1 });
+
+                            // 3. Verify the loan amount.
+                            const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
+                            expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
+                                new BN(10)
+                            );
+
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN1", balFIN1.toString());
+
+                            await savingAccount.fastForward(100000);
+
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+
+                            await savingAccount.claim({ from: user1 });
+
+                            const balFIN = await erc20FIN.balanceOf(user1);
+                            console.log("balFIN", balFIN.toString());
+                        });
+                    });
+                });
             });
         });
     });
