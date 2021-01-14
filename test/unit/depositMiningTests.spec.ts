@@ -93,6 +93,14 @@ contract("SavingAccount.deposit", async (accounts) => {
         context("Single Token", async () => {
             context("deposit mining", async () => {
                 context("Single user, single token", async () => {
+                    context("With ETH", async () => {
+                        context("should succeed", async () => {
+                            it("when small amount of ETH is deposited");
+
+                            it("when large amount of ETH is deposited");
+                        });
+                    });
+
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
                             it("when small amount of DAI is deposited", async function () {
@@ -305,14 +313,6 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                             });
-
-                            it(
-                                "when some DAI tokens are deposited and then USDC tokens are deposited"
-                            );
-
-                            it(
-                                "when some DAI tokens are deposited and then WBTC tokens are deposited"
-                            );
                         });
                     });
 
@@ -886,11 +886,35 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                             });
+
+                            it("when small amount of FIN tokens are deposited");
+
+                            it("when large amount of FIN tokens are deposited");
+
+                            it("when small amount of LP tokens are deposited");
+
+                            it("when large amount of LP tokens are deposited");
                         });
                     });
                 });
 
                 context("Single user, multiple tokens", async () => {
+                    context("With ETH", async () => {
+                        context("should succeed", async () => {
+                            it("when small amount of ETH & DAI are deposited");
+
+                            it("when small amount of ETH & MKR are deposited");
+
+                            it("when small amount of ETH & WBTC are deposited");
+
+                            it("when large amount of ETH & DAI are deposited");
+
+                            it("when large amount of ETH & MKR are deposited");
+
+                            it("when large amount of ETH & WBTC are deposited");
+                        });
+                    });
+
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
                             it("when small amount of DAI & USDC are deposited", async function () {
@@ -1005,6 +1029,137 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                             });
+
+                            it("when large amount of DAI & USDC are deposited", async () => {
+                                it("when large amount of DAI is deposited", async function () {
+                                    this.timeout(0);
+                                    await erc20FIN.transfer(
+                                        savingAccount.address,
+                                        eighteenPrecision.mul(new BN(100))
+                                    );
+                                    await savingAccount.fastForward(100000);
+
+                                    // 1. Approve 1000 tokens
+                                    const numOfToken = eighteenPrecision.mul(new BN(10));
+                                    const numOfUSDC = sixPrecision.mul(new BN(10));
+                                    await erc20DAI.transfer(user1, numOfToken);
+                                    await erc20USDC.transfer(user1, numOfUSDC);
+                                    await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                        from: user1,
+                                    });
+                                    await erc20USDC.approve(savingAccount.address, numOfUSDC, {
+                                        from: user1,
+                                    });
+
+                                    const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                        erc20DAI.address,
+                                        user1
+                                    );
+
+                                    const balCTokenContractBefore = await erc20DAI.balanceOf(
+                                        cDAI_addr
+                                    );
+                                    const balCTokensBefore = await cDAI.balanceOf(
+                                        savingAccount.address
+                                    );
+
+                                    // const b1 = await savingAccount.getBlockNumber({ from: user1 });
+                                    // console.log("Block number = ", b1.toString());
+
+                                    // 2. Deposit Token to SavingContract
+                                    await savingAccount.deposit(
+                                        erc20DAI.address,
+                                        numOfToken.div(new BN(2)),
+                                        {
+                                            from: user1,
+                                        }
+                                    );
+                                    await savingAccount.deposit(
+                                        erc20USDC.address,
+                                        numOfUSDC.div(new BN(2)),
+                                        {
+                                            from: user1,
+                                        }
+                                    );
+
+                                    // 3. Validate that the tokens are deposited to SavingAccount
+                                    const expectedTokensAtSavingAccountContract = numOfToken
+                                        .div(new BN(2))
+                                        .mul(new BN(15))
+                                        .div(new BN(100));
+                                    const balSavingAccount = await erc20DAI.balanceOf(
+                                        savingAccount.address
+                                    );
+                                    expect(
+                                        expectedTokensAtSavingAccountContract
+                                    ).to.be.bignumber.equal(balSavingAccount);
+                                    console.log("check12");
+
+                                    const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                        erc20DAI.address,
+                                        user1
+                                    );
+                                    const totalDefinerBalanceChange = new BN(
+                                        totalDefinerBalanceAfterDeposit
+                                    ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                                    expect(totalDefinerBalanceChange).to.be.bignumber.equal(
+                                        numOfToken.div(new BN(2))
+                                    );
+
+                                    const expectedTokensAtCTokenContract = numOfToken
+                                        .div(new BN(2))
+                                        .mul(new BN(85))
+                                        .div(new BN(100));
+                                    const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
+                                    expect(
+                                        new BN(balCTokenContractBefore).add(
+                                            new BN(expectedTokensAtCTokenContract)
+                                        )
+                                    ).to.be.bignumber.equal(balCTokenContract);
+
+                                    const expectedCTokensAtSavingAccount = numOfToken
+                                        .div(new BN(2))
+                                        .mul(new BN(85))
+                                        .div(new BN(100));
+                                    const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                    expect(
+                                        expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
+                                    // Deposit an extra token to create a new rate check point
+                                    await savingAccount.fastForward(1000);
+                                    await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                        from: user1,
+                                    });
+
+                                    // 4. Claim the minted tokens
+
+                                    // fastforward
+                                    const block = new BN(await time.latestBlock());
+                                    await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                        from: user1,
+                                    });
+
+                                    await savingAccount.fastForward(100000);
+
+                                    // Deposit an extra token to create a new rate check point
+                                    await savingAccount.deposit(erc20DAI.address, new BN(1000), {
+                                        from: user1,
+                                    });
+                                    await savingAccount.deposit(erc20USDC.address, new BN(1000), {
+                                        from: user1,
+                                    });
+
+                                    await savingAccount.claim({ from: user1 });
+
+                                    const balFIN = await erc20FIN.balanceOf(user1);
+                                    console.log("balFIN", balFIN.toString());
+                                });
+                            });
+
+                            it("when small amount of multiple different tokens are deposited");
+
+                            it("when large amount of multiple different tokens are deposited");
                         });
                     });
                 });
