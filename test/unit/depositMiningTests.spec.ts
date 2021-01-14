@@ -95,7 +95,83 @@ contract("SavingAccount.deposit", async (accounts) => {
                 context("Single user, single token", async () => {
                     context("With ETH", async () => {
                         context("should succeed", async () => {
-                            it("when small amount of ETH is deposited");
+                            it("when small amount of ETH is deposited", async () => {
+                                //this.timeout(0);
+                                await erc20FIN.transfer(
+                                    savingAccount.address,
+                                    eighteenPrecision.mul(new BN(100))
+                                );
+                                await savingAccount.fastForward(100000);
+
+                                const depositAmount = new BN(10000);
+                                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                                    savingAccount.address
+                                );
+                                const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                                    ETH_ADDRESS,
+                                    user1
+                                );
+
+                                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                                    value: depositAmount,
+                                    from: user1,
+                                });
+
+                                const ETHbalanceAfterDeposit = await web3.eth.getBalance(
+                                    savingAccount.address
+                                );
+                                const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
+                                    new BN(ETHbalanceBeforeDeposit)
+                                );
+                                const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                                    .mul(new BN(15))
+                                    .div(new BN(100));
+
+                                // validate savingAccount ETH balance
+                                expect(userBalanceDiff).to.be.bignumber.equal(
+                                    expectedTokensAtSavingAccountContract
+                                );
+
+                                // Validate the total balance on DeFiner
+                                const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                                    ETH_ADDRESS,
+                                    user1
+                                );
+                                const totalDefinerBalanceChange = new BN(
+                                    totalDefinerBalanceAfterDeposit
+                                ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                                expect(totalDefinerBalanceChange).to.be.bignumber.equal(
+                                    depositAmount
+                                );
+
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.fastForward(1000);
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
+                                    value: new BN(1000),
+                                    from: user1,
+                                });
+
+                                // 4. Claim the minted tokens
+                                // fastforward
+                                const balFIN1 = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN1", balFIN1.toString());
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
+                                    value: new BN(10),
+                                    from: user1,
+                                });
+
+                                await savingAccount.fastForward(100000);
+
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
+                                    value: new BN(1000),
+                                    from: user1,
+                                });
+                                await savingAccount.claim({ from: user1 });
+
+                                const balFIN = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN", balFIN.toString());
+                            });
 
                             it("when large amount of ETH is deposited");
                         });
@@ -110,6 +186,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                     eighteenPrecision.mul(new BN(100))
                                 );
                                 await savingAccount.fastForward(100000);
+
                                 // 1. Approve 1000 tokens
                                 const numOfToken = new BN(10000);
                                 await erc20DAI.transfer(user1, numOfToken);
