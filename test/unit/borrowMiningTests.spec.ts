@@ -82,6 +82,8 @@ contract("SavingAccount.deposit", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, 100, 100);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, 100, 100);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressFIN, 100, 100);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(ETH_ADDRESS, 100, 100);
 
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
