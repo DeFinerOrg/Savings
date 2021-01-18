@@ -2,7 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-#
+
 version: 2
 jobs:
   build:
@@ -79,4 +79,4 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: yarn test # triggers truffle test
+      - run: yarn test ./test/**/* # triggers truffle test

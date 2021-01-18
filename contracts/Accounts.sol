@@ -7,7 +7,7 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-// import "@nomiclabs/buidler/console.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -19,7 +19,7 @@ contract Accounts is Constant, Initializable{
 
     GlobalConfig globalConfig;
 
-    modifier onlyInternal() {
+    modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
@@ -135,19 +135,37 @@ contract Accounts is Constant, Initializable{
         return tokenInfo.getLastBorrowBlock();
     }
 
-    function getDepositInterest(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateDepositInterest(accruedRate);
+    /**
+     * Get deposit interest of an account for a specific token
+     * @param _account account address
+     * @param _token token address
+     * @dev The deposit interest may not have been updated in AccountTokenLib, so we need to explicited calcuate it.
+     */
+    function getDepositInterest(address _account, address _token) public view returns(uint256) {
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        // If the account has never deposited the token, return 0.
+        if (tokenInfo.getLastDepositBlock() == 0)
+            return 0;
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            return tokenInfo.calculateDepositInterest(accruedRate);
+        }
     }
 
     function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        return tokenInfo.calculateBorrowInterest(accruedRate);
+        // If the account has never borrowed the token, return 0
+        if (tokenInfo.getLastBorrowBlock() == 0)
+            return 0;
+        else {
+            // As the last borrow block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            return tokenInfo.calculateBorrowInterest(accruedRate);
+        }
     }
 
-    function borrow(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         require(
@@ -166,6 +184,15 @@ contract Accounts is Constant, Initializable{
 
         // Update the token principla and interest
         tokenInfo.borrow(_amount, accruedRate, currentBlock);
+
+        // if(tokenInfo.getLastBorrowBlock() == 0)
+        //     tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
+        // else {
+        //     uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        //     // Update the token principla and interest
+        //     tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+        // }
+
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
         uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -175,7 +202,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -199,6 +226,15 @@ contract Accounts is Constant, Initializable{
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
         uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
         tokenInfo.withdraw(_amount, accruedRate, currentBlock);
+
+        // if (tokenInfo.getLastDepositBlock() == 0)
+        //     tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+        // else {
+        //     // As the last deposit block exists, the block is also a check point on index curve.
+        //     uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        //     tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        // }
+
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -218,7 +254,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for deposit
      */
-    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyInternal {
+    function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
 
         uint lastBlock = tokenInfo.getLastDepositBlock();
@@ -231,9 +267,16 @@ contract Accounts is Constant, Initializable{
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
         tokenInfo.deposit(_amount, accruedRate, currentBlock);
+
+        // if(tokenInfo.getLastDepositBlock() == 0)
+        //     tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
+        // else {
+        //     uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+        //     tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+        // }
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount) public onlyInternal returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -248,6 +291,13 @@ contract Accounts is Constant, Initializable{
         uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBlock);
 
         tokenInfo.repay(amount, accruedRate, currentBlock);
+        // if(tokenInfo.getLastBorrowBlock() == 0)
+        //     tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
+        // else {
+        //     uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+        //     tokenInfo.repay(amount, accruedRate, getBlockNumber());
+        // }
+
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
@@ -255,6 +305,7 @@ contract Accounts is Constant, Initializable{
         return remain;
     }
 
+    // sichaoy: switch the order of the parameters
     function getDepositBalanceCurrent(
         address _token,
         address _accountAddr
@@ -330,7 +381,9 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -350,7 +403,9 @@ contract Accounts is Constant, Initializable{
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        for(uint i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
                 address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 uint divisor = INT_UNIT;
@@ -368,11 +423,13 @@ contract Accounts is Constant, Initializable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) public returns (bool) {
+    function isAccountLiquidatable(address _borrower) external returns (bool) {
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
-        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        //console.log("tokenNum", tokenNum);
+        for(uint8 i = 0; i < tokenNum; i++) {
             if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 globalConfig.bank().newRateIndexCheckpoint(token);
@@ -388,13 +445,14 @@ contract Accounts is Constant, Initializable{
         // The value of discounted collateral should be never less than the borrow amount.
         // We assume this will never happen as the market will not drop extreamly fast so that
         // the LTV changes from 85% to 95%, an 10% drop within one block.
-        require(
-            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
-            "Collateral is not sufficient to be liquidated."
-        );
+        // require(
+        //     totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio),
+        //     "Collateral is not sufficient to be liquidated."
+        // );
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
-        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) && totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
     }
 
     struct LiquidationVars {
@@ -418,7 +476,7 @@ contract Accounts is Constant, Initializable{
         return block.number;
     }
 
-    function claim(address _accountAddr) public onlyInternal returns(uint){
+    function claim(address _accountAddr) public onlyAuthorized returns(uint){
         for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
             if (isUserHasDeposits(_accountAddr, i) || isUserHasBorrows(_accountAddr, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
