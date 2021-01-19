@@ -360,7 +360,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
 
-                        it("Deposit USDC and borrow large amount of DAI", async function () {
+                        it("Deposit DAI, USDC and borrow large amount of DAI", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -370,20 +370,29 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                             const numOfDAI = eighteenPrecision.mul(new BN(1000));
                             const numOfUSDC = sixPrecision.mul(new BN(1000));
-                            const depositAmountDAI = new BN(500).mul(eightPrecision);
+                            const depositAmountDAI = new BN(500).mul(eighteenPrecision);
                             const depositAmountUSDC = new BN(500).mul(sixPrecision);
-                            const borrowAmount = new BN(10).mul(sixPrecision);
+                            const borrowAmount = new BN(10).mul(eighteenPrecision);
 
                             await erc20DAI.transfer(user1, numOfDAI);
+                            await erc20DAI.transfer(user2, numOfDAI);
                             await erc20USDC.transfer(user2, numOfUSDC);
+
                             await erc20DAI.approve(savingAccount.address, numOfDAI, {
                                 from: user1,
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
+                                from: user2,
                             });
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
                                 from: user2,
                             });
+
                             await savingAccount.deposit(addressDAI, depositAmountDAI, {
                                 from: user1,
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
+                                from: user2,
                             });
                             await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
                                 from: user2,
@@ -621,8 +630,9 @@ contract("SavingAccount.deposit", async (accounts) => {
 
                         it("Deposit DAI to borrow a large amount of MKR.", async function () {
                             this.timeout(0);
-                            let numOfToken = new BN(100000).mul(eightPrecision);
-                            let borrowAmt = new BN(50000).mul(eightPrecision);
+                            let numOfToken = new BN(100000).mul(eighteenPrecision);
+                            let depositAmount = new BN(50000).mul(eighteenPrecision);
+                            let borrowAmt = new BN(10).mul(eighteenPrecision);
                             await erc20FIN.transfer(
                                 savingAccount.address,
                                 eighteenPrecision.mul(new BN(100))
@@ -638,22 +648,22 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 from: user2,
                             });
 
-                            await savingAccount.deposit(addressDAI, borrowAmt, {
+                            await savingAccount.deposit(addressDAI, depositAmount, {
                                 from: user1,
                             });
 
-                            await savingAccount.deposit(addressMKR, borrowAmt, {
+                            await savingAccount.deposit(addressMKR, depositAmount, {
                                 from: user2,
                             });
 
                             // 2. Start borrowing.
                             const user1BalanceBefore = BN(await erc20MKR.balanceOf(user1));
-                            await savingAccount.borrow(addressMKR, new BN(10), { from: user1 });
+                            await savingAccount.borrow(addressMKR, borrowAmt, { from: user1 });
 
                             // 3. Verify the loan amount.
                             const user1BalanceAfter = BN(await erc20MKR.balanceOf(user1));
                             expect(user1BalanceAfter.sub(user1BalanceBefore)).to.be.bignumber.equal(
-                                new BN(10)
+                                borrowAmt
                             );
 
                             // 4. Claim the minted tokens
