@@ -190,11 +190,11 @@ export class TestEngine {
         SavingLib.setAsDeployed(savingLib);
 
         try {
-            await SavingAccount.link(utils);
+            // await SavingAccount.link(utils);
             await SavingAccount.link(savingLib);
-            await SavingAccountWithController.link(utils);
+            // await SavingAccountWithController.link(utils);
             await SavingAccountWithController.link(savingLib);
-            await Accounts.link(utils);
+            // await Accounts.link(utils);
             await Accounts.link(accountTokenLib);
             await TokenRegistry.link(utils);
         } catch (error) {

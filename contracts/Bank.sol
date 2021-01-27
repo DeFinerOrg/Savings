@@ -72,6 +72,50 @@ contract Bank is Constant, Initializable{
         }
     }
 
+    function toCompound(address _token, address cToken, uint _amount, uint totalAmount) internal returns (uint compoundAmount) {
+        // Expected total amount of token in reservation after deposit or repay
+        uint totalReserveBeforeAdjust = totalReserve[_token].add(_amount);
+
+        if (cToken != address(0) &&
+        totalReserveBeforeAdjust > totalAmount.mul(globalConfig.maxReserveRatio()).div(100)) {
+            uint toCompoundAmount = totalReserveBeforeAdjust.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
+            //toCompound(_token, toCompoundAmount);
+            compoundAmount = toCompoundAmount;
+            totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
+            totalReserve[_token] = totalReserveBeforeAdjust.sub(toCompoundAmount);
+        }
+        else {
+            totalReserve[_token] = totalReserveBeforeAdjust;
+        }
+    }
+
+    function fromCompound(address _token, address cToken, uint _amount, uint totalAmount) internal returns (uint compoundAmount) {
+        // Expected total amount of token in reservation after deposit or repay
+        uint totalReserveBeforeAdjust = totalReserve[_token] > _amount ? totalReserve[_token].sub(_amount) : 0;
+
+        // Trigger fromCompound if the new reservation ratio is less than 10%
+        if(cToken != address(0) &&
+        (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(globalConfig.minReserveRatio()).div(100))) {
+
+            uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
+            if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
+                // Withdraw all the tokens from Compound
+                compoundAmount = totalCompound[cToken];
+                totalCompound[cToken] = 0;
+                totalReserve[_token] = totalAvailable;
+            } else {
+                // Withdraw partial tokens from Compound
+                uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
+                compoundAmount = totalCompound[cToken].sub(totalInCompound);
+                totalCompound[cToken] = totalInCompound;
+                totalReserve[_token] = totalAvailable.sub(totalInCompound);
+            }
+        }
+        else {
+            totalReserve[_token] = totalReserve[_token].sub(_amount);
+        }
+    }
+
     /**
      * Update the total reservation. Before run this function, make sure that totalCompound has been updated
      * by calling updateTotalCompound. Otherwise, totalCompound may not equal to the exact amount of the
@@ -90,20 +134,7 @@ contract Bank is Constant, Initializable{
             else
                 totalLoans[_token] = totalLoans[_token].sub(_amount);
 
-            // Expected total amount of token in reservation after deposit or repay
-            uint totalReserveBeforeAdjust = totalReserve[_token].add(_amount);
-
-            if (cToken != address(0) &&
-            totalReserveBeforeAdjust > totalAmount.mul(globalConfig.maxReserveRatio()).div(100)) {
-                uint toCompoundAmount = totalReserveBeforeAdjust.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
-                //toCompound(_token, toCompoundAmount);
-                compoundAmount = toCompoundAmount;
-                totalCompound[cToken] = totalCompound[cToken].add(toCompoundAmount);
-                totalReserve[_token] = totalReserve[_token].add(_amount).sub(toCompoundAmount);
-            }
-            else {
-                totalReserve[_token] = totalReserve[_token].add(_amount);
-            }
+            compoundAmount = toCompound(_token, cToken, _amount, totalAmount);
         } else {
             // The lack of liquidity exception happens when the pool doesn't have enough tokens for borrow/withdraw
             // It happens when part of the token has lended to the other accounts.
@@ -116,46 +147,20 @@ contract Bank is Constant, Initializable{
                     require(getPoolAmount(_token) >= _amount, "Lack of liquidity when withdraw.");
                 else if (getPoolAmount(_token) < _amount)
                     totalReserve[_token] = _amount.sub(totalCompound[cToken]);
-                totalAmount = getTotalDepositStore(_token);
-            }
-            else
-                require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
 
-            // Total amount of token after withdraw or borrow
-            if (_action == ActionType.WithdrawAction)
-                totalAmount = totalAmount.sub(_amount);
-            else
-                totalLoans[_token] = totalLoans[_token].add(_amount);
-
-            // Expected total amount of token in reservation after deposit or repay
-            uint totalReserveBeforeAdjust = totalReserve[_token] > _amount ? totalReserve[_token].sub(_amount) : 0;
-
-            // Trigger fromCompound if the new reservation ratio is less than 10%
-            if(cToken != address(0) &&
-            (totalAmount == 0 || totalReserveBeforeAdjust < totalAmount.mul(globalConfig.minReserveRatio()).div(100))) {
-
-                uint totalAvailable = totalReserve[_token].add(totalCompound[cToken]).sub(_amount);
-                if (totalAvailable < totalAmount.mul(globalConfig.midReserveRatio()).div(100)){
-                    // Withdraw all the tokens from Compound
-                    compoundAmount = totalCompound[cToken];
-                    totalCompound[cToken] = 0;
-                    totalReserve[_token] = totalAvailable;
-                } else {
-                    // Withdraw partial tokens from Compound
-                    uint totalInCompound = totalAvailable.sub(totalAmount.mul(globalConfig.midReserveRatio()).div(100));
-                    compoundAmount = totalCompound[cToken].sub(totalInCompound);
-                    totalCompound[cToken] = totalInCompound;
-                    totalReserve[_token] = totalAvailable.sub(totalInCompound);
-                }
+                totalAmount = getTotalDepositStore(_token).sub(_amount);
             }
             else {
-                totalReserve[_token] = totalReserve[_token].sub(_amount);
+                require(getPoolAmount(_token) >= _amount, "Lack of liquidity when borrow.");
+                totalLoans[_token] = totalLoans[_token].add(_amount);
             }
+
+            compoundAmount = fromCompound(_token, cToken, _amount, totalAmount);
         }
         return compoundAmount;
     }
 
-     function update(address _token, uint _amount, ActionType _action) public onlyAuthorized returns(uint256 compoundAmount) {
+    function update(address _token, uint _amount, ActionType _action) internal returns(uint256 compoundAmount) {
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -168,13 +173,21 @@ contract Bank is Constant, Initializable{
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
-        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
-        // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
-            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).div(INT_UNIT).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if (cToken == address(0)) {
+            // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
+            return getCapitalUtilizationRatio(_token)
+                .mul(globalConfig.rateCurveSlope())
+                .div(INT_UNIT)
+                .add(globalConfig.rateCurveConstant())
+                .div(BLOCKS_PER_YEAR);
+        }
 
         // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
-            add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).div(10);
+        return compoundPool[_token].depositRatePerBlock
+            .mul(globalConfig.compoundSupplyRateWeights())
+            .add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights()))
+            .div(10);
     }
 
     /**
@@ -187,11 +200,19 @@ contract Bank is Constant, Initializable{
     function getDepositRatePerBlock(address _token) public view returns(uint) {
         uint256 borrowRatePerBlock = getBorrowRatePerBlock(_token);
         uint256 capitalUtilRatio = getCapitalUtilizationRatio(_token);
-        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
-            return borrowRatePerBlock.mul(capitalUtilRatio).div(INT_UNIT);
 
-        return borrowRatePerBlock.mul(capitalUtilRatio).add(compoundPool[_token].depositRatePerBlock
-            .mul(compoundPool[_token].capitalRatio)).div(INT_UNIT);
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+        if (cToken == address(0)) {
+            // Token not supported on Compound
+            return borrowRatePerBlock.mul(capitalUtilRatio).div(INT_UNIT);
+        }
+
+        // Token supported on Compound
+        return borrowRatePerBlock
+            .mul(capitalUtilRatio)
+            .add(compoundPool[_token].depositRatePerBlock
+            .mul(compoundPool[_token].capitalRatio))
+            .div(INT_UNIT);
     }
 
     /**
@@ -230,7 +251,10 @@ contract Bank is Constant, Initializable{
     // sichaoy: require:what if a index point doesn't exist?
     function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
-        require(depositRate != 0, "_depositRateRecordStart is not a check point on index curve.");
+        // require(depositRate != 0, "_depositRateRecordStart is not a check point on index curve.");
+        if (depositRate == 0) {
+            return INT_UNIT;
+        }
         return depositRateIndexNow(_token).mul(INT_UNIT).div(depositRate);
     }
 
@@ -244,8 +268,34 @@ contract Bank is Constant, Initializable{
     // the checkpoint for current block exists.
     function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) external view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
-        require(borrowRate != 0, "_borrowRateRecordStart is not a check point on index curve.");
+        // require(borrowRate != 0, "_borrowRateRecordStart is not a check point on index curve.");
+        if (borrowRate == 0) {
+            return INT_UNIT;
+        }
         return borrowRateIndexNow(_token).mul(INT_UNIT).div(borrowRate);
+    }
+
+    function updateCompoundPool(address _token, bool isFirstUpdate, uint blockNumber) internal {
+        uint256 UNIT = INT_UNIT;
+        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
+
+        if(cToken != address(0)) {
+            compoundPool[_token].supported = true;
+
+            uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
+            // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
+            // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
+            compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
+            compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
+            compoundPool[_token].depositRatePerBlock = isFirstUpdate
+                ? ICToken(cToken).supplyRatePerBlock()
+                : cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
+                    .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token])); // initial value
+
+            lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
+        } else {
+            compoundPool[_token].supported = false;
+        }
     }
 
     /**
@@ -254,61 +304,24 @@ contract Bank is Constant, Initializable{
      * @dev The rate set at the checkpoint is the rate from the last checkpoint to this checkpoint
      */
     function newRateIndexCheckpoint(address _token) public onlyAuthorized {
-
         // return if the rate check point already exists
         uint blockNumber = getBlockNumber();
         if (blockNumber == lastCheckpoint[_token])
             return;
 
         uint256 UNIT = INT_UNIT;
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
 
         // If it is the first check point, initialize the rate index
         uint256 previousCheckpoint = lastCheckpoint[_token];
-        if (lastCheckpoint[_token] == 0) {
-            if(cToken == address(0)) {
-                compoundPool[_token].supported = false;
-                borrowRateIndex[_token][blockNumber] = UNIT;
-                depositeRateIndex[_token][blockNumber] = UNIT;
-                // Update the last checkpoint
-                lastCheckpoint[_token] = blockNumber;
-            }
-            else {
-                compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
-                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
-                // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
-                compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
-                compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
-                borrowRateIndex[_token][blockNumber] = UNIT;
-                depositeRateIndex[_token][blockNumber] = UNIT;
-                // Update the last checkpoint
-                lastCheckpoint[_token] = blockNumber;
-                lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
-            }
+        if (previousCheckpoint == 0) {
+            updateCompoundPool(_token, true, blockNumber);
+            borrowRateIndex[_token][blockNumber] = UNIT;
+            depositeRateIndex[_token][blockNumber] = UNIT;
 
         } else {
-            if(cToken == address(0)) {
-                compoundPool[_token].supported = false;
-                borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
-                depositeRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
-                // Update the last checkpoint
-                lastCheckpoint[_token] = blockNumber;
-            } else {
-                compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
-                // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
-                compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
-                compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
-                    .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
-                borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
-                depositeRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
-                // Update the last checkpoint
-                lastCheckpoint[_token] = blockNumber;
-                lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
-            }
+            updateCompoundPool(_token, false, blockNumber);
+            borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
+            depositeRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
         }
 
         // Update the total loan
@@ -316,6 +329,9 @@ contract Bank is Constant, Initializable{
             totalLoans[_token] = totalLoans[_token].mul(borrowRateIndex[_token][blockNumber])
                 .div(borrowRateIndex[_token][previousCheckpoint]);
         }
+
+        // Update the last checkpoint
+        lastCheckpoint[_token] = blockNumber;
 
         emit UpdateIndex(_token, depositeRateIndex[_token][getBlockNumber()], borrowRateIndex[_token][getBlockNumber()]);
     }

@@ -4,19 +4,17 @@ import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "./lib/SavingLib.sol";
-import "./lib/Utils.sol";
+// import "./lib/Utils.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-import "openzeppelin-solidity/contracts/math/Math.sol";
 // import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    using Math for uint256;
 
     GlobalConfig public globalConfig;
 
@@ -36,7 +34,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     }
 
     modifier onlySupportedToken(address _token) {
-        if(!Utils._isETH(address(globalConfig), _token)) {
+        if(!_isETH(_token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
@@ -81,7 +79,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         require(_tokenAddresses.length == _cTokenAddresses.length, "Token and cToken length don't match.");
         uint tokenNum = _tokenAddresses.length;
         for(uint i = 0;i < tokenNum;i++) {
-            if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
+            if(_cTokenAddresses[i] != address(0x0) && !_isETH(_tokenAddresses[i])) {
                 approveAll(_tokenAddresses[i]);
             }
         }
@@ -96,6 +94,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         require(cToken != address(0x0), "cToken address is zero");
         IERC20(_token).safeApprove(cToken, 0);
         IERC20(_token).safeApprove(cToken, uint256(-1));
+    }
+
+    function _isETH(address _token) internal pure returns (bool) {
+        return _token == ETH_ADDR;
     }
 
     /**
@@ -208,78 +210,104 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     }
 
     struct LiquidationVars {
-        // address token;
-        // uint256 tokenPrice;
-        // uint256 coinValue;
-        uint256 borrowerCollateralValue;
-        // uint256 tokenAmount;
-        // uint256 tokenDivisor;
-        uint256 msgTotalBorrow;
+        address token;
+        uint256 tokenPrice;
+        uint256 coinValue;
+        // uint256 targetTokenAmount;
+        uint256 liquidationDebtValue;
+        uint256 tokenAmount;
+        uint256 tokenDivisor;
+        // uint256 msgTotalBorrow;
         uint256 targetTokenBalance;
         uint256 targetTokenBalanceBorrowed;
         uint256 targetTokenPrice;
         uint256 liquidationDiscountRatio;
         uint256 totalBorrow;
         uint256 borrowPower;
-        uint256 liquidateTokenBalance;
-        uint256 liquidateTokenPrice;
-        // uint256 liquidateTokenValue;
-        uint256 limitRepaymentValue;
-        uint256 borrowTokenLTV;
-        uint256 repayAmount;
-        uint256 payAmount;
+        uint256 targetTokenDivisor;
+        uint256 tokenBorrowLTV;
     }
 
-    function liquidate(address _borrower, address _borrowedToken, address _collateralToken) public onlySupportedToken(_borrowedToken) onlySupportedToken(_collateralToken) whenNotPaused nonReentrant {
+    /**
+     * Liquidate function
+     * @param _targetAccountAddr account to be liquidated
+     * @param _targetToken token used for purchasing collaterals
+     */
+    function liquidate(address _targetAccountAddr, address _targetToken) external onlySupportedToken(_targetToken) whenNotPaused nonReentrant {
 
-        require(globalConfig.accounts().isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
+        require(globalConfig.accounts().isAccountLiquidatable(_targetAccountAddr), "The borrower is not liquidatable.");
         LiquidationVars memory vars;
 
         // It is required that the liquidator doesn't exceed it's borrow power.
-        vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
-        require(
-            vars.msgTotalBorrow < globalConfig.accounts().getBorrowPower(msg.sender),
-            "No extra funds are used for liquidation."
-        );
+        globalConfig.accounts().checkLiquidatorBorrowPower(msg.sender);
 
-        // _borrowedToken balance of the liquidator (deposit balance)
-        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_borrowedToken, msg.sender);
+        // Get the available amount of debt token for liquidation. It equals to the amount of target token
+        // that the liquidator has, or the amount of target token that the borrower has borrowed, whichever
+        // is smaller.
+        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_targetToken, msg.sender);
         require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
 
-        // _borrowedToken balance of the borrower (borrow balance)
-        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_borrowedToken, _borrower);
+        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_targetToken, _targetAccountAddr);
         require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
 
-        // _borrowedToken available for liquidation
-        uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
+        if (vars.targetTokenBalance > vars.targetTokenBalanceBorrowed)
+            vars.targetTokenBalance = vars.targetTokenBalanceBorrowed;
 
-        // _collateralToken balance of the borrower (deposit balance)
-        vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_collateralToken, _borrower);
-        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
-
-        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
-        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
-
-        // _collateralToken to purchase so that borrower's balance matches its borrow power
-        vars.totalBorrow = globalConfig.accounts().getBorrowETH(_borrower);
-        vars.borrowPower = globalConfig.accounts().getBorrowPower(_borrower);
+        // The value of the maximum amount of debt token that could transfered from the liquidator to the borrower
+        (, vars.targetTokenDivisor, vars.targetTokenPrice,) = globalConfig.tokenInfoRegistry().getInfoFromToken(_targetToken);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowedToken);
-        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+        vars.liquidationDebtValue = vars.targetTokenBalance.mul(vars.targetTokenPrice).mul(100).div(vars.liquidationDiscountRatio).div(vars.targetTokenDivisor);
 
-        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+        // The collaterals are liquidate in the order of their market liquidity. The liquidation would stop if one
+        // of the following conditions are true. 1) The maximum amount of debt token has transfered from the
+        // liquidator to the borrower, which we call a partial liquidation. 2) The mount of loan reaches the
+        // borrowPower, which we call a full liquidation.
+        // Here we assume that there are always enough collaterals to be purchased to finish the liquidation process,
+        // given the 15% margin set by the liquidation threshold.
+        vars.totalBorrow = globalConfig.accounts().getBorrowETH(_targetAccountAddr);
+        vars.borrowPower = globalConfig.accounts().getBorrowPower(_targetAccountAddr);
 
-        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
+        uint256 totalBorrowBeforeLiquidation = vars.totalBorrow;
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint i = 0; i < tokenNum; i++) {
+            if(globalConfig.accounts().isUserHasDeposits(_targetAccountAddr, uint8(i))) {
+                (vars.token, vars.tokenDivisor, vars.tokenPrice, vars.tokenBorrowLTV) = globalConfig.tokenInfoRegistry().getInfoFromIndex(i);
 
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
-        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
-        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
+                // Get the collateral token value
+                vars.coinValue = globalConfig.accounts().getDepositBalanceCurrent(vars.token, _targetAccountAddr).mul(vars.tokenPrice).div(vars.tokenDivisor);
 
-        globalConfig.accounts().deposit(msg.sender, _collateralToken, vars.payAmount);
-        globalConfig.accounts().withdraw(msg.sender, _borrowedToken, vars.repayAmount);
-        globalConfig.accounts().withdraw(_borrower, _collateralToken, vars.payAmount);
-        globalConfig.accounts().repay(_borrower, _borrowedToken, vars.repayAmount);
+                // Checkout if the coin value is enough to set the borrow amount back to borrow power
+                uint256 fullLiquidationValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(
+                            vars.liquidationDiscountRatio.sub(vars.tokenBorrowLTV));
+
+                // Derive the true liquidation value.
+                if (vars.coinValue > fullLiquidationValue)
+                    vars.coinValue = fullLiquidationValue;
+                if(vars.coinValue > vars.liquidationDebtValue)
+                    vars.coinValue = vars.liquidationDebtValue;
+
+                // Update the totalBorrow and borrowPower
+                vars.totalBorrow = vars.totalBorrow.sub(vars.coinValue.mul(vars.liquidationDiscountRatio).div(100));
+                vars.borrowPower = vars.borrowPower.sub(vars.coinValue.mul(vars.tokenBorrowLTV).div(100));
+                vars.liquidationDebtValue = vars.liquidationDebtValue.sub(vars.coinValue);
+
+                // Update the account balance after the collateral is transfered.
+                vars.tokenAmount = vars.coinValue.mul(vars.tokenDivisor).div(vars.tokenPrice);
+                uint256 amount = globalConfig.accounts().withdraw(_targetAccountAddr, vars.token, vars.tokenAmount);
+                globalConfig.accounts().deposit(msg.sender, vars.token, amount);
+            }
+
+            if(vars.totalBorrow <= vars.borrowPower || vars.liquidationDebtValue == 0) {
+                break;
+            }
+        }
+
+        // Trasfer the debt token from borrower to the liquidator
+        // We call the withdraw/repay functions in SavingAccount instead of in Accounts because the total amount
+        // of loan in SavingAccount should be updated though the reservation and compound parts will not changed.
+        uint256 targetTokenTransfer = totalBorrowBeforeLiquidation.sub(vars.totalBorrow).mul(vars.targetTokenDivisor).div(vars.targetTokenPrice);
+        uint256 amount = globalConfig.bank().withdraw(msg.sender, _targetToken, targetTokenTransfer);
+        globalConfig.bank().repay(_targetAccountAddr, _targetToken, amount);
     }
 
     /**
@@ -293,7 +321,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     function toCompound(address _token, uint _amount) external onlyAuthorized {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (Utils._isETH(address(globalConfig), _token)) {
+        if (_isETH(_token)) {
             ICETH(cToken).mint.value(_amount)();
         } else {
             // uint256 success = ICToken(cToken).mint(_amount);
