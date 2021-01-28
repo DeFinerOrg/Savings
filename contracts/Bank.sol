@@ -158,9 +158,6 @@ contract Bank is Constant, Initializable{
     }
 
      function update(address _token, uint _amount, uint8 _action) public onlyInternal returns(uint256 compoundAmount) {
-         // Add a new checkpoint on the index curve.
-        newRateIndexCheckpoint(_token);
-
         updateTotalCompound(_token);
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
@@ -427,11 +424,13 @@ contract Bank is Constant, Initializable{
 
         require(_amount != 0, "Amount is zero");
 
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+        updateDepositeFINIndex(_token);
+
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, uint8(0));
-
-        updateDepositeFINIndex(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
         globalConfig.accounts().deposit(_to, _token, _amount);
@@ -442,13 +441,15 @@ contract Bank is Constant, Initializable{
     }
 
     function borrow(address _from, address _token, uint256 _amount) public onlyInternal {
-        
+
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+        updateBorrowFINIndex(_token);
+
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, uint8(2));
-
-        updateBorrowFINIndex(_token);
 
         // Update tokenInfo for the user
         globalConfig.accounts().borrow(_from, _token, _amount);
@@ -460,6 +461,8 @@ contract Bank is Constant, Initializable{
 
     function repay(address _to, address _token, uint256 _amount) public onlyInternal returns(uint) {
 
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
         updateBorrowFINIndex(_token);
 
         // Sanity check
@@ -492,12 +495,14 @@ contract Bank is Constant, Initializable{
 
         require(_amount != 0, "Amount is zero");
 
+        // Add a new checkpoint on the index curve.
+        newRateIndexCheckpoint(_token);
+        updateDepositeFINIndex(_token);
+
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, uint8(1));
-
-        updateDepositeFINIndex(_token);
 
         // Withdraw from the account
         uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);
