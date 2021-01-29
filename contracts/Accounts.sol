@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
-import "./lib/Utils.sol";
+// import "./lib/Utils.sol";
 import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -169,12 +169,11 @@ contract Accounts is Constant, Initializable{
     function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
+        (uint8 tokenIndex, uint256 tokenDivisor, uint tokenPrice,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
         require(
-            getBorrowETH(_accountAddr).add(
-                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
-                .div(Utils.getDivisor(address(globalConfig), _token))
-            )
-            <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow.");
+            getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor))
+            <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
+        );
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
 
@@ -188,7 +187,7 @@ contract Accounts is Constant, Initializable{
 
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
-        uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+        // uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
         setInBorrowBitmap(_accountAddr, tokenIndex);
     }
 
@@ -199,17 +198,8 @@ contract Accounts is Constant, Initializable{
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
-        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
 
-        // This if condition is to deal with the withdraw of collateral token in liquidation.
-        // As the amount if borrowed asset is already large than the borrow power, we don't
-        // have to check the condition here.
-        if(getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr))
-            require(
-                getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(
-                    _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
-                    .mul(borrowLTV).div(Utils.getDivisor(address(globalConfig), _token)).div(100)
-                ), "Insufficient collateral when withdraw.");
+        checkWithdrawalBorrowPower(_accountAddr, _token, _amount);
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
@@ -236,6 +226,20 @@ contract Accounts is Constant, Initializable{
         }
 
         return _amount.sub(commission);
+    }
+
+    function checkWithdrawalBorrowPower(address _accountAddr, address _token, uint256 _amount) internal view {
+        (, uint256 tokenDivisor, uint tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
+
+        // This if condition is to deal with the withdraw of collateral token in liquidation.
+        // As the amount if borrowed asset is already large than the borrow power, we don't
+        // have to check the condition here.
+        uint borrowETH = getBorrowETH(_accountAddr);
+        uint borrowPower = getBorrowPower(_accountAddr);
+        if(borrowETH <= borrowPower) {
+            uint withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
+            require(borrowETH <= borrowPower.sub(withdrawETH), "Insufficient collateral when withdraw.");
+        }
     }
 
     /**
@@ -329,19 +333,13 @@ contract Accounts is Constant, Initializable{
      * Calculate an account's borrow power based on token's LTV
      */
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
-        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
-            if (isUserHasDeposits(_borrower, i)) {
-                address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(token != ETH_ADDR) {
-                    divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(token));
-                }
-                // globalConfig.bank().newRateIndexCheckpoint(token);
-                power = power.add(getDepositBalanceCurrent(token, _borrower)
-                    .mul(globalConfig.tokenInfoRegistry().priceFromIndex(i))
-                    .mul(globalConfig.tokenInfoRegistry().getBorrowLTV(token)).div(100)
-                    .div(divisor)
-                );
+        uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint i = 0; i < tokenNum; i++) {
+            if (isUserHasDeposits(_borrower, uint8(i))) {
+                (address token, uint divisor, uint price, uint borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromIndex(i);
+
+                uint depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
+                power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
             }
         }
         return power;
@@ -355,20 +353,16 @@ contract Accounts is Constant, Initializable{
         address _accountAddr
     ) public view returns (uint256 depositETH) {
         uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        //console.log("tokenNum", tokenNum);
         for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
-                address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
-                    divisor = 10**uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
-                }
-                depositETH = depositETH.add(getDepositBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
+                (address token, uint divisor, uint price, ) = globalConfig.tokenInfoRegistry().getTokenInfoFromIndex(i);
+
+                uint depositBalanceCurrent = getDepositBalanceCurrent(token, _accountAddr);
+                depositETH = depositETH.add(depositBalanceCurrent.mul(price).div(divisor));
             }
         }
         return depositETH;
     }
-
     /**
      * Get borrowed balance of a token in the uint of Wei
      */
@@ -377,15 +371,12 @@ contract Accounts is Constant, Initializable{
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
         uint tokenNum = globalConfig.tokenInfoRegistry().getCoinLength();
-        //console.log("tokenNum", tokenNum);
         for(uint i = 0; i < tokenNum; i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
-                address tokenAddress = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                uint divisor = INT_UNIT;
-                if(tokenAddress != ETH_ADDR) {
-                    divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(tokenAddress));
-                }
-                borrowETH = borrowETH.add(getBorrowBalanceCurrent(tokenAddress, _accountAddr).mul(globalConfig.tokenInfoRegistry().priceFromIndex(i)).div(divisor));
+                (address token, uint divisor, uint price, ) = globalConfig.tokenInfoRegistry().getTokenInfoFromIndex(i);
+
+                uint borrowBalanceCurrent = getBorrowBalanceCurrent(token, _accountAddr);
+                borrowETH = borrowETH.add(borrowBalanceCurrent.mul(price).div(divisor));
             }
         }
         return borrowETH;
@@ -439,11 +430,13 @@ contract Accounts is Constant, Initializable{
         uint256 targetTokenBalance;
         uint256 targetTokenBalanceBorrowed;
         uint256 targetTokenPrice;
+        uint256 targetTokenDivisor;
         uint256 liquidationDiscountRatio;
         uint256 totalBorrow;
         uint256 borrowPower;
         uint256 liquidateTokenBalance;
         uint256 liquidateTokenPrice;
+        uint256 liquidateTokenDivisor;
         // uint256 liquidateTokenValue;
         uint256 limitRepaymentValue;
         uint256 borrowTokenLTV;
@@ -487,26 +480,23 @@ contract Accounts is Constant, Initializable{
 
         // _collateralToken balance of the borrower (deposit balance)
         vars.liquidateTokenBalance = getDepositBalanceCurrent(_collateralToken, _borrower);
-        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
 
-        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
-        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
+        (, vars.liquidateTokenDivisor, vars.liquidateTokenPrice, ) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_collateralToken);
+        (, vars.targetTokenDivisor, vars.targetTokenPrice, vars.borrowTokenLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_borrowedToken);
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
         vars.totalBorrow = getBorrowETH(_borrower);
         vars.borrowPower = getBorrowPower(_borrower);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowedToken);
         vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
 
-        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(vars.liquidateTokenDivisor));
 
-        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(vars.targetTokenDivisor).mul(100).div(vars.liquidationDiscountRatio));
 
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
-        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
-        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(vars.targetTokenDivisor).div(100).div(vars.targetTokenPrice);
+        vars.payAmount = vars.repayAmount.mul(vars.liquidateTokenDivisor).mul(100).mul(vars.targetTokenPrice);
+        vars.payAmount = vars.payAmount.div(vars.targetTokenDivisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
 
         deposit(_liquidator, _collateralToken, vars.payAmount);
         withdraw(_liquidator, _borrowedToken, vars.repayAmount);
