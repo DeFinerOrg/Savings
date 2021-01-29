@@ -7,12 +7,14 @@ import "./config/Constant.sol";
 import "./config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "@nomiclabs/buidler/console.sol";
+import "openzeppelin-solidity/contracts/math/Math.sol";
+// import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
     using BitmapLib for uint128;
     using SafeMath for uint256;
+    using Math for uint256;
 
     mapping(address => Account) public accounts;
 
@@ -193,7 +195,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns(uint256) {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
@@ -254,7 +256,7 @@ contract Accounts is Constant, Initializable{
         }
     }
 
-    function repay(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256){
+    function repay(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns(uint256){
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
@@ -394,7 +396,7 @@ contract Accounts is Constant, Initializable{
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
 	 */
-    function isAccountLiquidatable(address _borrower) external returns (bool) {
+    function isAccountLiquidatable(address _borrower) public returns (bool) {
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
@@ -427,18 +429,94 @@ contract Accounts is Constant, Initializable{
     }
 
     struct LiquidationVars {
-        uint256 totalBorrow;
-        uint256 totalCollateral;
-        uint256 msgTotalBorrow;
-        uint256 msgTotalCollateral;
-
+        // address token;
+        // uint256 tokenPrice;
+        // uint256 coinValue;
+        uint256 borrowerCollateralValue;
+        // uint256 tokenAmount;
+        // uint256 tokenDivisor;
+        // uint256 msgTotalBorrow;
         uint256 targetTokenBalance;
-        uint256 liquidationDebtValue;
-        uint256 liquidationThreshold;
+        uint256 targetTokenBalanceBorrowed;
+        uint256 targetTokenPrice;
         uint256 liquidationDiscountRatio;
-        uint256 borrowLTV;
-        uint256 paymentOfLiquidationValue;
+        uint256 totalBorrow;
+        uint256 borrowPower;
+        uint256 liquidateTokenBalance;
+        uint256 liquidateTokenPrice;
+        // uint256 liquidateTokenValue;
+        uint256 limitRepaymentValue;
+        uint256 borrowTokenLTV;
+        uint256 repayAmount;
+        uint256 payAmount;
     }
+
+    function liquidate(
+        address _liquidator,
+        address _borrower,
+        address _borrowedToken,
+        address _collateralToken
+    ) 
+        external
+        onlyAuthorized
+        returns (
+            uint256,
+            uint256
+        )
+    {
+        require(isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
+
+        // It is required that the liquidator doesn't exceed it's borrow power.
+        require(
+            getBorrowETH(_liquidator) < getBorrowPower(_liquidator),
+            "No extra funds are used for liquidation."
+        );
+
+        LiquidationVars memory vars;
+
+        // _borrowedToken balance of the liquidator (deposit balance)
+        vars.targetTokenBalance = getDepositBalanceCurrent(_borrowedToken, _liquidator);
+        require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
+
+        // _borrowedToken balance of the borrower (borrow balance)
+        vars.targetTokenBalanceBorrowed = getBorrowBalanceCurrent(_borrowedToken, _borrower);
+        require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
+
+        // _borrowedToken available for liquidation
+        uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
+
+        // _collateralToken balance of the borrower (deposit balance)
+        vars.liquidateTokenBalance = getDepositBalanceCurrent(_collateralToken, _borrower);
+        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
+
+        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
+        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
+
+        // _collateralToken to purchase so that borrower's balance matches its borrow power
+        vars.totalBorrow = getBorrowETH(_borrower);
+        vars.borrowPower = getBorrowPower(_borrower);
+        vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
+        vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowedToken);
+        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+
+        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+
+        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
+
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
+        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
+        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
+
+        deposit(_liquidator, _collateralToken, vars.payAmount);
+        withdraw(_liquidator, _borrowedToken, vars.repayAmount);
+        withdraw(_borrower, _collateralToken, vars.payAmount);
+        repay(_borrower, _borrowedToken, vars.repayAmount);
+
+        return (vars.repayAmount, vars.payAmount);
+    }
+
+
     /**
      * Get current block number
      * @return the current block number
