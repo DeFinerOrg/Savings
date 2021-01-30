@@ -50,11 +50,12 @@ contract("SavingAccount.deposit", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {
         this.timeout(0);
+        testEngine.deploy("scriptFlywheel.scen");
+
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -119,6 +120,12 @@ contract("SavingAccount.deposit", async (accounts) => {
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
 
                             // 2. Start borrowing.
+                            const compoundBeforeFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIBeforeFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
 
                             await savingAccount.borrow(addressDAI, new BN(1000), { from: user1 });
@@ -152,13 +159,99 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 from: user1,
                             });
 
+                            // Verifty that compound equals cToken underlying balance in pool's address
+                            // It also verifies that (Deposit = Loan + Compound + Reservation)
+                            const compoundAfterFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIAfterFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
+                            const compoundPrincipal = compoundBeforeFastForward.add(
+                                cDAIAfterFastForward
+                                    .sub(cDAIBeforeFastForward)
+                                    .mul(BN(await cDAI.exchangeRateCurrent.call()))
+                                    .div(eighteenPrecision)
+                            );
+                            // expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);
+
+                            // 3.2 Vefity rate
+                            const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user2DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user2,
+                                }
+                            );
+
+                            console.log("user1DepositInterest", user1DepositInterest.toString());
+                            console.log("user2DepositInterest", user2DepositInterest.toString());
+
+                            console.log(user1BorrowInterest.toString());
+                            console.log(user2BorrowInterest.toString());
+
+                            // Verify the interest
+                            // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
+                            const totalDepositInterest = BN(user1DepositInterest).add(
+                                user2DepositInterest
+                            );
+                            const totalBorrowInterest = BN(user1BorrowInterest).add(
+                                user2BorrowInterest
+                            );
+                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                                compoundPrincipal
+                            );
+
+                            // Second, verify the interest rate calculation. Need to compare these value to
+                            // the rate simulator.
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(
+                                new BN(3007301600000)
+                            ); // 3007210014379.6274
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
+                                new BN(2997716150000)
+                            ); // 2997625026684.72
+                            expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
+                                new BN(9585493199)
+                            );
+
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
 
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(new BN(10097591));
+
                             const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(new BN(5049529));
+                            //console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
 
                         it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function () {
@@ -293,7 +386,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
 
-                        it("Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
+                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
