@@ -455,8 +455,8 @@ contract Accounts is Constant, Initializable{
      * Accumulate the amount FIN mined by depositing between _lastBlock and _currentBlock
      */
     function calculateDepositFIN(uint256 _lastBlock, address _token, address _accountAddr, uint _currentBlock) internal {
-        uint indexDifference = globalConfig.bank().depositeFINRateIndex(_token, _currentBlock)
-                                .sub(globalConfig.bank().depositeFINRateIndex(_token, _lastBlock));
+        uint indexDifference = globalConfig.bank().depositFINRateIndex(_token, _currentBlock)
+                                .sub(globalConfig.bank().depositFINRateIndex(_token, _lastBlock));
         uint getFIN = getDepositBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
                         .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));

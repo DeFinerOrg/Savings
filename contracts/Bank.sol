@@ -172,8 +172,8 @@ contract Bank is Constant, Initializable{
         // derived here is the total deposit in the last checkpoint without latest interests.
         deltaBlock = lastDepositeFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
         // sichaoy: How to deal with the case that totalDeposit = 0?
-        depositeFINRateIndex[_token][currentBlock] = getTotalDepositStore(_token) == 0 ?
-            0 : depositeFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]]
+        depositFINRateIndex[_token][currentBlock] = getTotalDepositStore(_token) == 0 ?
+            0 : depositFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]]
                 .add(depositeRateIndex[_token][lastCheckpoint[_token]]
                     .mul(deltaBlock)
                     .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
@@ -524,7 +524,7 @@ contract Bank is Constant, Initializable{
         return block.number;
     }
 
-    mapping(address => mapping(uint => uint)) public depositeFINRateIndex;
+    mapping(address => mapping(uint => uint)) public depositFINRateIndex;
     mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
 
 }
