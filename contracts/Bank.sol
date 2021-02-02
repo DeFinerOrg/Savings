@@ -22,11 +22,12 @@ contract Bank is Constant, Initializable{
     mapping(address => uint) public lastCheckpoint;            // last checkpoint on the index curve
     // cToken address => rate
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
-    mapping(address => uint) public lastDepositeFINRateCheckpoint;
-    mapping(address => uint) public lastBorrowFINRateCheckpoint;
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
     GlobalConfig globalConfig;            // global configuration contract address
+
+    mapping(address => uint) public lastDepositeFINRateCheckpoint;
+    mapping(address => uint) public lastBorrowFINRateCheckpoint;
 
     modifier onlyInternal() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
@@ -164,7 +165,7 @@ contract Bank is Constant, Initializable{
         return compoundAmount;
     }
 
-    function updateDepositeFINIndex(address _token) public onlyInternal{
+    function updateDepositFINIndex(address _token) public onlyInternal{
         uint currentBlock = getBlockNumber();
         uint deltaBlock;
         // sichaoy: newRateIndexCheckpoint should never be called before this line, so the total deposit
@@ -426,7 +427,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
-        updateDepositeFINIndex(_token);
+        updateDepositFINIndex(_token);
 
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
@@ -497,7 +498,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
-        updateDepositeFINIndex(_token);
+        updateDepositFINIndex(_token);
 
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values

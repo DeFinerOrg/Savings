@@ -428,21 +428,20 @@ contract Accounts is Constant, Initializable{
             if (isUserHasDeposits(_account, i) || isUserHasBorrows(_account, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
                 AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
-                uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
                 uint256 currentBlock = getBlockNumber();
                 globalConfig.bank().updateMining(token);
 
                 if (isUserHasDeposits(_account, i)) {
-                    globalConfig.bank().updateDepositeFINIndex(token);
-                    uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(token, lastDepositBlock);
-                    calculateDepositFIN(lastDepositBlock, token, _account, currentBlock);
+                    globalConfig.bank().updateDepositFINIndex(token);
+                    uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
+                    calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
                     tokenInfo.deposit(0, accruedRate, currentBlock);
                 }
 
                 if (isUserHasBorrows(_account, i)) {
                     globalConfig.bank().updateBorrowFINIndex(token);
-                    uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(token, lastDepositBlock);
-                    calculateBorrowFIN(lastDepositBlock, token, _account, currentBlock);
+                    uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
+                    calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
                     tokenInfo.borrow(0, accruedRate, currentBlock);
                 }
             }
@@ -472,7 +471,7 @@ contract Accounts is Constant, Initializable{
                                 .sub(globalConfig.bank().borrowFINRateIndex(_token, _lastBlock));
         uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
-                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));
+                        .div(globalConfig.bank().borrowRateIndex(_token, getBlockNumber()));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }
