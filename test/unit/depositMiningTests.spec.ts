@@ -48,17 +48,25 @@ contract("SavingAccount.deposit", async (accounts) => {
     let erc20FIN: t.MockErc20Instance;
     let cETH: t.MockCTokenInstance;
 
+    let TWO_DAIS: any;
+    let ONE_DAI: any;
+    let HALF_DAI: any;
+    let ONE_FIFTH_DAI: any;
+    let ONE_USDC: any;
+    let ONE_FIN: any;
+
     before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {
         this.timeout(0);
+        testEngine.deploy("whitePaperModel.scen");
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
+
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
 
@@ -81,14 +89,20 @@ contract("SavingAccount.deposit", async (accounts) => {
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
 
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressDAI, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressUSDC, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressLP, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressFIN, 100, 100);
-        await testEngine.tokenInfoRegistry.updateMiningSpeed(ETH_ADDRESS, 100, 100);
+        ONE_DAI = eighteenPrecision;
+        HALF_DAI = ONE_DAI.div(new BN(2));
+        ONE_FIFTH_DAI = ONE_DAI.div(new BN(5));
+        TWO_DAIS = ONE_DAI.mul(new BN(2));
+        ONE_USDC = sixPrecision;
+        ONE_FIN = eighteenPrecision;
+
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressDAI, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressUSDC, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressFIN, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(ETH_ADDRESS, ONE_FIN, ONE_FIN);
 
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
@@ -106,7 +120,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -182,7 +196,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             it("when large amount of ETH is deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 const depositAmount = web3.utils.toWei("1000", "ether");
@@ -254,7 +268,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -356,7 +370,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 1000 tokens
@@ -461,7 +475,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 1000 tokens
@@ -565,7 +579,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 100 whole tokens
@@ -665,7 +679,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 1000 tokens
@@ -766,7 +780,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 100 whole tokens
@@ -868,7 +882,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 const ONE_MKR = new BN(10).pow(new BN(18));
@@ -943,7 +957,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 //this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
                                 const ONE_MKR = new BN(10).pow(new BN(18));
@@ -1022,7 +1036,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             it("when small amount of FIN tokens are deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -1099,7 +1113,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             it("when large amount of FIN tokens are deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -1177,7 +1191,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             it("when small amount of LP tokens are deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -1254,7 +1268,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             it("when large amount of LP tokens are deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -1354,7 +1368,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
@@ -1467,7 +1481,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                                 // this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
-                                    eighteenPrecision.mul(new BN(100))
+                                    ONE_FIN.mul(new BN(1000000))
                                 );
                                 await savingAccount.fastForward(100000);
 
