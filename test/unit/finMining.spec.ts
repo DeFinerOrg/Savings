@@ -698,7 +698,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("278571971083217036507142"));
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("278570854478707998690123"));
                 });
 
                 it("FinMiningTest5: Three user deposit in different blocks with two borrows", async function () {
@@ -855,7 +855,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("340477364761879143716131")); // 7.85729643603791*0.2 + 1.8333341356503024
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("340475278553479969512813")); // 7.85729643603791*0.2 + 1.8333341356503024
                 });
             });
         });
