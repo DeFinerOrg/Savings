@@ -868,7 +868,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user1
                     );
 
-                    await savingAccount.liquidate(user1, ETH_ADDRESS, { from: user2 });
+                    await savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI, { from: user2 });
 
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(liquidateBefore).to.equal(true);
