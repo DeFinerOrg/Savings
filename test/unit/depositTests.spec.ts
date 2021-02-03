@@ -118,8 +118,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     it("C6: when 1000 whole ETH are deposited", async function () {
                         this.timeout(0);
                         const depositAmount = new BN(web3.utils.toWei("1000", "ether"));
-                        const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
-                            savingAccount.address
+                        const ETHbalanceBeforeDeposit = new BN(
+                            await web3.eth.getBalance(savingAccount.address)
                         );
                         const balCTokensBefore = new BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)
@@ -128,6 +128,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                         await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                             value: depositAmount,
                         });
+                        console.log("2");
+
                         const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                             savingAccount.address
                         );
@@ -138,10 +140,11 @@ contract("SavingAccount.deposit", async (accounts) => {
                             ETH_ADDRESS,
                             cETH,
                             balCTokensBefore,
-                            new BN(ETHbalanceBeforeDeposit),
+                            ETHbalanceBeforeDeposit,
                             bank,
                             savingAccount
                         );
+                        console.log("3");
                     });
 
                     it("C6: when 1000 whole ETH are deposited", async function () {

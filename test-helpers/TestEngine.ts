@@ -49,9 +49,6 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
 
     public deploy(script: String) {
-        // if (process.env.flywheel == "yes" && script == "scriptFlywheel.scen") {
-        // }
-
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -67,7 +64,6 @@ export class TestEngine {
             const log = shell.exec(command);
             process.env.FLYWHEEL = "yes";
         }
-        // const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
 
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
         const configFile = "../compound-protocol/networks/" + fileName;
@@ -109,8 +105,6 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
 
         return erc20TokensFromCompound;
-        // this.erc20Tokens = erc20TokensFromCompound
-        // return this.erc20Tokens;
     }
 
     public async getCompoundAddresses(): Promise<Array<string>> {
@@ -131,9 +125,6 @@ export class TestEngine {
         cTokensCompound.push(addressZero);
 
         return cTokensCompound;
-        // cTokensCompound.push(compoundTokens.Contracts.cETH);
-        // this.cTokens = cTokensCompound
-        // return this.cTokens;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
