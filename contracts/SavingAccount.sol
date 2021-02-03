@@ -307,9 +307,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         SavingLib.emergencyWithdraw(globalConfig, _token);
     }
 
+    /**
+     * An account claim all mined FIN token
+     */
     function claim() public {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        // 11 => FINAddress
         IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
     }
 }

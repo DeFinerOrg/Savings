@@ -15,9 +15,8 @@ contract Accounts is Constant, Initializable{
     using SafeMath for uint256;
 
     mapping(address => Account) public accounts;
-    mapping(address => uint) public FINAmount;
-
     GlobalConfig globalConfig;
+    mapping(address => uint) public FINAmount;
 
     modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
@@ -177,21 +176,14 @@ contract Accounts is Constant, Initializable{
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
 
-        uint lastBlock = tokenInfo.getLastBorrowBlock();
-        uint currentBlock = getBlockNumber();
-        calculateBorrowFIN(lastBlock, _token, _accountAddr, currentBlock);
-        uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBlock);
-
-        // Update the token principla and interest
-        tokenInfo.borrow(_amount, accruedRate, currentBlock);
-
-        // if(tokenInfo.getLastBorrowBlock() == 0)
-        //     tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
-        // else {
-        //     uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        //     // Update the token principla and interest
-        //     tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
-        // }
+        if(tokenInfo.getLastBorrowBlock() == 0)
+            tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
+        else {
+            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            // Update the token principla and interest
+            tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+        }
 
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
@@ -224,16 +216,14 @@ contract Accounts is Constant, Initializable{
         calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
 
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
-        uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
-        tokenInfo.withdraw(_amount, accruedRate, currentBlock);
 
-        // if (tokenInfo.getLastDepositBlock() == 0)
-        //     tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
-        // else {
-        //     // As the last deposit block exists, the block is also a check point on index curve.
-        //     uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        //     tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
-        // }
+        if (tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        }
 
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
@@ -256,24 +246,18 @@ contract Accounts is Constant, Initializable{
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-
-        uint lastBlock = tokenInfo.getLastDepositBlock();
-        uint currentBlock = getBlockNumber();
-        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
-        uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
-
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
-        tokenInfo.deposit(_amount, accruedRate, currentBlock);
 
-        // if(tokenInfo.getLastDepositBlock() == 0)
-        //     tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
-        // else {
-        //     uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-        //     tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
-        // }
+        if(tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
+        else {
+            calculateDepositFIN(tokenInfo.getLastDepositBlock(), _token, _accountAddr, getBlockNumber());
+            uint accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+        }
     }
 
     function repay(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256){
@@ -284,19 +268,13 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
-
-        uint lastBlock = tokenInfo.getLastBorrowBlock();
-        uint currentBlock = getBlockNumber();
-        calculateBorrowFIN(lastBlock, _token, _accountAddr, currentBlock);
-        uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBlock);
-
-        tokenInfo.repay(amount, accruedRate, currentBlock);
-        // if(tokenInfo.getLastBorrowBlock() == 0)
-        //     tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
-        // else {
-        //     uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
-        //     tokenInfo.repay(amount, accruedRate, getBlockNumber());
-        // }
+        if(tokenInfo.getLastBorrowBlock() == 0)
+            tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
+        else {
+            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
+            uint accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            tokenInfo.repay(amount, accruedRate, getBlockNumber());
+        }
 
         if(tokenInfo.getBorrowPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -476,50 +454,61 @@ contract Accounts is Constant, Initializable{
         return block.number;
     }
 
-    function claim(address _accountAddr) public onlyAuthorized returns(uint){
-        for(uint8 i = 0; i < globalConfig.tokenInfoRegistry().getCoinLength(); i++) {
-            if (isUserHasDeposits(_accountAddr, i) || isUserHasBorrows(_accountAddr, i)) {
+    /**
+     * An account claim all mined FIN token.
+     * @dev If the FIN mining index point doesn't exist, we have to calculate the FIN amount 
+     * accurately. So the user can withdraw all available FIN tokens.
+     */
+    function claim(address _account) public onlyAuthorized returns(uint){
+        uint256 coinLength = globalConfig.tokenInfoRegistry().getCoinLength();
+        for(uint8 i = 0; i < coinLength; i++) {
+            if (isUserHasDeposits(_account, i) || isUserHasBorrows(_account, i)) {
                 address token = globalConfig.tokenInfoRegistry().addressFromIndex(i);
-                AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[token];
-                uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
-                uint256 currentBlock = getBlockNumber(); 
+                AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
+                uint256 currentBlock = getBlockNumber();
                 globalConfig.bank().updateMining(token);
 
-                if (isUserHasDeposits(_accountAddr, i)) {
-                    globalConfig.bank().updateDepositeFINIndex(token);
-                    uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(token, lastDepositBlock);
-                    calculateDepositFIN(lastDepositBlock, token, _accountAddr, currentBlock);
+                if (isUserHasDeposits(_account, i)) {
+                    globalConfig.bank().updateDepositFINIndex(token);
+                    uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
+                    calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
                     tokenInfo.deposit(0, accruedRate, currentBlock);
                 }
 
-                if (isUserHasBorrows(_accountAddr, i)) {
+                if (isUserHasBorrows(_account, i)) {
                     globalConfig.bank().updateBorrowFINIndex(token);
-                    uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(token, lastDepositBlock);
-                    calculateBorrowFIN(lastDepositBlock, token, _accountAddr, currentBlock);
+                    uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
+                    calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
                     tokenInfo.borrow(0, accruedRate, currentBlock);
                 }
             }
         }
-        uint _FINAmount = FINAmount[_accountAddr];
-        FINAmount[_accountAddr] = 0;
+        uint _FINAmount = FINAmount[_account];
+        FINAmount[_account] = 0;
         return _FINAmount;
     }
 
+    /**
+     * Accumulate the amount FIN mined by depositing between _lastBlock and _currentBlock
+     */
     function calculateDepositFIN(uint256 _lastBlock, address _token, address _accountAddr, uint _currentBlock) internal {
-        uint indexDifference = globalConfig.bank().depositeFINRateIndex(_token, _currentBlock)
-                                .sub(globalConfig.bank().depositeFINRateIndex(_token, _lastBlock));
+        uint indexDifference = globalConfig.bank().depositFINRateIndex(_token, _currentBlock)
+                                .sub(globalConfig.bank().depositFINRateIndex(_token, _lastBlock));
         uint getFIN = getDepositBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
                         .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
+    /**
+     * Accumulate the amount FIN mined by borrowing between _lastBlock and _currentBlock
+     */
     function calculateBorrowFIN(uint256 _lastBlock, address _token, address _accountAddr, uint _currentBlock) internal {
         uint indexDifference = globalConfig.bank().borrowFINRateIndex(_token, _currentBlock)
                                 .sub(globalConfig.bank().borrowFINRateIndex(_token, _lastBlock));
         uint getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
-                        .div(globalConfig.bank().depositeRateIndex(_token, getBlockNumber()));
+                        .div(globalConfig.bank().borrowRateIndex(_token, getBlockNumber()));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }
