@@ -168,12 +168,12 @@ contract("SavingAccount.borrow", async (accounts) => {
                              * Account1: deposits 1 WBTC
                              * Account2: deposits 100 TUSD
                              */
-                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1000)));
                             await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
                             await erc20WBTC.approve(
                                 savingAccount.address,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1000)),
                                 { from: user1 }
                             );
                             await erc20TUSD.approve(
@@ -186,7 +186,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             await savingAccount.deposit(
                                 addressWBTC,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1000)),
                                 { from: user1 }
                             );
                             await savingAccount.deposit(

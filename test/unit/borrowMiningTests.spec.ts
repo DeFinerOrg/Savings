@@ -737,8 +737,9 @@ contract("borrowMiningTests", async (accounts) => {
 
                         it("Deposit DAI to borrow a large amount of MKR.", async function () {
                             this.timeout(0);
-                            let numOfToken = new BN(100000).mul(eighteenPrecision);
-                            let depositAmount = new BN(50000).mul(eighteenPrecision);
+                            let numOfToken = new BN(1000).mul(eighteenPrecision);
+                            let depositAmountMKR = new BN(500).mul(eighteenPrecision);
+                            let depositAmountDAI = new BN(50000).mul(eighteenPrecision);
                             let borrowAmt = new BN(10).mul(eighteenPrecision);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -755,11 +756,11 @@ contract("borrowMiningTests", async (accounts) => {
                                 from: user2,
                             });
 
-                            await savingAccount.deposit(addressDAI, depositAmount, {
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
                                 from: user1,
                             });
 
-                            await savingAccount.deposit(addressMKR, depositAmount, {
+                            await savingAccount.deposit(addressMKR, depositAmountMKR, {
                                 from: user2,
                             });
 
