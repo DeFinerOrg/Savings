@@ -114,6 +114,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
         ONE_USDC = sixPrecision;
+
+        await savingAccount.fastForward(1000);
     });
 
     context("liquidate()", async () => {
