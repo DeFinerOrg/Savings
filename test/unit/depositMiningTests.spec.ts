@@ -193,7 +193,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("340475278553479969512813"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
 
                             it("when large amount of ETH is deposited", async () => {
@@ -262,7 +262,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("340475278553479969512813"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
                         });
                     });
@@ -800,7 +800,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("340475278553479969512813"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
 
                             it("when large amount of WBTC tokens are deposited", async () => {
@@ -992,7 +992,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const ONE_MKR = new BN(10).pow(new BN(18));
 
                                 // 1. Approve 1000 tokens
-                                const numOfToken = ONE_MKR.mul(new BN(10000));
+                                const numOfToken = ONE_MKR.mul(new BN(100));
                                 await erc20MKR.transfer(user1, numOfToken);
                                 await erc20MKR.approve(savingAccount.address, numOfToken, {
                                     from: user1,
@@ -1006,7 +1006,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(
                                     erc20MKR.address,
-                                    ONE_MKR.mul(new BN(5000)),
+                                    ONE_MKR.mul(new BN(50)),
                                     {
                                         from: user1,
                                     }
@@ -1015,7 +1015,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // 3. Validate that the tokens are deposited to SavingAccount
                                 // 3.1 SavingAccount contract must received tokens
                                 const expectedTokensAtSavingAccountContract = ONE_MKR.mul(
-                                    new BN(5000)
+                                    new BN(50)
                                 );
                                 const balSavingAccount = await erc20MKR.balanceOf(
                                     savingAccount.address
@@ -1033,7 +1033,7 @@ contract("depositMiningTests", async (accounts) => {
                                     totalDefinerBalanceAfterDeposit
                                 ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(
-                                    ONE_MKR.mul(new BN(5000))
+                                    ONE_MKR.mul(new BN(50))
                                 );
 
                                 // Deposit an extra token to create a new rate check point
