@@ -310,7 +310,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     /**
      * An account claim all mined FIN token
      */
-    function claim() public {
+    function claim() public nonReentrant {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
         IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
     }
