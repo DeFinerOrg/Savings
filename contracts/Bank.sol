@@ -26,6 +26,8 @@ contract Bank is Constant, Initializable{
 
     GlobalConfig globalConfig;            // global configuration contract address
 
+    mapping(address => mapping(uint => uint)) public depositFINRateIndex;
+    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
     mapping(address => uint) public lastDepositeFINRateCheckpoint;
     mapping(address => uint) public lastBorrowFINRateCheckpoint;
 
@@ -416,12 +418,12 @@ contract Bank is Constant, Initializable{
         newRateIndexCheckpoint(_token);
         updateDepositFINIndex(_token);
 
+        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
+        globalConfig.accounts().deposit(_to, _token, _amount);
+
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, ActionType.DepositAction);
-
-        // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
-        globalConfig.accounts().deposit(_to, _token, _amount);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().toCompound(_token, compoundAmount);
@@ -434,13 +436,13 @@ contract Bank is Constant, Initializable{
         newRateIndexCheckpoint(_token);
         updateBorrowFINIndex(_token);
 
+        // Update tokenInfo for the user
+        globalConfig.accounts().borrow(_from, _token, _amount);
+
         // Update pool balance
         // Update the amount of tokens in compound and loans, i.e. derive the new values
         // of C (Compound Ratio) and U (Utilization Ratio).
         uint compoundAmount = update(_token, _amount, ActionType.BorrowAction);
-
-        // Update tokenInfo for the user
-        globalConfig.accounts().borrow(_from, _token, _amount);
 
         if(compoundAmount > 0) {
             globalConfig.savingAccount().fromCompound(_token, compoundAmount);
@@ -510,8 +512,4 @@ contract Bank is Constant, Initializable{
     function getBlockNumber() private view returns (uint) {
         return block.number;
     }
-
-    mapping(address => mapping(uint => uint)) public depositFINRateIndex;
-    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
-
 }
