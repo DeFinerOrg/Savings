@@ -10,7 +10,7 @@ const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
 
-contract("SavingAccount.deposit", async (accounts) => {
+contract("depositMiningTests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;

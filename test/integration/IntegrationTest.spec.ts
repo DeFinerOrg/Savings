@@ -134,7 +134,7 @@ contract("Integration Tests", async (accounts) => {
                 const numOfToken = new BN(1000);
                 await savingAccount.fastForward(1000);
 
-                for (let i = 0; i < 11; i++) {
+                for (let i = 0; i < 11; i++) {                    
                     if (i != 9) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -170,13 +170,9 @@ contract("Integration Tests", async (accounts) => {
                         await savingAccount.deposit(erc20contr.address, numOfToken, {
                             from: user1,
                         });
-
+                        
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
-
-                        await savingAccount.deposit(erc20contr.address, numOfToken, {
-                            from: user1,
-                        });
-
+                        
                         // Validate the total balance on DeFiner after deposit
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20contr.address,
@@ -191,7 +187,7 @@ contract("Integration Tests", async (accounts) => {
 
                         // Verify if deposit was successful
                         // checking if token index is not that of a Compound unsupported token
-                        if (i != 3 && i != 4 && i != 10 && i != 11) {
+                        if (i != 3 && i != 4 && i != 10 && i != 11) {                            
                             await savAccBalVerify(
                                 0,
                                 numOfToken,
@@ -212,7 +208,7 @@ contract("Integration Tests", async (accounts) => {
                 }
 
                 // Withdraw all tokens of each Address
-                for (let j = 0; j < 11; j++) {
+                for (let j = 0; j < 11; j++) {                    
                     if (j != 9) {
                         tempContractAddress = tokens[j];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -335,6 +331,8 @@ contract("Integration Tests", async (accounts) => {
 
                 // Deposit all tokens
                 for (let i = 0; i < 11; i++) {
+                    console.log("a", i);
+                    
                     if (i != 9) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -381,6 +379,8 @@ contract("Integration Tests", async (accounts) => {
                 }
 
                 for (let i = 0; i < 11; i++) {
+                    console.log("a2",i);
+                    
                     if (i != 9) {
                         if (i != 3 && i != 4 && i != 10 && i != 11) {
                             tempContractAddress = tokens[i];
