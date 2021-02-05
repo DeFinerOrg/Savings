@@ -80,18 +80,21 @@ contract("RemainingCoverage", async (accounts) => {
             it("when all conditions are satisfied", async function () {
                 this.timeout(0);
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
+                console.log("ERC20TokenAddresses",ERC20TokenAddresses);
+                
                 // Approve all ERC20 tokens
                 for (let i = 0; i < ERC20TokenAddresses.length - 1; i++) {
-                    //console.log("tokens", ERC20TokenAddresses[i]);
-                    if (i == 3 || i == 4 || i == 9 || i == 10) {
-                        await expectRevert(
-                            savingAccount.approveAll(ERC20TokenAddresses[i]),
-                            "cToken address is zero"
-                        );
-                    } else {
-                        await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    if (i != 9) {
+                        if (i == 3 || i == 4 || i == 10 || i == 11) {
+                            await expectRevert(
+                                savingAccount.approveAll(ERC20TokenAddresses[i]),
+                                "cToken address is zero"
+                            );
+                        } else {
+                            await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                        }
+                        // Verification for approve?
                     }
-                    // Verification for approve?
                 }
             });
         });

@@ -192,7 +192,10 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
+
                             it("when large amount of ETH is deposited", async () => {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -258,6 +261,8 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
                         });
                     });
@@ -330,8 +335,12 @@ contract("depositMiningTests", async (accounts) => {
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN(4249).sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
                                 // Deposit an extra token to create a new rate check point
@@ -364,6 +373,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101016641704110500915293"));
                             });
 
                             it("when large amount of DAI is deposited", async function () {
@@ -438,13 +449,17 @@ contract("depositMiningTests", async (accounts) => {
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN("4249999864155257862").sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
-                                await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                await savingAccount.deposit(erc20DAI.address, new BN(1000), {
                                     from: user1,
                                 });
 
@@ -465,6 +480,8 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101000000678307669513994"));
                             });
                         });
                     });
@@ -541,8 +558,12 @@ contract("depositMiningTests", async (accounts) => {
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cUSDC.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
+
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN(4249).sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
 
                                 // Deposit an extra token to create a new rate check point
@@ -573,6 +594,8 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101019924287706714484957"));
                             });
 
                             it("when large amount of USDC tokens are deposited", async () => {
@@ -601,12 +624,12 @@ contract("depositMiningTests", async (accounts) => {
                                 );
 
                                 // 2. Deposit Token to SavingContract
-                                await savingAccount.deposit(erc20USDC.address, new BN(5000), {
+                                await savingAccount.deposit(erc20USDC.address, ONE_USDC.mul(new BN(50)) , {
                                     from: user1,
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
-                                const expectedTokensAtSavingAccountContract = new BN(5000)
+                                const expectedTokensAtSavingAccountContract = ONE_USDC.mul(new BN(50))
                                     .mul(new BN(15))
                                     .div(new BN(100));
                                 const balSavingAccount = await erc20USDC.balanceOf(
@@ -624,10 +647,10 @@ contract("depositMiningTests", async (accounts) => {
                                     totalDefinerBalanceAfterDeposit
                                 ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(
-                                    new BN(5000)
+                                    ONE_USDC.mul(new BN(50))
                                 );
 
-                                const expectedTokensAtCTokenContract = new BN(5000)
+                                const expectedTokensAtCTokenContract = ONE_USDC.mul(new BN(50))
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokenContract = await erc20USDC.balanceOf(cUSDC_addr);
@@ -637,12 +660,12 @@ contract("depositMiningTests", async (accounts) => {
                                     )
                                 ).to.be.bignumber.equal(balCTokenContract);
 
-                                const expectedCTokensAtSavingAccount = new BN(5000)
+                                const expectedCTokensAtSavingAccount = ONE_USDC.mul(new BN(50))
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cUSDC.balanceOf(savingAccount.address);
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN(42499995).sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(100000)));
 
                                 // Deposit an extra token to create a new rate check point
@@ -669,6 +692,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101000001999999600000079"));
                             });
                         });
                     });
@@ -774,6 +799,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
 
                             it("when large amount of WBTC tokens are deposited", async () => {
@@ -872,6 +899,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
                             });
                         });
                     });
@@ -963,7 +992,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const ONE_MKR = new BN(10).pow(new BN(18));
 
                                 // 1. Approve 1000 tokens
-                                const numOfToken = ONE_MKR.mul(new BN(10000));
+                                const numOfToken = ONE_MKR.mul(new BN(100));
                                 await erc20MKR.transfer(user1, numOfToken);
                                 await erc20MKR.approve(savingAccount.address, numOfToken, {
                                     from: user1,
@@ -977,7 +1006,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(
                                     erc20MKR.address,
-                                    ONE_MKR.mul(new BN(5000)),
+                                    ONE_MKR.mul(new BN(50)),
                                     {
                                         from: user1,
                                     }
@@ -986,7 +1015,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // 3. Validate that the tokens are deposited to SavingAccount
                                 // 3.1 SavingAccount contract must received tokens
                                 const expectedTokensAtSavingAccountContract = ONE_MKR.mul(
-                                    new BN(5000)
+                                    new BN(50)
                                 );
                                 const balSavingAccount = await erc20MKR.balanceOf(
                                     savingAccount.address
@@ -1004,7 +1033,7 @@ contract("depositMiningTests", async (accounts) => {
                                     totalDefinerBalanceAfterDeposit
                                 ).sub(new BN(totalDefinerBalanceBeforeDeposit));
                                 expect(totalDefinerBalanceChange).to.be.bignumber.equal(
-                                    ONE_MKR.mul(new BN(5000))
+                                    ONE_MKR.mul(new BN(50))
                                 );
 
                                 // Deposit an extra token to create a new rate check point
@@ -1437,8 +1466,12 @@ contract("depositMiningTests", async (accounts) => {
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN(4249).sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
                                 // Deposit an extra token to create a new rate check point
@@ -1475,6 +1508,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("202016641704110500915292"));
                             });
 
                             it("when large amount of DAI & USDC are deposited", async () => {
@@ -1566,8 +1601,12 @@ contract("depositMiningTests", async (accounts) => {
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+
                                 expect(
-                                    expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                    new BN("4249999864155257862").sub(new BN(balCTokensBefore))
                                 ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
 
                                 // Deposit an extra token to create a new rate check point
@@ -1598,6 +1637,8 @@ contract("depositMiningTests", async (accounts) => {
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
+
+                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("202000000678307669513994"));
                             });
 
                             it("when small amount of multiple different tokens are deposited");

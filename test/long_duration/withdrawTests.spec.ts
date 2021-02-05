@@ -221,11 +221,9 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     expect(
                         BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])
                     ).to.be.bignumber.equal(compoundAfterFastForward);
-                    console.log("check1");
 
                     // Withdraw DAI with interest
                     await savingAccount.withdrawAll(erc20DAI.address, { from: user1 });
-                    console.log("check2");
 
                     let userBalanceAfterWithdraw = await erc20DAI.balanceOf(user1);
                     let accountBalanceAfterWithdraw = await erc20DAI.balanceOf(
@@ -256,13 +254,11 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     // Verify the pricipal
                     expect(user1DepositPrincipal).to.be.bignumber.equal(ZERO);
                     expect(user1BorrowInterest).to.be.bignumber.equal(new BN(0));
-                    console.log("check3");
 
                     const totalCompoundInterest = BN(compoundAfterFastForward).sub(
                         compoundPrincipal
                     );
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(6790561600));
-                    console.log("check4");
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(6790562824));
 
                     /* expect(
                         BN(user1BorrowInterest).add(totalCompoundInterest)
