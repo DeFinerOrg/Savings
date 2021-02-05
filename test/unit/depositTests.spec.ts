@@ -89,6 +89,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                             ETH_ADDRESS,
                             owner
                         );
+                        await savingAccount.fastForward(1000);
                         const balCTokenContractBefore = await web3.eth.getBalance(cETH_addr);
                         const balCTokensBefore = new BN(
                             await cETH.balanceOfUnderlying.call(savingAccount.address)

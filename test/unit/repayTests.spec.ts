@@ -107,6 +107,7 @@ contract("SavingAccount", async (accounts) => {
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20USDC.transfer(user2, numOfToken);
+                    await savingAccount.fastForward(1000);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, numOfToken, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user2 });

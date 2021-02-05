@@ -29,6 +29,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Deposit(address indexed token, address from, uint256 amount);
     event Withdraw(address indexed token, address from, uint256 amount);
     event WithdrawAll(address indexed token, address from, uint256 amount);
+    event Claim(address from, uint256 amount);
 
     modifier onlyEmergencyAddress() {
         require(msg.sender ==  EMERGENCY_ADDR, "User not authorized");
@@ -270,7 +271,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
 
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).mul(100).div(divisor).div(vars.liquidationDiscountRatio));
 
         vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
         vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
@@ -305,5 +306,15 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         SavingLib.emergencyWithdraw(globalConfig, _token);
+    }
+
+    /**
+     * An account claim all mined FIN token
+     */
+    function claim() public nonReentrant {
+        uint FINAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+
+        emit Claim(msg.sender, FINAmount);
     }
 }

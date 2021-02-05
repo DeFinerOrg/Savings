@@ -60,7 +60,7 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
@@ -68,7 +68,7 @@ contract("Integration Tests", async (accounts) => {
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
@@ -108,7 +108,7 @@ contract("Integration Tests", async (accounts) => {
 
     context("Special test.", async () => {
         context("should succeed", async () => {
-            it("Special test 1", async function() {
+            it("Special test 1", async function () {
                 this.timeout(0);
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
@@ -118,12 +118,13 @@ contract("Integration Tests", async (accounts) => {
 
                 await erc20BAT.transfer(user1, numOfBAT);
                 await erc20BAT.transfer(user2, numOfBAT);
+                await savingAccount.fastForward(1000);
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user1 });
                 await erc20BAT.approve(savingAccount.address, numOfBAT, { from: user2 });
                 // uesr1 deposit 1ETH
                 await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
-                    value: numOfETH
+                    value: numOfETH,
                 });
                 console.log("uesr1 deposit 1ETH");
                 // uesr2 deposit 100BAT
@@ -152,7 +153,7 @@ contract("Integration Tests", async (accounts) => {
 
                 // user1 repay 2BAT
                 await savingAccount.repay(addressBAT, borrowAmount.div(new BN(10)), {
-                    from: user1
+                    from: user1,
                 });
                 console.log("user1 repay 2BAT");
                 const user1Borrow2 = await accountsContract.getBorrowBalanceCurrent(
@@ -179,7 +180,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(user1Borrow3).to.be.bignumber.equal(new BN(0));
             });
 
-            it("Special test 2", async function() {
+            it("Special test 2", async function () {
                 this.timeout(0);
                 // const
                 const numOfETH = eighteenPrecision.mul(new BN(1));
@@ -194,7 +195,7 @@ contract("Integration Tests", async (accounts) => {
                 // uesr1 deposit 1ETH
                 await savingAccount.deposit(ETH_ADDRESS, numOfETH, {
                     from: user1,
-                    value: numOfETH
+                    value: numOfETH,
                 });
                 console.log("uesr1 deposit 1ETH");
                 // uesr2 deposit 100BAT
@@ -297,7 +298,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(user1Deposit3).to.be.bignumber.equal(new BN(0));
             });
 
-            it("Special test 3", async function() {
+            it("Special test 3", async function () {
                 this.timeout(0);
                 // const
                 const numOfDAI = eighteenPrecision.mul(new BN(100));

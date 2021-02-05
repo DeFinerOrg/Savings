@@ -173,6 +173,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
 
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
+                await savingAccount.fastForward(1000);
                 await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                 await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
