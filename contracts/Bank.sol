@@ -45,6 +45,8 @@ contract Bank is Constant, Initializable{
     }
 
     event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
+    event UpdateDepositFINIndex(address indexed _token, uint256 depositFINRateIndex);
+    event UpdateBorrowFINIndex(address indexed _token, uint256 depositFINRateIndex);
 
     /**
      * Initialize the Bank
@@ -182,6 +184,8 @@ contract Bank is Constant, Initializable{
                     .div(getTotalDepositStore(_token))
                 );
         lastDepositeFINRateCheckpoint[_token] = currentBlock;
+
+        emit UpdateDepositFINIndex(_token, depositFINRateIndex[_token][currentBlock]);
     }
 
     function updateBorrowFINIndex(address _token) public onlyAuthorized{
@@ -195,6 +199,8 @@ contract Bank is Constant, Initializable{
                     .mul(globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token))
                     .div(totalLoans[_token]));
         lastBorrowFINRateCheckpoint[_token] = currentBlock;
+
+        emit UpdateBorrowFINIndex(_token, borrowFINRateIndex[_token][currentBlock]);
     }
 
     function updateMining(address _token) public onlyAuthorized{

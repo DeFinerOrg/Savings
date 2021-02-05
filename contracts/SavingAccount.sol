@@ -29,6 +29,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Deposit(address indexed token, address from, uint256 amount);
     event Withdraw(address indexed token, address from, uint256 amount);
     event WithdrawAll(address indexed token, address from, uint256 amount);
+    event Claim(address from, uint256 amount);
 
     modifier onlyEmergencyAddress() {
         require(msg.sender ==  EMERGENCY_ADDR, "User not authorized");
@@ -313,5 +314,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function claim() public nonReentrant {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
         IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+
+        emit Claim(msg.sender, FINAmount);
     }
 }
