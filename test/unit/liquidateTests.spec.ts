@@ -773,7 +773,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
-                        .div(new BN(await tokenInfoRegistry.priceFromIndex(11)));
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
@@ -846,7 +846,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
-                        .div(new BN(await tokenInfoRegistry.priceFromIndex(11)));
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
