@@ -46,7 +46,7 @@ contract Bank is Constant, Initializable{
 
     event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
     event UpdateDepositFINIndex(address indexed _token, uint256 depositFINRateIndex);
-    event UpdateBorrowFINIndex(address indexed _token, uint256 depositFINRateIndex);
+    event UpdateBorrowFINIndex(address indexed _token, uint256 borrowFINRateIndex);
 
     /**
      * Initialize the Bank
