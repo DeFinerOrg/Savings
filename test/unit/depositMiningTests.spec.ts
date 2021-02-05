@@ -55,13 +55,13 @@ contract("depositMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
     });
 
-    beforeEach(async function () {
+    beforeEach(async function() {
         this.timeout(0);
         testEngine.deploy("whitePaperModel.scen");
         savingAccount = await testEngine.deploySavingAccount();
@@ -135,7 +135,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                                     value: depositAmount,
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const ETHbalanceAfterDeposit = await web3.eth.getBalance(
@@ -169,7 +169,7 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
                                     value: new BN(1000),
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -178,7 +178,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN1", balFIN1.toString());
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
                                     value: new BN(10),
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
@@ -186,14 +186,16 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
                                     value: new BN(1000),
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("100999999999999999999999")
+                                );
                             });
 
                             it("when large amount of ETH is deposited", async () => {
@@ -212,7 +214,7 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                                 await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
                                     value: depositAmount,
-                                    from: user1,
+                                    from: user1
                                 });
                                 const ETHbalanceAfterDeposit = await web3.eth.getBalance(
                                     savingAccount.address
@@ -242,7 +244,7 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
                                     value: new BN(1000),
-                                    from: user1,
+                                    from: user1
                                 });
                                 // 4. Claim the minted tokens
                                 // fastforward
@@ -250,26 +252,28 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN1", balFIN1.toString());
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
                                     value: new BN(10),
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.fastForward(100000);
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
                                     value: new BN(1000),
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("100999999999999999999999")
+                                );
                             });
                         });
                     });
 
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
-                            it("when small amount of DAI is deposited", async function () {
+                            it("when small amount of DAI is deposited", async function() {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -281,7 +285,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20DAI.transfer(user1, numOfToken);
                                 await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -296,7 +300,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20DAI.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -346,7 +350,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -357,7 +361,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN1 = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN1", balFIN1.toString());
                                 await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
@@ -367,17 +371,19 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101016641704110500915293"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("101016641704110500915293")
+                                );
                             });
 
-                            it("when large amount of DAI is deposited", async function () {
+                            it("when large amount of DAI is deposited", async function() {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -385,10 +391,10 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                                 await savingAccount.fastForward(100000);
                                 // 1. Approve 1000 tokens
-                                const numOfToken = eighteenPrecision.mul(new BN(10));
+                                const numOfToken = ONE_DAI.mul(new BN(10));
                                 await erc20DAI.transfer(user1, numOfToken);
                                 await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -404,15 +410,14 @@ contract("depositMiningTests", async (accounts) => {
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(
                                     erc20DAI.address,
-                                    numOfToken.div(new BN(2)),
+                                    ONE_DAI.mul(new BN(5)),
                                     {
-                                        from: user1,
+                                        from: user1
                                     }
                                 );
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
-                                const expectedTokensAtSavingAccountContract = numOfToken
-                                    .div(new BN(2))
+                                const expectedTokensAtSavingAccountContract = ONE_DAI.mul(new BN(5))
                                     .mul(new BN(15))
                                     .div(new BN(100));
                                 const balSavingAccount = await erc20DAI.balanceOf(
@@ -433,8 +438,7 @@ contract("depositMiningTests", async (accounts) => {
                                     numOfToken.div(new BN(2))
                                 );
 
-                                const expectedTokensAtCTokenContract = numOfToken
-                                    .div(new BN(2))
+                                const expectedTokensAtCTokenContract = ONE_DAI.mul(new BN(5))
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
@@ -444,8 +448,7 @@ contract("depositMiningTests", async (accounts) => {
                                     )
                                 ).to.be.bignumber.equal(balCTokenContract);
 
-                                const expectedCTokensAtSavingAccount = numOfToken
-                                    .div(new BN(2))
+                                const expectedCTokensAtSavingAccount = ONE_DAI.mul(new BN(5))
                                     .mul(new BN(85))
                                     .div(new BN(100));
                                 const balCTokens = await cDAI.balanceOf(savingAccount.address);
@@ -460,28 +463,30 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
                                 // fastforward
                                 const block = new BN(await time.latestBlock());
                                 await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101000000678307669513994"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("101000000678307669513994")
+                                );
                             });
                         });
                     });
@@ -499,7 +504,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20USDC.transfer(user1, numOfToken);
                                 await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -519,7 +524,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20USDC.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -569,7 +574,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20USDC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -581,21 +586,23 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN1", balFIN1.toString());
 
                                 await savingAccount.deposit(erc20USDC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20USDC.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101019924287706714484957"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("101019924287706714484957")
+                                );
                             });
 
                             it("when large amount of USDC tokens are deposited", async () => {
@@ -609,7 +616,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = sixPrecision.mul(new BN(100));
                                 await erc20USDC.transfer(user1, numOfToken);
                                 await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -624,12 +631,18 @@ contract("depositMiningTests", async (accounts) => {
                                 );
 
                                 // 2. Deposit Token to SavingContract
-                                await savingAccount.deposit(erc20USDC.address, ONE_USDC.mul(new BN(50)) , {
-                                    from: user1,
-                                });
+                                await savingAccount.deposit(
+                                    erc20USDC.address,
+                                    ONE_USDC.mul(new BN(50)),
+                                    {
+                                        from: user1
+                                    }
+                                );
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
-                                const expectedTokensAtSavingAccountContract = ONE_USDC.mul(new BN(50))
+                                const expectedTokensAtSavingAccountContract = ONE_USDC.mul(
+                                    new BN(50)
+                                )
                                     .mul(new BN(15))
                                     .div(new BN(100));
                                 const balSavingAccount = await erc20USDC.balanceOf(
@@ -671,7 +684,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20USDC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -686,14 +699,16 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20USDC.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("101000001999999600000079"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("101000001999999600000079")
+                                );
                             });
                         });
                     });
@@ -711,7 +726,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20WBTC.transfer(user1, numOfToken);
                                 await erc20WBTC.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -731,7 +746,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20WBTC.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -777,7 +792,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20WBTC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -793,14 +808,16 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20WBTC.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("100999999999999999999999")
+                                );
                             });
 
                             it("when large amount of WBTC tokens are deposited", async () => {
@@ -814,7 +831,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = eightPrecision.mul(new BN(100));
                                 await erc20WBTC.transfer(user1, numOfToken);
                                 await erc20WBTC.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -831,7 +848,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20WBTC.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -877,7 +894,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20WBTC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -893,21 +910,23 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20WBTC.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("100999999999999999999999"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("100999999999999999999999")
+                                );
                             });
                         });
                     });
 
                     context("Compound unsupported 18 decimal Token", async () => {
                         context("Should succeed", async () => {
-                            it("when small amount of MKR tokens are deposited", async function () {
+                            it("when small amount of MKR tokens are deposited", async function() {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -920,7 +939,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20MKR.transfer(user1, numOfToken);
                                 await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -930,7 +949,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20MKR.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -958,7 +977,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20MKR.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -974,7 +993,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20MKR.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -995,7 +1014,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = ONE_MKR.mul(new BN(100));
                                 await erc20MKR.transfer(user1, numOfToken);
                                 await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1008,7 +1027,7 @@ contract("depositMiningTests", async (accounts) => {
                                     erc20MKR.address,
                                     ONE_MKR.mul(new BN(50)),
                                     {
-                                        from: user1,
+                                        from: user1
                                     }
                                 );
 
@@ -1039,7 +1058,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20MKR.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1054,7 +1073,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20MKR.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -1073,7 +1092,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20FIN.transfer(user1, numOfToken);
                                 await erc20FIN.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1086,7 +1105,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20FIN.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -1116,7 +1135,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20FIN.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1131,7 +1150,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20FIN.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -1147,10 +1166,10 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.fastForward(100000);
 
                                 // 1. Approve 1000 tokens
-                                const numOfToken = new BN(10000).mul(eightPrecision);
+                                const numOfToken = new BN(10000).mul(ONE_FIN);
                                 await erc20FIN.transfer(user1, numOfToken);
                                 await erc20FIN.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1163,7 +1182,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20FIN.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -1193,7 +1212,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20FIN.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1209,7 +1228,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20FIN.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -1228,7 +1247,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const numOfToken = new BN(10000);
                                 await erc20LP.transfer(user1, numOfToken);
                                 await erc20LP.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1241,7 +1260,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20LP.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -1271,7 +1290,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20LP.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1286,7 +1305,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20LP.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -1302,10 +1321,10 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.fastForward(100000);
 
                                 // 1. Approve 1000 tokens
-                                const numOfToken = new BN(10).mul(eighteenPrecision);
+                                const numOfToken = new BN(10).mul(ONE_DAI);
                                 await erc20LP.transfer(user1, numOfToken);
                                 await erc20LP.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1318,7 +1337,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Token to SavingContract
                                 await savingAccount.deposit(erc20LP.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -1348,7 +1367,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20LP.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1363,7 +1382,7 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20LP.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
@@ -1393,7 +1412,7 @@ contract("depositMiningTests", async (accounts) => {
 
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
-                            it("when small amount of DAI & USDC are deposited", async function () {
+                            it("when small amount of DAI & USDC are deposited", async function() {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -1406,10 +1425,10 @@ contract("depositMiningTests", async (accounts) => {
                                 await erc20DAI.transfer(user1, numOfToken);
                                 await erc20USDC.transfer(user1, numOfToken);
                                 await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
@@ -1424,10 +1443,10 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // 2. Deposit Tokens to SavingContract
                                 await savingAccount.deposit(erc20DAI.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.deposit(erc20USDC.address, new BN(5000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 3. Validate that the tokens are deposited to SavingAccount
@@ -1477,7 +1496,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1489,10 +1508,10 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN1 = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN1", balFIN1.toString());
                                 await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.deposit(erc20USDC.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
@@ -1502,14 +1521,16 @@ contract("depositMiningTests", async (accounts) => {
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.claim({ from: user1 });
 
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("202016641704110500915292"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("202016641704110500915292")
+                                );
                             });
 
                             it("when large amount of DAI & USDC are deposited", async () => {
@@ -1521,15 +1542,15 @@ contract("depositMiningTests", async (accounts) => {
                                 await savingAccount.fastForward(100000);
 
                                 // 1. Approve 1000 tokens
-                                const numOfToken = eighteenPrecision.mul(new BN(10));
+                                const numOfToken = ONE_DAI.mul(new BN(10));
                                 const numOfUSDC = sixPrecision.mul(new BN(10));
                                 await erc20DAI.transfer(user1, numOfToken);
                                 await erc20USDC.transfer(user1, numOfUSDC);
                                 await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
@@ -1550,14 +1571,14 @@ contract("depositMiningTests", async (accounts) => {
                                     erc20DAI.address,
                                     numOfToken.div(new BN(2)),
                                     {
-                                        from: user1,
+                                        from: user1
                                     }
                                 );
                                 await savingAccount.deposit(
                                     erc20USDC.address,
                                     numOfUSDC.div(new BN(2)),
                                     {
-                                        from: user1,
+                                        from: user1
                                     }
                                 );
 
@@ -1612,7 +1633,7 @@ contract("depositMiningTests", async (accounts) => {
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.fastForward(1000);
                                 await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 // 4. Claim the minted tokens
@@ -1620,17 +1641,17 @@ contract("depositMiningTests", async (accounts) => {
                                 // fastforward
                                 const block = new BN(await time.latestBlock());
                                 await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.fastForward(100000);
 
                                 // Deposit an extra token to create a new rate check point
                                 await savingAccount.deposit(erc20DAI.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
                                 await savingAccount.deposit(erc20USDC.address, new BN(1000), {
-                                    from: user1,
+                                    from: user1
                                 });
 
                                 await savingAccount.claim({ from: user1 });
@@ -1638,7 +1659,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
 
-                                expect(new BN(balFIN)).to.be.bignumber.equal(new BN("202000000678307669513994"));
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("202000000678307669513994")
+                                );
                             });
 
                             it("when small amount of multiple different tokens are deposited");
