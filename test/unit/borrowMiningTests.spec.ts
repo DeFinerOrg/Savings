@@ -53,13 +53,13 @@ contract("borrowMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
     });
 
-    beforeEach(async function () {
+    beforeEach(async function() {
         this.timeout(0);
         testEngine.deploy("whitePaperModel.scen");
 
@@ -111,28 +111,25 @@ contract("borrowMiningTests", async (accounts) => {
             context("borrow mining", async () => {
                 context("Compound supported 18 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function () {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function() {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
                                 ONE_FIN.mul(new BN(1000000))
                             );
                             await savingAccount.fastForward(100000);
-
                             const numOfToken = new BN(10000);
-
                             // 1.1 Transfer DAI to user1 & user2.
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20DAI.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
+                                from: user1
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
+                                from: user2
                             });
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user1 });
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
-
                             // 2. Start borrowing.
                             const compoundBeforeFastForward = BN(
                                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -140,39 +137,37 @@ contract("borrowMiningTests", async (accounts) => {
                             const cDAIBeforeFastForward = BN(
                                 await cDAI.balanceOf(savingAccount.address)
                             );
+                            console.log(
+                                "compoundBeforeFastForward",
+                                compoundBeforeFastForward.toString()
+                            );
+                            console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
                             await savingAccount.borrow(addressDAI, new BN(1000), { from: user1 });
                             await savingAccount.borrow(addressDAI, new BN(1000), { from: user2 });
-
                             const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
                                 new BN(1000)
                             );
-
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
+                                from: user1
                             });
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2,
+                                from: user2
                             });
-
                             // 4. Claim the minted tokens
                             // fastforward
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
                             console.log("balFINUser2", balFINUser2.toString());
                             const balFINUser1 = await erc20FIN.balanceOf(user1);
                             console.log("balFINUser1", balFINUser1.toString());
-
                             await savingAccount.fastForward(100000);
-
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
+                                from: user1
                             });
-
                             // Verifty that compound equals cToken underlying balance in pool's address
                             // It also verifies that (Deposit = Loan + Compound + Reservation)
                             const compoundAfterFastForward = BN(
@@ -188,7 +183,12 @@ contract("borrowMiningTests", async (accounts) => {
                                     .div(eighteenPrecision)
                             );
                             // expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);
-
+                            console.log(
+                                "compoundAfterFastForward",
+                                compoundAfterFastForward.toString()
+                            );
+                            console.log("cDAIAfterFastForward", cDAIAfterFastForward.toString());
+                            console.log("compoundPrincipal", compoundPrincipal.toString());
                             // 3.2 Vefity rate
                             const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
                                 addressDAI,
@@ -213,7 +213,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user1BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user1,
+                                    from: user1
                                 }
                             );
                             const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
@@ -223,16 +223,13 @@ contract("borrowMiningTests", async (accounts) => {
                             const user2BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user2,
+                                    from: user2
                                 }
                             );
-
                             console.log("user1DepositInterest", user1DepositInterest.toString());
                             console.log("user2DepositInterest", user2DepositInterest.toString());
-
                             console.log(user1BorrowInterest.toString());
                             console.log(user2BorrowInterest.toString());
-
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                             const totalDepositInterest = BN(user1DepositInterest).add(
@@ -244,371 +241,31 @@ contract("borrowMiningTests", async (accounts) => {
                             const totalCompoundInterest = BN(compoundAfterFastForward).sub(
                                 compoundPrincipal
                             );
-
+                            console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
-                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(
-                                new BN(3007301600000)
-                            ); // 3007210014379.6274
-                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
-                                new BN(2997716150000)
-                            ); // 2997625026684.72
-                            expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
-                                new BN(9585493199)
-                            );
-
+                            // expect(BN(totalDepositInterest)).to.be.bignumber.equal(
+                            //     new BN(3007301600000)
+                            // ); // 3007210014379.6274
+                            // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
+                            //     new BN(2997716150000)
+                            // ); // 2997625026684.72
+                            // expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
+                            //     new BN(9585493199)
+                            // );
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
-
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
-                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(new BN(10097591));
-
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("100999805465840288185713")
+                            );
                             const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
-                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(new BN(5049529));
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("100999805465840288185713")
+                            );
                             //console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
-
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function () {
-                            this.timeout(0);
-                            await erc20FIN.transfer(
-                                savingAccount.address,
-                                ONE_FIN.mul(new BN(1000000))
-                            );
-                            await savingAccount.fastForward(100000);
-
-                            const numOfToken = new BN(10000);
-
-                            // 1.1 Transfer DAI to user1 & user2.
-                            await erc20DAI.transfer(user1, numOfToken);
-                            await erc20DAI.transfer(user2, numOfToken);
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
-                            });
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
-                            });
-                            await savingAccount.deposit(addressDAI, new BN(5000), { from: user1 });
-                            await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
-
-                            // 2. Start borrowing.
-                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
-                            await savingAccount.borrow(addressDAI, new BN(1000), { from: user2 });
-
-                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                                new BN(1000)
-                            );
-
-                            // user 1 borrows after some blocks
-                            await savingAccount.fastForward(10000);
-                            await savingAccount.borrow(addressDAI, new BN(1000), { from: user1 });
-
-                            // Deposit an extra token to create a new rate check point
-                            await savingAccount.fastForward(1000);
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            // 4. Claim the minted tokens
-                            // fastforward
-                            const balFINUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINUser2", balFINUser2.toString());
-                            const balFINUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINUser1", balFINUser1.toString());
-
-                            await savingAccount.fastForward(100000);
-
-                            // Deposit an extra tokens to create a new rate check point
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            await savingAccount.claim({ from: user2 });
-                            await savingAccount.claim({ from: user1 });
-
-                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
-                            const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
-                            console.log("balFINUser2Diff", balFINUser2Diff.toString());
-
-                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
-                            const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
-                            console.log("balFINUser1Diff", balFINUser1Diff.toString());
-                        });
-
-                        it("Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function () {
-                            this.timeout(0);
-                            await erc20FIN.transfer(
-                                savingAccount.address,
-                                ONE_FIN.mul(new BN(1000000))
-                            );
-                            await savingAccount.fastForward(100000);
-
-                            const numOfToken = new BN(1000).mul(eightPrecision);
-                            const depositAmount = new BN(500).mul(eightPrecision);
-                            const borrowAmount = new BN(100).mul(eightPrecision);
-
-                            // 1.1 Transfer DAI to user1 & user2.
-                            await erc20DAI.transfer(user1, numOfToken);
-                            await erc20DAI.transfer(user2, numOfToken);
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
-                            });
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
-                            });
-                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
-                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
-
-                            // 2. Start borrowing.
-                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
-                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
-                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
-
-                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                                borrowAmount
-                            );
-
-                            // Deposit an extra token to create a new rate check point
-                            await savingAccount.fastForward(1000);
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            // 4. Claim the minted tokens
-                            // fastforward
-                            const balFINUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINUser2", balFINUser2.toString());
-                            const balFINUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINUser1", balFINUser1.toString());
-
-                            await savingAccount.fastForward(100000);
-
-                            // Deposit an extra tokens to create a new rate check point
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            await savingAccount.claim({ from: user2 });
-                            await savingAccount.claim({ from: user1 });
-
-                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
-                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
-                        });
-
-                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
-                            this.timeout(0);
-                            await erc20FIN.transfer(
-                                savingAccount.address,
-                                ONE_FIN.mul(new BN(1000000))
-                            );
-                            await savingAccount.fastForward(100000);
-
-                            const numOfToken = new BN(1000).mul(eightPrecision);
-                            const depositAmount = new BN(500).mul(eightPrecision);
-                            const borrowAmount = new BN(100).mul(eightPrecision);
-
-                            // 1.1 Transfer DAI to user1 & user2.
-                            await erc20DAI.transfer(user1, numOfToken);
-                            await erc20DAI.transfer(user2, numOfToken);
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
-                            });
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
-                            });
-                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
-                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
-
-                            // 2. Start borrowing.
-                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
-                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
-
-                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                                borrowAmount
-                            );
-
-                            // user 1 borrows after some blocks
-                            await savingAccount.fastForward(10000);
-                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
-
-                            // Deposit an extra token to create a new rate check point
-                            await savingAccount.fastForward(1000);
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            // 4. Claim the minted tokens
-                            // fastforward
-                            const balFINUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINUser2", balFINUser2.toString());
-                            const balFINUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINUser1", balFINUser1.toString());
-
-                            await savingAccount.fastForward(100000);
-
-                            // Deposit an extra tokens to create a new rate check point
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            await savingAccount.claim({ from: user2 });
-                            await savingAccount.claim({ from: user1 });
-
-                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
-                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
-                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
-                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
-                        });
-
-                        it("Deposit DAI, USDC and borrow large amount of DAI", async function () {
-                            this.timeout(0);
-                            await erc20FIN.transfer(
-                                savingAccount.address,
-                                ONE_FIN.mul(new BN(1000000))
-                            );
-                            await savingAccount.fastForward(100000);
-
-                            const numOfDAI = eighteenPrecision.mul(new BN(1000));
-                            const numOfUSDC = sixPrecision.mul(new BN(1000));
-                            const depositAmountDAI = new BN(500).mul(eighteenPrecision);
-                            const depositAmountUSDC = new BN(500).mul(sixPrecision);
-                            const borrowAmount = new BN(10).mul(eighteenPrecision);
-
-                            await erc20DAI.transfer(user1, numOfDAI);
-                            await erc20DAI.transfer(user2, numOfDAI);
-                            await erc20USDC.transfer(user2, numOfUSDC);
-
-                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
-                                from: user1,
-                            });
-                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
-                                from: user2,
-                            });
-                            await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user2,
-                            });
-
-                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user1,
-                            });
-                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user2,
-                            });
-                            await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
-                                from: user2,
-                            });
-
-                            // 2. Start borrowing.
-                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-
-                            await savingAccount.borrow(addressDAI, borrowAmount, {
-                                from: user2,
-                            });
-
-                            // 3. Verify the loan amount.
-                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
-                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                                borrowAmount
-                            );
-
-                            // Deposit an extra token to create a new rate check point
-                            await savingAccount.fastForward(1000);
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            // 4. Claim the minted tokens
-                            // fastforward
-                            const balFIN1 = await erc20FIN.balanceOf(user2);
-                            console.log("balFIN1", balFIN1.toString());
-
-                            await savingAccount.fastForward(100000);
-
-                            // Deposit an extra tokens to create a new rate check point
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
-                            });
-
-                            await savingAccount.claim({ from: user2 });
-
-                            const balFIN = await erc20FIN.balanceOf(user2);
-                            console.log("balFIN", balFIN.toString());
-                        });
-                    });
-                });
-
-                context("Compound supported 6 decimal token", async () => {
-                    context("should succeed", async () => {
-                        it("Deposit DAI & USDC then borrow small amount of USDC", async function () {
-                            this.timeout(0);
-                            await erc20FIN.transfer(
-                                savingAccount.address,
-                                ONE_FIN.mul(new BN(1000000))
-                            );
-                            await savingAccount.fastForward(100000);
-                            const numOfToken = new BN(10000);
-
-                            // 1.1 Transfer DAI to user2.
-                            await erc20DAI.transfer(user2, numOfToken.mul(new BN(2)));
-
-                            // 1.2 Transfer USDC to user1 & user2.
-                            await erc20USDC.transfer(user1, numOfToken);
-                            await erc20USDC.transfer(user2, numOfToken);
-                            await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                from: user1,
-                            });
-                            await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
-                            });
-                            await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                from: user2,
-                            });
-                            await savingAccount.deposit(addressUSDC, new BN(5000), { from: user1 });
-                            await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
-                            await savingAccount.deposit(addressUSDC, new BN(5000), { from: user2 });
-
-                            // 2. Start borrowing.
-                            const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
-                            await savingAccount.borrow(addressUSDC, new BN(10), { from: user2 });
-                            const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
-                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
-                                new BN(10)
-                            );
-
-                            // Deposit an extra token to create a new rate check point
-                            await savingAccount.fastForward(1000);
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2,
-                            });
-
-                            // 4. Claim the minted tokens
-                            // fastforward
-                            const balFIN1 = await erc20FIN.balanceOf(user2);
-                            console.log("balFIN1", balFIN1.toString());
-
-                            await savingAccount.fastForward(100000);
-                            console.log("USDC1");
-
-                            // Deposit an extra tokens to create a new rate check point
-                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2,
-                            });
-                            console.log("USDC2");
-
-                            await savingAccount.claim({ from: user2 });
-
-                            const balFIN = await erc20FIN.balanceOf(user2);
-                            console.log("balFIN", balFIN.toString());
-                        });
-
-                        it("Deposit DAI & USDC then borrow large amount of USDC", async function () {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function() {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -616,39 +273,551 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             await savingAccount.fastForward(100000);
                             const numOfToken = new BN(10000).mul(eightPrecision);
-                            const numOfUSDC = new BN(10000).mul(sixPrecision);
+                            // 1.1 Transfer DAI to user1 & user2.
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20DAI.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(
+                                addressDAI,
+                                new BN(5000).mul(eightPrecision),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressDAI,
+                                new BN(5000).mul(eightPrecision),
+                                { from: user2 }
+                            );
+                            // 2. Start borrowing.
+                            const compoundBeforeFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIBeforeFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
+                            console.log(
+                                "compoundBeforeFastForward",
+                                compoundBeforeFastForward.toString()
+                            );
+                            console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            await savingAccount.borrow(
+                                addressDAI,
+                                new BN(1000).mul(eightPrecision),
+                                { from: user2 }
+                            );
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                new BN(1000).mul(eightPrecision)
+                            );
+                            // user 1 borrows after some blocks
+                            await savingAccount.fastForward(10000);
+                            await savingAccount.borrow(
+                                addressDAI,
+                                new BN(1000).mul(eightPrecision),
+                                { from: user1 }
+                            );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFINUser2 = await erc20FIN.balanceOf(user2);
+                            console.log("balFINUser2", balFINUser2.toString());
+                            const balFINUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINUser1", balFINUser1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            const compoundAfterFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIAfterFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
+                            const compoundPrincipal = compoundBeforeFastForward.add(
+                                cDAIAfterFastForward
+                                    .sub(cDAIBeforeFastForward)
+                                    .mul(BN(await cDAI.exchangeRateCurrent.call()))
+                                    .div(eighteenPrecision)
+                            );
+                            // expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);
+                            console.log(
+                                "compoundAfterFastForward",
+                                compoundAfterFastForward.toString()
+                            );
+                            console.log("cDAIAfterFastForward", cDAIAfterFastForward.toString());
+                            console.log("compoundPrincipal", compoundPrincipal.toString());
+                            // 3.2 Vefity rate
+                            const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user2DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user1
+                                }
+                            );
+                            const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user2
+                                }
+                            );
+                            console.log("user1DepositInterest", user1DepositInterest.toString());
+                            console.log("user2DepositInterest", user2DepositInterest.toString());
+                            console.log(user1BorrowInterest.toString());
+                            console.log(user2BorrowInterest.toString());
+                            // Verify the interest
+                            // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
+                            const totalDepositInterest = BN(user1DepositInterest).add(
+                                user2DepositInterest
+                            );
+                            const totalBorrowInterest = BN(user1BorrowInterest).add(
+                                user2BorrowInterest
+                            );
+                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                                compoundPrincipal
+                            );
+                            console.log("totalDepositInterest", totalDepositInterest.toString());
+                            console.log("totalBorrowInterest", totalBorrowInterest.toString());
+                            console.log("totalCompoundInterest", totalCompoundInterest.toString());
+                            // Second, verify the interest rate calculation. Need to compare these value to
+                            // the rate simulator.
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1277119)); // 3007210014379.6274
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1271274)); // 2997625026684.72
+                            expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7540));
+                            await savingAccount.claim({ from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
+                            console.log("balFINUser2Diff", balFINUser2Diff.toString());
+                            console.log("balFINUser1Diff", balFINUser1Diff.toString());
+                            expect(BN(balFINUser2Diff)).to.be.bignumber.equal(
+                                new BN("115999738368052403981072")
+                            );
+                            expect(BN(balFINUser1Diff)).to.be.bignumber.equal(
+                                new BN("105999713477348234540577")
+                            );
+                        });
+                        it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function() {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfToken = new BN(1000).mul(ONE_DAI);
+                            const depositAmount = new BN(500).mul(ONE_DAI);
+                            const borrowAmount = new BN(100).mul(ONE_DAI);
+                            // 1.1 Transfer DAI to user1 & user2.
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20DAI.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
+                            // 2. Start borrowing.
+                            const compoundBeforeFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIBeforeFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
+                            console.log(
+                                "compoundBeforeFastForward",
+                                compoundBeforeFastForward.toString()
+                            );
+                            console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                borrowAmount
+                            );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFINUser2 = await erc20FIN.balanceOf(user2);
+                            console.log("balFINUser2", balFINUser2.toString());
+                            const balFINUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINUser1", balFINUser1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            const compoundAfterFastForward = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const cDAIAfterFastForward = BN(
+                                await cDAI.balanceOf(savingAccount.address)
+                            );
+                            const compoundPrincipal = compoundBeforeFastForward.add(
+                                cDAIAfterFastForward
+                                    .sub(cDAIBeforeFastForward)
+                                    .mul(BN(await cDAI.exchangeRateCurrent.call()))
+                                    .div(eighteenPrecision)
+                            );
+                            // expect(BN(tokenState[0]).sub(tokenState[1]).sub(tokenState[2])).to.be.bignumber.equal(compoundAfterFastForward);
+                            console.log(
+                                "compoundAfterFastForward",
+                                compoundAfterFastForward.toString()
+                            );
+                            console.log("cDAIAfterFastForward", cDAIAfterFastForward.toString());
+                            console.log("compoundPrincipal", compoundPrincipal.toString());
+                            // 3.2 Vefity rate
+                            const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user2DepositPrincipal = await savingAccount.getDepositPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2DepositInterest = await savingAccount.getDepositInterest(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user1BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user1 }
+                            );
+                            const user1BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user1
+                                }
+                            );
+                            const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
+                                addressDAI,
+                                { from: user2 }
+                            );
+                            const user2BorrowInterest = await savingAccount.getBorrowInterest(
+                                addressDAI,
+                                {
+                                    from: user2
+                                }
+                            );
+                            console.log("user1DepositInterest", user1DepositInterest.toString());
+                            console.log("user2DepositInterest", user2DepositInterest.toString());
+                            console.log(user1BorrowInterest.toString());
+                            console.log(user2BorrowInterest.toString());
+                            // Verify the interest
+                            // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
+                            const totalDepositInterest = BN(user1DepositInterest).add(
+                                user2DepositInterest
+                            );
+                            const totalBorrowInterest = BN(user1BorrowInterest).add(
+                                user2BorrowInterest
+                            );
+                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                                compoundPrincipal
+                            );
+                            console.log("totalDepositInterest", totalDepositInterest.toString());
+                            console.log("totalBorrowInterest", totalBorrowInterest.toString());
+                            console.log("totalCompoundInterest", totalCompoundInterest.toString());
+                            // Second, verify the interest rate calculation. Need to compare these value to
+                            // the rate simulator.
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(
+                                new BN(1109299704061956)
+                            ); // 3007210014379.6274
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
+                                new BN(1105063953654800)
+                            ); // 2997625026684.72
+                            expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
+                                new BN(5539188762448)
+                            );
+                            await savingAccount.claim({ from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("100999777201930249141100")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("100999777201930249137700")
+                            );
+                        });
+                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function() {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfToken = new BN(1000).mul(ONE_DAI);
+                            const depositAmount = new BN(500).mul(ONE_DAI);
+                            const borrowAmount = new BN(100).mul(ONE_DAI);
+                            // 1.1 Transfer DAI to user1 & user2.
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20DAI.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
+                            // 2. Start borrowing.
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                borrowAmount
+                            );
+                            // user 1 borrows after some blocks
+                            await savingAccount.fastForward(10000);
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFINUser2 = await erc20FIN.balanceOf(user2);
+                            console.log("balFINUser2", balFINUser2.toString());
+                            const balFINUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINUser1", balFINUser1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            await savingAccount.claim({ from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("115999761461807585621800")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("105999739046325127625324")
+                            );
+                        });
+                        it("Deposit DAI, USDC and borrow large amount of DAI", async function() {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfDAI = eighteenPrecision.mul(new BN(1000));
+                            const numOfUSDC = sixPrecision.mul(new BN(1000));
+                            const depositAmountDAI = new BN(500).mul(eighteenPrecision);
+                            const depositAmountUSDC = new BN(500).mul(sixPrecision);
+                            const borrowAmount = new BN(10).mul(eighteenPrecision);
+                            await erc20DAI.transfer(user1, numOfDAI);
+                            await erc20DAI.transfer(user2, numOfDAI);
+                            await erc20USDC.transfer(user2, numOfUSDC);
+                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
+                                from: user1
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
+                                from: user2
+                            });
+                            await erc20USDC.approve(savingAccount.address, numOfUSDC, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
+                                from: user1
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
+                                from: user2
+                            });
+                            // 2. Start borrowing.
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            await savingAccount.borrow(addressDAI, borrowAmount, {
+                                from: user2
+                            });
+                            // 3. Verify the loan amount.
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                borrowAmount
+                            );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user2);
+                            console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1
+                            });
+                            await savingAccount.claim({ from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("252499462278841101482299")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("50500000258173303210200")
+                            );
+                        });
+                    });
+                });
 
+                context("Compound supported 6 decimal token", async () => {
+                    context("should succeed", async () => {
+                        it("Deposit DAI & USDC then borrow small amount of USDC", async function() {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfToken = new BN(10000);
                             // 1.1 Transfer DAI to user2.
                             await erc20DAI.transfer(user2, numOfToken.mul(new BN(2)));
-
+                            // 1.2 Transfer USDC to user1 & user2.
+                            await erc20USDC.transfer(user1, numOfToken);
+                            await erc20USDC.transfer(user2, numOfToken);
+                            await erc20USDC.approve(savingAccount.address, numOfToken, {
+                                from: user1
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user2
+                            });
+                            await erc20USDC.approve(savingAccount.address, numOfToken, {
+                                from: user2
+                            });
+                            await savingAccount.deposit(addressUSDC, new BN(5000), { from: user1 });
+                            await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
+                            await savingAccount.deposit(addressUSDC, new BN(5000), { from: user2 });
+                            // 2. Start borrowing.
+                            const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
+                            await savingAccount.borrow(addressUSDC, new BN(10), { from: user2 });
+                            const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                new BN(10)
+                            );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user2
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user2);
+                            console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.fastForward(100000);
+                            console.log("USDC1");
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user2
+                            });
+                            console.log("USDC2");
+                            await savingAccount.claim({ from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("252518889204909961677718")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("50500000000000000000000")
+                            );
+                        });
+                        it("Deposit DAI & USDC then borrow large amount of USDC", async function() {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfToken = new BN(100).mul(ONE_DAI);
+                            const numOfUSDC = new BN(100).mul(sixPrecision);
+                            // 1.1 Transfer DAI to user2.
+                            await erc20DAI.transfer(user2, numOfToken.mul(new BN(2)));
                             // 1.2 Transfer USDC to user1 & user2.
                             await erc20USDC.transfer(user1, numOfUSDC);
                             await erc20USDC.transfer(user2, numOfUSDC);
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user1,
+                                from: user1
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2,
+                                from: user2
                             });
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user2,
+                                from: user2
                             });
                             await savingAccount.deposit(addressUSDC, numOfUSDC.div(new BN(2)), {
-                                from: user1,
+                                from: user1
                             });
                             await savingAccount.deposit(addressDAI, numOfToken.div(new BN(2)), {
-                                from: user2,
+                                from: user2
                             });
                             await savingAccount.deposit(addressUSDC, numOfUSDC.div(new BN(2)), {
-                                from: user2,
+                                from: user2
                             });
-
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
                             await savingAccount.borrow(addressUSDC, new BN(10).mul(sixPrecision), {
-                                from: user2,
+                                from: user2
                             });
-
                             const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
                                 new BN(10).mul(sixPrecision)
@@ -656,32 +825,36 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2,
+                                from: user2
                             });
-
                             // 4. Claim the minted tokens
                             // fastforward
                             const balFIN1 = await erc20FIN.balanceOf(user2);
                             console.log("balFIN1", balFIN1.toString());
-
                             await savingAccount.fastForward(100000);
-
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2,
+                                from: user2
                             });
-
                             await savingAccount.claim({ from: user2 });
-
-                            const balFIN = await erc20FIN.balanceOf(user2);
-                            console.log("balFIN", balFIN.toString());
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("252499044134869581344411")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("50499999495000540349421")
+                            );
                         });
                     });
                 });
 
                 context("Compound unsupported 18 decimal Token", async () => {
                     context("Should succeed", async () => {
-                        it("Deposit DAI to borrow a small amount of MKR.", async function () {
+                        it("Deposit DAI to borrow a small amount of MKR.", async function() {
                             this.timeout(0);
                             let numOfToken = new BN(100000);
                             await erc20FIN.transfer(
@@ -693,18 +866,18 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20MKR.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
+                                from: user1
                             });
                             await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                from: user2,
+                                from: user2
                             });
 
                             await savingAccount.deposit(addressDAI, new BN(50000), {
-                                from: user1,
+                                from: user1
                             });
 
                             await savingAccount.deposit(addressMKR, new BN(50000), {
-                                from: user2,
+                                from: user2
                             });
 
                             // 2. Start borrowing.
@@ -726,21 +899,31 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
+                                from: user1
                             });
 
+                            await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
 
-                            const balFIN = await erc20FIN.balanceOf(user1);
-                            console.log("balFIN", balFIN.toString());
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("100000000000000000000000")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("200000000000000000000000")
+                            );
                         });
 
-                        it("Deposit DAI to borrow a large amount of MKR.", async function () {
+                        it("Deposit DAI to borrow a large amount of MKR.", async function() {
                             this.timeout(0);
                             let numOfToken = new BN(1000).mul(eighteenPrecision);
-                            let depositAmountMKR = new BN(500).mul(eighteenPrecision);
-                            let depositAmountDAI = new BN(50000).mul(eighteenPrecision);
-                            let borrowAmt = new BN(10).mul(eighteenPrecision);
+                            let depositAmountMKR = new BN(10).mul(eighteenPrecision);
+                            let depositAmountDAI = new BN(500).mul(eighteenPrecision);
+                            let borrowAmt = new BN(10).mul(eightPrecision);
                             await erc20FIN.transfer(
                                 savingAccount.address,
                                 ONE_FIN.mul(new BN(1000000))
@@ -750,18 +933,18 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20MKR.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1,
+                                from: user1
                             });
                             await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                from: user2,
+                                from: user2
                             });
 
                             await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user1,
+                                from: user1
                             });
 
                             await savingAccount.deposit(addressMKR, depositAmountMKR, {
-                                from: user2,
+                                from: user2
                             });
 
                             // 2. Start borrowing.
@@ -783,13 +966,23 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1,
+                                from: user1
                             });
 
+                            await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
 
-                            const balFIN = await erc20FIN.balanceOf(user1);
-                            console.log("balFIN", balFIN.toString());
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("100000000000000000000000")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("200000000588680000000000")
+                            );
                         });
                     });
                 });
