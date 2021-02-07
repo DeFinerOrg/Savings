@@ -3,7 +3,7 @@ Use the following versions of these dependencies:
  - Node: v10.23.0
  - solc: 0.5.16  
  
- We recommend the use of [solc-select](https://github.com/crytic/solc-select) for switching the solc compiler version.   
+ We recommend [solc-select](https://github.com/crytic/solc-select) for switching the solc compiler version.   
 
 ## Compile the contracts and run the tests:
 
