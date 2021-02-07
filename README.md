@@ -1,13 +1,15 @@
 ## Pre-requisites
 Use the following versions of these dependencies:  
  - Node: v10.23.0
- - solc: 0.5.16
+ - solc: 0.5.16  
+ 
+ We recommend the use of [solc-select](https://github.com/crytic/solc-select) for switching the solc compiler version.   
 
-## Compile the contract and run the tests:
+## Compile the contracts and run the tests:
 
-Clone the repository and follow these steps to compile and run the tests:
+Clone the repository and follow these steps to compile the contracts and run the tests:
 
-**1)** Download the compound-protocol as a submodule & install dependencies:  
+**1)** Pull the compound-protocol submodule & install dependencies:  
 
 - **`cd Savings && git submodule init && git submodule update`**  
 - **`cd compound-protocol && sudo npm i`**  
@@ -24,6 +26,7 @@ Clone the repository and follow these steps to compile and run the tests:
 **4)** Run test scripts:
 
 **`yarn test test/path/to/test_file_name`**  
+
 **Example:**  
 **`yarn test test/unit/depositTests.spec.ts`**
 
