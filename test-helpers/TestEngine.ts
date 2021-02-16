@@ -2,6 +2,7 @@ import { SavingAccountWithControllerInstance } from "./../types/truffle-contract
 import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import * as t from "../types/truffle-contracts/index";
+
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
@@ -17,8 +18,9 @@ const AccountTokenLib = artifacts.require("AccountTokenLib");
 const BitmapLib = artifacts.require("BitmapLib");
 const Utils: any = artifacts.require("Utils");
 const SavingLib = artifacts.require("SavingLib");
-
+const Unitroller = artifacts.require("Unitroller")
 var child_process = require("child_process");
+
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
 
@@ -70,6 +72,11 @@ export class TestEngine {
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
         compoundTokens = require(configFile);
+    }
+
+    public async deployCompound() {
+        const unitroller = await Unitroller.new()
+        return unitroller
     }
 
     public deployTruffle(script: String) {
@@ -212,7 +219,7 @@ export class TestEngine {
             await Accounts.link(utils);
             await Accounts.link(accountTokenLib);
             await TokenRegistry.link(utils);
-        } catch (error) {}
+        } catch (error) { }
 
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);

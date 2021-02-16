@@ -25,3 +25,5 @@ cache
 artifacts
 
 .openzeppelin/.session
+
+yarn-error.log
