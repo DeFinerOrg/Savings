@@ -19,6 +19,15 @@ const BitmapLib = artifacts.require("BitmapLib");
 const Utils: any = artifacts.require("Utils");
 const SavingLib = artifacts.require("SavingLib");
 const Unitroller = artifacts.require("Unitroller")
+const SimplePriceOracle = artifacts.require("SimplePriceOracle")
+const PriceOracleProxy = artifacts.require("PriceOracleProxy")
+const ComptrollerScenarioG2 = artifacts.require("ComptrollerScenarioG2")
+const FaucetTokenHarness = artifacts.require("FaucetToken")
+const FixedInterestRateModel = artifacts.require("InterestRateModelHarness")
+const CEtherScenarioContract = artifacts.require("CEtherScenario")
+const CErc20Delegate = artifacts.require("CErc20Delegate")
+const CErc20DelegatorScenario = artifacts.require("CErc20DelegatorScenario")
+
 var child_process = require("child_process");
 
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -74,9 +83,108 @@ export class TestEngine {
         compoundTokens = require(configFile);
     }
 
-    public async deployCompound() {
+    public async deployCompound(address: string[]) {
+
         const unitroller = await Unitroller.new()
-        return unitroller
+        const priceOracle = await SimplePriceOracle.new()
+
+        const priceOracleProxy = await PriceOracleProxy.new(
+            priceOracle.address,
+            address[0],
+            addressZero,
+            addressZero,
+            addressZero,
+            addressZero,
+            addressZero
+        )
+        const comptrollerScenG2 = await ComptrollerScenarioG2.new()
+        await unitroller._setPendingImplementation(comptrollerScenG2.address)
+        await comptrollerScenG2._become(unitroller.address)
+
+        const USDC = await FaucetTokenHarness.new(0, "USD Coin", 6, "USDC")
+        const USDT = await FaucetTokenHarness.new(0, "Tether", 6, "USDT")
+        const WBTC = await FaucetTokenHarness.new(0, "WBTC", 8, "WBTC")
+        const FIN = await FaucetTokenHarness.new(0, "FIN", 18, "FIN")
+        const LPToken = await FaucetTokenHarness.new(0, "LPToken", 18, "LPToken")
+
+        await comptrollerScenG2._setPriceOracle(priceOracleProxy.address)
+        await comptrollerScenG2._setMaxAssets(20)
+        await comptrollerScenG2._setCloseFactor(new BN("0.5").mul(new BN(10).pow(new BN(18))))
+        await comptrollerScenG2._setLiquidationIncentive(new BN("1.1").mul(new BN(10).pow(new BN(18))))
+
+        const fixedInterestRateModel = await FixedInterestRateModel.new(new BN(0.000005).mul(new BN(10).pow(new BN(18))))
+        const cETH = await CEtherScenarioContract.new(
+            "cETH",
+            "cETH",
+            8,
+            address[0],
+            comptrollerScenG2.address,
+            fixedInterestRateModel.address,
+            new BN(10).pow(new BN(17))
+        )
+
+        const [ZRX, cZRX] = await this.deployCToken(
+            "ZRX",
+            new BN(10).pow(new BN(12)),
+            address[0],
+            comptrollerScenG2,
+            fixedInterestRateModel
+        )
+        const [BAT, cBAT] = await this.deployCToken(
+            "BAT",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptrollerScenG2,
+            fixedInterestRateModel
+        )
+        const [TUSD, cTUSD] = await this.deployCToken(
+            "TUSD",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptrollerScenG2,
+            fixedInterestRateModel
+        )
+        const [MKR, cMKR] = await this.deployCToken(
+            "MKR",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptrollerScenG2,
+            fixedInterestRateModel
+        )
+        const [REP, cREP] = await this.deployCToken(
+            "REP",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptrollerScenG2,
+            fixedInterestRateModel
+        )
+
+    }
+
+    public async deployCToken(name: string,
+        initialExchangeRate: BN,
+        owner: string,
+        comp: t.ComptrollerScenarioG2Instance,
+        rateModel: t.InterestRateModelHarnessInstance) {
+
+        const cName = "c" + name
+        const erc20 = await FaucetTokenHarness.new(0, name, 18, name)
+        const dele = await CErc20Delegate.new()
+        const cToken = await CErc20DelegatorScenario.new(
+            erc20.address,
+            comp.address,
+            rateModel.address,
+            initialExchangeRate,
+            cName,
+            cName,
+            8,
+            owner,
+            dele.address,
+            "0x0"
+        )
+
+        return [erc20, cToken]
+
     }
 
     public deployTruffle(script: String) {

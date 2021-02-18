@@ -86,75 +86,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     beforeEach(async function () {
         this.timeout(0);
-        await testEngine.deployCompound()
-        // savingAccount = await testEngine.deploySavingAccount();
-        // // 1. initialization.
-        // tokens = await testEngine.erc20Tokens;
-        // mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
-        // accountsContract = await testEngine.accounts;
-        // bank = await testEngine.bank;
-
-        // addressDAI = tokens[0];
-        // addressUSDC = tokens[1];
-        // addressUSDT = tokens[2];
-        // addressTUSD = tokens[3];
-        // addressMKR = tokens[4];
-        // addressWBTC = tokens[8];
-
-        // mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
-        // mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
-        // mockChainlinkAggregatorforUSDTAddress = mockChainlinkAggregators[2];
-        // mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
-        // mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
-        // mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
-        // mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
-
-        // erc20WBTC = await ERC20.at(addressWBTC);
-        // erc20DAI = await ERC20.at(addressDAI);
-        // erc20USDC = await ERC20.at(addressUSDC);
-        // erc20USDT = await ERC20.at(addressUSDT);
-        // erc20TUSD = await ERC20.at(addressTUSD);
-        // erc20MKR = await ERC20.at(addressMKR);
-
-        // cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
-        // cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
-        // cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
-        // cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
-
-        // cDAI = await MockCToken.at(cDAI_addr);
-        // cUSDC = await MockCToken.at(cUSDC_addr);
-        // cUSDT = await MockCToken.at(cUSDT_addr);
-        // cWBTC = await MockCToken.at(cWBTC_addr);
-
-        // mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforDAIAddress
-        // );
-        // mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforUSDCAddress
-        // );
-        // mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforUSDTAddress
-        // );
-        // mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforTUSDAddress
-        // );
-        // mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforMKRAddress
-        // );
-        // mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforETHAddress
-        // );
-        // mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(
-        //     mockChainlinkAggregatorforWBTCAddress
-        // );
-
-        // ONE_DAI = eighteenPrecision;
-        // ONE_USDC = sixPrecision;
-        // // Set DAI, USDC, USDT, TUSD to the same price for convenience
-        // let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-        // await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
-        // await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
-        // await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+        await testEngine.deployCompound(accounts)
     });
 
     // extra tests by Yichun
