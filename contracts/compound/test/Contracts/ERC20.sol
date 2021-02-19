@@ -11,7 +11,7 @@ interface ERC20Base {
     function balanceOf(address who) external view returns (uint256);
 }
 
-contract ERC20 is ERC20Base {
+contract ERC20E is ERC20Base {
     function transfer(address to, uint256 value) external returns (bool);
     function transferFrom(address from, address to, uint256 value) external returns (bool);
 }
@@ -26,7 +26,7 @@ contract ERC20NS is ERC20Base {
  * @dev Implementation of the basic standard token.
  *  See https://github.com/ethereum/EIPs/issues/20
  */
-contract StandardToken is ERC20 {
+contract StandardToken is ERC20E {
     using SafeMath for uint256;
 
     string public name;

@@ -46,11 +46,11 @@ contract("SavingAccount.COMP", async (accounts) => {
     let erc20MKR: t.MockErc20Instance;
     let erc20COMP: t.MockErc20Instance;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts);
     });
 
     beforeEach(async function () {

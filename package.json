@@ -51,7 +51,7 @@
     "hardhat": "^2.0.2",
     "husky": "^4.2.5",
     "openzeppelin-solidity": "^2.4.0",
-    "solc": "^0.5.16",
+    "solc": "0.5.14",
     "solidity-coverage": "^0.6.7",
     "surya": "^0.4.0",
     "truffle": "^5.1.30",

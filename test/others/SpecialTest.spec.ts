@@ -60,12 +60,11 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        // testEngine.deploy("scriptFlywheel.scen");
-        testEngine.deploy("whitePaperModel.scen");
+        await testEngine.deployCompoundWhitePaper(accounts);
     });
 
     beforeEach(async function () {

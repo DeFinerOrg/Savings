@@ -76,11 +76,11 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("whitePaperModel.scen");
+        await testEngine.deployCompoundWhitePaper(accounts);
     });
 
     beforeEach(async function () {

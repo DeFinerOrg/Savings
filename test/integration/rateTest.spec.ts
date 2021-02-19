@@ -64,11 +64,11 @@ contract("Integration Tests", async (accounts) => {
 
     context("Compound Model Validation", async () => {
         context("Uses WhitePaper Model", async () => {
-            before(function () {
+            before(async function () {
                 // Things to initialize before all test
                 this.timeout(0);
                 testEngine = new TestEngine();
-                testEngine.deploy("whitePaperModel.scen");
+                await testEngine.deployCompoundWhitePaper(accounts);
             });
 
             beforeEach(async function () {

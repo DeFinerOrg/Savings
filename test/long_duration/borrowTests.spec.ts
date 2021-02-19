@@ -76,13 +76,12 @@ contract("SavingAccount.borrow", async (accounts) => {
     let HALF_DAI: any;
     let ONE_USDC: any;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("whitePaperModel.scen");
+        await testEngine.deployCompoundWhitePaper(accounts);
     });
-
     beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();

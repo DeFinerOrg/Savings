@@ -75,11 +75,11 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts)
     });
 
     beforeEach(async function () {

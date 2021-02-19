@@ -53,15 +53,15 @@ contract("borrowMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function() {
+
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
     });
-
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
-        testEngine.deploy("whitePaperModel.scen");
+        await testEngine.deployCompoundWhitePaper(accounts);
 
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -111,7 +111,7 @@ contract("borrowMiningTests", async (accounts) => {
             context("borrow mining", async () => {
                 context("Compound supported 18 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function() {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -265,7 +265,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             //console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function() {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -431,7 +431,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("105999713477348234540577")
                             );
                         });
-                        it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function() {
+                        it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -585,7 +585,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("100999777201930249137700")
                             );
                         });
-                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function() {
+                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -645,7 +645,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("105999739046325127625324")
                             );
                         });
-                        it("Deposit DAI, USDC and borrow large amount of DAI", async function() {
+                        it("Deposit DAI, USDC and borrow large amount of DAI", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -720,7 +720,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                 context("Compound supported 6 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI & USDC then borrow small amount of USDC", async function() {
+                        it("Deposit DAI & USDC then borrow small amount of USDC", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -781,7 +781,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("50500000000000000000000")
                             );
                         });
-                        it("Deposit DAI & USDC then borrow large amount of USDC", async function() {
+                        it("Deposit DAI & USDC then borrow large amount of USDC", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -854,7 +854,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                 context("Compound unsupported 18 decimal Token", async () => {
                     context("Should succeed", async () => {
-                        it("Deposit DAI to borrow a small amount of MKR.", async function() {
+                        it("Deposit DAI to borrow a small amount of MKR.", async function () {
                             this.timeout(0);
                             let numOfToken = new BN(100000);
                             await erc20FIN.transfer(
@@ -918,7 +918,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                         });
 
-                        it("Deposit DAI to borrow a large amount of MKR.", async function() {
+                        it("Deposit DAI to borrow a large amount of MKR.", async function () {
                             this.timeout(0);
                             let numOfToken = new BN(1000).mul(eighteenPrecision);
                             let depositAmountMKR = new BN(10).mul(eighteenPrecision);

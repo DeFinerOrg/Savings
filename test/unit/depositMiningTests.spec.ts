@@ -55,15 +55,15 @@ contract("depositMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function() {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
-        testEngine.deploy("whitePaperModel.scen");
+        await testEngine.deployCompoundWhitePaper(accounts);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
 
@@ -261,7 +261,7 @@ contract("depositMiningTests", async (accounts) => {
 
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
-                            it("when small amount of DAI is deposited", async function() {
+                            it("when small amount of DAI is deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -353,7 +353,7 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("101016641704110500915293")
                                 );
                             });
-                            it("when large amount of DAI is deposited", async function() {
+                            it("when large amount of DAI is deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -819,7 +819,7 @@ contract("depositMiningTests", async (accounts) => {
 
                     context("Compound unsupported 18 decimal Token", async () => {
                         context("Should succeed", async () => {
-                            it("when small amount of MKR tokens are deposited", async function() {
+                            it("when small amount of MKR tokens are deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -1329,7 +1329,7 @@ contract("depositMiningTests", async (accounts) => {
 
                     context("Compound Supported 18 decimal Token", async () => {
                         context("should succeed", async () => {
-                            it("when small amount of DAI & USDC are deposited", async function() {
+                            it("when small amount of DAI & USDC are deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -1588,7 +1588,7 @@ contract("depositMiningTests", async (accounts) => {
                     });
                 });
 
-                context("Multiple different users, multiple tokens", async () => {});
+                context("Multiple different users, multiple tokens", async () => { });
             });
         });
     });

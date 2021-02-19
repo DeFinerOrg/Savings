@@ -54,11 +54,11 @@ contract("SavingAccount.repay", async (accounts) => {
     const numOfWBTC = eightPrecision;
     const numOfUSDC = sixPrecision;
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts);
     });
 
     beforeEach(async function () {

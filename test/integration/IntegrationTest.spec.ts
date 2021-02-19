@@ -73,13 +73,12 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function () {
-        this.timeout(0);
+    before(async function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts);
     });
-
     beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
@@ -134,7 +133,7 @@ contract("Integration Tests", async (accounts) => {
                 const numOfToken = new BN(1000);
                 await savingAccount.fastForward(1000);
 
-                for (let i = 0; i < 11; i++) {                    
+                for (let i = 0; i < 11; i++) {
                     if (i != 9) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -170,9 +169,9 @@ contract("Integration Tests", async (accounts) => {
                         await savingAccount.deposit(erc20contr.address, numOfToken, {
                             from: user1,
                         });
-                        
+
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
-                        
+
                         // Validate the total balance on DeFiner after deposit
                         const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
                             erc20contr.address,
@@ -187,7 +186,7 @@ contract("Integration Tests", async (accounts) => {
 
                         // Verify if deposit was successful
                         // checking if token index is not that of a Compound unsupported token
-                        if (i != 3 && i != 4 && i != 10 && i != 11) {                            
+                        if (i != 3 && i != 4 && i != 10 && i != 11) {
                             await savAccBalVerify(
                                 0,
                                 numOfToken,
@@ -208,7 +207,7 @@ contract("Integration Tests", async (accounts) => {
                 }
 
                 // Withdraw all tokens of each Address
-                for (let j = 0; j < 11; j++) {                    
+                for (let j = 0; j < 11; j++) {
                     if (j != 9) {
                         tempContractAddress = tokens[j];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -330,7 +329,7 @@ contract("Integration Tests", async (accounts) => {
                 const numOfToken = new BN(1000);
 
                 // Deposit all tokens
-                for (let i = 0; i < 11; i++) {                    
+                for (let i = 0; i < 11; i++) {
                     if (i != 9) {
                         tempContractAddress = tokens[i];
                         erc20contr = await ERC20.at(tempContractAddress);
@@ -376,39 +375,39 @@ contract("Integration Tests", async (accounts) => {
                     }
                 }
 
-                for (let i = 0; i < 11; i++) {                    
+                for (let i = 0; i < 11; i++) {
                     if (i != 9) {
                         if (i != 3 && i != 4 && i != 10 && i != 11) {
-                        tempContractAddress = tokens[i];
-                        erc20contr = await ERC20.at(tempContractAddress);
-                        addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
-                            tempContractAddress
-                        );
-                        cTokenTemp = await MockCToken.at(addressCTokenTemp);
-                        // const balSavingCToken = await cTokenTemp.balanceOfUnderlying.call(savingAccount.address);
-                        // console.log(balSavingCToken.toString())
-                        await savingAccount.withdrawAll(erc20contr.address);
+                            tempContractAddress = tokens[i];
+                            erc20contr = await ERC20.at(tempContractAddress);
+                            addressCTokenTemp = await testEngine.tokenInfoRegistry.getCToken(
+                                tempContractAddress
+                            );
+                            cTokenTemp = await MockCToken.at(addressCTokenTemp);
+                            // const balSavingCToken = await cTokenTemp.balanceOfUnderlying.call(savingAccount.address);
+                            // console.log(balSavingCToken.toString())
+                            await savingAccount.withdrawAll(erc20contr.address);
 
-                        //Verify if withdrawAll was successful
-                        const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
-                        expect(ZERO).to.be.bignumber.equal(balSavingAccount);
+                            //Verify if withdrawAll was successful
+                            const balSavingAccount = await erc20contr.balanceOf(savingAccount.address);
+                            expect(ZERO).to.be.bignumber.equal(balSavingAccount);
 
-                        // Verify DeFiner balance
-                        const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
-                        expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
+                            // Verify DeFiner balance
+                            const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
+                            expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
 
-                        // Verify Compound balance
-                        const balCToken = await erc20contr.balanceOf(addressCTokenTemp);
-                        //expect(ZERO).to.be.bignumber.equal(balCToken);
+                            // Verify Compound balance
+                            const balCToken = await erc20contr.balanceOf(addressCTokenTemp);
+                            //expect(ZERO).to.be.bignumber.equal(balCToken);
 
-                        // Verify CToken balance
-                        const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
-                            savingAccount.address
-                        );
-                        expect(ZERO).to.be.bignumber.equal(balCTokens);
+                            // Verify CToken balance
+                            const balCTokens = await cTokenTemp.balanceOfUnderlying.call(
+                                savingAccount.address
+                            );
+                            expect(ZERO).to.be.bignumber.equal(balCTokens);
                         }
                     }
                 }
@@ -1307,7 +1306,7 @@ contract("Integration Tests", async (accounts) => {
                 expect(
                     new BN(user1BalanceBeforeRepay).sub(new BN(user1BalanceAfter))
                 ).to.be.bignumber.equal(new BN(100));
-                
+
                 await savAccBalVerify(
                     3,
                     new BN(100),
@@ -1318,7 +1317,7 @@ contract("Integration Tests", async (accounts) => {
                     bank,
                     savingAccount
                 );
-                
+
                 // const totalDefinerBalanceAfterRepayUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
                 //     addressUSDC,
                 //     user1
@@ -1602,7 +1601,7 @@ contract("Integration Tests", async (accounts) => {
                 );
             });
 
-            context("should fail", async () => {});
+            context("should fail", async () => { });
         });
     });
 
@@ -2141,9 +2140,9 @@ contract("Integration Tests", async (accounts) => {
             });
         });
 
-        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => {});
+        it("should get deposit interests when he deposits, wait for a week and withdraw", async () => { });
     });
-    context("should fail", async () => {});
+    context("should fail", async () => { });
 
     context("Deposit, Borrow and liquidate", async () => {
         it("");

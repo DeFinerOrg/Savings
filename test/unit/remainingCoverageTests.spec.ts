@@ -46,11 +46,11 @@ contract("RemainingCoverage", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(async function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts);
     });
 
     beforeEach(async function () {
@@ -80,8 +80,8 @@ contract("RemainingCoverage", async (accounts) => {
             it("when all conditions are satisfied", async function () {
                 this.timeout(0);
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
-                console.log("ERC20TokenAddresses",ERC20TokenAddresses);
-                
+                console.log("ERC20TokenAddresses", ERC20TokenAddresses);
+
                 // Approve all ERC20 tokens
                 for (let i = 0; i < ERC20TokenAddresses.length - 1; i++) {
                     if (i != 9) {
@@ -119,7 +119,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => {});
+        context("should fail", async () => { });
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async function () {

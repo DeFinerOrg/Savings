@@ -25,12 +25,11 @@ contract("SavingAccount", async (accounts) => {
     const dummy = accounts[9];
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
-
-    before(function () {
-        // Things to initialize before all test  
+    before(async function () {
+        // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        await testEngine.deployCompound(accounts);
     });
 
     beforeEach(async function () {

@@ -122,7 +122,7 @@ contract BasicToken is ERC20Basic {
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
-contract ERC20 is ERC20Basic {
+contract ERC20W is ERC20Basic {
   function allowance(address _owner, address _spender)
     public view returns (uint256);
 
@@ -146,7 +146,7 @@ contract ERC20 is ERC20Basic {
  * https://github.com/ethereum/EIPs/issues/20
  * Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
  */
-contract StandardToken is ERC20, BasicToken {
+contract StandardToken is ERC20W, BasicToken {
 
   mapping (address => mapping (address => uint256)) internal allowed;
 
@@ -266,7 +266,7 @@ contract StandardToken is ERC20, BasicToken {
  * All the operations are done using the smallest and indivisible token unit,
  * just as on Ethereum all the operations are done in wei.
  */
-contract DetailedERC20 is ERC20 {
+contract DetailedERC20 is ERC20W {
   string public name;
   string public symbol;
   uint8 public decimals;
@@ -596,7 +596,7 @@ library SafeERC20 {
   }
 
   function safeTransferFrom(
-    ERC20 _token,
+    ERC20W _token,
     address _from,
     address _to,
     uint256 _value
@@ -607,7 +607,7 @@ library SafeERC20 {
   }
 
   function safeApprove(
-    ERC20 _token,
+    ERC20W _token,
     address _spender,
     uint256 _value
   )

@@ -4,7 +4,6 @@ import { AccountsWithControllerInstance } from "./../types/truffle-contracts/ind
 import * as t from "../types/truffle-contracts/index";
 
 const { BN } = require("@openzeppelin/test-helpers");
-var shell = require("shelljs");
 const MockCToken = artifacts.require("MockCToken");
 const MockERC20 = artifacts.require("MockERC20");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
@@ -20,19 +19,20 @@ const Utils: any = artifacts.require("Utils");
 const SavingLib = artifacts.require("SavingLib");
 const Unitroller = artifacts.require("Unitroller")
 const SimplePriceOracle = artifacts.require("SimplePriceOracle")
+const FixedPriceOracle = artifacts.require("FixedPriceOracle")
 const PriceOracleProxy = artifacts.require("PriceOracleProxy")
 const ComptrollerScenarioG2 = artifacts.require("ComptrollerScenarioG2")
+const ComptrollerScenario = artifacts.require("ComptrollerScenario")
+
 const FaucetTokenHarness = artifacts.require("FaucetToken")
 const FixedInterestRateModel = artifacts.require("InterestRateModelHarness")
 const CEtherScenarioContract = artifacts.require("CEtherScenario")
 const CErc20Delegate = artifacts.require("CErc20Delegate")
 const CErc20DelegatorScenario = artifacts.require("CErc20DelegatorScenario")
-
-var child_process = require("child_process");
-
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 const Constant: t.ConstantContract = artifacts.require("Constant");
-
+const InterestRateModel = artifacts.require("InterestRateModel")
+const WhitePaperInterestRateModel = artifacts.require("WhitePaperInterestRateModel")
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
@@ -55,120 +55,455 @@ export class TestEngine {
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
+    public comptroller!: t.ComptrollerHarnessInstance
 
-    public erc20TokensFromCompound: Array<string> = new Array();
-    public cTokensCompound: Array<string> = new Array();
-
-    public deploy(script: String) {
-        const currentPath = process.cwd();
-        const compound = `${currentPath}/compound-protocol`;
-        const scriptPath = `${compound}/script/scen/${script}`;
-        const portNumber = process.env.COVERAGE ? "8546" : "8545";
-        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
-
-        if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
-            // Do nothing
-        } else if (script == "whitePaperModel.scen") {
-            const log = shell.exec(command);
-            process.env.FLYWHEEL = "no";
-        } else {
-            const log = shell.exec(command);
-            process.env.FLYWHEEL = "yes";
-        }
-
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-        const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
-        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-        compoundTokens = require(configFile);
-    }
 
     public async deployCompound(address: string[]) {
 
-        const unitroller = await Unitroller.new()
-        const priceOracle = await SimplePriceOracle.new()
+        let unitroller = await Unitroller.new()
+        const priceOracle = await FixedPriceOracle.new(new BN(10).pow(new BN(18)))
 
-        const priceOracleProxy = await PriceOracleProxy.new(
-            priceOracle.address,
-            address[0],
-            addressZero,
-            addressZero,
-            addressZero,
-            addressZero,
-            addressZero
-        )
         const comptrollerScenG2 = await ComptrollerScenarioG2.new()
         await unitroller._setPendingImplementation(comptrollerScenG2.address)
         await comptrollerScenG2._become(unitroller.address)
+        const comptroller = await ComptrollerScenario.at(unitroller.address)
 
         const USDC = await FaucetTokenHarness.new(0, "USD Coin", 6, "USDC")
         const USDT = await FaucetTokenHarness.new(0, "Tether", 6, "USDT")
         const WBTC = await FaucetTokenHarness.new(0, "WBTC", 8, "WBTC")
         const FIN = await FaucetTokenHarness.new(0, "FIN", 18, "FIN")
         const LPToken = await FaucetTokenHarness.new(0, "LPToken", 18, "LPToken")
+        const DAI = await FaucetTokenHarness.new(0, "DAI", 18, "DAI")
+        const ZRX = await FaucetTokenHarness.new(0, "ZRX", 18, "ZRX")
+        const BAT = await FaucetTokenHarness.new(0, "BAT", 18, "BAT")
+        const TUSD = await FaucetTokenHarness.new(0, "TUSD", 18, "TUSD")
+        const MKR = await FaucetTokenHarness.new(0, "MKR", 18, "MKR")
+        const REP = await FaucetTokenHarness.new(0, "REP", 18, "REP")
+        const COMP = await FaucetTokenHarness.new(0, "COMP", 18, "COMP")
 
-        await comptrollerScenG2._setPriceOracle(priceOracleProxy.address)
-        await comptrollerScenG2._setMaxAssets(20)
-        await comptrollerScenG2._setCloseFactor(new BN("0.5").mul(new BN(10).pow(new BN(18))))
-        await comptrollerScenG2._setLiquidationIncentive(new BN("1.1").mul(new BN(10).pow(new BN(18))))
+        await comptroller._setPriceOracle(priceOracle.address)
+        await comptroller._setMaxAssets(20)
+        await comptroller._setCloseFactor(new BN(5).mul(new BN(10).pow(new BN(17))))
+        await comptroller._setLiquidationIncentive(new BN(11).mul(new BN(10).pow(new BN(17))))
 
-        const fixedInterestRateModel = await FixedInterestRateModel.new(new BN(0.000005).mul(new BN(10).pow(new BN(18))))
+        const fixedInterestRateModel = await FixedInterestRateModel.new(new BN(5).mul(new BN(10).pow(new BN(12))))
+        const whitePaperInterestRateModel = await WhitePaperInterestRateModel.new(
+            new BN(5).mul(new BN(10).pow(new BN(13))),
+            new BN(2).mul(new BN(10).pow(new BN(17))))
+        let interestRateModelAddress = fixedInterestRateModel.address
+        const interestRateModel = await InterestRateModel.at(interestRateModelAddress)
         const cETH = await CEtherScenarioContract.new(
             "cETH",
             "cETH",
             8,
             address[0],
-            comptrollerScenG2.address,
-            fixedInterestRateModel.address,
-            new BN(10).pow(new BN(17))
+            comptroller.address,
+            interestRateModel.address,
+            new BN(10).pow(new BN(17)),
         )
 
-        const [ZRX, cZRX] = await this.deployCToken(
+        const cDAI = await this.deployCToken(
+            "DAI",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            DAI
+        )
+        const cZRX = await this.deployCToken(
             "ZRX",
             new BN(10).pow(new BN(12)),
             address[0],
-            comptrollerScenG2,
-            fixedInterestRateModel
+            comptroller,
+            interestRateModel,
+            ZRX
         )
-        const [BAT, cBAT] = await this.deployCToken(
+        const cBAT = await this.deployCToken(
             "BAT",
             new BN(10).pow(new BN(17)),
             address[0],
-            comptrollerScenG2,
-            fixedInterestRateModel
+            comptroller,
+            interestRateModel,
+            BAT
         )
-        const [TUSD, cTUSD] = await this.deployCToken(
+        const cTUSD = await this.deployCToken(
             "TUSD",
             new BN(10).pow(new BN(17)),
             address[0],
-            comptrollerScenG2,
-            fixedInterestRateModel
+            comptroller,
+            interestRateModel,
+            TUSD
         )
-        const [MKR, cMKR] = await this.deployCToken(
+        const cMKR = await this.deployCToken(
             "MKR",
             new BN(10).pow(new BN(17)),
             address[0],
-            comptrollerScenG2,
-            fixedInterestRateModel
+            comptroller,
+            interestRateModel,
+            MKR
         )
-        const [REP, cREP] = await this.deployCToken(
+        const cREP = await this.deployCToken(
             "REP",
             new BN(10).pow(new BN(17)),
             address[0],
-            comptrollerScenG2,
-            fixedInterestRateModel
+            comptroller,
+            interestRateModel,
+            REP
+        )
+        const cUSDC = await this.deployCToken(
+            "USDC",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            USDC
+        )
+        const cUSDT = await this.deployCToken(
+            "USDT",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            USDT
+        )
+        const cWBTC = await this.deployCToken(
+            "WBTC",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            WBTC
         )
 
+        await this.supportMarket(comptroller, cZRX)
+        await this.supportMarket(comptroller, cBAT)
+        await this.supportMarket(comptroller, cDAI)
+        await this.supportMarket(comptroller, cZRX)
+        await this.supportMarket(comptroller, cUSDC)
+        await this.supportMarket(comptroller, cUSDT)
+        await this.supportMarket(comptroller, cTUSD)
+        await this.supportMarket(comptroller, cMKR)
+        await this.supportMarket(comptroller, cREP)
+        await this.supportMarket(comptroller, cWBTC)
+        await this.supportMarket(comptroller, cETH)
+
+        const comptrollerScen = await ComptrollerScenario.new()
+        await unitroller._setPendingImplementation(comptrollerScen.address)
+
+        await this.allocateToken(BAT, cBAT, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(ZRX, cZRX, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(DAI, cDAI, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(USDC, cUSDC, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(USDT, cUSDT, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(TUSD, cTUSD, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(MKR, cMKR, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(REP, cREP, address[0], new BN(10).pow(new BN(32)))
+        await this.allocateToken(WBTC, cWBTC, address[0], new BN(10).pow(new BN(32)))
+
+
+        await comptrollerScen._become(
+            unitroller.address,
+            new BN(10).pow(new BN(18)),
+            [cZRX.address, cBAT.address, cDAI.address, cUSDC.address],
+            []
+        )
+
+        await this.prepareUser(BAT, cBAT, address[4], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[4] })
+
+        await this.prepareUser(BAT, cBAT, address[5], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[5] })
+
+        await this.prepareUser(BAT, cBAT, address[6], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[6] })
+
+        await this.prepareUser(BAT, cBAT, address[7], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[7] })
+
+        await COMP.allocateTo(address[0], new BN(5).mul(new BN(10).pow(new BN(24))))
+        await COMP.approve(comptroller.address, new BN(5).mul(new BN(10).pow(new BN(24))))
+
+        await comptroller.setCompAddress(COMP.address)
+        await comptroller.refreshCompSpeeds()
+
+        this.erc20Tokens.push(DAI.address)
+        this.erc20Tokens.push(USDC.address)
+        this.erc20Tokens.push(USDT.address)
+        this.erc20Tokens.push(TUSD.address)
+        this.erc20Tokens.push(MKR.address)
+        this.erc20Tokens.push(BAT.address)
+        this.erc20Tokens.push(ZRX.address)
+        this.erc20Tokens.push(REP.address)
+        this.erc20Tokens.push(WBTC.address)
+        this.erc20Tokens.push(ETH_ADDR)
+        this.erc20Tokens.push(LPToken.address)
+        this.erc20Tokens.push(FIN.address)
+
+        this.cTokens.push(cDAI.address)
+        this.cTokens.push(cUSDC.address)
+        this.cTokens.push(cUSDT.address)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(cBAT.address)
+        this.cTokens.push(cZRX.address)
+        this.cTokens.push(cREP.address)
+        this.cTokens.push(cWBTC.address)
+        this.cTokens.push(cETH.address)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(addressZero)
+        await comptroller.fastForward(300000)
+
+        this.comptroller = comptroller
+    }
+
+    public async deployCompoundWhitePaper(address: string[]) {
+
+        let unitroller = await Unitroller.new()
+        const priceOracle = await FixedPriceOracle.new(new BN(10).pow(new BN(18)))
+
+        const comptrollerScenG2 = await ComptrollerScenarioG2.new()
+        await unitroller._setPendingImplementation(comptrollerScenG2.address)
+        await comptrollerScenG2._become(unitroller.address)
+        const comptroller = await ComptrollerScenario.at(unitroller.address)
+
+        const USDC = await FaucetTokenHarness.new(0, "USD Coin", 6, "USDC")
+        const USDT = await FaucetTokenHarness.new(0, "Tether", 6, "USDT")
+        const WBTC = await FaucetTokenHarness.new(0, "WBTC", 8, "WBTC")
+        const FIN = await FaucetTokenHarness.new(0, "FIN", 18, "FIN")
+        const LPToken = await FaucetTokenHarness.new(0, "LPToken", 18, "LPToken")
+        const DAI = await FaucetTokenHarness.new(0, "DAI", 18, "DAI")
+        const ZRX = await FaucetTokenHarness.new(0, "ZRX", 18, "ZRX")
+        const BAT = await FaucetTokenHarness.new(0, "BAT", 18, "BAT")
+        const TUSD = await FaucetTokenHarness.new(0, "TUSD", 18, "TUSD")
+        const MKR = await FaucetTokenHarness.new(0, "MKR", 18, "MKR")
+        const REP = await FaucetTokenHarness.new(0, "REP", 18, "REP")
+        const COMP = await FaucetTokenHarness.new(0, "COMP", 18, "COMP")
+
+        await comptroller._setPriceOracle(priceOracle.address)
+        await comptroller._setMaxAssets(20)
+        await comptroller._setCloseFactor(new BN(5).mul(new BN(10).pow(new BN(17))))
+        await comptroller._setLiquidationIncentive(new BN(11).mul(new BN(10).pow(new BN(17))))
+
+        const fixedInterestRateModel = await FixedInterestRateModel.new(new BN(5).mul(new BN(10).pow(new BN(12))))
+        const whitePaperInterestRateModel = await WhitePaperInterestRateModel.new(
+            new BN(5).mul(new BN(10).pow(new BN(13))),
+            new BN(2).mul(new BN(10).pow(new BN(17))))
+
+        let interestRateModelAddress = whitePaperInterestRateModel.address
+        const interestRateModel = await InterestRateModel.at(interestRateModelAddress)
+        const cETH = await CEtherScenarioContract.new(
+            "cETH",
+            "cETH",
+            8,
+            address[0],
+            comptroller.address,
+            interestRateModel.address,
+            new BN(10).pow(new BN(17)),
+        )
+
+        const cDAI = await this.deployCToken(
+            "DAI",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            DAI
+        )
+        const cZRX = await this.deployCToken(
+            "ZRX",
+            new BN(10).pow(new BN(20)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            ZRX
+        )
+        const cBAT = await this.deployCToken(
+            "BAT",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            BAT
+        )
+        const cTUSD = await this.deployCToken(
+            "TUSD",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            TUSD
+        )
+        const cMKR = await this.deployCToken(
+            "MKR",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            MKR
+        )
+        const cREP = await this.deployCToken(
+            "REP",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            REP
+        )
+        const cUSDC = await this.deployCToken(
+            "USDC",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            USDC
+        )
+        const cUSDT = await this.deployCToken(
+            "USDT",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            USDT
+        )
+        const cWBTC = await this.deployCToken(
+            "WBTC",
+            new BN(10).pow(new BN(17)),
+            address[0],
+            comptroller,
+            interestRateModel,
+            WBTC
+        )
+
+        await this.supportMarket(comptroller, cZRX)
+        await this.supportMarket(comptroller, cBAT)
+        await this.supportMarket(comptroller, cDAI)
+        await this.supportMarket(comptroller, cZRX)
+        await this.supportMarket(comptroller, cUSDC)
+        await this.supportMarket(comptroller, cUSDT)
+        await this.supportMarket(comptroller, cTUSD)
+        await this.supportMarket(comptroller, cMKR)
+        await this.supportMarket(comptroller, cREP)
+        await this.supportMarket(comptroller, cWBTC)
+        await this.supportMarket(comptroller, cETH)
+
+        const comptrollerScen = await ComptrollerScenario.new()
+        await unitroller._setPendingImplementation(comptrollerScen.address)
+
+        await this.allocateToken(BAT, cBAT, address[0])
+        await this.allocateToken(ZRX, cZRX, address[0])
+        await this.allocateToken(DAI, cDAI, address[0])
+        await this.allocateToken(USDC, cUSDC, address[0])
+        await this.allocateToken(USDT, cUSDT, address[0])
+        await this.allocateToken(TUSD, cTUSD, address[0])
+        await this.allocateToken(MKR, cMKR, address[0])
+        await this.allocateToken(REP, cREP, address[0])
+        await this.allocateToken(WBTC, cWBTC, address[0])
+
+        await FIN.allocateTo(address[0], new BN(10).pow(new BN(24)))
+
+
+        await this.prepareUser(BAT, cBAT, address[4], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[4] })
+        await cUSDC.borrow(new BN(2).mul(new BN(10).pow(new BN(6))), { from: address[4] })
+        await cDAI.borrow(new BN(10).pow(new BN(18)), { from: address[4] })
+
+        await this.prepareUser(BAT, cBAT, address[5], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[5] })
+        await cUSDC.borrow(new BN(2).mul(new BN(10).pow(new BN(6))), { from: address[5] })
+        await cDAI.borrow(new BN(10).pow(new BN(18)), { from: address[5] })
+
+        await this.prepareUser(BAT, cBAT, address[6], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[6] })
+        await cUSDC.borrow(new BN(2).mul(new BN(10).pow(new BN(6))), { from: address[6] })
+        await cDAI.borrow(new BN(10).pow(new BN(18)), { from: address[6] })
+
+        await this.prepareUser(BAT, cBAT, address[7], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
+        await cZRX.borrow(new BN(10).pow(new BN(18)), { from: address[7] })
+        await cUSDC.borrow(new BN(2).mul(new BN(10).pow(new BN(6))), { from: address[7] })
+        await cDAI.borrow(new BN(10).pow(new BN(18)), { from: address[7] })
+
+        await comptrollerScen._become(
+            unitroller.address,
+            new BN(10).pow(new BN(18)),
+            [cZRX.address, cBAT.address, cDAI.address, cUSDC.address],
+            []
+        )
+
+        await COMP.allocateTo(address[0], new BN(5).mul(new BN(10).pow(new BN(24))))
+        await COMP.approve(comptroller.address, new BN(5).mul(new BN(10).pow(new BN(24))))
+        await comptroller.setCompAddress(COMP.address)
+        await comptroller.refreshCompSpeeds()
+
+        this.erc20Tokens.push(DAI.address)
+        this.erc20Tokens.push(USDC.address)
+        this.erc20Tokens.push(USDT.address)
+        this.erc20Tokens.push(TUSD.address)
+        this.erc20Tokens.push(MKR.address)
+        this.erc20Tokens.push(BAT.address)
+        this.erc20Tokens.push(ZRX.address)
+        this.erc20Tokens.push(REP.address)
+        this.erc20Tokens.push(WBTC.address)
+        this.erc20Tokens.push(ETH_ADDR)
+        this.erc20Tokens.push(LPToken.address)
+        this.erc20Tokens.push(FIN.address)
+
+        this.cTokens.push(cDAI.address)
+        this.cTokens.push(cUSDC.address)
+        this.cTokens.push(cUSDT.address)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(cBAT.address)
+        this.cTokens.push(cZRX.address)
+        this.cTokens.push(cREP.address)
+        this.cTokens.push(cWBTC.address)
+        this.cTokens.push(cETH.address)
+        this.cTokens.push(addressZero)
+        this.cTokens.push(addressZero)
+
+        await comptroller.fastForward(300000)
+        this.comptroller = comptroller
+
+    }
+
+
+    public async prepareUser(erc20Token: t.FaucetTokenInstance,
+        cToken: t.CErc20DelegatorScenarioInstance,
+        user: string,
+        comptroller: t.ComptrollerScenarioInstance,
+        amount: BN) {
+        await erc20Token.allocateTo(user, amount.toString(), { from: user })
+        await erc20Token.approve(cToken.address, amount.toString(), { from: user })
+        await cToken.mint(amount.toString(), { from: user })
+        await comptroller.enterMarkets([cToken.address], { from: user })
+    }
+
+    public async allocateToken(erc20Token: t.FaucetTokenInstance,
+        cToken: t.CErc20DelegatorScenarioInstance,
+        user: string,
+        amount: BN = new BN(10).pow(new BN(22))) {
+        const cAmount = amount.div(new BN(2))
+        await erc20Token.allocateTo(user, amount.toString())
+        await erc20Token.approve(cToken.address, amount.toString())
+        await cToken.mint(cAmount.toString())
+    }
+
+    public async supportMarket(comptroller: t.ComptrollerScenarioInstance, cToken: t.CErc20DelegatorScenarioInstance) {
+
+        await comptroller._supportMarket(cToken.address)
+        await comptroller._setCollateralFactor(
+            cToken.address,
+            new BN(5).mul(new BN(10).pow(new BN(17)))
+        )
     }
 
     public async deployCToken(name: string,
         initialExchangeRate: BN,
         owner: string,
-        comp: t.ComptrollerScenarioG2Instance,
-        rateModel: t.InterestRateModelHarnessInstance) {
+        comp: t.ComptrollerScenarioInstance,
+        rateModel: t.InterestRateModelInstance,
+        erc20: t.FaucetTokenInstance) {
 
         const cName = "c" + name
-        const erc20 = await FaucetTokenHarness.new(0, name, 18, name)
         const dele = await CErc20Delegate.new()
         const cToken = await CErc20DelegatorScenario.new(
             erc20.address,
@@ -183,63 +518,17 @@ export class TestEngine {
             "0x0"
         )
 
-        return [erc20, cToken]
+        return cToken
 
     }
 
-    public deployTruffle(script: String) {
-        const currentPath = process.cwd();
-        const compound = `${currentPath}/compound-protocol`;
-        const scriptPath = `${compound}/script/scen/${script}`;
-        const portNumber = process.env.COVERAGE ? "8546" : "8545";
-        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
 
-        const log = shell.exec(command);
-
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-        const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
-        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-        compoundTokens = require(configFile);
+    public getERC20AddressesFromCompound(): Array<string> {
+        return this.erc20Tokens
     }
 
-    public async getERC20AddressesFromCompound(): Promise<Array<string>> {
-        const network = process.env.NETWORK;
-        var erc20TokensFromCompound = new Array();
-        erc20TokensFromCompound.push(compoundTokens.Contracts.DAI);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.USDC);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.USDT);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.TUSD);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.MKR);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.BAT);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
-        erc20TokensFromCompound.push(ETH_ADDR);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
-
-        return erc20TokensFromCompound;
-    }
-
-    public async getCompoundAddresses(): Promise<Array<string>> {
-        const network = process.env.NETWORK;
-
-        var cTokensCompound = new Array();
-        cTokensCompound.push(compoundTokens.Contracts.cDAI);
-        cTokensCompound.push(compoundTokens.Contracts.cUSDC);
-        cTokensCompound.push(compoundTokens.Contracts.cUSDT);
-        cTokensCompound.push(addressZero);
-        cTokensCompound.push(addressZero);
-        cTokensCompound.push(compoundTokens.Contracts.cBAT);
-        cTokensCompound.push(compoundTokens.Contracts.cZRX);
-        cTokensCompound.push(compoundTokens.Contracts.cREP);
-        cTokensCompound.push(compoundTokens.Contracts.cWBTC);
-        cTokensCompound.push(compoundTokens.Contracts.cETH);
-        cTokensCompound.push(addressZero);
-        cTokensCompound.push(addressZero);
-
-        return cTokensCompound;
+    public getCompoundAddresses(): Array<string> {
+        return this.cTokens
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
@@ -370,16 +659,16 @@ export class TestEngine {
                 this.erc20Tokens,
                 cTokens,
                 this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
+                this.comptroller.address
             )
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.comptroller.address)
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.comptroller.address)
             .encodeABI();
 
         await savingAccountProxy.initialize(
@@ -509,16 +798,16 @@ export class TestEngine {
                 this.erc20Tokens,
                 cTokens,
                 this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
+                this.comptroller.address
             )
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.comptroller.address)
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.comptroller.address)
             .encodeABI();
 
         await savingAccountProxy.initialize(
