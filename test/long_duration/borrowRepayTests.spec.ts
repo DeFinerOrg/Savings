@@ -161,7 +161,6 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 await savingAccount.fastForward(1000);
                 console.log("DAI Rate is1:", (await cDAI.borrowRatePerBlock()).toString())
                 console.log("USDC Rate is1:", (await cUSDC.borrowRatePerBlock()).toString())
-                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
                 console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("DAI total supply", (await cDAI.totalSupply()).toString())
@@ -213,7 +212,6 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
                 console.log("DAI Rate is2:", (await cDAI.borrowRatePerBlock()).toString())
                 console.log("USDC Rate is2:", (await cUSDC.borrowRatePerBlock()).toString())
-                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
                 console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("DAI total supply", (await cDAI.totalSupply()).toString())
@@ -298,7 +296,6 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
                 await savingAccount.repay(addressUSDC, new BN(100), { from: user1 });
                 console.log("DAI Rate is3:", (await cDAI.borrowRatePerBlock()).toString())
                 console.log("USDC Rate is3:", (await cUSDC.borrowRatePerBlock()).toString())
-                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
                 console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
                 console.log("DAI total supply", (await cDAI.totalSupply()).toString())
