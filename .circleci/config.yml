@@ -40,4 +40,4 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       
-      - run: npx yarn test --max-old-space-size=4096 # triggers truffle test
+      - run: yarn test # triggers truffle test
