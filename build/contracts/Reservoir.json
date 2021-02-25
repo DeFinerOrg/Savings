@@ -325,7 +325,7 @@
                         "name": "block",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44141,
+                        "referencedDeclaration": 46035,
                         "src": "980:5:33",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_block",
@@ -756,7 +756,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44311,
+                            "referencedDeclaration": 46205,
                             "src": "1486:4:33",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_Reservoir_$25843",
@@ -1088,7 +1088,7 @@
                       "name": "block",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 44141,
+                      "referencedDeclaration": 46035,
                       "src": "1679:5:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_magic_block",
@@ -1989,10 +1989,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2344:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2253,10 +2253,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2488:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2798,10 +2798,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2712:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -3415,7 +3415,7 @@
                         "name": "block",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44141,
+                        "referencedDeclaration": 46035,
                         "src": "980:5:33",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_block",
@@ -3846,7 +3846,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44311,
+                            "referencedDeclaration": 46205,
                             "src": "1486:4:33",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_Reservoir_$25843",
@@ -4178,7 +4178,7 @@
                       "name": "block",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 44141,
+                      "referencedDeclaration": 46035,
                       "src": "1679:5:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_magic_block",
@@ -5079,10 +5079,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2344:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -5343,10 +5343,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2488:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -5888,10 +5888,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2712:7:33",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -6307,7 +6307,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:30:06.191Z",
+  "updatedAt": "2021-02-25T05:55:40.715Z",
   "devdoc": {
     "author": "Compound",
     "details": "This contract must be poked via the `drip()` function every so often.",

@@ -17370,7 +17370,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:40:16.238Z",
+  "updatedAt": "2021-02-25T05:57:51.451Z",
   "devdoc": {
     "details": "Version of ERC20 with no return values for `transfer` and `transferFrom` See https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca",
     "methods": {},

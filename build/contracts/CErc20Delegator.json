@@ -1621,7 +1621,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44151,
+                        "referencedDeclaration": 46045,
                         "src": "1563:3:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -1823,7 +1823,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "1695:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -2364,7 +2364,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "3092:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2440,10 +2440,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "3084:7:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2530,7 +2530,7 @@
                                   "name": "abi",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 44138,
+                                  "referencedDeclaration": 46032,
                                   "src": "3240:3:11",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_magic_abi",
@@ -2757,7 +2757,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "3432:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -8094,7 +8094,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "18100:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -8146,7 +8146,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44267,
+                            "referencedDeclaration": 46161,
                             "src": "18083:4:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Delegator_$6675",
@@ -8312,7 +8312,7 @@
                         "name": "abi",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44138,
+                        "referencedDeclaration": 46032,
                         "src": "18319:3:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_abi",
@@ -8506,7 +8506,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 44151,
+                              "referencedDeclaration": 46045,
                               "src": "18547:3:11",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -8545,7 +8545,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "18488:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -8597,7 +8597,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44267,
+                            "referencedDeclaration": 46161,
                             "src": "18471:4:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Delegator_$6675",
@@ -8793,7 +8793,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "18981:3:11",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -8966,7 +8966,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "19516:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -9047,10 +9047,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "19508:7:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -9294,7 +9294,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44151,
+                        "referencedDeclaration": 46045,
                         "src": "1563:3:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -9496,7 +9496,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "1695:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -10037,7 +10037,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "3092:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -10113,10 +10113,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "3084:7:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -10203,7 +10203,7 @@
                                   "name": "abi",
                                   "nodeType": "Identifier",
                                   "overloadedDeclarations": [],
-                                  "referencedDeclaration": 44138,
+                                  "referencedDeclaration": 46032,
                                   "src": "3240:3:11",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_magic_abi",
@@ -10430,7 +10430,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "3432:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -15767,7 +15767,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "18100:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -15819,7 +15819,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44267,
+                            "referencedDeclaration": 46161,
                             "src": "18083:4:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Delegator_$6675",
@@ -15985,7 +15985,7 @@
                         "name": "abi",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44138,
+                        "referencedDeclaration": 46032,
                         "src": "18319:3:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_abi",
@@ -16179,7 +16179,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 44151,
+                              "referencedDeclaration": 46045,
                               "src": "18547:3:11",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -16218,7 +16218,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44138,
+                            "referencedDeclaration": 46032,
                             "src": "18488:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -16270,7 +16270,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44267,
+                            "referencedDeclaration": 46161,
                             "src": "18471:4:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Delegator_$6675",
@@ -16466,7 +16466,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "18981:3:11",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -16639,7 +16639,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "19516:3:11",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -16720,10 +16720,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "19508:7:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -16823,7 +16823,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:30:05.934Z",
+  "updatedAt": "2021-02-25T05:55:40.395Z",
   "devdoc": {
     "author": "Compound",
     "methods": {

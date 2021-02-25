@@ -1644,7 +1644,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44151,
+                        "referencedDeclaration": 46045,
                         "src": "1223:3:12",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -2249,7 +2249,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44151,
+                        "referencedDeclaration": 46045,
                         "src": "1223:3:12",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -2740,7 +2740,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:30:05.939Z",
+  "updatedAt": "2021-02-25T05:55:40.403Z",
   "devdoc": {
     "author": "Compound",
     "methods": {

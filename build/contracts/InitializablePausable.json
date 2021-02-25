@@ -94,7 +94,7 @@
         "id": 3706,
         "nodeType": "ImportDirective",
         "scope": 3817,
-        "sourceUnit": 31287,
+        "sourceUnit": 33181,
         "src": "25:35:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -561,10 +561,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1307:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -666,10 +666,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1499:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -808,10 +808,10 @@
                               "name": "GlobalConfig",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 31286,
+                              "referencedDeclaration": 33180,
                               "src": "1739:12:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                 "typeString": "type(contract GlobalConfig)"
                               }
                             },
@@ -825,7 +825,7 @@
                             "nodeType": "FunctionCall",
                             "src": "1739:34:3",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                              "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                               "typeString": "contract GlobalConfig"
                             }
                           },
@@ -836,7 +836,7 @@
                           "lValueRequested": false,
                           "memberName": "owner",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 43204,
+                          "referencedDeclaration": 45098,
                           "src": "1739:40:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -1054,10 +1054,10 @@
                               "name": "GlobalConfig",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 31286,
+                              "referencedDeclaration": 33180,
                               "src": "1976:12:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                 "typeString": "type(contract GlobalConfig)"
                               }
                             },
@@ -1071,7 +1071,7 @@
                             "nodeType": "FunctionCall",
                             "src": "1976:34:3",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                              "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                               "typeString": "contract GlobalConfig"
                             }
                           },
@@ -1082,7 +1082,7 @@
                           "lValueRequested": false,
                           "memberName": "owner",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 43204,
+                          "referencedDeclaration": 45098,
                           "src": "1976:40:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -1235,7 +1235,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "2072:3:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -1291,10 +1291,10 @@
                                 "name": "GlobalConfig",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 31286,
+                                "referencedDeclaration": 33180,
                                 "src": "2086:12:3",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                  "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                   "typeString": "type(contract GlobalConfig)"
                                 }
                               },
@@ -1308,7 +1308,7 @@
                               "nodeType": "FunctionCall",
                               "src": "2086:34:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                                "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                                 "typeString": "contract GlobalConfig"
                               }
                             },
@@ -1319,7 +1319,7 @@
                             "lValueRequested": false,
                             "memberName": "owner",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 43204,
+                            "referencedDeclaration": 45098,
                             "src": "2086:40:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -1380,10 +1380,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2064:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1461,7 +1461,7 @@
         "id": 3706,
         "nodeType": "ImportDirective",
         "scope": 3817,
-        "sourceUnit": 31287,
+        "sourceUnit": 33181,
         "src": "25:35:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1928,10 +1928,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1307:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2033,10 +2033,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1499:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2175,10 +2175,10 @@
                               "name": "GlobalConfig",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 31286,
+                              "referencedDeclaration": 33180,
                               "src": "1739:12:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                 "typeString": "type(contract GlobalConfig)"
                               }
                             },
@@ -2192,7 +2192,7 @@
                             "nodeType": "FunctionCall",
                             "src": "1739:34:3",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                              "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                               "typeString": "contract GlobalConfig"
                             }
                           },
@@ -2203,7 +2203,7 @@
                           "lValueRequested": false,
                           "memberName": "owner",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 43204,
+                          "referencedDeclaration": 45098,
                           "src": "1739:40:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -2421,10 +2421,10 @@
                               "name": "GlobalConfig",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 31286,
+                              "referencedDeclaration": 33180,
                               "src": "1976:12:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                 "typeString": "type(contract GlobalConfig)"
                               }
                             },
@@ -2438,7 +2438,7 @@
                             "nodeType": "FunctionCall",
                             "src": "1976:34:3",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                              "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                               "typeString": "contract GlobalConfig"
                             }
                           },
@@ -2449,7 +2449,7 @@
                           "lValueRequested": false,
                           "memberName": "owner",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 43204,
+                          "referencedDeclaration": 45098,
                           "src": "1976:40:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -2602,7 +2602,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
+                            "referencedDeclaration": 46045,
                             "src": "2072:3:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2658,10 +2658,10 @@
                                 "name": "GlobalConfig",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 31286,
+                                "referencedDeclaration": 33180,
                                 "src": "2086:12:3",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$31286_$",
+                                  "typeIdentifier": "t_type$_t_contract$_GlobalConfig_$33180_$",
                                   "typeString": "type(contract GlobalConfig)"
                                 }
                               },
@@ -2675,7 +2675,7 @@
                               "nodeType": "FunctionCall",
                               "src": "2086:34:3",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_contract$_GlobalConfig_$31286",
+                                "typeIdentifier": "t_contract$_GlobalConfig_$33180",
                                 "typeString": "contract GlobalConfig"
                               }
                             },
@@ -2686,7 +2686,7 @@
                             "lValueRequested": false,
                             "memberName": "owner",
                             "nodeType": "MemberAccess",
-                            "referencedDeclaration": 43204,
+                            "referencedDeclaration": 45098,
                             "src": "2086:40:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_external_view$__$returns$_t_address_$",
@@ -2747,10 +2747,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "2064:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2808,7 +2808,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:30:05.884Z",
+  "updatedAt": "2021-02-25T05:55:40.287Z",
   "devdoc": {
     "details": "Contract module which allows children to implement an emergency stop mechanism that can be triggered by an authorized account. * This module is used through inheritance. It will make available the modifiers `whenNotPaused` and `whenPaused`, which can be applied to the functions of your contract. Note that they will not be pausable by simply including this module, only once the modifiers are put in place.",
     "methods": {

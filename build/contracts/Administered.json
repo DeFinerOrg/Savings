@@ -28,20 +28,20 @@
     "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol",
     "exportedSymbols": {
       "Administered": [
-        30610
+        32504
       ],
       "TimelockHarness": [
-        30645
+        32539
       ],
       "TimelockTest": [
-        30692
+        32586
       ]
     },
-    "id": 30693,
+    "id": 32587,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 30603,
+        "id": 32497,
         "literals": [
           "solidity",
           "^",
@@ -49,16 +49,16 @@
           ".14"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:53"
+        "src": "0:24:57"
       },
       {
         "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/contracts/Timelock.sol",
         "file": "../../contracts/Timelock.sol",
-        "id": 30604,
+        "id": 32498,
         "nodeType": "ImportDirective",
-        "scope": 30693,
+        "scope": 32587,
         "sourceUnit": 26698,
-        "src": "26:38:53",
+        "src": "26:38:57",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -68,9 +68,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 30610,
+        "id": 32504,
         "linearizedBaseContracts": [
-          30610
+          32504
         ],
         "name": "Administered",
         "nodeType": "ContractDefinition",
@@ -78,29 +78,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 30609,
+            "id": 32503,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "_acceptAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30605,
+              "id": 32499,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "116:2:53"
+              "src": "116:2:57"
             },
             "returnParameters": {
-              "id": 30608,
+              "id": 32502,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30607,
+                  "id": 32501,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30609,
-                  "src": "137:4:53",
+                  "scope": 32503,
+                  "src": "137:4:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -108,10 +108,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30606,
+                    "id": 32500,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "137:4:53",
+                    "src": "137:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -121,17 +121,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "136:6:53"
+              "src": "136:6:57"
             },
-            "scope": 30610,
-            "src": "95:48:53",
+            "scope": 32504,
+            "src": "95:48:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 30693,
-        "src": "66:79:53"
+        "scope": 32587,
+        "src": "66:79:57"
       },
       {
         "baseContracts": [
@@ -139,19 +139,19 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 30611,
+              "id": 32505,
               "name": "Timelock",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 26697,
-              "src": "175:8:53",
+              "src": "175:8:57",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_Timelock_$26697",
                 "typeString": "contract Timelock"
               }
             },
-            "id": 30612,
+            "id": 32506,
             "nodeType": "InheritanceSpecifier",
-            "src": "175:8:53"
+            "src": "175:8:57"
           }
         ],
         "contractDependencies": [
@@ -160,9 +160,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30645,
+        "id": 32539,
         "linearizedBaseContracts": [
-          30645,
+          32539,
           26697
         ],
         "name": "TimelockHarness",
@@ -170,13 +170,13 @@
         "nodes": [
           {
             "body": {
-              "id": 30623,
+              "id": 32517,
               "nodeType": "Block",
-              "src": "271:7:53",
+              "src": "271:7:57",
               "statements": []
             },
             "documentation": null,
-            "id": 30624,
+            "id": 32518,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -184,12 +184,12 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 30619,
+                    "id": 32513,
                     "name": "admin_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30614,
-                    "src": "248:6:53",
+                    "referencedDeclaration": 32508,
+                    "src": "248:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -197,49 +197,49 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 30620,
+                    "id": 32514,
                     "name": "delay_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30616,
-                    "src": "256:6:53",
+                    "referencedDeclaration": 32510,
+                    "src": "256:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   }
                 ],
-                "id": 30621,
+                "id": 32515,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 30618,
+                  "id": 32512,
                   "name": "Timelock",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
                   "referencedDeclaration": 26697,
-                  "src": "239:8:53",
+                  "src": "239:8:57",
                   "typeDescriptions": {
                     "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
                     "typeString": "type(contract Timelock)"
                   }
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "239:24:53"
+                "src": "239:24:57"
               }
             ],
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30617,
+              "id": 32511,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30614,
+                  "id": 32508,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30624,
-                  "src": "202:14:53",
+                  "scope": 32518,
+                  "src": "202:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -247,10 +247,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30613,
+                    "id": 32507,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "202:7:53",
+                    "src": "202:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -262,11 +262,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30616,
+                  "id": 32510,
                   "name": "delay_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30624,
-                  "src": "218:11:53",
+                  "scope": 32518,
+                  "src": "218:11:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -274,10 +274,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30615,
+                    "id": 32509,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "218:4:53",
+                    "src": "218:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -287,42 +287,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "201:29:53"
+              "src": "201:29:57"
             },
             "returnParameters": {
-              "id": 30622,
+              "id": 32516,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "271:0:53"
+              "src": "271:0:57"
             },
-            "scope": 30645,
-            "src": "190:88:53",
+            "scope": 32539,
+            "src": "190:88:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30633,
+              "id": 32527,
               "nodeType": "Block",
-              "src": "346:45:53",
+              "src": "346:45:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30631,
+                    "id": 32525,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30629,
+                      "id": 32523,
                       "name": "pendingAdmin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26316,
-                      "src": "356:12:53",
+                      "src": "356:12:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -332,47 +332,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30630,
+                      "id": 32524,
                       "name": "pendingAdmin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30626,
-                      "src": "371:13:53",
+                      "referencedDeclaration": 32520,
+                      "src": "371:13:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "356:28:53",
+                    "src": "356:28:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30632,
+                  "id": 32526,
                   "nodeType": "ExpressionStatement",
-                  "src": "356:28:53"
+                  "src": "356:28:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30634,
+            "id": 32528,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetPendingAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30627,
+              "id": 32521,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30626,
+                  "id": 32520,
                   "name": "pendingAdmin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30634,
-                  "src": "316:21:53",
+                  "scope": 32528,
+                  "src": "316:21:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -380,10 +380,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30625,
+                    "id": 32519,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "316:7:53",
+                    "src": "316:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -394,42 +394,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "315:23:53"
+              "src": "315:23:57"
             },
             "returnParameters": {
-              "id": 30628,
+              "id": 32522,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "346:0:53"
+              "src": "346:0:57"
             },
-            "scope": 30645,
-            "src": "284:107:53",
+            "scope": 32539,
+            "src": "284:107:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30643,
+              "id": 32537,
               "nodeType": "Block",
-              "src": "445:31:53",
+              "src": "445:31:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30641,
+                    "id": 32535,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30639,
+                      "id": 32533,
                       "name": "admin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26314,
-                      "src": "455:5:53",
+                      "src": "455:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -439,47 +439,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30640,
+                      "id": 32534,
                       "name": "admin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30636,
-                      "src": "463:6:53",
+                      "referencedDeclaration": 32530,
+                      "src": "463:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "455:14:53",
+                    "src": "455:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30642,
+                  "id": 32536,
                   "nodeType": "ExpressionStatement",
-                  "src": "455:14:53"
+                  "src": "455:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30644,
+            "id": 32538,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30637,
+              "id": 32531,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30636,
+                  "id": 32530,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30644,
-                  "src": "422:14:53",
+                  "scope": 32538,
+                  "src": "422:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -487,10 +487,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30635,
+                    "id": 32529,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "422:7:53",
+                    "src": "422:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -501,23 +501,23 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "421:16:53"
+              "src": "421:16:57"
             },
             "returnParameters": {
-              "id": 30638,
+              "id": 32532,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "445:0:53"
+              "src": "445:0:57"
             },
-            "scope": 30645,
-            "src": "397:79:53",
+            "scope": 32539,
+            "src": "397:79:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 30693,
-        "src": "147:331:53"
+        "scope": 32587,
+        "src": "147:331:57"
       },
       {
         "baseContracts": [
@@ -525,19 +525,19 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 30646,
+              "id": 32540,
               "name": "Timelock",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 26697,
-              "src": "505:8:53",
+              "src": "505:8:57",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_Timelock_$26697",
                 "typeString": "contract Timelock"
               }
             },
-            "id": 30647,
+            "id": 32541,
             "nodeType": "InheritanceSpecifier",
-            "src": "505:8:53"
+            "src": "505:8:57"
           }
         ],
         "contractDependencies": [
@@ -546,9 +546,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30692,
+        "id": 32586,
         "linearizedBaseContracts": [
-          30692,
+          32586,
           26697
         ],
         "name": "TimelockTest",
@@ -556,26 +556,26 @@
         "nodes": [
           {
             "body": {
-              "id": 30662,
+              "id": 32556,
               "nodeType": "Block",
-              "src": "593:31:53",
+              "src": "593:31:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30660,
+                    "id": 32554,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30658,
+                      "id": 32552,
                       "name": "delay",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26318,
-                      "src": "603:5:53",
+                      "src": "603:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -585,31 +585,31 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30659,
+                      "id": 32553,
                       "name": "delay_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30651,
-                      "src": "611:6:53",
+                      "referencedDeclaration": 32545,
+                      "src": "611:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "603:14:53",
+                    "src": "603:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 30661,
+                  "id": 32555,
                   "nodeType": "ExpressionStatement",
-                  "src": "603:14:53"
+                  "src": "603:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30663,
+            "id": 32557,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -617,12 +617,12 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 30654,
+                    "id": 32548,
                     "name": "admin_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30649,
-                    "src": "570:6:53",
+                    "referencedDeclaration": 32543,
+                    "src": "570:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -631,14 +631,14 @@
                   {
                     "argumentTypes": null,
                     "hexValue": "32",
-                    "id": 30655,
+                    "id": 32549,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": true,
                     "kind": "number",
                     "lValueRequested": false,
                     "nodeType": "Literal",
-                    "src": "578:6:53",
+                    "src": "578:6:57",
                     "subdenomination": "days",
                     "typeDescriptions": {
                       "typeIdentifier": "t_rational_172800_by_1",
@@ -647,37 +647,37 @@
                     "value": "2"
                   }
                 ],
-                "id": 30656,
+                "id": 32550,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 30653,
+                  "id": 32547,
                   "name": "Timelock",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
                   "referencedDeclaration": 26697,
-                  "src": "561:8:53",
+                  "src": "561:8:57",
                   "typeDescriptions": {
                     "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
                     "typeString": "type(contract Timelock)"
                   }
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "561:24:53"
+                "src": "561:24:57"
               }
             ],
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30652,
+              "id": 32546,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30649,
+                  "id": 32543,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30663,
-                  "src": "532:14:53",
+                  "scope": 32557,
+                  "src": "532:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -685,10 +685,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30648,
+                    "id": 32542,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "532:7:53",
+                    "src": "532:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -700,11 +700,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30651,
+                  "id": 32545,
                   "name": "delay_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30663,
-                  "src": "548:11:53",
+                  "scope": 32557,
+                  "src": "548:11:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -712,10 +712,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30650,
+                    "id": 32544,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "548:4:53",
+                    "src": "548:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -725,25 +725,25 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "531:29:53"
+              "src": "531:29:57"
             },
             "returnParameters": {
-              "id": 30657,
+              "id": 32551,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "593:0:53"
+              "src": "593:0:57"
             },
-            "scope": 30692,
-            "src": "520:104:53",
+            "scope": 32586,
+            "src": "520:104:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30679,
+              "id": 32573,
               "nodeType": "Block",
-              "src": "678:69:53",
+              "src": "678:69:57",
               "statements": [
                 {
                   "expression": {
@@ -755,7 +755,7 @@
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         },
-                        "id": 30672,
+                        "id": 32566,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -764,18 +764,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 30669,
+                            "id": 32563,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
-                            "src": "696:3:53",
+                            "referencedDeclaration": 46045,
+                            "src": "696:3:57",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 30670,
+                          "id": 32564,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -783,7 +783,7 @@
                           "memberName": "sender",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": null,
-                          "src": "696:10:53",
+                          "src": "696:10:57",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address_payable",
                             "typeString": "address payable"
@@ -793,18 +793,18 @@
                         "operator": "==",
                         "rightExpression": {
                           "argumentTypes": null,
-                          "id": 30671,
+                          "id": 32565,
                           "name": "admin",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 26314,
-                          "src": "710:5:53",
+                          "src": "710:5:57",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
                           }
                         },
-                        "src": "696:19:53",
+                        "src": "696:19:57",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -818,21 +818,21 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 30668,
+                      "id": 32562,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44154,
-                      "src": "688:7:53",
+                      "referencedDeclaration": 46048,
+                      "src": "688:7:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 30673,
+                    "id": 32567,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -840,32 +840,32 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "688:28:53",
+                    "src": "688:28:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 30674,
+                  "id": 32568,
                   "nodeType": "ExpressionStatement",
-                  "src": "688:28:53"
+                  "src": "688:28:57"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30677,
+                    "id": 32571,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30675,
+                      "id": 32569,
                       "name": "admin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26314,
-                      "src": "726:5:53",
+                      "src": "726:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -875,47 +875,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30676,
+                      "id": 32570,
                       "name": "admin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30665,
-                      "src": "734:6:53",
+                      "referencedDeclaration": 32559,
+                      "src": "734:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "726:14:53",
+                    "src": "726:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30678,
+                  "id": 32572,
                   "nodeType": "ExpressionStatement",
-                  "src": "726:14:53"
+                  "src": "726:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30680,
+            "id": 32574,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30666,
+              "id": 32560,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30665,
+                  "id": 32559,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30680,
-                  "src": "655:14:53",
+                  "scope": 32574,
+                  "src": "655:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -923,10 +923,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30664,
+                    "id": 32558,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "655:7:53",
+                    "src": "655:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -937,25 +937,25 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "654:16:53"
+              "src": "654:16:57"
             },
             "returnParameters": {
-              "id": 30667,
+              "id": 32561,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "678:0:53"
+              "src": "678:0:57"
             },
-            "scope": 30692,
-            "src": "630:117:53",
+            "scope": 32586,
+            "src": "630:117:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30690,
+              "id": 32584,
               "nodeType": "Block",
-              "src": "815:44:53",
+              "src": "815:44:57",
               "statements": [
                 {
                   "expression": {
@@ -965,32 +965,32 @@
                       "argumentTypes": [],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 30685,
+                        "id": 32579,
                         "name": "administered",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30682,
-                        "src": "825:12:53",
+                        "referencedDeclaration": 32576,
+                        "src": "825:12:57",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Administered_$30610",
+                          "typeIdentifier": "t_contract$_Administered_$32504",
                           "typeString": "contract Administered"
                         }
                       },
-                      "id": 30687,
+                      "id": 32581,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "_acceptAdmin",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 30609,
-                      "src": "825:25:53",
+                      "referencedDeclaration": 32503,
+                      "src": "825:25:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$__$returns$_t_uint256_$",
                         "typeString": "function () external returns (uint256)"
                       }
                     },
-                    "id": 30688,
+                    "id": 32582,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -998,51 +998,51 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "825:27:53",
+                    "src": "825:27:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 30689,
+                  "id": 32583,
                   "nodeType": "ExpressionStatement",
-                  "src": "825:27:53"
+                  "src": "825:27:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30691,
+            "id": 32585,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessAcceptAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30683,
+              "id": 32577,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30682,
+                  "id": 32576,
                   "name": "administered",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30691,
-                  "src": "781:25:53",
+                  "scope": 32585,
+                  "src": "781:25:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Administered_$30610",
+                    "typeIdentifier": "t_contract$_Administered_$32504",
                     "typeString": "contract Administered"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 30681,
+                    "id": 32575,
                     "name": "Administered",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 30610,
-                    "src": "781:12:53",
+                    "referencedDeclaration": 32504,
+                    "src": "781:12:57",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Administered_$30610",
+                      "typeIdentifier": "t_contract$_Administered_$32504",
                       "typeString": "contract Administered"
                     }
                   },
@@ -1050,45 +1050,45 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "780:27:53"
+              "src": "780:27:57"
             },
             "returnParameters": {
-              "id": 30684,
+              "id": 32578,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "815:0:53"
+              "src": "815:0:57"
             },
-            "scope": 30692,
-            "src": "753:106:53",
+            "scope": 32586,
+            "src": "753:106:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 30693,
-        "src": "480:381:53"
+        "scope": 32587,
+        "src": "480:381:57"
       }
     ],
-    "src": "0:862:53"
+    "src": "0:862:57"
   },
   "legacyAST": {
     "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol",
     "exportedSymbols": {
       "Administered": [
-        30610
+        32504
       ],
       "TimelockHarness": [
-        30645
+        32539
       ],
       "TimelockTest": [
-        30692
+        32586
       ]
     },
-    "id": 30693,
+    "id": 32587,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 30603,
+        "id": 32497,
         "literals": [
           "solidity",
           "^",
@@ -1096,16 +1096,16 @@
           ".14"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:53"
+        "src": "0:24:57"
       },
       {
         "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/contracts/Timelock.sol",
         "file": "../../contracts/Timelock.sol",
-        "id": 30604,
+        "id": 32498,
         "nodeType": "ImportDirective",
-        "scope": 30693,
+        "scope": 32587,
         "sourceUnit": 26698,
-        "src": "26:38:53",
+        "src": "26:38:57",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -1115,9 +1115,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 30610,
+        "id": 32504,
         "linearizedBaseContracts": [
-          30610
+          32504
         ],
         "name": "Administered",
         "nodeType": "ContractDefinition",
@@ -1125,29 +1125,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 30609,
+            "id": 32503,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "_acceptAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30605,
+              "id": 32499,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "116:2:53"
+              "src": "116:2:57"
             },
             "returnParameters": {
-              "id": 30608,
+              "id": 32502,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30607,
+                  "id": 32501,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30609,
-                  "src": "137:4:53",
+                  "scope": 32503,
+                  "src": "137:4:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1155,10 +1155,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30606,
+                    "id": 32500,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "137:4:53",
+                    "src": "137:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1168,17 +1168,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "136:6:53"
+              "src": "136:6:57"
             },
-            "scope": 30610,
-            "src": "95:48:53",
+            "scope": 32504,
+            "src": "95:48:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 30693,
-        "src": "66:79:53"
+        "scope": 32587,
+        "src": "66:79:57"
       },
       {
         "baseContracts": [
@@ -1186,19 +1186,19 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 30611,
+              "id": 32505,
               "name": "Timelock",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 26697,
-              "src": "175:8:53",
+              "src": "175:8:57",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_Timelock_$26697",
                 "typeString": "contract Timelock"
               }
             },
-            "id": 30612,
+            "id": 32506,
             "nodeType": "InheritanceSpecifier",
-            "src": "175:8:53"
+            "src": "175:8:57"
           }
         ],
         "contractDependencies": [
@@ -1207,9 +1207,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30645,
+        "id": 32539,
         "linearizedBaseContracts": [
-          30645,
+          32539,
           26697
         ],
         "name": "TimelockHarness",
@@ -1217,13 +1217,13 @@
         "nodes": [
           {
             "body": {
-              "id": 30623,
+              "id": 32517,
               "nodeType": "Block",
-              "src": "271:7:53",
+              "src": "271:7:57",
               "statements": []
             },
             "documentation": null,
-            "id": 30624,
+            "id": 32518,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -1231,12 +1231,12 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 30619,
+                    "id": 32513,
                     "name": "admin_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30614,
-                    "src": "248:6:53",
+                    "referencedDeclaration": 32508,
+                    "src": "248:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -1244,49 +1244,49 @@
                   },
                   {
                     "argumentTypes": null,
-                    "id": 30620,
+                    "id": 32514,
                     "name": "delay_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30616,
-                    "src": "256:6:53",
+                    "referencedDeclaration": 32510,
+                    "src": "256:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   }
                 ],
-                "id": 30621,
+                "id": 32515,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 30618,
+                  "id": 32512,
                   "name": "Timelock",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
                   "referencedDeclaration": 26697,
-                  "src": "239:8:53",
+                  "src": "239:8:57",
                   "typeDescriptions": {
                     "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
                     "typeString": "type(contract Timelock)"
                   }
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "239:24:53"
+                "src": "239:24:57"
               }
             ],
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30617,
+              "id": 32511,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30614,
+                  "id": 32508,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30624,
-                  "src": "202:14:53",
+                  "scope": 32518,
+                  "src": "202:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1294,10 +1294,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30613,
+                    "id": 32507,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "202:7:53",
+                    "src": "202:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1309,11 +1309,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30616,
+                  "id": 32510,
                   "name": "delay_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30624,
-                  "src": "218:11:53",
+                  "scope": 32518,
+                  "src": "218:11:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1321,10 +1321,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30615,
+                    "id": 32509,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "218:4:53",
+                    "src": "218:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1334,42 +1334,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "201:29:53"
+              "src": "201:29:57"
             },
             "returnParameters": {
-              "id": 30622,
+              "id": 32516,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "271:0:53"
+              "src": "271:0:57"
             },
-            "scope": 30645,
-            "src": "190:88:53",
+            "scope": 32539,
+            "src": "190:88:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30633,
+              "id": 32527,
               "nodeType": "Block",
-              "src": "346:45:53",
+              "src": "346:45:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30631,
+                    "id": 32525,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30629,
+                      "id": 32523,
                       "name": "pendingAdmin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26316,
-                      "src": "356:12:53",
+                      "src": "356:12:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1379,47 +1379,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30630,
+                      "id": 32524,
                       "name": "pendingAdmin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30626,
-                      "src": "371:13:53",
+                      "referencedDeclaration": 32520,
+                      "src": "371:13:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "356:28:53",
+                    "src": "356:28:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30632,
+                  "id": 32526,
                   "nodeType": "ExpressionStatement",
-                  "src": "356:28:53"
+                  "src": "356:28:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30634,
+            "id": 32528,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetPendingAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30627,
+              "id": 32521,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30626,
+                  "id": 32520,
                   "name": "pendingAdmin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30634,
-                  "src": "316:21:53",
+                  "scope": 32528,
+                  "src": "316:21:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1427,10 +1427,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30625,
+                    "id": 32519,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "316:7:53",
+                    "src": "316:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1441,42 +1441,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "315:23:53"
+              "src": "315:23:57"
             },
             "returnParameters": {
-              "id": 30628,
+              "id": 32522,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "346:0:53"
+              "src": "346:0:57"
             },
-            "scope": 30645,
-            "src": "284:107:53",
+            "scope": 32539,
+            "src": "284:107:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30643,
+              "id": 32537,
               "nodeType": "Block",
-              "src": "445:31:53",
+              "src": "445:31:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30641,
+                    "id": 32535,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30639,
+                      "id": 32533,
                       "name": "admin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26314,
-                      "src": "455:5:53",
+                      "src": "455:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1486,47 +1486,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30640,
+                      "id": 32534,
                       "name": "admin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30636,
-                      "src": "463:6:53",
+                      "referencedDeclaration": 32530,
+                      "src": "463:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "455:14:53",
+                    "src": "455:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30642,
+                  "id": 32536,
                   "nodeType": "ExpressionStatement",
-                  "src": "455:14:53"
+                  "src": "455:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30644,
+            "id": 32538,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30637,
+              "id": 32531,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30636,
+                  "id": 32530,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30644,
-                  "src": "422:14:53",
+                  "scope": 32538,
+                  "src": "422:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1534,10 +1534,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30635,
+                    "id": 32529,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "422:7:53",
+                    "src": "422:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1548,23 +1548,23 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "421:16:53"
+              "src": "421:16:57"
             },
             "returnParameters": {
-              "id": 30638,
+              "id": 32532,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "445:0:53"
+              "src": "445:0:57"
             },
-            "scope": 30645,
-            "src": "397:79:53",
+            "scope": 32539,
+            "src": "397:79:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 30693,
-        "src": "147:331:53"
+        "scope": 32587,
+        "src": "147:331:57"
       },
       {
         "baseContracts": [
@@ -1572,19 +1572,19 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 30646,
+              "id": 32540,
               "name": "Timelock",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 26697,
-              "src": "505:8:53",
+              "src": "505:8:57",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_Timelock_$26697",
                 "typeString": "contract Timelock"
               }
             },
-            "id": 30647,
+            "id": 32541,
             "nodeType": "InheritanceSpecifier",
-            "src": "505:8:53"
+            "src": "505:8:57"
           }
         ],
         "contractDependencies": [
@@ -1593,9 +1593,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 30692,
+        "id": 32586,
         "linearizedBaseContracts": [
-          30692,
+          32586,
           26697
         ],
         "name": "TimelockTest",
@@ -1603,26 +1603,26 @@
         "nodes": [
           {
             "body": {
-              "id": 30662,
+              "id": 32556,
               "nodeType": "Block",
-              "src": "593:31:53",
+              "src": "593:31:57",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30660,
+                    "id": 32554,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30658,
+                      "id": 32552,
                       "name": "delay",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26318,
-                      "src": "603:5:53",
+                      "src": "603:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1632,31 +1632,31 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30659,
+                      "id": 32553,
                       "name": "delay_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30651,
-                      "src": "611:6:53",
+                      "referencedDeclaration": 32545,
+                      "src": "611:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "603:14:53",
+                    "src": "603:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 30661,
+                  "id": 32555,
                   "nodeType": "ExpressionStatement",
-                  "src": "603:14:53"
+                  "src": "603:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30663,
+            "id": 32557,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [
@@ -1664,12 +1664,12 @@
                 "arguments": [
                   {
                     "argumentTypes": null,
-                    "id": 30654,
+                    "id": 32548,
                     "name": "admin_",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 30649,
-                    "src": "570:6:53",
+                    "referencedDeclaration": 32543,
+                    "src": "570:6:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -1678,14 +1678,14 @@
                   {
                     "argumentTypes": null,
                     "hexValue": "32",
-                    "id": 30655,
+                    "id": 32549,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": true,
                     "kind": "number",
                     "lValueRequested": false,
                     "nodeType": "Literal",
-                    "src": "578:6:53",
+                    "src": "578:6:57",
                     "subdenomination": "days",
                     "typeDescriptions": {
                       "typeIdentifier": "t_rational_172800_by_1",
@@ -1694,37 +1694,37 @@
                     "value": "2"
                   }
                 ],
-                "id": 30656,
+                "id": 32550,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 30653,
+                  "id": 32547,
                   "name": "Timelock",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
                   "referencedDeclaration": 26697,
-                  "src": "561:8:53",
+                  "src": "561:8:57",
                   "typeDescriptions": {
                     "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
                     "typeString": "type(contract Timelock)"
                   }
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "561:24:53"
+                "src": "561:24:57"
               }
             ],
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30652,
+              "id": 32546,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30649,
+                  "id": 32543,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30663,
-                  "src": "532:14:53",
+                  "scope": 32557,
+                  "src": "532:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1732,10 +1732,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30648,
+                    "id": 32542,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "532:7:53",
+                    "src": "532:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1747,11 +1747,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 30651,
+                  "id": 32545,
                   "name": "delay_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30663,
-                  "src": "548:11:53",
+                  "scope": 32557,
+                  "src": "548:11:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1759,10 +1759,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 30650,
+                    "id": 32544,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "548:4:53",
+                    "src": "548:4:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1772,25 +1772,25 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "531:29:53"
+              "src": "531:29:57"
             },
             "returnParameters": {
-              "id": 30657,
+              "id": 32551,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "593:0:53"
+              "src": "593:0:57"
             },
-            "scope": 30692,
-            "src": "520:104:53",
+            "scope": 32586,
+            "src": "520:104:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30679,
+              "id": 32573,
               "nodeType": "Block",
-              "src": "678:69:53",
+              "src": "678:69:57",
               "statements": [
                 {
                   "expression": {
@@ -1802,7 +1802,7 @@
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         },
-                        "id": 30672,
+                        "id": 32566,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1811,18 +1811,18 @@
                           "argumentTypes": null,
                           "expression": {
                             "argumentTypes": null,
-                            "id": 30669,
+                            "id": 32563,
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44151,
-                            "src": "696:3:53",
+                            "referencedDeclaration": 46045,
+                            "src": "696:3:57",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
                             }
                           },
-                          "id": 30670,
+                          "id": 32564,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1830,7 +1830,7 @@
                           "memberName": "sender",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": null,
-                          "src": "696:10:53",
+                          "src": "696:10:57",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address_payable",
                             "typeString": "address payable"
@@ -1840,18 +1840,18 @@
                         "operator": "==",
                         "rightExpression": {
                           "argumentTypes": null,
-                          "id": 30671,
+                          "id": 32565,
                           "name": "admin",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 26314,
-                          "src": "710:5:53",
+                          "src": "710:5:57",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
                           }
                         },
-                        "src": "696:19:53",
+                        "src": "696:19:57",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1865,21 +1865,21 @@
                           "typeString": "bool"
                         }
                       ],
-                      "id": 30668,
+                      "id": 32562,
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44154,
-                      "src": "688:7:53",
+                      "referencedDeclaration": 46048,
+                      "src": "688:7:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
                         "typeString": "function (bool) pure"
                       }
                     },
-                    "id": 30673,
+                    "id": 32567,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1887,32 +1887,32 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "688:28:53",
+                    "src": "688:28:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 30674,
+                  "id": 32568,
                   "nodeType": "ExpressionStatement",
-                  "src": "688:28:53"
+                  "src": "688:28:57"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 30677,
+                    "id": 32571,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 30675,
+                      "id": 32569,
                       "name": "admin",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 26314,
-                      "src": "726:5:53",
+                      "src": "726:5:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1922,47 +1922,47 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 30676,
+                      "id": 32570,
                       "name": "admin_",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 30665,
-                      "src": "734:6:53",
+                      "referencedDeclaration": 32559,
+                      "src": "734:6:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "726:14:53",
+                    "src": "726:14:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
                     }
                   },
-                  "id": 30678,
+                  "id": 32572,
                   "nodeType": "ExpressionStatement",
-                  "src": "726:14:53"
+                  "src": "726:14:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30680,
+            "id": 32574,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessSetAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30666,
+              "id": 32560,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30665,
+                  "id": 32559,
                   "name": "admin_",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30680,
-                  "src": "655:14:53",
+                  "scope": 32574,
+                  "src": "655:14:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1970,10 +1970,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 30664,
+                    "id": 32558,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "655:7:53",
+                    "src": "655:7:57",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1984,25 +1984,25 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "654:16:53"
+              "src": "654:16:57"
             },
             "returnParameters": {
-              "id": 30667,
+              "id": 32561,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "678:0:53"
+              "src": "678:0:57"
             },
-            "scope": 30692,
-            "src": "630:117:53",
+            "scope": 32586,
+            "src": "630:117:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           },
           {
             "body": {
-              "id": 30690,
+              "id": 32584,
               "nodeType": "Block",
-              "src": "815:44:53",
+              "src": "815:44:57",
               "statements": [
                 {
                   "expression": {
@@ -2012,32 +2012,32 @@
                       "argumentTypes": [],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 30685,
+                        "id": 32579,
                         "name": "administered",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 30682,
-                        "src": "825:12:53",
+                        "referencedDeclaration": 32576,
+                        "src": "825:12:57",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Administered_$30610",
+                          "typeIdentifier": "t_contract$_Administered_$32504",
                           "typeString": "contract Administered"
                         }
                       },
-                      "id": 30687,
+                      "id": 32581,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "_acceptAdmin",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 30609,
-                      "src": "825:25:53",
+                      "referencedDeclaration": 32503,
+                      "src": "825:25:57",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$__$returns$_t_uint256_$",
                         "typeString": "function () external returns (uint256)"
                       }
                     },
-                    "id": 30688,
+                    "id": 32582,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2045,51 +2045,51 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "825:27:53",
+                    "src": "825:27:57",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 30689,
+                  "id": 32583,
                   "nodeType": "ExpressionStatement",
-                  "src": "825:27:53"
+                  "src": "825:27:57"
                 }
               ]
             },
             "documentation": null,
-            "id": 30691,
+            "id": 32585,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "harnessAcceptAdmin",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 30683,
+              "id": 32577,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30682,
+                  "id": 32576,
                   "name": "administered",
                   "nodeType": "VariableDeclaration",
-                  "scope": 30691,
-                  "src": "781:25:53",
+                  "scope": 32585,
+                  "src": "781:25:57",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_Administered_$30610",
+                    "typeIdentifier": "t_contract$_Administered_$32504",
                     "typeString": "contract Administered"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 30681,
+                    "id": 32575,
                     "name": "Administered",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 30610,
-                    "src": "781:12:53",
+                    "referencedDeclaration": 32504,
+                    "src": "781:12:57",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Administered_$30610",
+                      "typeIdentifier": "t_contract$_Administered_$32504",
                       "typeString": "contract Administered"
                     }
                   },
@@ -2097,26 +2097,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "780:27:53"
+              "src": "780:27:57"
             },
             "returnParameters": {
-              "id": 30684,
+              "id": 32578,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "815:0:53"
+              "src": "815:0:57"
             },
-            "scope": 30692,
-            "src": "753:106:53",
+            "scope": 32586,
+            "src": "753:106:57",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 30693,
-        "src": "480:381:53"
+        "scope": 32587,
+        "src": "480:381:57"
       }
     ],
-    "src": "0:862:53"
+    "src": "0:862:57"
   },
   "compiler": {
     "name": "solc",
@@ -2124,7 +2124,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:31:02.953Z",
+  "updatedAt": "2021-02-25T05:57:51.493Z",
   "devdoc": {
     "methods": {}
   },

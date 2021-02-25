@@ -17382,7 +17382,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:40:16.247Z",
+  "updatedAt": "2021-02-25T05:57:51.460Z",
   "devdoc": {
     "details": "Implementation of the basic standard token. See https://github.com/ethereum/EIPs/issues/20",
     "methods": {},

@@ -2188,7 +2188,7 @@
         "id": 27121,
         "nodeType": "ImportDirective",
         "scope": 28546,
-        "sourceUnit": 29859,
+        "sourceUnit": 30409,
         "src": "206:34:39",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2879,10 +2879,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1044:7:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2955,7 +2955,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "1135:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -3185,7 +3185,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "1387:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -4916,7 +4916,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "3055:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -5152,7 +5152,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "3258:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -7330,7 +7330,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44333,
+                            "referencedDeclaration": 46227,
                             "src": "5296:4:39",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Harness_$27566",
@@ -7380,7 +7380,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "5303:3:39",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -8219,7 +8219,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -8227,10 +8227,10 @@
                         "id": 27623,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "6175:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -8305,10 +8305,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "6217:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -8322,7 +8322,7 @@
                     "nodeType": "FunctionCall",
                     "src": "6217:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -8344,7 +8344,7 @@
                         "referencedDeclaration": 27624,
                         "src": "6275:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -8355,7 +8355,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "6275:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -10303,7 +10303,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "8491:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -10546,10 +10546,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "8613:7:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -10622,7 +10622,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "8704:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -12490,7 +12490,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "10498:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -12726,7 +12726,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "10701:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -14904,7 +14904,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44341,
+                            "referencedDeclaration": 46235,
                             "src": "12739:4:39",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20DelegateHarness_$28189",
@@ -14954,7 +14954,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "12746:3:39",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -15457,7 +15457,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -15465,10 +15465,10 @@
                         "id": 28220,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "13136:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -15543,10 +15543,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "13178:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -15560,7 +15560,7 @@
                     "nodeType": "FunctionCall",
                     "src": "13178:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -15582,7 +15582,7 @@
                         "referencedDeclaration": 28221,
                         "src": "13236:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -15593,7 +15593,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "13236:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -15982,10 +15982,10 @@
                       "name": "revert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44156,
-                        44157
+                        46050,
+                        46051
                       ],
-                      "referencedDeclaration": 44157,
+                      "referencedDeclaration": 46051,
                       "src": "13591:6:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_revert_pure$_t_string_memory_ptr_$returns$__$",
@@ -17311,7 +17311,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -17319,10 +17319,10 @@
                         "id": 28376,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "14917:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -17397,10 +17397,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "14959:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -17414,7 +17414,7 @@
                     "nodeType": "FunctionCall",
                     "src": "14959:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -17436,7 +17436,7 @@
                         "referencedDeclaration": 28377,
                         "src": "15017:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -17447,7 +17447,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "15017:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -18901,7 +18901,7 @@
                     "name": "this",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 44351,
+                    "referencedDeclaration": 46245,
                     "src": "16320:4:39",
                     "typeDescriptions": {
                       "typeIdentifier": "t_contract$_CDaiDelegateMakerHarness_$28545",
@@ -18982,7 +18982,7 @@
                     "name": "this",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 44351,
+                    "referencedDeclaration": 46245,
                     "src": "16404:4:39",
                     "typeDescriptions": {
                       "typeIdentifier": "t_contract$_CDaiDelegateMakerHarness_$28545",
@@ -19327,7 +19327,7 @@
         "id": 27121,
         "nodeType": "ImportDirective",
         "scope": 28546,
-        "sourceUnit": 29859,
+        "sourceUnit": 30409,
         "src": "206:34:39",
         "symbolAliases": [],
         "unitAlias": ""
@@ -20018,10 +20018,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "1044:7:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -20094,7 +20094,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "1135:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -20324,7 +20324,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "1387:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -22055,7 +22055,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "3055:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -22291,7 +22291,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44334,
+                        "referencedDeclaration": 46228,
                         "src": "3258:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20Harness_$27566",
@@ -24469,7 +24469,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44333,
+                            "referencedDeclaration": 46227,
                             "src": "5296:4:39",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20Harness_$27566",
@@ -24519,7 +24519,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "5303:3:39",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -25358,7 +25358,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -25366,10 +25366,10 @@
                         "id": 27623,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "6175:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -25444,10 +25444,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "6217:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -25461,7 +25461,7 @@
                     "nodeType": "FunctionCall",
                     "src": "6217:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -25483,7 +25483,7 @@
                         "referencedDeclaration": 27624,
                         "src": "6275:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -25494,7 +25494,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "6275:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -27442,7 +27442,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "8491:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -27685,10 +27685,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44154,
-                        44155
+                        46048,
+                        46049
                       ],
-                      "referencedDeclaration": 44155,
+                      "referencedDeclaration": 46049,
                       "src": "8613:7:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -27761,7 +27761,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "8704:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -29629,7 +29629,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "10498:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -29865,7 +29865,7 @@
                         "name": "super",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44342,
+                        "referencedDeclaration": 46236,
                         "src": "10701:5:39",
                         "typeDescriptions": {
                           "typeIdentifier": "t_super$_CErc20DelegateHarness_$28189",
@@ -32043,7 +32043,7 @@
                             "name": "this",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 44341,
+                            "referencedDeclaration": 46235,
                             "src": "12739:4:39",
                             "typeDescriptions": {
                               "typeIdentifier": "t_contract$_CErc20DelegateHarness_$28189",
@@ -32093,7 +32093,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 44151,
+                          "referencedDeclaration": 46045,
                           "src": "12746:3:39",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -32596,7 +32596,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -32604,10 +32604,10 @@
                         "id": 28220,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "13136:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -32682,10 +32682,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "13178:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -32699,7 +32699,7 @@
                     "nodeType": "FunctionCall",
                     "src": "13178:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -32721,7 +32721,7 @@
                         "referencedDeclaration": 28221,
                         "src": "13236:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -32732,7 +32732,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "13236:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -33121,10 +33121,10 @@
                       "name": "revert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        44156,
-                        44157
+                        46050,
+                        46051
                       ],
-                      "referencedDeclaration": 44157,
+                      "referencedDeclaration": 46051,
                       "src": "13591:6:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_revert_pure$_t_string_memory_ptr_$returns$__$",
@@ -34450,7 +34450,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                        "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                         "typeString": "contract ComptrollerScenario"
                       },
                       "typeName": {
@@ -34458,10 +34458,10 @@
                         "id": 28376,
                         "name": "ComptrollerScenario",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 29105,
+                        "referencedDeclaration": 29655,
                         "src": "14917:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -34536,10 +34536,10 @@
                       "name": "ComptrollerScenario",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 29105,
+                      "referencedDeclaration": 29655,
                       "src": "14959:19:39",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29105_$",
+                        "typeIdentifier": "t_type$_t_contract$_ComptrollerScenario_$29655_$",
                         "typeString": "type(contract ComptrollerScenario)"
                       }
                     },
@@ -34553,7 +34553,7 @@
                     "nodeType": "FunctionCall",
                     "src": "14959:41:39",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                      "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                       "typeString": "contract ComptrollerScenario"
                     }
                   },
@@ -34575,7 +34575,7 @@
                         "referencedDeclaration": 28377,
                         "src": "15017:19:39",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29105",
+                          "typeIdentifier": "t_contract$_ComptrollerScenario_$29655",
                           "typeString": "contract ComptrollerScenario"
                         }
                       },
@@ -34586,7 +34586,7 @@
                       "lValueRequested": false,
                       "memberName": "blockNumber",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 28926,
+                      "referencedDeclaration": 29476,
                       "src": "15017:31:39",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_uint256_$",
@@ -36040,7 +36040,7 @@
                     "name": "this",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 44351,
+                    "referencedDeclaration": 46245,
                     "src": "16320:4:39",
                     "typeDescriptions": {
                       "typeIdentifier": "t_contract$_CDaiDelegateMakerHarness_$28545",
@@ -36121,7 +36121,7 @@
                     "name": "this",
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
-                    "referencedDeclaration": 44351,
+                    "referencedDeclaration": 46245,
                     "src": "16404:4:39",
                     "typeDescriptions": {
                       "typeIdentifier": "t_contract$_CDaiDelegateMakerHarness_$28545",
@@ -36374,7 +36374,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2021-02-25T05:30:06.243Z",
+  "updatedAt": "2021-02-25T05:55:40.790Z",
   "devdoc": {
     "methods": {
       "_acceptAdmin()": {
