@@ -4,14 +4,13 @@ import "./InterestRateModel.sol";
 import "./SafeMath.sol";
 
 /**
-  * @title Compound's WhitePaperInterestRateModel Contract
+  * @title Compound's JumpRateModel Contract
   * @author Compound
-  * @notice The parameterized model described in section 2.4 of the original Compound Protocol whitepaper
   */
-contract WhitePaperInterestRateModel is InterestRateModel {
+contract JumpRateModel is InterestRateModel {
     using SafeMath for uint;
 
-    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock);
+    event NewInterestParams(uint baseRatePerBlock, uint multiplierPerBlock, uint jumpMultiplierPerBlock, uint kink);
 
     /**
      * @notice The approximate number of blocks per year that is assumed by the interest rate model
@@ -29,15 +28,29 @@ contract WhitePaperInterestRateModel is InterestRateModel {
     uint public baseRatePerBlock;
 
     /**
+     * @notice The multiplierPerBlock after hitting a specified utilization point
+     */
+    uint public jumpMultiplierPerBlock;
+
+    /**
+     * @notice The utilization point at which the jump multiplier is applied
+     */
+    uint public kink;
+
+    /**
      * @notice Construct an interest rate model
      * @param baseRatePerYear The approximate target base APR, as a mantissa (scaled by 1e18)
      * @param multiplierPerYear The rate of increase in interest rate wrt utilization (scaled by 1e18)
+     * @param jumpMultiplierPerYear The multiplierPerBlock after hitting a specified utilization point
+     * @param kink_ The utilization point at which the jump multiplier is applied
      */
-    constructor(uint baseRatePerYear, uint multiplierPerYear) public {
+    constructor(uint baseRatePerYear, uint multiplierPerYear, uint jumpMultiplierPerYear, uint kink_) public {
         baseRatePerBlock = baseRatePerYear.div(blocksPerYear);
         multiplierPerBlock = multiplierPerYear.div(blocksPerYear);
+        jumpMultiplierPerBlock = jumpMultiplierPerYear.div(blocksPerYear);
+        kink = kink_;
 
-        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock);
+        emit NewInterestParams(baseRatePerBlock, multiplierPerBlock, jumpMultiplierPerBlock, kink);
     }
 
     /**
@@ -64,8 +77,15 @@ contract WhitePaperInterestRateModel is InterestRateModel {
      * @return The borrow rate percentage per block as a mantissa (scaled by 1e18)
      */
     function getBorrowRate(uint cash, uint borrows, uint reserves) public view returns (uint) {
-        uint ur = utilizationRate(cash, borrows, reserves);
-        return ur.mul(multiplierPerBlock).div(1e18).add(baseRatePerBlock);
+        uint util = utilizationRate(cash, borrows, reserves);
+
+        if (util <= kink) {
+            return util.mul(multiplierPerBlock).div(1e18).add(baseRatePerBlock);
+        } else {
+            uint normalRate = kink.mul(multiplierPerBlock).div(1e18).add(baseRatePerBlock);
+            uint excessUtil = util.sub(kink);
+            return excessUtil.mul(jumpMultiplierPerBlock).div(1e18).add(normalRate);
+        }
     }
 
     /**

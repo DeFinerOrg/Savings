@@ -1,4 +1,4 @@
-pragma solidity 0.5.14;
+pragma solidity ^0.5.14;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Governance/Comp.sol";

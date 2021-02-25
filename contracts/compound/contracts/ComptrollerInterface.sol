@@ -1,4 +1,4 @@
-pragma solidity 0.5.14;
+pragma solidity ^0.5.14;
 
 contract ComptrollerInterface {
     /// @notice Indicator that this is a Comptroller contract (for inspection)

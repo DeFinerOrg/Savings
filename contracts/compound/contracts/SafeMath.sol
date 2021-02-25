@@ -1,4 +1,4 @@
-pragma solidity 0.5.14;
+pragma solidity ^0.5.14;
 
 // From https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/Math.sol
 // Subject to the MIT license.

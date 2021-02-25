@@ -1,4 +1,4 @@
-pragma solidity 0.5.14;
+pragma solidity ^0.5.14;
 
 import "./CErc20.sol";
 import "./CToken.sol";

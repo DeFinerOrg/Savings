@@ -1,8 +1,8 @@
-pragma solidity 0.5.14;
+pragma solidity ^0.5.14;
 
 import "../../contracts/Comptroller.sol";
 
-contract ComptrollerScenario2 is Comptroller {
+contract ComptrollerScenario is Comptroller {
     uint public blockNumber;
 
     constructor() Comptroller() public {}
