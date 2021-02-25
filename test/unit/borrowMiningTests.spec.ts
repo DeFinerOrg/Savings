@@ -53,14 +53,9 @@ contract("borrowMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-
-    before(async function () {
-        // Things to initialize before all test
-        this.timeout(0);
-        testEngine = new TestEngine();
-    });
     beforeEach(async function () {
         this.timeout(0);
+        testEngine = new TestEngine();
         await testEngine.deployCompoundWhitePaper(accounts);
 
         savingAccount = await testEngine.deploySavingAccount();
@@ -416,6 +411,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1277119)); // 3007210014379.6274
                             expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1271274)); // 2997625026684.72
                             expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7540));
+
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);

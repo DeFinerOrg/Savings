@@ -38,7 +38,6 @@ const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
 const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
 const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxy");
 const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
-
 var tokenData = require("../test-helpers/tokenData.json");
 
 // var compoundTokens: any = require("../compound-protocol/networks/development.json");
@@ -56,7 +55,7 @@ export class TestEngine {
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
     public comptroller!: t.ComptrollerHarnessInstance
-
+    public COMPTokenAddress!: string
 
     public async deployCompound(address: string[]) {
 
@@ -107,7 +106,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             DAI
         )
         const cZRX = await this.deployCToken(
@@ -115,7 +113,6 @@ export class TestEngine {
             new BN(10).pow(new BN(12)),
             address[0],
             comptroller,
-            interestRateModel,
             ZRX
         )
         const cBAT = await this.deployCToken(
@@ -123,7 +120,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             BAT
         )
         const cTUSD = await this.deployCToken(
@@ -131,7 +127,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             TUSD
         )
         const cMKR = await this.deployCToken(
@@ -139,7 +134,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             MKR
         )
         const cREP = await this.deployCToken(
@@ -147,7 +141,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             REP
         )
         const cUSDC = await this.deployCToken(
@@ -155,7 +148,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             USDC
         )
         const cUSDT = await this.deployCToken(
@@ -163,7 +155,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             USDT
         )
         const cWBTC = await this.deployCToken(
@@ -171,7 +162,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             WBTC
         )
 
@@ -200,6 +190,8 @@ export class TestEngine {
         await this.allocateToken(REP, cREP, address[0], new BN(10).pow(new BN(32)))
         await this.allocateToken(WBTC, cWBTC, address[0], new BN(10).pow(new BN(32)))
 
+        await FIN.allocateTo(address[0], new BN(10).pow(new BN(25)))
+        await LPToken.allocateTo(address[0], new BN(10).pow(new BN(22)))
 
         await comptrollerScen._become(
             unitroller.address,
@@ -254,6 +246,7 @@ export class TestEngine {
         await comptroller.fastForward(300000)
 
         this.comptroller = comptroller
+        this.COMPTokenAddress = COMP.address;
     }
 
     public async deployCompoundWhitePaper(address: string[]) {
@@ -291,6 +284,7 @@ export class TestEngine {
 
         let interestRateModelAddress = whitePaperInterestRateModel.address
         const interestRateModel = await InterestRateModel.at(interestRateModelAddress)
+
         const cETH = await CEtherScenarioContract.new(
             "cETH",
             "cETH",
@@ -306,15 +300,13 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             DAI
         )
         const cZRX = await this.deployCToken(
             "ZRX",
-            new BN(10).pow(new BN(20)),
+            new BN(10).pow(new BN(13)),
             address[0],
             comptroller,
-            interestRateModel,
             ZRX
         )
         const cBAT = await this.deployCToken(
@@ -322,7 +314,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             BAT
         )
         const cTUSD = await this.deployCToken(
@@ -330,7 +321,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             TUSD
         )
         const cMKR = await this.deployCToken(
@@ -338,7 +328,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             MKR
         )
         const cREP = await this.deployCToken(
@@ -346,23 +335,20 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             REP
         )
         const cUSDC = await this.deployCToken(
             "USDC",
-            new BN(10).pow(new BN(17)),
+            new BN(10).pow(new BN(13)),
             address[0],
             comptroller,
-            interestRateModel,
             USDC
         )
         const cUSDT = await this.deployCToken(
             "USDT",
-            new BN(10).pow(new BN(17)),
+            new BN(10).pow(new BN(13)),
             address[0],
             comptroller,
-            interestRateModel,
             USDT
         )
         const cWBTC = await this.deployCToken(
@@ -370,7 +356,6 @@ export class TestEngine {
             new BN(10).pow(new BN(17)),
             address[0],
             comptroller,
-            interestRateModel,
             WBTC
         )
 
@@ -389,17 +374,18 @@ export class TestEngine {
         const comptrollerScen = await ComptrollerScenario.new()
         await unitroller._setPendingImplementation(comptrollerScen.address)
 
-        await this.allocateToken(BAT, cBAT, address[0])
-        await this.allocateToken(ZRX, cZRX, address[0])
-        await this.allocateToken(DAI, cDAI, address[0])
-        await this.allocateToken(USDC, cUSDC, address[0])
-        await this.allocateToken(USDT, cUSDT, address[0])
-        await this.allocateToken(TUSD, cTUSD, address[0])
-        await this.allocateToken(MKR, cMKR, address[0])
-        await this.allocateToken(REP, cREP, address[0])
-        await this.allocateToken(WBTC, cWBTC, address[0])
+        await this.allocateToken(BAT, cBAT, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(ZRX, cZRX, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(DAI, cDAI, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(USDC, cUSDC, address[0], new BN(10).pow(new BN(10)))
+        await this.allocateToken(USDT, cUSDT, address[0], new BN(10).pow(new BN(10)))
+        await this.allocateToken(TUSD, cTUSD, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(MKR, cMKR, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(REP, cREP, address[0], new BN(10).pow(new BN(22)))
+        await this.allocateToken(WBTC, cWBTC, address[0], new BN(10).pow(new BN(12)))
 
-        await FIN.allocateTo(address[0], new BN(10).pow(new BN(24)))
+        await FIN.allocateTo(address[0], new BN(10).pow(new BN(25)))
+        await LPToken.allocateTo(address[0], new BN(10).pow(new BN(22)))
 
 
         await this.prepareUser(BAT, cBAT, address[4], comptroller, new BN(6).mul(new BN(10).pow(new BN(18))))
@@ -463,6 +449,9 @@ export class TestEngine {
         await comptroller.fastForward(300000)
         this.comptroller = comptroller
 
+        this.COMPTokenAddress = COMP.address;
+
+
     }
 
 
@@ -500,15 +489,18 @@ export class TestEngine {
         initialExchangeRate: BN,
         owner: string,
         comp: t.ComptrollerScenarioInstance,
-        rateModel: t.InterestRateModelInstance,
         erc20: t.FaucetTokenInstance) {
-
+        const whitePaperInterestRateModel = await WhitePaperInterestRateModel.new(
+            new BN(5).mul(new BN(10).pow(new BN(13))),
+            new BN(2).mul(new BN(10).pow(new BN(17))))
+        let interestRateModelAddress = whitePaperInterestRateModel.address
+        const interestRateModel = await InterestRateModel.at(interestRateModelAddress)
         const cName = "c" + name
         const dele = await CErc20Delegate.new()
         const cToken = await CErc20DelegatorScenario.new(
             erc20.address,
             comp.address,
-            rateModel.address,
+            interestRateModel.address,
             initialExchangeRate,
             cName,
             cName,
@@ -743,9 +735,7 @@ export class TestEngine {
     }
 
     public async getCOMPTokenAddress(): Promise<string> {
-        const network = process.env.NETWORK;
-        var COMPTokenAddress = compoundTokens.Contracts.COMP;
-        return COMPTokenAddress;
+        return this.COMPTokenAddress;
     }
 
     // This acts the same as deploySavingAccount, but this one can be used in truffle test suite.

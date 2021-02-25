@@ -1,6 +1,7 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
 import { saveContract } from "../../compound-protocol/scenario/src/Networks";
+
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -76,6 +77,8 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     let ONE_USDC: any;
     let ZERO: any;
 
+    let comptroller: t.ComptrollerScenarioG2Instance
+
     before(async function () {
         // Things to initialize before all test
         this.timeout(0);
@@ -96,7 +99,6 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
-
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
         mockChainlinkAggregatorforUSDTAddress = mockChainlinkAggregators[2];
@@ -157,7 +159,15 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
             it("RateTest4: should deposit DAI, borrow USDC and repay after one month", async () => {
                 // this.timeout(0);
                 await savingAccount.fastForward(1000);
-
+                console.log("DAI Rate is1:", (await cDAI.borrowRatePerBlock()).toString())
+                console.log("USDC Rate is1:", (await cUSDC.borrowRatePerBlock()).toString())
+                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
+                console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("DAI total supply", (await cDAI.totalSupply()).toString())
+                console.log("USDC total supply", (await cUSDC.totalSupply()).toString())
+                console.log("DAI exchange rate", (await cDAI.exchangeRateCurrent.call()).toString())
+                console.log("USDC exchange rate", (await cUSDC.exchangeRateCurrent.call()).toString())
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);
@@ -201,6 +211,15 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
                 // 2. Start borrowing.
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
+                console.log("DAI Rate is2:", (await cDAI.borrowRatePerBlock()).toString())
+                console.log("USDC Rate is2:", (await cUSDC.borrowRatePerBlock()).toString())
+                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
+                console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("DAI total supply", (await cDAI.totalSupply()).toString())
+                console.log("USDC total supply", (await cUSDC.totalSupply()).toString())
+                console.log("DAI exchange rate", (await cDAI.exchangeRateCurrent.call()).toString())
+                console.log("USDC exchange rate", (await cUSDC.exchangeRateCurrent.call()).toString())
                 const user1BalanceBefore = await erc20USDC.balanceOf(user1);
                 const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
                     erc20USDC.address,
@@ -277,7 +296,15 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
 
                 // 3. Start repayment.
                 await savingAccount.repay(addressUSDC, new BN(100), { from: user1 });
-
+                console.log("DAI Rate is3:", (await cDAI.borrowRatePerBlock()).toString())
+                console.log("USDC Rate is3:", (await cUSDC.borrowRatePerBlock()).toString())
+                console.log("block number is", (await savingAccount.getBlockNumber()).toString())
+                console.log("DAI balance is:", (await cDAI.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("USDC balance is:", (await cUSDC.balanceOfUnderlying.call(savingAccount.address)).toString())
+                console.log("DAI total supply", (await cDAI.totalSupply()).toString())
+                console.log("USDC total supply", (await cUSDC.totalSupply()).toString())
+                console.log("DAI exchange rate", (await cDAI.exchangeRateCurrent.call()).toString())
+                console.log("USDC exchange rate", (await cUSDC.exchangeRateCurrent.call()).toString())
                 // Verify Compound after repay
                 const tokenStateAfterRepay = await savingAccount.getTokenState(addressUSDC, {
                     from: user1,
