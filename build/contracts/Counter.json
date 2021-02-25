@@ -1,0 +1,1843 @@
+{
+  "contractName": "Counter",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "count",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "count2",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "decrement",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "increment",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount2",
+          "type": "uint256"
+        }
+      ],
+      "name": "increment",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "notZero",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "doRevert",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.14+commit.01f1aaa4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"count\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"count2\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"decrement\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"doRevert\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"increment\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount2\",\"type\":\"uint256\"}],\"name\":\"increment\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"notZero\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Counter.sol\":\"Counter\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Counter.sol\":{\"keccak256\":\"0x0e1b0c3cba045a644e4d93d309cde5e576b54b17c65246d5a63a5c95230849bb\",\"urls\":[\"bzz-raw://2e8f8f4f5fd6661d04529d5014bf5bee40c71a5e7c63257a7f7eee990fb81688\",\"dweb:/ipfs/QmaVMGmKXu3yUm7R1gz2ojdqxfQiRYQwvN9p84Fmg8YC9D\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610288806100206000396000f3fe6080604052600436106100705760003560e01c80633a9ebefd1161004e5780633a9ebefd146100c85780637cf5dab0146100e5578063924ba50614610102578063afc874d21461012557610070565b806306661abd1461007557806319a50d4a1461009c5780631d63e24d146100b3575b600080fd5b34801561008157600080fd5b5061008a61013a565b60408051918252519081900360200190f35b3480156100a857600080fd5b506100b1610140565b005b3480156100bf57600080fd5b5061008a610189565b6100b1600480360360208110156100de57600080fd5b503561018f565b6100b1600480360360208110156100fb57600080fd5b50356101e6565b6100b16004803603604081101561011857600080fd5b50803590602001356101f1565b34801561013157600080fd5b506100b1610206565b60005481565b600054610187576040805162461bcd60e51b815260206004820152601060248201526f436f756e7465723a3a6e6f745a65726f60801b604482015290519081900360640190fd5b565b60015481565b6000548111156101da576040805162461bcd60e51b8152602060048201526011602482015270636f756e74657220756e646572666c6f7760781b604482015290519081900360640190fd5b60008054919091039055565b600080549091019055565b60008054909201909155600180549091019055565b6040805162461bcd60e51b815260206004820152601760248201527f436f756e7465723a3a7265766572742054657374696e67000000000000000000604482015290519081900360640190fdfea265627a7a72315820cabbd8111a751ad3a62f095adbbd2661c74f009c2683ea30523b7af5c825a8de64736f6c634300050e0032",
+  "deployedBytecode": "0x6080604052600436106100705760003560e01c80633a9ebefd1161004e5780633a9ebefd146100c85780637cf5dab0146100e5578063924ba50614610102578063afc874d21461012557610070565b806306661abd1461007557806319a50d4a1461009c5780631d63e24d146100b3575b600080fd5b34801561008157600080fd5b5061008a61013a565b60408051918252519081900360200190f35b3480156100a857600080fd5b506100b1610140565b005b3480156100bf57600080fd5b5061008a610189565b6100b1600480360360208110156100de57600080fd5b503561018f565b6100b1600480360360208110156100fb57600080fd5b50356101e6565b6100b16004803603604081101561011857600080fd5b50803590602001356101f1565b34801561013157600080fd5b506100b1610206565b60005481565b600054610187576040805162461bcd60e51b815260206004820152601060248201526f436f756e7465723a3a6e6f745a65726f60801b604482015290519081900360640190fd5b565b60015481565b6000548111156101da576040805162461bcd60e51b8152602060048201526011602482015270636f756e74657220756e646572666c6f7760781b604482015290519081900360640190fd5b60008054919091039055565b600080549091019055565b60008054909201909155600180549091019055565b6040805162461bcd60e51b815260206004820152601760248201527f436f756e7465723a3a7265766572742054657374696e67000000000000000000604482015290519081900360640190fdfea265627a7a72315820cabbd8111a751ad3a62f095adbbd2661c74f009c2683ea30523b7af5c825a8de64736f6c634300050e0032",
+  "sourceMap": "26:557:45:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;26:557:45;;;;;;;",
+  "deployedSourceMap": "26:557:45:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;47:17;;8:9:-1;5:2;;;30:1;27;20:12;5:2;47:17:45;;;:::i;:::-;;;;;;;;;;;;;;;;412:81;;8:9:-1;5:2;;;30:1;27;20:12;5:2;412:81:45;;;:::i;:::-;;68:18;;8:9:-1;5:2;;;30:1;27;20:12;5:2;68:18:45;;;:::i;170:124::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;170:124:45;;:::i;93:73::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;93:73:45;;:::i;298:110::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;298:110:45;;;;;;;:::i;497:84::-;;8:9:-1;5:2;;;30:1;27;20:12;5:2;497:84:45;;;:::i;47:17::-;;;;:::o;412:81::-;457:5;;449:39;;;;;-1:-1:-1;;;449:39:45;;;;;;;;;;;;-1:-1:-1;;;449:39:45;;;;;;;;;;;;;;;412:81::o;68:18::-;;;;:::o;170:124::-;241:5;;231:6;:15;;223:45;;;;;-1:-1:-1;;;223:45:45;;;;;;;;;;;;-1:-1:-1;;;223:45:45;;;;;;;;;;;;;;;274:5;:15;;;;;;;;170:124::o;93:73::-;146:5;:15;;;;;;;93:73::o;298:110::-;365:5;:15;;;;;;;;-1:-1:-1;386:17:45;;;;;;;298:110::o;497:84::-;535:41;;;-1:-1:-1;;;535:41:45;;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "source": "pragma solidity ^0.5.14;\n\ncontract Counter {\n  uint public count;\n  uint public count2;\n  \n  function increment(uint amount) public payable {\n    count += amount;\n  }\n\n  function decrement(uint amount) public payable {\n    require(amount <= count, \"counter underflow\");\n    count -= amount;\n  }\n\n  function increment(uint amount, uint amount2) public payable {\n    count += amount;\n    count2 += amount2;\n  }\n\n  function notZero() public view {\n    require(count != 0, \"Counter::notZero\");\n  }\n\n  function doRevert() public pure {\n    require(false, \"Counter::revert Testing\");\n  }\n}\n",
+  "sourcePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Counter.sol",
+  "ast": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Counter.sol",
+    "exportedSymbols": {
+      "Counter": [
+        30232
+      ]
+    },
+    "id": 30233,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30164,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:45"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30232,
+        "linearizedBaseContracts": [
+          30232
+        ],
+        "name": "Counter",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 30166,
+            "name": "count",
+            "nodeType": "VariableDeclaration",
+            "scope": 30232,
+            "src": "47:17:45",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 30165,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "47:4:45",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 30168,
+            "name": "count2",
+            "nodeType": "VariableDeclaration",
+            "scope": 30232,
+            "src": "68:18:45",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 30167,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "68:4:45",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30177,
+              "nodeType": "Block",
+              "src": "140:26:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30175,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30173,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "146:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30174,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30170,
+                      "src": "155:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "146:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30176,
+                  "nodeType": "ExpressionStatement",
+                  "src": "146:15:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30178,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "increment",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30171,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30170,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30178,
+                  "src": "112:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30169,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "112:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "111:13:45"
+            },
+            "returnParameters": {
+              "id": 30172,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "140:0:45"
+            },
+            "scope": 30232,
+            "src": "93:73:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30194,
+              "nodeType": "Block",
+              "src": "217:77:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 30186,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 30184,
+                          "name": "amount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30180,
+                          "src": "231:6:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 30185,
+                          "name": "count",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30166,
+                          "src": "241:5:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "231:15:45",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "636f756e74657220756e646572666c6f77",
+                        "id": 30187,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "248:19:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_badef7a938c1432194e651c54bb6a7077103f2e75e22535c99cb4c342d572578",
+                          "typeString": "literal_string \"counter underflow\""
+                        },
+                        "value": "counter underflow"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_badef7a938c1432194e651c54bb6a7077103f2e75e22535c99cb4c342d572578",
+                          "typeString": "literal_string \"counter underflow\""
+                        }
+                      ],
+                      "id": 30183,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "223:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30188,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "223:45:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30189,
+                  "nodeType": "ExpressionStatement",
+                  "src": "223:45:45"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30192,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30190,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "274:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "-=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30191,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30180,
+                      "src": "283:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "274:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30193,
+                  "nodeType": "ExpressionStatement",
+                  "src": "274:15:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30195,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "decrement",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30181,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30180,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30195,
+                  "src": "189:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30179,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "189:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "188:13:45"
+            },
+            "returnParameters": {
+              "id": 30182,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "217:0:45"
+            },
+            "scope": 30232,
+            "src": "170:124:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30210,
+              "nodeType": "Block",
+              "src": "359:49:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30204,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30202,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "365:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30203,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30197,
+                      "src": "374:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "365:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30205,
+                  "nodeType": "ExpressionStatement",
+                  "src": "365:15:45"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30208,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30206,
+                      "name": "count2",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30168,
+                      "src": "386:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30207,
+                      "name": "amount2",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30199,
+                      "src": "396:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "386:17:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30209,
+                  "nodeType": "ExpressionStatement",
+                  "src": "386:17:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30211,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "increment",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30200,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30197,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30211,
+                  "src": "317:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30196,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "317:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30199,
+                  "name": "amount2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30211,
+                  "src": "330:12:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30198,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "330:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "316:27:45"
+            },
+            "returnParameters": {
+              "id": 30201,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "359:0:45"
+            },
+            "scope": 30232,
+            "src": "298:110:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30221,
+              "nodeType": "Block",
+              "src": "443:50:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 30217,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 30215,
+                          "name": "count",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30166,
+                          "src": "457:5:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "!=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 30216,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "466:1:45",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "457:10:45",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "436f756e7465723a3a6e6f745a65726f",
+                        "id": 30218,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "469:18:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_47908e0a6a875b3d609f0711a52365d61ad1ecd3ae36f2eb09c0bdb437e253d1",
+                          "typeString": "literal_string \"Counter::notZero\""
+                        },
+                        "value": "Counter::notZero"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_47908e0a6a875b3d609f0711a52365d61ad1ecd3ae36f2eb09c0bdb437e253d1",
+                          "typeString": "literal_string \"Counter::notZero\""
+                        }
+                      ],
+                      "id": 30214,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "449:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30219,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "449:39:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30220,
+                  "nodeType": "ExpressionStatement",
+                  "src": "449:39:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30222,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "notZero",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30212,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "428:2:45"
+            },
+            "returnParameters": {
+              "id": 30213,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "443:0:45"
+            },
+            "scope": 30232,
+            "src": "412:81:45",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30230,
+              "nodeType": "Block",
+              "src": "529:52:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "66616c7365",
+                        "id": 30226,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "543:5:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "false"
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "436f756e7465723a3a7265766572742054657374696e67",
+                        "id": 30227,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "550:25:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_e888a9cbe4eb0fec15bee62632bba16c3a1ee94c6dd2b12dc05843118034eac7",
+                          "typeString": "literal_string \"Counter::revert Testing\""
+                        },
+                        "value": "Counter::revert Testing"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_e888a9cbe4eb0fec15bee62632bba16c3a1ee94c6dd2b12dc05843118034eac7",
+                          "typeString": "literal_string \"Counter::revert Testing\""
+                        }
+                      ],
+                      "id": 30225,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "535:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30228,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "535:41:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30229,
+                  "nodeType": "ExpressionStatement",
+                  "src": "535:41:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30231,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doRevert",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30223,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "514:2:45"
+            },
+            "returnParameters": {
+              "id": 30224,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "529:0:45"
+            },
+            "scope": 30232,
+            "src": "497:84:45",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30233,
+        "src": "26:557:45"
+      }
+    ],
+    "src": "0:584:45"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Counter.sol",
+    "exportedSymbols": {
+      "Counter": [
+        30232
+      ]
+    },
+    "id": 30233,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30164,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:45"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30232,
+        "linearizedBaseContracts": [
+          30232
+        ],
+        "name": "Counter",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 30166,
+            "name": "count",
+            "nodeType": "VariableDeclaration",
+            "scope": 30232,
+            "src": "47:17:45",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 30165,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "47:4:45",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 30168,
+            "name": "count2",
+            "nodeType": "VariableDeclaration",
+            "scope": 30232,
+            "src": "68:18:45",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 30167,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "68:4:45",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30177,
+              "nodeType": "Block",
+              "src": "140:26:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30175,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30173,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "146:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30174,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30170,
+                      "src": "155:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "146:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30176,
+                  "nodeType": "ExpressionStatement",
+                  "src": "146:15:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30178,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "increment",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30171,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30170,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30178,
+                  "src": "112:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30169,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "112:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "111:13:45"
+            },
+            "returnParameters": {
+              "id": 30172,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "140:0:45"
+            },
+            "scope": 30232,
+            "src": "93:73:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30194,
+              "nodeType": "Block",
+              "src": "217:77:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 30186,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 30184,
+                          "name": "amount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30180,
+                          "src": "231:6:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 30185,
+                          "name": "count",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30166,
+                          "src": "241:5:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "231:15:45",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "636f756e74657220756e646572666c6f77",
+                        "id": 30187,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "248:19:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_badef7a938c1432194e651c54bb6a7077103f2e75e22535c99cb4c342d572578",
+                          "typeString": "literal_string \"counter underflow\""
+                        },
+                        "value": "counter underflow"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_badef7a938c1432194e651c54bb6a7077103f2e75e22535c99cb4c342d572578",
+                          "typeString": "literal_string \"counter underflow\""
+                        }
+                      ],
+                      "id": 30183,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "223:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30188,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "223:45:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30189,
+                  "nodeType": "ExpressionStatement",
+                  "src": "223:45:45"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30192,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30190,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "274:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "-=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30191,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30180,
+                      "src": "283:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "274:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30193,
+                  "nodeType": "ExpressionStatement",
+                  "src": "274:15:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30195,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "decrement",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30181,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30180,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30195,
+                  "src": "189:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30179,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "189:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "188:13:45"
+            },
+            "returnParameters": {
+              "id": 30182,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "217:0:45"
+            },
+            "scope": 30232,
+            "src": "170:124:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30210,
+              "nodeType": "Block",
+              "src": "359:49:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30204,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30202,
+                      "name": "count",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30166,
+                      "src": "365:5:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30203,
+                      "name": "amount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30197,
+                      "src": "374:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "365:15:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30205,
+                  "nodeType": "ExpressionStatement",
+                  "src": "365:15:45"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30208,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30206,
+                      "name": "count2",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30168,
+                      "src": "386:6:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "+=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30207,
+                      "name": "amount2",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30199,
+                      "src": "396:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "386:17:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30209,
+                  "nodeType": "ExpressionStatement",
+                  "src": "386:17:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30211,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "increment",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30200,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30197,
+                  "name": "amount",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30211,
+                  "src": "317:11:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30196,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "317:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30199,
+                  "name": "amount2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30211,
+                  "src": "330:12:45",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30198,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "330:4:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "316:27:45"
+            },
+            "returnParameters": {
+              "id": 30201,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "359:0:45"
+            },
+            "scope": 30232,
+            "src": "298:110:45",
+            "stateMutability": "payable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30221,
+              "nodeType": "Block",
+              "src": "443:50:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 30217,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 30215,
+                          "name": "count",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30166,
+                          "src": "457:5:45",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "!=",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 30216,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "466:1:45",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "457:10:45",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "436f756e7465723a3a6e6f745a65726f",
+                        "id": 30218,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "469:18:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_47908e0a6a875b3d609f0711a52365d61ad1ecd3ae36f2eb09c0bdb437e253d1",
+                          "typeString": "literal_string \"Counter::notZero\""
+                        },
+                        "value": "Counter::notZero"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_47908e0a6a875b3d609f0711a52365d61ad1ecd3ae36f2eb09c0bdb437e253d1",
+                          "typeString": "literal_string \"Counter::notZero\""
+                        }
+                      ],
+                      "id": 30214,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "449:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30219,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "449:39:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30220,
+                  "nodeType": "ExpressionStatement",
+                  "src": "449:39:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30222,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "notZero",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30212,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "428:2:45"
+            },
+            "returnParameters": {
+              "id": 30213,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "443:0:45"
+            },
+            "scope": 30232,
+            "src": "412:81:45",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30230,
+              "nodeType": "Block",
+              "src": "529:52:45",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "66616c7365",
+                        "id": 30226,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "bool",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "543:5:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "value": "false"
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "436f756e7465723a3a7265766572742054657374696e67",
+                        "id": 30227,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "550:25:45",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_e888a9cbe4eb0fec15bee62632bba16c3a1ee94c6dd2b12dc05843118034eac7",
+                          "typeString": "literal_string \"Counter::revert Testing\""
+                        },
+                        "value": "Counter::revert Testing"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_e888a9cbe4eb0fec15bee62632bba16c3a1ee94c6dd2b12dc05843118034eac7",
+                          "typeString": "literal_string \"Counter::revert Testing\""
+                        }
+                      ],
+                      "id": 30225,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "535:7:45",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 30228,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "535:41:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30229,
+                  "nodeType": "ExpressionStatement",
+                  "src": "535:41:45"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30231,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doRevert",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30223,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "514:2:45"
+            },
+            "returnParameters": {
+              "id": 30224,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "529:0:45"
+            },
+            "scope": 30232,
+            "src": "497:84:45",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30233,
+        "src": "26:557:45"
+      }
+    ],
+    "src": "0:584:45"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.14+commit.01f1aaa4.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2021-02-25T05:30:06.444Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

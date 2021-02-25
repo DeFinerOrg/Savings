@@ -1,0 +1,2134 @@
+{
+  "contractName": "Administered",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "_acceptAdmin",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.14+commit.01f1aaa4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[],\"name\":\"_acceptAdmin\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol\":\"Administered\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/yanyichun/project/Savings/contracts/compound/contracts/SafeMath.sol\":{\"keccak256\":\"0x2c7fda24e17ca2b3eac04e64fe5bc471fe3f0c82c8536be9be3fa5bc1da4585b\",\"urls\":[\"bzz-raw://581ecb0b5d9aaa46b1fc79bc690af2cb92862e8d9d3e498b26113676c17e573f\",\"dweb:/ipfs/QmWqFMMVBpqkxem3XDxMJxoJbyAc92Mtis6zLUx4Aai9oy\"]},\"/Users/yanyichun/project/Savings/contracts/compound/contracts/Timelock.sol\":{\"keccak256\":\"0x6a62b894c4a0986ec96d59eb3fd0c6e3cc8190dc38d1183a90b1dcb97e75fd99\",\"urls\":[\"bzz-raw://242b6d15a49c9acafac06285ef44bcf8280c04a2eaa0475959676506b03e99a4\",\"dweb:/ipfs/QmP6MbzsF7nHooCA9eAJ3ouAunhu3wShDSRTPdM4c5gFv9\"]},\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol\":{\"keccak256\":\"0x9c994a4e293e82380261ae9c3a655061de52ea0b33e376398afff42409a59017\",\"urls\":[\"bzz-raw://ae3f66802475db776c9b32ef6db38b9c26e96a6eebe832a821919d7fd5cb666a\",\"dweb:/ipfs/QmXRCUJ18GrwNTBb3kFQSz7Ste9BigHeDs7pFsyYujc2t2\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.14;\n\nimport \"../../contracts/Timelock.sol\";\n\ninterface Administered {\n    function _acceptAdmin() external returns (uint);\n}\n\ncontract TimelockHarness is Timelock {\n    constructor(address admin_, uint delay_)\n        Timelock(admin_, delay_) public {\n    }\n\n    function harnessSetPendingAdmin(address pendingAdmin_) public {\n        pendingAdmin = pendingAdmin_;\n    }\n\n    function harnessSetAdmin(address admin_) public {\n        admin = admin_;\n    }\n}\n\ncontract TimelockTest is Timelock {\n    constructor(address admin_, uint delay_) Timelock(admin_, 2 days) public {\n        delay = delay_;\n    }\n\n    function harnessSetAdmin(address admin_) public {\n        require(msg.sender == admin);\n        admin = admin_;\n    }\n\n    function harnessAcceptAdmin(Administered administered) public {\n        administered._acceptAdmin();\n    }\n}\n",
+  "sourcePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol",
+  "ast": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol",
+    "exportedSymbols": {
+      "Administered": [
+        30610
+      ],
+      "TimelockHarness": [
+        30645
+      ],
+      "TimelockTest": [
+        30692
+      ]
+    },
+    "id": 30693,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30603,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:53"
+      },
+      {
+        "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/contracts/Timelock.sol",
+        "file": "../../contracts/Timelock.sol",
+        "id": 30604,
+        "nodeType": "ImportDirective",
+        "scope": 30693,
+        "sourceUnit": 26698,
+        "src": "26:38:53",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 30610,
+        "linearizedBaseContracts": [
+          30610
+        ],
+        "name": "Administered",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 30609,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_acceptAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30605,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "116:2:53"
+            },
+            "returnParameters": {
+              "id": 30608,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30607,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30609,
+                  "src": "137:4:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30606,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "137:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "136:6:53"
+            },
+            "scope": 30610,
+            "src": "95:48:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 30693,
+        "src": "66:79:53"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 30611,
+              "name": "Timelock",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 26697,
+              "src": "175:8:53",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Timelock_$26697",
+                "typeString": "contract Timelock"
+              }
+            },
+            "id": 30612,
+            "nodeType": "InheritanceSpecifier",
+            "src": "175:8:53"
+          }
+        ],
+        "contractDependencies": [
+          26697
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30645,
+        "linearizedBaseContracts": [
+          30645,
+          26697
+        ],
+        "name": "TimelockHarness",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 30623,
+              "nodeType": "Block",
+              "src": "271:7:53",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 30624,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 30619,
+                    "name": "admin_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30614,
+                    "src": "248:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  {
+                    "argumentTypes": null,
+                    "id": 30620,
+                    "name": "delay_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30616,
+                    "src": "256:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  }
+                ],
+                "id": 30621,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 30618,
+                  "name": "Timelock",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 26697,
+                  "src": "239:8:53",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
+                    "typeString": "type(contract Timelock)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "239:24:53"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30617,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30614,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30624,
+                  "src": "202:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30613,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "202:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30616,
+                  "name": "delay_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30624,
+                  "src": "218:11:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30615,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "218:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "201:29:53"
+            },
+            "returnParameters": {
+              "id": 30622,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "271:0:53"
+            },
+            "scope": 30645,
+            "src": "190:88:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30633,
+              "nodeType": "Block",
+              "src": "346:45:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30631,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30629,
+                      "name": "pendingAdmin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26316,
+                      "src": "356:12:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30630,
+                      "name": "pendingAdmin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30626,
+                      "src": "371:13:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "356:28:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30632,
+                  "nodeType": "ExpressionStatement",
+                  "src": "356:28:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30634,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetPendingAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30627,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30626,
+                  "name": "pendingAdmin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30634,
+                  "src": "316:21:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30625,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "316:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "315:23:53"
+            },
+            "returnParameters": {
+              "id": 30628,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "346:0:53"
+            },
+            "scope": 30645,
+            "src": "284:107:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30643,
+              "nodeType": "Block",
+              "src": "445:31:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30641,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30639,
+                      "name": "admin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26314,
+                      "src": "455:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30640,
+                      "name": "admin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30636,
+                      "src": "463:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "455:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30642,
+                  "nodeType": "ExpressionStatement",
+                  "src": "455:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30644,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30637,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30636,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30644,
+                  "src": "422:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30635,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "422:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "421:16:53"
+            },
+            "returnParameters": {
+              "id": 30638,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "445:0:53"
+            },
+            "scope": 30645,
+            "src": "397:79:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30693,
+        "src": "147:331:53"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 30646,
+              "name": "Timelock",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 26697,
+              "src": "505:8:53",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Timelock_$26697",
+                "typeString": "contract Timelock"
+              }
+            },
+            "id": 30647,
+            "nodeType": "InheritanceSpecifier",
+            "src": "505:8:53"
+          }
+        ],
+        "contractDependencies": [
+          26697
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30692,
+        "linearizedBaseContracts": [
+          30692,
+          26697
+        ],
+        "name": "TimelockTest",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 30662,
+              "nodeType": "Block",
+              "src": "593:31:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30660,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30658,
+                      "name": "delay",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26318,
+                      "src": "603:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30659,
+                      "name": "delay_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30651,
+                      "src": "611:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "603:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30661,
+                  "nodeType": "ExpressionStatement",
+                  "src": "603:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30663,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 30654,
+                    "name": "admin_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30649,
+                    "src": "570:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  {
+                    "argumentTypes": null,
+                    "hexValue": "32",
+                    "id": 30655,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "578:6:53",
+                    "subdenomination": "days",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_rational_172800_by_1",
+                      "typeString": "int_const 172800"
+                    },
+                    "value": "2"
+                  }
+                ],
+                "id": 30656,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 30653,
+                  "name": "Timelock",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 26697,
+                  "src": "561:8:53",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
+                    "typeString": "type(contract Timelock)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "561:24:53"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30652,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30649,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30663,
+                  "src": "532:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30648,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "532:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30651,
+                  "name": "delay_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30663,
+                  "src": "548:11:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30650,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "548:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "531:29:53"
+            },
+            "returnParameters": {
+              "id": 30657,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "593:0:53"
+            },
+            "scope": 30692,
+            "src": "520:104:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30679,
+              "nodeType": "Block",
+              "src": "678:69:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 30672,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 30669,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 44151,
+                            "src": "696:3:53",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 30670,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "696:10:53",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address_payable",
+                            "typeString": "address payable"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 30671,
+                          "name": "admin",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 26314,
+                          "src": "710:5:53",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "696:19:53",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 30668,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44154,
+                      "src": "688:7:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 30673,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "688:28:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30674,
+                  "nodeType": "ExpressionStatement",
+                  "src": "688:28:53"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30677,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30675,
+                      "name": "admin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26314,
+                      "src": "726:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30676,
+                      "name": "admin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30665,
+                      "src": "734:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "726:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30678,
+                  "nodeType": "ExpressionStatement",
+                  "src": "726:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30680,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30666,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30665,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30680,
+                  "src": "655:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30664,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "655:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "654:16:53"
+            },
+            "returnParameters": {
+              "id": 30667,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "678:0:53"
+            },
+            "scope": 30692,
+            "src": "630:117:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30690,
+              "nodeType": "Block",
+              "src": "815:44:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30685,
+                        "name": "administered",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30682,
+                        "src": "825:12:53",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_Administered_$30610",
+                          "typeString": "contract Administered"
+                        }
+                      },
+                      "id": 30687,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "_acceptAdmin",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30609,
+                      "src": "825:25:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$__$returns$_t_uint256_$",
+                        "typeString": "function () external returns (uint256)"
+                      }
+                    },
+                    "id": 30688,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "825:27:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30689,
+                  "nodeType": "ExpressionStatement",
+                  "src": "825:27:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30691,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessAcceptAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30683,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30682,
+                  "name": "administered",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30691,
+                  "src": "781:25:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_Administered_$30610",
+                    "typeString": "contract Administered"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 30681,
+                    "name": "Administered",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 30610,
+                    "src": "781:12:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_Administered_$30610",
+                      "typeString": "contract Administered"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "780:27:53"
+            },
+            "returnParameters": {
+              "id": 30684,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "815:0:53"
+            },
+            "scope": 30692,
+            "src": "753:106:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30693,
+        "src": "480:381:53"
+      }
+    ],
+    "src": "0:862:53"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/TimelockHarness.sol",
+    "exportedSymbols": {
+      "Administered": [
+        30610
+      ],
+      "TimelockHarness": [
+        30645
+      ],
+      "TimelockTest": [
+        30692
+      ]
+    },
+    "id": 30693,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30603,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:53"
+      },
+      {
+        "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/contracts/Timelock.sol",
+        "file": "../../contracts/Timelock.sol",
+        "id": 30604,
+        "nodeType": "ImportDirective",
+        "scope": 30693,
+        "sourceUnit": 26698,
+        "src": "26:38:53",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 30610,
+        "linearizedBaseContracts": [
+          30610
+        ],
+        "name": "Administered",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 30609,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_acceptAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30605,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "116:2:53"
+            },
+            "returnParameters": {
+              "id": 30608,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30607,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30609,
+                  "src": "137:4:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30606,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "137:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "136:6:53"
+            },
+            "scope": 30610,
+            "src": "95:48:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 30693,
+        "src": "66:79:53"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 30611,
+              "name": "Timelock",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 26697,
+              "src": "175:8:53",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Timelock_$26697",
+                "typeString": "contract Timelock"
+              }
+            },
+            "id": 30612,
+            "nodeType": "InheritanceSpecifier",
+            "src": "175:8:53"
+          }
+        ],
+        "contractDependencies": [
+          26697
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30645,
+        "linearizedBaseContracts": [
+          30645,
+          26697
+        ],
+        "name": "TimelockHarness",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 30623,
+              "nodeType": "Block",
+              "src": "271:7:53",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 30624,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 30619,
+                    "name": "admin_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30614,
+                    "src": "248:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  {
+                    "argumentTypes": null,
+                    "id": 30620,
+                    "name": "delay_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30616,
+                    "src": "256:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  }
+                ],
+                "id": 30621,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 30618,
+                  "name": "Timelock",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 26697,
+                  "src": "239:8:53",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
+                    "typeString": "type(contract Timelock)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "239:24:53"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30617,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30614,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30624,
+                  "src": "202:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30613,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "202:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30616,
+                  "name": "delay_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30624,
+                  "src": "218:11:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30615,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "218:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "201:29:53"
+            },
+            "returnParameters": {
+              "id": 30622,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "271:0:53"
+            },
+            "scope": 30645,
+            "src": "190:88:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30633,
+              "nodeType": "Block",
+              "src": "346:45:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30631,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30629,
+                      "name": "pendingAdmin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26316,
+                      "src": "356:12:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30630,
+                      "name": "pendingAdmin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30626,
+                      "src": "371:13:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "356:28:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30632,
+                  "nodeType": "ExpressionStatement",
+                  "src": "356:28:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30634,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetPendingAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30627,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30626,
+                  "name": "pendingAdmin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30634,
+                  "src": "316:21:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30625,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "316:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "315:23:53"
+            },
+            "returnParameters": {
+              "id": 30628,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "346:0:53"
+            },
+            "scope": 30645,
+            "src": "284:107:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30643,
+              "nodeType": "Block",
+              "src": "445:31:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30641,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30639,
+                      "name": "admin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26314,
+                      "src": "455:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30640,
+                      "name": "admin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30636,
+                      "src": "463:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "455:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30642,
+                  "nodeType": "ExpressionStatement",
+                  "src": "455:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30644,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30637,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30636,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30644,
+                  "src": "422:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30635,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "422:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "421:16:53"
+            },
+            "returnParameters": {
+              "id": 30638,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "445:0:53"
+            },
+            "scope": 30645,
+            "src": "397:79:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30693,
+        "src": "147:331:53"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 30646,
+              "name": "Timelock",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 26697,
+              "src": "505:8:53",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Timelock_$26697",
+                "typeString": "contract Timelock"
+              }
+            },
+            "id": 30647,
+            "nodeType": "InheritanceSpecifier",
+            "src": "505:8:53"
+          }
+        ],
+        "contractDependencies": [
+          26697
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30692,
+        "linearizedBaseContracts": [
+          30692,
+          26697
+        ],
+        "name": "TimelockTest",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 30662,
+              "nodeType": "Block",
+              "src": "593:31:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30660,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30658,
+                      "name": "delay",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26318,
+                      "src": "603:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30659,
+                      "name": "delay_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30651,
+                      "src": "611:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "603:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30661,
+                  "nodeType": "ExpressionStatement",
+                  "src": "603:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30663,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 30654,
+                    "name": "admin_",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 30649,
+                    "src": "570:6:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  {
+                    "argumentTypes": null,
+                    "hexValue": "32",
+                    "id": 30655,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "578:6:53",
+                    "subdenomination": "days",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_rational_172800_by_1",
+                      "typeString": "int_const 172800"
+                    },
+                    "value": "2"
+                  }
+                ],
+                "id": 30656,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 30653,
+                  "name": "Timelock",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 26697,
+                  "src": "561:8:53",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_type$_t_contract$_Timelock_$26697_$",
+                    "typeString": "type(contract Timelock)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "561:24:53"
+              }
+            ],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30652,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30649,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30663,
+                  "src": "532:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30648,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "532:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30651,
+                  "name": "delay_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30663,
+                  "src": "548:11:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30650,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "548:4:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "531:29:53"
+            },
+            "returnParameters": {
+              "id": 30657,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "593:0:53"
+            },
+            "scope": 30692,
+            "src": "520:104:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30679,
+              "nodeType": "Block",
+              "src": "678:69:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 30672,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "expression": {
+                            "argumentTypes": null,
+                            "id": 30669,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 44151,
+                            "src": "696:3:53",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 30670,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": null,
+                          "src": "696:10:53",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address_payable",
+                            "typeString": "address payable"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 30671,
+                          "name": "admin",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 26314,
+                          "src": "710:5:53",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "696:19:53",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 30668,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44154,
+                      "src": "688:7:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 30673,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "688:28:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 30674,
+                  "nodeType": "ExpressionStatement",
+                  "src": "688:28:53"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30677,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 30675,
+                      "name": "admin",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 26314,
+                      "src": "726:5:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30676,
+                      "name": "admin_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30665,
+                      "src": "734:6:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "726:14:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 30678,
+                  "nodeType": "ExpressionStatement",
+                  "src": "726:14:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30680,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessSetAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30666,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30665,
+                  "name": "admin_",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30680,
+                  "src": "655:14:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 30664,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "655:7:53",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "654:16:53"
+            },
+            "returnParameters": {
+              "id": 30667,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "678:0:53"
+            },
+            "scope": 30692,
+            "src": "630:117:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30690,
+              "nodeType": "Block",
+              "src": "815:44:53",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30685,
+                        "name": "administered",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30682,
+                        "src": "825:12:53",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_Administered_$30610",
+                          "typeString": "contract Administered"
+                        }
+                      },
+                      "id": 30687,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "_acceptAdmin",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30609,
+                      "src": "825:25:53",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$__$returns$_t_uint256_$",
+                        "typeString": "function () external returns (uint256)"
+                      }
+                    },
+                    "id": 30688,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "825:27:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 30689,
+                  "nodeType": "ExpressionStatement",
+                  "src": "825:27:53"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30691,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "harnessAcceptAdmin",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30683,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30682,
+                  "name": "administered",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30691,
+                  "src": "781:25:53",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_Administered_$30610",
+                    "typeString": "contract Administered"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 30681,
+                    "name": "Administered",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 30610,
+                    "src": "781:12:53",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_Administered_$30610",
+                      "typeString": "contract Administered"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "780:27:53"
+            },
+            "returnParameters": {
+              "id": 30684,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "815:0:53"
+            },
+            "scope": 30692,
+            "src": "753:106:53",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30693,
+        "src": "480:381:53"
+      }
+    ],
+    "src": "0:862:53"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.14+commit.01f1aaa4.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2021-02-25T05:31:02.953Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

@@ -1,0 +1,2785 @@
+{
+  "contractName": "BitmapLib",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.14+commit.01f1aaa4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Bitmap library to set or unset bits on bitmap value\"}},\"settings\":{\"compilationTarget\":{\"/Users/yanyichun/project/Savings/contracts/lib/BitmapLib.sol\":\"BitmapLib\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/yanyichun/project/Savings/contracts/lib/BitmapLib.sol\":{\"keccak256\":\"0x243421c49bb18bff9f6e0a9dad72d444d175e2c835ae05348203de0216134fe5\",\"urls\":[\"bzz-raw://f574850a744d58bfb75fb5caeb552f7cf3427f524524de748652bf2634bee3ed\",\"dweb:/ipfs/QmNkvfbvvrXUTztpZMVc6CCQMJmchs5GEMPrRfdThmZYXV\"]}},\"version\":1}",
+  "bytecode": "0x60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7231582018d15914b3790ee9929d086b53a5c9ecb99dfd6c7cad5a925e5c77236108c00564736f6c634300050e0032",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7231582018d15914b3790ee9929d086b53a5c9ecb99dfd6c7cad5a925e5c77236108c00564736f6c634300050e0032",
+  "sourceMap": "96:3531:57:-;;132:2:-1;166:7;155:9;146:7;137:37;255:7;249:14;246:1;241:23;235:4;232:33;222:2;;269:9;222:2;293:9;290:1;283:20;323:4;314:7;306:22;347:7;338;331:24",
+  "deployedSourceMap": "96:3531:57:-;;;;;;;;",
+  "source": "pragma solidity 0.5.14;\n\n/**\n * @notice Bitmap library to set or unset bits on bitmap value\n */\nlibrary BitmapLib {\n\n    /**\n     * @dev Sets the given bit in the bitmap value\n     * @param _bitmap Bitmap value to update the bit in\n     * @param _index Index range from 0 to 127\n     * @return Returns the updated bitmap value\n     */\n    function setBit(uint128 _bitmap, uint8 _index) internal pure returns (uint128) {\n        // Suppose `_bitmap` is in bit value:\n        // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set\n\n        // Bit not set, hence, set the bit\n        if( ! isBitSet(_bitmap, _index)) {\n            // Suppose `_index` is = 3 = 4th bit\n            // mask = 0000 1000 = Left shift to create mask to find 4rd bit status\n            uint128 mask = uint128(1) << _index;\n\n            // Setting the corrospending bit in _bitmap\n            // Performing OR (|) operation\n            // 0001 0100 (_bitmap)\n            // 0000 1000 (mask)\n            // -------------------\n            // 0001 1100 (result)\n            return _bitmap | mask;\n        }\n\n        // Bit already set, just return without any change\n        return _bitmap;\n    }\n\n    /**\n     * @dev Unsets the bit in given bitmap\n     * @param _bitmap Bitmap value to update the bit in\n     * @param _index Index range from 0 to 127\n     * @return Returns the updated bitmap value\n     */\n    function unsetBit(uint128 _bitmap, uint8 _index) internal pure returns (uint128) {\n        // Suppose `_bitmap` is in bit value:\n        // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set\n\n        // Bit is set, hence, unset the bit\n        if(isBitSet(_bitmap, _index)) {\n            // Suppose `_index` is = 2 = 3th bit\n            // mask = 0000 0100 = Left shift to create mask to find 3rd bit status\n            uint128 mask = uint128(1) << _index;\n\n            // Performing Bitwise NOT(~) operation\n            // 1111 1011 (mask)\n            mask = ~mask;\n\n            // Unsetting the corrospending bit in _bitmap\n            // Performing AND (&) operation\n            // 0001 0100 (_bitmap)\n            // 1111 1011 (mask)\n            // -------------------\n            // 0001 0000 (result)\n            return _bitmap & mask;\n        }\n\n        // Bit not set, just return without any change\n        return _bitmap;\n    }\n\n    /**\n     * @dev Returns true if the corrosponding bit set in the bitmap\n     * @param _bitmap Bitmap value to check\n     * @param _index Index to check. Index range from 0 to 127\n     * @return Returns true if bit is set, false otherwise\n     */\n    function isBitSet(uint128 _bitmap, uint8 _index) internal pure returns (bool) {\n        require(_index < 128, \"Index out of range for bit operation\");\n        // Suppose `_bitmap` is in bit value:\n        // 0001 0100 = represents third(_index == 2) and fifth(_index == 4) bit is set\n\n        // Suppose `_index` is = 2 = 3th bit\n        // 0000 0100 = Left shift to create mask to find 3rd bit status\n        uint128 mask = uint128(1) << _index;\n\n        // Example: When bit is set:\n        // Performing AND (&) operation\n        // 0001 0100 (_bitmap)\n        // 0000 0100 (mask)\n        // -------------------------\n        // 0000 0100 (bitSet > 0)\n\n        // Example: When bit is not set:\n        // Performing AND (&) operation\n        // 0001 0100 (_bitmap)\n        // 0000 1000 (mask)\n        // -------------------------\n        // 0000 0000 (bitSet == 0)\n\n        uint128 bitSet = _bitmap & mask;\n        // Bit is set when greater than zero, else not set\n        return bitSet > 0;\n    }\n}",
+  "sourcePath": "/Users/yanyichun/project/Savings/contracts/lib/BitmapLib.sol",
+  "ast": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/lib/BitmapLib.sol",
+    "exportedSymbols": {
+      "BitmapLib": [
+        31859
+      ]
+    },
+    "id": 31860,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 31757,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:57"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "documentation": "@notice Bitmap library to set or unset bits on bitmap value",
+        "fullyImplemented": true,
+        "id": 31859,
+        "linearizedBaseContracts": [
+          31859
+        ],
+        "name": "BitmapLib",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 31787,
+              "nodeType": "Block",
+              "src": "418:773:57",
+              "statements": [
+                {
+                  "condition": {
+                    "argumentTypes": null,
+                    "id": 31770,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "!",
+                    "prefix": true,
+                    "src": "609:27:57",
+                    "subExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 31767,
+                          "name": "_bitmap",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31759,
+                          "src": "620:7:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        {
+                          "argumentTypes": null,
+                          "id": 31768,
+                          "name": "_index",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31761,
+                          "src": "629:6:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        ],
+                        "id": 31766,
+                        "name": "isBitSet",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31858,
+                        "src": "611:8:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_pure$_t_uint128_$_t_uint8_$returns$_t_bool_$",
+                          "typeString": "function (uint128,uint8) pure returns (bool)"
+                        }
+                      },
+                      "id": 31769,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "611:25:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": null,
+                  "id": 31784,
+                  "nodeType": "IfStatement",
+                  "src": "605:496:57",
+                  "trueBody": {
+                    "id": 31783,
+                    "nodeType": "Block",
+                    "src": "638:463:57",
+                    "statements": [
+                      {
+                        "assignments": [
+                          31772
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 31772,
+                            "name": "mask",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 31783,
+                            "src": "784:12:57",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            },
+                            "typeName": {
+                              "id": 31771,
+                              "name": "uint128",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "784:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "value": null,
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 31778,
+                        "initialValue": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31777,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "hexValue": "31",
+                                "id": 31774,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "807:1:57",
+                                "subdenomination": null,
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                }
+                              ],
+                              "id": 31773,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "799:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_uint128_$",
+                                "typeString": "type(uint128)"
+                              },
+                              "typeName": "uint128"
+                            },
+                            "id": 31775,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "799:10:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<<",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31776,
+                            "name": "_index",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31761,
+                            "src": "813:6:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint8",
+                              "typeString": "uint8"
+                            }
+                          },
+                          "src": "799:20:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "784:35:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31781,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 31779,
+                            "name": "_bitmap",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31759,
+                            "src": "1076:7:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "|",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31780,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31772,
+                            "src": "1086:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "1076:14:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "functionReturnParameters": 31765,
+                        "id": 31782,
+                        "nodeType": "Return",
+                        "src": "1069:21:57"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 31785,
+                    "name": "_bitmap",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 31759,
+                    "src": "1177:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 31765,
+                  "id": 31786,
+                  "nodeType": "Return",
+                  "src": "1170:14:57"
+                }
+              ]
+            },
+            "documentation": "@dev Sets the given bit in the bitmap value\n@param _bitmap Bitmap value to update the bit in\n@param _index Index range from 0 to 127\n@return Returns the updated bitmap value",
+            "id": 31788,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setBit",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31762,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31759,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "355:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31758,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "355:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31761,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "372:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31760,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "372:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "354:31:57"
+            },
+            "returnParameters": {
+              "id": 31765,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31764,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "409:7:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31763,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "409:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "408:9:57"
+            },
+            "scope": 31859,
+            "src": "339:852:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 31822,
+              "nodeType": "Block",
+              "src": "1488:880:57",
+              "statements": [
+                {
+                  "condition": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 31798,
+                        "name": "_bitmap",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31790,
+                        "src": "1688:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 31799,
+                        "name": "_index",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31792,
+                        "src": "1697:6:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      ],
+                      "id": 31797,
+                      "name": "isBitSet",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31858,
+                      "src": "1679:8:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$_t_uint128_$_t_uint8_$returns$_t_bool_$",
+                        "typeString": "function (uint128,uint8) pure returns (bool)"
+                      }
+                    },
+                    "id": 31800,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1679:25:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": null,
+                  "id": 31819,
+                  "nodeType": "IfStatement",
+                  "src": "1676:606:57",
+                  "trueBody": {
+                    "id": 31818,
+                    "nodeType": "Block",
+                    "src": "1706:576:57",
+                    "statements": [
+                      {
+                        "assignments": [
+                          31802
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 31802,
+                            "name": "mask",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 31818,
+                            "src": "1852:12:57",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            },
+                            "typeName": {
+                              "id": 31801,
+                              "name": "uint128",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "1852:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "value": null,
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 31808,
+                        "initialValue": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31807,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "hexValue": "31",
+                                "id": 31804,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "1875:1:57",
+                                "subdenomination": null,
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                }
+                              ],
+                              "id": 31803,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "1867:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_uint128_$",
+                                "typeString": "type(uint128)"
+                              },
+                              "typeName": "uint128"
+                            },
+                            "id": 31805,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "1867:10:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<<",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31806,
+                            "name": "_index",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31792,
+                            "src": "1881:6:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint8",
+                              "typeString": "uint8"
+                            }
+                          },
+                          "src": "1867:20:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "1852:35:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 31812,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "argumentTypes": null,
+                            "id": 31809,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31802,
+                            "src": "1985:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "argumentTypes": null,
+                            "id": 31811,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "nodeType": "UnaryOperation",
+                            "operator": "~",
+                            "prefix": true,
+                            "src": "1992:5:57",
+                            "subExpression": {
+                              "argumentTypes": null,
+                              "id": 31810,
+                              "name": "mask",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 31802,
+                              "src": "1993:4:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "1985:12:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "id": 31813,
+                        "nodeType": "ExpressionStatement",
+                        "src": "1985:12:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31816,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 31814,
+                            "name": "_bitmap",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31790,
+                            "src": "2257:7:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "&",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31815,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31802,
+                            "src": "2267:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "2257:14:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "functionReturnParameters": 31796,
+                        "id": 31817,
+                        "nodeType": "Return",
+                        "src": "2250:21:57"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 31820,
+                    "name": "_bitmap",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 31790,
+                    "src": "2354:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 31796,
+                  "id": 31821,
+                  "nodeType": "Return",
+                  "src": "2347:14:57"
+                }
+              ]
+            },
+            "documentation": "@dev Unsets the bit in given bitmap\n@param _bitmap Bitmap value to update the bit in\n@param _index Index range from 0 to 127\n@return Returns the updated bitmap value",
+            "id": 31823,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "unsetBit",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31793,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31790,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1425:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31789,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1425:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31792,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1442:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31791,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1442:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1424:31:57"
+            },
+            "returnParameters": {
+              "id": 31796,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31795,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1479:7:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31794,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1479:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1478:9:57"
+            },
+            "scope": 31859,
+            "src": "1407:961:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 31857,
+              "nodeType": "Block",
+              "src": "2702:923:57",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
+                        "id": 31835,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 31833,
+                          "name": "_index",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31827,
+                          "src": "2720:6:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "313238",
+                          "id": 31834,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2729:3:57",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_128_by_1",
+                            "typeString": "int_const 128"
+                          },
+                          "value": "128"
+                        },
+                        "src": "2720:12:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "496e646578206f7574206f662072616e676520666f7220626974206f7065726174696f6e",
+                        "id": 31836,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2734:38:57",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_75b6cb09a33f7f6277b05bc6946592ad00fd97a53a272836a2b35d0ad3cf08d5",
+                          "typeString": "literal_string \"Index out of range for bit operation\""
+                        },
+                        "value": "Index out of range for bit operation"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_75b6cb09a33f7f6277b05bc6946592ad00fd97a53a272836a2b35d0ad3cf08d5",
+                          "typeString": "literal_string \"Index out of range for bit operation\""
+                        }
+                      ],
+                      "id": 31832,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "2712:7:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 31837,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2712:61:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 31838,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2712:61:57"
+                },
+                {
+                  "assignments": [
+                    31840
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 31840,
+                      "name": "mask",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 31857,
+                      "src": "3034:12:57",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      },
+                      "typeName": {
+                        "id": 31839,
+                        "name": "uint128",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3034:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 31846,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31845,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "hexValue": "31",
+                          "id": 31842,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "3057:1:57",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          },
+                          "value": "1"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          }
+                        ],
+                        "id": 31841,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "lValueRequested": false,
+                        "nodeType": "ElementaryTypeNameExpression",
+                        "src": "3049:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_uint128_$",
+                          "typeString": "type(uint128)"
+                        },
+                        "typeName": "uint128"
+                      },
+                      "id": 31843,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "3049:10:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<<",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "id": 31844,
+                      "name": "_index",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31827,
+                      "src": "3063:6:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint8",
+                        "typeString": "uint8"
+                      }
+                    },
+                    "src": "3049:20:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3034:35:57"
+                },
+                {
+                  "assignments": [
+                    31848
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 31848,
+                      "name": "bitSet",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 31857,
+                      "src": "3501:14:57",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      },
+                      "typeName": {
+                        "id": 31847,
+                        "name": "uint128",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3501:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 31852,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31851,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 31849,
+                      "name": "_bitmap",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31825,
+                      "src": "3518:7:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "&",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "id": 31850,
+                      "name": "mask",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31840,
+                      "src": "3528:4:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "src": "3518:14:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3501:31:57"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31855,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 31853,
+                      "name": "bitSet",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31848,
+                      "src": "3608:6:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": ">",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "hexValue": "30",
+                      "id": 31854,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "3617:1:57",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "3608:10:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 31831,
+                  "id": 31856,
+                  "nodeType": "Return",
+                  "src": "3601:17:57"
+                }
+              ]
+            },
+            "documentation": "@dev Returns true if the corrosponding bit set in the bitmap\n@param _bitmap Bitmap value to check\n@param _index Index to check. Index range from 0 to 127\n@return Returns true if bit is set, false otherwise",
+            "id": 31858,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isBitSet",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31828,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31825,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2642:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31824,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2642:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31827,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2659:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31826,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2659:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2641:31:57"
+            },
+            "returnParameters": {
+              "id": 31831,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31830,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2696:4:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 31829,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2696:4:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2695:6:57"
+            },
+            "scope": 31859,
+            "src": "2624:1001:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 31860,
+        "src": "96:3531:57"
+      }
+    ],
+    "src": "0:3627:57"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/lib/BitmapLib.sol",
+    "exportedSymbols": {
+      "BitmapLib": [
+        31859
+      ]
+    },
+    "id": 31860,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 31757,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:57"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "documentation": "@notice Bitmap library to set or unset bits on bitmap value",
+        "fullyImplemented": true,
+        "id": 31859,
+        "linearizedBaseContracts": [
+          31859
+        ],
+        "name": "BitmapLib",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 31787,
+              "nodeType": "Block",
+              "src": "418:773:57",
+              "statements": [
+                {
+                  "condition": {
+                    "argumentTypes": null,
+                    "id": 31770,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "!",
+                    "prefix": true,
+                    "src": "609:27:57",
+                    "subExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 31767,
+                          "name": "_bitmap",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31759,
+                          "src": "620:7:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        {
+                          "argumentTypes": null,
+                          "id": 31768,
+                          "name": "_index",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31761,
+                          "src": "629:6:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        ],
+                        "id": 31766,
+                        "name": "isBitSet",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31858,
+                        "src": "611:8:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_pure$_t_uint128_$_t_uint8_$returns$_t_bool_$",
+                          "typeString": "function (uint128,uint8) pure returns (bool)"
+                        }
+                      },
+                      "id": 31769,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "611:25:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": null,
+                  "id": 31784,
+                  "nodeType": "IfStatement",
+                  "src": "605:496:57",
+                  "trueBody": {
+                    "id": 31783,
+                    "nodeType": "Block",
+                    "src": "638:463:57",
+                    "statements": [
+                      {
+                        "assignments": [
+                          31772
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 31772,
+                            "name": "mask",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 31783,
+                            "src": "784:12:57",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            },
+                            "typeName": {
+                              "id": 31771,
+                              "name": "uint128",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "784:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "value": null,
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 31778,
+                        "initialValue": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31777,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "hexValue": "31",
+                                "id": 31774,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "807:1:57",
+                                "subdenomination": null,
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                }
+                              ],
+                              "id": 31773,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "799:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_uint128_$",
+                                "typeString": "type(uint128)"
+                              },
+                              "typeName": "uint128"
+                            },
+                            "id": 31775,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "799:10:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<<",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31776,
+                            "name": "_index",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31761,
+                            "src": "813:6:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint8",
+                              "typeString": "uint8"
+                            }
+                          },
+                          "src": "799:20:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "784:35:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31781,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 31779,
+                            "name": "_bitmap",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31759,
+                            "src": "1076:7:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "|",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31780,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31772,
+                            "src": "1086:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "1076:14:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "functionReturnParameters": 31765,
+                        "id": 31782,
+                        "nodeType": "Return",
+                        "src": "1069:21:57"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 31785,
+                    "name": "_bitmap",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 31759,
+                    "src": "1177:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 31765,
+                  "id": 31786,
+                  "nodeType": "Return",
+                  "src": "1170:14:57"
+                }
+              ]
+            },
+            "documentation": "@dev Sets the given bit in the bitmap value\n@param _bitmap Bitmap value to update the bit in\n@param _index Index range from 0 to 127\n@return Returns the updated bitmap value",
+            "id": 31788,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setBit",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31762,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31759,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "355:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31758,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "355:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31761,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "372:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31760,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "372:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "354:31:57"
+            },
+            "returnParameters": {
+              "id": 31765,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31764,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31788,
+                  "src": "409:7:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31763,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "409:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "408:9:57"
+            },
+            "scope": 31859,
+            "src": "339:852:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 31822,
+              "nodeType": "Block",
+              "src": "1488:880:57",
+              "statements": [
+                {
+                  "condition": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 31798,
+                        "name": "_bitmap",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31790,
+                        "src": "1688:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 31799,
+                        "name": "_index",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 31792,
+                        "src": "1697:6:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      ],
+                      "id": 31797,
+                      "name": "isBitSet",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31858,
+                      "src": "1679:8:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_pure$_t_uint128_$_t_uint8_$returns$_t_bool_$",
+                        "typeString": "function (uint128,uint8) pure returns (bool)"
+                      }
+                    },
+                    "id": 31800,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1679:25:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "falseBody": null,
+                  "id": 31819,
+                  "nodeType": "IfStatement",
+                  "src": "1676:606:57",
+                  "trueBody": {
+                    "id": 31818,
+                    "nodeType": "Block",
+                    "src": "1706:576:57",
+                    "statements": [
+                      {
+                        "assignments": [
+                          31802
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 31802,
+                            "name": "mask",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 31818,
+                            "src": "1852:12:57",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            },
+                            "typeName": {
+                              "id": 31801,
+                              "name": "uint128",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "1852:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "value": null,
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 31808,
+                        "initialValue": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31807,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "hexValue": "31",
+                                "id": 31804,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "1875:1:57",
+                                "subdenomination": null,
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_rational_1_by_1",
+                                  "typeString": "int_const 1"
+                                }
+                              ],
+                              "id": 31803,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "1867:7:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_uint128_$",
+                                "typeString": "type(uint128)"
+                              },
+                              "typeName": "uint128"
+                            },
+                            "id": 31805,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "1867:10:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<<",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31806,
+                            "name": "_index",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31792,
+                            "src": "1881:6:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint8",
+                              "typeString": "uint8"
+                            }
+                          },
+                          "src": "1867:20:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "1852:35:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 31812,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "argumentTypes": null,
+                            "id": 31809,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31802,
+                            "src": "1985:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "argumentTypes": null,
+                            "id": 31811,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "nodeType": "UnaryOperation",
+                            "operator": "~",
+                            "prefix": true,
+                            "src": "1992:5:57",
+                            "subExpression": {
+                              "argumentTypes": null,
+                              "id": 31810,
+                              "name": "mask",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 31802,
+                              "src": "1993:4:57",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint128",
+                                "typeString": "uint128"
+                              }
+                            },
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "1985:12:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "id": 31813,
+                        "nodeType": "ExpressionStatement",
+                        "src": "1985:12:57"
+                      },
+                      {
+                        "expression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          },
+                          "id": 31816,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 31814,
+                            "name": "_bitmap",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31790,
+                            "src": "2257:7:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "&",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "id": 31815,
+                            "name": "mask",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 31802,
+                            "src": "2267:4:57",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint128",
+                              "typeString": "uint128"
+                            }
+                          },
+                          "src": "2257:14:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint128",
+                            "typeString": "uint128"
+                          }
+                        },
+                        "functionReturnParameters": 31796,
+                        "id": 31817,
+                        "nodeType": "Return",
+                        "src": "2250:21:57"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 31820,
+                    "name": "_bitmap",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 31790,
+                    "src": "2354:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "functionReturnParameters": 31796,
+                  "id": 31821,
+                  "nodeType": "Return",
+                  "src": "2347:14:57"
+                }
+              ]
+            },
+            "documentation": "@dev Unsets the bit in given bitmap\n@param _bitmap Bitmap value to update the bit in\n@param _index Index range from 0 to 127\n@return Returns the updated bitmap value",
+            "id": 31823,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "unsetBit",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31793,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31790,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1425:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31789,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1425:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31792,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1442:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31791,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1442:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1424:31:57"
+            },
+            "returnParameters": {
+              "id": 31796,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31795,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31823,
+                  "src": "1479:7:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31794,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1479:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1478:9:57"
+            },
+            "scope": 31859,
+            "src": "1407:961:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 31857,
+              "nodeType": "Block",
+              "src": "2702:923:57",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
+                        "id": 31835,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 31833,
+                          "name": "_index",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 31827,
+                          "src": "2720:6:57",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint8",
+                            "typeString": "uint8"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "313238",
+                          "id": 31834,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2729:3:57",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_128_by_1",
+                            "typeString": "int_const 128"
+                          },
+                          "value": "128"
+                        },
+                        "src": "2720:12:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "496e646578206f7574206f662072616e676520666f7220626974206f7065726174696f6e",
+                        "id": 31836,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2734:38:57",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_75b6cb09a33f7f6277b05bc6946592ad00fd97a53a272836a2b35d0ad3cf08d5",
+                          "typeString": "literal_string \"Index out of range for bit operation\""
+                        },
+                        "value": "Index out of range for bit operation"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_75b6cb09a33f7f6277b05bc6946592ad00fd97a53a272836a2b35d0ad3cf08d5",
+                          "typeString": "literal_string \"Index out of range for bit operation\""
+                        }
+                      ],
+                      "id": 31832,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        44154,
+                        44155
+                      ],
+                      "referencedDeclaration": 44155,
+                      "src": "2712:7:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 31837,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2712:61:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 31838,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2712:61:57"
+                },
+                {
+                  "assignments": [
+                    31840
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 31840,
+                      "name": "mask",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 31857,
+                      "src": "3034:12:57",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      },
+                      "typeName": {
+                        "id": 31839,
+                        "name": "uint128",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3034:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 31846,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31845,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "hexValue": "31",
+                          "id": 31842,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "3057:1:57",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          },
+                          "value": "1"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                          }
+                        ],
+                        "id": 31841,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "lValueRequested": false,
+                        "nodeType": "ElementaryTypeNameExpression",
+                        "src": "3049:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_uint128_$",
+                          "typeString": "type(uint128)"
+                        },
+                        "typeName": "uint128"
+                      },
+                      "id": 31843,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "3049:10:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "<<",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "id": 31844,
+                      "name": "_index",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31827,
+                      "src": "3063:6:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint8",
+                        "typeString": "uint8"
+                      }
+                    },
+                    "src": "3049:20:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3034:35:57"
+                },
+                {
+                  "assignments": [
+                    31848
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 31848,
+                      "name": "bitSet",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 31857,
+                      "src": "3501:14:57",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      },
+                      "typeName": {
+                        "id": 31847,
+                        "name": "uint128",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "3501:7:57",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint128",
+                          "typeString": "uint128"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 31852,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31851,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 31849,
+                      "name": "_bitmap",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31825,
+                      "src": "3518:7:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "&",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "id": 31850,
+                      "name": "mask",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31840,
+                      "src": "3528:4:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "src": "3518:14:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "3501:31:57"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    },
+                    "id": 31855,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "id": 31853,
+                      "name": "bitSet",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 31848,
+                      "src": "3608:6:57",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint128",
+                        "typeString": "uint128"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": ">",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "hexValue": "30",
+                      "id": 31854,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "number",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "3617:1:57",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                      },
+                      "value": "0"
+                    },
+                    "src": "3608:10:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 31831,
+                  "id": 31856,
+                  "nodeType": "Return",
+                  "src": "3601:17:57"
+                }
+              ]
+            },
+            "documentation": "@dev Returns true if the corrosponding bit set in the bitmap\n@param _bitmap Bitmap value to check\n@param _index Index to check. Index range from 0 to 127\n@return Returns true if bit is set, false otherwise",
+            "id": 31858,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isBitSet",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 31828,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31825,
+                  "name": "_bitmap",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2642:15:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint128",
+                    "typeString": "uint128"
+                  },
+                  "typeName": {
+                    "id": 31824,
+                    "name": "uint128",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2642:7:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint128",
+                      "typeString": "uint128"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 31827,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2659:12:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 31826,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2659:5:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2641:31:57"
+            },
+            "returnParameters": {
+              "id": 31831,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 31830,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 31858,
+                  "src": "2696:4:57",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 31829,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2696:4:57",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2695:6:57"
+            },
+            "scope": 31859,
+            "src": "2624:1001:57",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 31860,
+        "src": "96:3531:57"
+      }
+    ],
+    "src": "0:3627:57"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.14+commit.01f1aaa4.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2021-02-25T05:30:06.488Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {},
+    "notice": "Bitmap library to set or unset bits on bitmap value"
+  }
+}

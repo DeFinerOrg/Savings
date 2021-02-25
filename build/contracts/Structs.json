@@ -1,0 +1,2358 @@
+{
+  "contractName": "Structs",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "outers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "sentinel",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "a",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "b",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint96",
+          "name": "c",
+          "type": "uint96"
+        }
+      ],
+      "name": "writeEach",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint16",
+          "name": "a",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "b",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint96",
+          "name": "c",
+          "type": "uint96"
+        }
+      ],
+      "name": "writeOnce",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.14+commit.01f1aaa4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"outers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"sentinel\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"a\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"b\",\"type\":\"uint16\"},{\"internalType\":\"uint96\",\"name\":\"c\",\"type\":\"uint96\"}],\"name\":\"writeEach\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"a\",\"type\":\"uint16\"},{\"internalType\":\"uint16\",\"name\":\"b\",\"type\":\"uint16\"},{\"internalType\":\"uint96\",\"name\":\"c\",\"type\":\"uint96\"}],\"name\":\"writeOnce\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Structs.sol\":\"Structs\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Structs.sol\":{\"keccak256\":\"0x2602b973c1069c3bcdfef5240611242dc1696961cb2048934c467b30bb2f16ac\",\"urls\":[\"bzz-raw://4783445b005b5b324dd2389d37ca2016a3a8c4e59c05f16b169d1da9d42e0963\",\"dweb:/ipfs/QmXtkPm9EA7sA1JexPPSFUBbkWzbeCji6ijXeiDqa4RLYV\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610322806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80637e31c374146100465780639440ce0c1461006f578063d26f269f14610084575b600080fd5b6100596100543660046101fc565b610097565b6040516100669190610292565b60405180910390f35b61008261007d366004610222565b6100a9565b005b610082610092366004610222565b610145565b60006020819052908152604090205481565b6100b16101b5565b506040805160608101825261ffff948516815292841660208085019182526001600160601b03938416858401908152600097885287825283882033895260010190915291909520925183549551915161ffff199096169085161763ffff00001916620100009190941602929092176fffffffffffffffffffffffff0000000019166401000000009390921692909202179055565b600093845260208481526040808620338752600101909152909320805461ffff191661ffff9384161763ffff00001916620100009290931691909102919091176fffffffffffffffffffffffff0000000019166401000000006001600160601b0390931692909202919091179055565b604080516060810182526000808252602082018190529181019190915290565b80356101e0816102b6565b92915050565b80356101e0816102cd565b80356101e0816102d6565b60006020828403121561020e57600080fd5b600061021a84846101e6565b949350505050565b6000806000806080858703121561023857600080fd5b600061024487876101e6565b9450506020610255878288016101d5565b9350506040610266878288016101d5565b9250506060610277878288016101f1565b91505092959194509250565b61028c816102a7565b82525050565b602081016101e08284610283565b61ffff1690565b90565b6001600160601b031690565b6102bf816102a0565b81146102ca57600080fd5b50565b6102bf816102a7565b6102bf816102aa56fea365627a7a7231582019f40dacd45ee63c474d4b73ab1ed9db0045c7ad0d56424979cbb7ad734793266c6578706572696d656e74616cf564736f6c634300050e0040",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80637e31c374146100465780639440ce0c1461006f578063d26f269f14610084575b600080fd5b6100596100543660046101fc565b610097565b6040516100669190610292565b60405180910390f35b61008261007d366004610222565b6100a9565b005b610082610092366004610222565b610145565b60006020819052908152604090205481565b6100b16101b5565b506040805160608101825261ffff948516815292841660208085019182526001600160601b03938416858401908152600097885287825283882033895260010190915291909520925183549551915161ffff199096169085161763ffff00001916620100009190941602929092176fffffffffffffffffffffffff0000000019166401000000009390921692909202179055565b600093845260208481526040808620338752600101909152909320805461ffff191661ffff9384161763ffff00001916620100009290931691909102919091176fffffffffffffffffffffffff0000000019166401000000006001600160601b0390931692909202919091179055565b604080516060810182526000808252602082018190529181019190915290565b80356101e0816102b6565b92915050565b80356101e0816102cd565b80356101e0816102d6565b60006020828403121561020e57600080fd5b600061021a84846101e6565b949350505050565b6000806000806080858703121561023857600080fd5b600061024487876101e6565b9450506020610255878288016101d5565b9350506040610266878288016101d5565b9250506060610277878288016101f1565b91505092959194509250565b61028c816102a7565b82525050565b602081016101e08284610283565b61ffff1690565b90565b6001600160601b031690565b6102bf816102a0565b81146102ca57600080fd5b50565b6102bf816102a7565b6102bf816102aa56fea365627a7a7231582019f40dacd45ee63c474d4b73ab1ed9db0045c7ad0d56424979cbb7ad734793266c6578706572696d656e74616cf564736f6c634300050e0040",
+  "sourceMap": "60:616:51:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;60:616:51;;;;;;;",
+  "deployedSourceMap": "60:616:51:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;60:616:51;;;;;;;;;;;;;;;;;;;;;;;;;;;;;254:36;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;499:175;;;;;;;;;:::i;:::-;;297:196;;;;;;;;;:::i;254:36::-;;;;;;;;;;;;;;:::o;499:175::-;574:18;;:::i;:::-;-1:-1:-1;595:25:51;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;595:25:51;;;;;;;;;-1:-1:-1;630:10:51;;;;;;;;;648;630:29;;:17;;:29;;;;;;;:37;;;;;;;;-1:-1:-1;;630:37:51;;;;;;;-1:-1:-1;;630:37:51;;;;;;;;;;;-1:-1:-1;;630:37:51;;;;;;;;;;;;;499:175::o;297:196::-;372:19;394:10;;;;;;;;;;;412;394:29;;:17;;:29;;;;;;433:11;;-1:-1:-1;;433:11:51;;;;;;-1:-1:-1;;454:11:51;;;;;;;;;;;;;;-1:-1:-1;;475:11:51;;-1:-1:-1;;;;;475:11:51;;;;;;;;;;;;;297:196::o;60:616::-;;;;;;;;;-1:-1:-1;60:616:51;;;;;;;;;;;;;;;;;:::o;5:128:-1:-;71:20;;96:32;71:20;96:32;;;56:77;;;;;140:130;207:20;;232:33;207:20;232:33;;277:128;343:20;;368:32;343:20;368:32;;412:241;;516:2;504:9;495:7;491:23;487:32;484:2;;;532:1;529;522:12;484:2;567:1;584:53;629:7;609:9;584:53;;;574:63;478:175;-1:-1;;;;478:175;660:611;;;;;812:3;800:9;791:7;787:23;783:33;780:2;;;829:1;826;819:12;780:2;864:1;881:53;926:7;906:9;881:53;;;871:63;;843:97;971:2;989:52;1033:7;1024:6;1013:9;1009:22;989:52;;;979:62;;950:97;1078:2;1096:52;1140:7;1131:6;1120:9;1116:22;1096:52;;;1086:62;;1057:97;1185:2;1203:52;1247:7;1238:6;1227:9;1223:22;1203:52;;;1193:62;;1164:97;774:497;;;;;;;;1278:113;1361:24;1379:5;1361:24;;;1356:3;1349:37;1343:48;;;1398:213;1516:2;1501:18;;1530:71;1505:9;1574:6;1530:71;;1618:84;1690:6;1679:18;;1662:40;1709:72;1771:5;1754:27;1788:104;-1:-1;;;;;1849:38;;1832:60;1899:115;1967:23;1984:5;1967:23;;;1960:5;1957:34;1947:2;;2005:1;2002;1995:12;1947:2;1941:73;;2021:117;2090:24;2108:5;2090:24;;2145:115;2213:23;2230:5;2213:23;",
+  "source": "pragma solidity ^0.5.14;\npragma experimental ABIEncoderV2;\n\ncontract Structs {\n    struct Outer {\n        uint sentinel;\n        mapping(address => Inner) inners;\n    }\n\n    struct Inner {\n        uint16 a;\n        uint16 b;\n        uint96 c;\n    }\n\n    mapping(uint => Outer) public outers;\n\n    function writeEach(uint id, uint16 a, uint16 b, uint96 c) public {\n        Inner storage inner = outers[id].inners[msg.sender];\n        inner.a = a;\n        inner.b = b;\n        inner.c = c;\n    }\n\n    function writeOnce(uint id, uint16 a, uint16 b, uint96 c) public {\n        Inner memory inner = Inner({a: a, b: b, c: c});\n        outers[id].inners[msg.sender] = inner;\n    }\n}",
+  "sourcePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Structs.sol",
+  "ast": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Structs.sol",
+    "exportedSymbols": {
+      "Structs": [
+        30588
+      ]
+    },
+    "id": 30589,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30498,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:51"
+      },
+      {
+        "id": 30499,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:51"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30588,
+        "linearizedBaseContracts": [
+          30588
+        ],
+        "name": "Structs",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Structs.Outer",
+            "id": 30506,
+            "members": [
+              {
+                "constant": false,
+                "id": 30501,
+                "name": "sentinel",
+                "nodeType": "VariableDeclaration",
+                "scope": 30506,
+                "src": "106:13:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 30500,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "106:4:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30505,
+                "name": "inners",
+                "nodeType": "VariableDeclaration",
+                "scope": 30506,
+                "src": "129:32:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                  "typeString": "mapping(address => struct Structs.Inner)"
+                },
+                "typeName": {
+                  "id": 30504,
+                  "keyType": {
+                    "id": 30502,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "137:7:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "Mapping",
+                  "src": "129:25:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                    "typeString": "mapping(address => struct Structs.Inner)"
+                  },
+                  "valueType": {
+                    "contractScope": null,
+                    "id": 30503,
+                    "name": "Inner",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 30513,
+                    "src": "148:5:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                      "typeString": "struct Structs.Inner"
+                    }
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "Outer",
+            "nodeType": "StructDefinition",
+            "scope": 30588,
+            "src": "83:85:51",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "Structs.Inner",
+            "id": 30513,
+            "members": [
+              {
+                "constant": false,
+                "id": 30508,
+                "name": "a",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "197:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 30507,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "197:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30510,
+                "name": "b",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "215:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 30509,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "215:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30512,
+                "name": "c",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "233:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint96",
+                  "typeString": "uint96"
+                },
+                "typeName": {
+                  "id": 30511,
+                  "name": "uint96",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "233:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "Inner",
+            "nodeType": "StructDefinition",
+            "scope": 30588,
+            "src": "174:74:51",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 30517,
+            "name": "outers",
+            "nodeType": "VariableDeclaration",
+            "scope": 30588,
+            "src": "254:36:51",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+              "typeString": "mapping(uint256 => struct Structs.Outer)"
+            },
+            "typeName": {
+              "id": 30516,
+              "keyType": {
+                "id": 30514,
+                "name": "uint",
+                "nodeType": "ElementaryTypeName",
+                "src": "262:4:51",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "254:22:51",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                "typeString": "mapping(uint256 => struct Structs.Outer)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 30515,
+                "name": "Outer",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 30506,
+                "src": "270:5:51",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_Outer_$30506_storage_ptr",
+                  "typeString": "struct Structs.Outer"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30556,
+              "nodeType": "Block",
+              "src": "362:131:51",
+              "statements": [
+                {
+                  "assignments": [
+                    30529
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 30529,
+                      "name": "inner",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 30556,
+                      "src": "372:19:51",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                        "typeString": "struct Structs.Inner"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 30528,
+                        "name": "Inner",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 30513,
+                        "src": "372:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 30537,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "id": 30530,
+                          "name": "outers",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30517,
+                          "src": "394:6:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                            "typeString": "mapping(uint256 => struct Structs.Outer storage ref)"
+                          }
+                        },
+                        "id": 30532,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 30531,
+                          "name": "id",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30519,
+                          "src": "401:2:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "394:10:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Outer_$30506_storage",
+                          "typeString": "struct Structs.Outer storage ref"
+                        }
+                      },
+                      "id": 30533,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "inners",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30505,
+                      "src": "394:17:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                        "typeString": "mapping(address => struct Structs.Inner storage ref)"
+                      }
+                    },
+                    "id": 30536,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30534,
+                        "name": "msg",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44151,
+                        "src": "412:3:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_magic_message",
+                          "typeString": "msg"
+                        }
+                      },
+                      "id": 30535,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "sender",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": null,
+                      "src": "412:10:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address_payable",
+                        "typeString": "address payable"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "394:29:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                      "typeString": "struct Structs.Inner storage ref"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "372:51:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30542,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30538,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "433:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30540,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "a",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30508,
+                      "src": "433:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30541,
+                      "name": "a",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30521,
+                      "src": "443:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "src": "433:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "id": 30543,
+                  "nodeType": "ExpressionStatement",
+                  "src": "433:11:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30548,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30544,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "454:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30546,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "b",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30510,
+                      "src": "454:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30547,
+                      "name": "b",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30523,
+                      "src": "464:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "src": "454:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "id": 30549,
+                  "nodeType": "ExpressionStatement",
+                  "src": "454:11:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30554,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30550,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "475:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30552,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "c",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30512,
+                      "src": "475:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint96",
+                        "typeString": "uint96"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30553,
+                      "name": "c",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30525,
+                      "src": "485:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint96",
+                        "typeString": "uint96"
+                      }
+                    },
+                    "src": "475:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "id": 30555,
+                  "nodeType": "ExpressionStatement",
+                  "src": "475:11:51"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30557,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "writeEach",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30526,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30519,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "316:7:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30518,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "316:4:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30521,
+                  "name": "a",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "325:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30520,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "325:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30523,
+                  "name": "b",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "335:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30522,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "335:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30525,
+                  "name": "c",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "345:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  },
+                  "typeName": {
+                    "id": 30524,
+                    "name": "uint96",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "345:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "315:39:51"
+            },
+            "returnParameters": {
+              "id": 30527,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "362:0:51"
+            },
+            "scope": 30588,
+            "src": "297:196:51",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30586,
+              "nodeType": "Block",
+              "src": "564:110:51",
+              "statements": [
+                {
+                  "assignments": [
+                    30569
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 30569,
+                      "name": "inner",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 30586,
+                      "src": "574:18:51",
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_memory_ptr",
+                        "typeString": "struct Structs.Inner"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 30568,
+                        "name": "Inner",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 30513,
+                        "src": "574:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 30575,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 30571,
+                        "name": "a",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30561,
+                        "src": "605:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 30572,
+                        "name": "b",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30563,
+                        "src": "611:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 30573,
+                        "name": "c",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30565,
+                        "src": "617:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint96",
+                          "typeString": "uint96"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        },
+                        {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        },
+                        {
+                          "typeIdentifier": "t_uint96",
+                          "typeString": "uint96"
+                        }
+                      ],
+                      "id": 30570,
+                      "name": "Inner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30513,
+                      "src": "595:5:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_struct$_Inner_$30513_storage_ptr_$",
+                        "typeString": "type(struct Structs.Inner storage pointer)"
+                      }
+                    },
+                    "id": 30574,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "structConstructorCall",
+                    "lValueRequested": false,
+                    "names": [
+                      "a",
+                      "b",
+                      "c"
+                    ],
+                    "nodeType": "FunctionCall",
+                    "src": "595:25:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_memory",
+                      "typeString": "struct Structs.Inner memory"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "574:46:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30584,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 30576,
+                            "name": "outers",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 30517,
+                            "src": "630:6:51",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                              "typeString": "mapping(uint256 => struct Structs.Outer storage ref)"
+                            }
+                          },
+                          "id": 30578,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 30577,
+                            "name": "id",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 30559,
+                            "src": "637:2:51",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "630:10:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Outer_$30506_storage",
+                            "typeString": "struct Structs.Outer storage ref"
+                          }
+                        },
+                        "id": 30579,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "inners",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 30505,
+                        "src": "630:17:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                          "typeString": "mapping(address => struct Structs.Inner storage ref)"
+                        }
+                      },
+                      "id": 30582,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 30580,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 44151,
+                          "src": "648:3:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 30581,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "648:10:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "630:29:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                        "typeString": "struct Structs.Inner storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30583,
+                      "name": "inner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30569,
+                      "src": "662:5:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_memory_ptr",
+                        "typeString": "struct Structs.Inner memory"
+                      }
+                    },
+                    "src": "630:37:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                      "typeString": "struct Structs.Inner storage ref"
+                    }
+                  },
+                  "id": 30585,
+                  "nodeType": "ExpressionStatement",
+                  "src": "630:37:51"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30587,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "writeOnce",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30566,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30559,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "518:7:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30558,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "518:4:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30561,
+                  "name": "a",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "527:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30560,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "527:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30563,
+                  "name": "b",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "537:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30562,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "537:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30565,
+                  "name": "c",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "547:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  },
+                  "typeName": {
+                    "id": 30564,
+                    "name": "uint96",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "547:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "517:39:51"
+            },
+            "returnParameters": {
+              "id": 30567,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "564:0:51"
+            },
+            "scope": 30588,
+            "src": "499:175:51",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30589,
+        "src": "60:616:51"
+      }
+    ],
+    "src": "0:676:51"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/yanyichun/project/Savings/contracts/compound/test/Contracts/Structs.sol",
+    "exportedSymbols": {
+      "Structs": [
+        30588
+      ]
+    },
+    "id": 30589,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 30498,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".14"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:51"
+      },
+      {
+        "id": 30499,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:51"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 30588,
+        "linearizedBaseContracts": [
+          30588
+        ],
+        "name": "Structs",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Structs.Outer",
+            "id": 30506,
+            "members": [
+              {
+                "constant": false,
+                "id": 30501,
+                "name": "sentinel",
+                "nodeType": "VariableDeclaration",
+                "scope": 30506,
+                "src": "106:13:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 30500,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "106:4:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30505,
+                "name": "inners",
+                "nodeType": "VariableDeclaration",
+                "scope": 30506,
+                "src": "129:32:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                  "typeString": "mapping(address => struct Structs.Inner)"
+                },
+                "typeName": {
+                  "id": 30504,
+                  "keyType": {
+                    "id": 30502,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "137:7:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "Mapping",
+                  "src": "129:25:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                    "typeString": "mapping(address => struct Structs.Inner)"
+                  },
+                  "valueType": {
+                    "contractScope": null,
+                    "id": 30503,
+                    "name": "Inner",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 30513,
+                    "src": "148:5:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                      "typeString": "struct Structs.Inner"
+                    }
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "Outer",
+            "nodeType": "StructDefinition",
+            "scope": 30588,
+            "src": "83:85:51",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "Structs.Inner",
+            "id": 30513,
+            "members": [
+              {
+                "constant": false,
+                "id": 30508,
+                "name": "a",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "197:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 30507,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "197:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30510,
+                "name": "b",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "215:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 30509,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "215:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 30512,
+                "name": "c",
+                "nodeType": "VariableDeclaration",
+                "scope": 30513,
+                "src": "233:8:51",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint96",
+                  "typeString": "uint96"
+                },
+                "typeName": {
+                  "id": 30511,
+                  "name": "uint96",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "233:6:51",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "Inner",
+            "nodeType": "StructDefinition",
+            "scope": 30588,
+            "src": "174:74:51",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 30517,
+            "name": "outers",
+            "nodeType": "VariableDeclaration",
+            "scope": 30588,
+            "src": "254:36:51",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+              "typeString": "mapping(uint256 => struct Structs.Outer)"
+            },
+            "typeName": {
+              "id": 30516,
+              "keyType": {
+                "id": 30514,
+                "name": "uint",
+                "nodeType": "ElementaryTypeName",
+                "src": "262:4:51",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "254:22:51",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                "typeString": "mapping(uint256 => struct Structs.Outer)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 30515,
+                "name": "Outer",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 30506,
+                "src": "270:5:51",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_Outer_$30506_storage_ptr",
+                  "typeString": "struct Structs.Outer"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30556,
+              "nodeType": "Block",
+              "src": "362:131:51",
+              "statements": [
+                {
+                  "assignments": [
+                    30529
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 30529,
+                      "name": "inner",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 30556,
+                      "src": "372:19:51",
+                      "stateVariable": false,
+                      "storageLocation": "storage",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                        "typeString": "struct Structs.Inner"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 30528,
+                        "name": "Inner",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 30513,
+                        "src": "372:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 30537,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "id": 30530,
+                          "name": "outers",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30517,
+                          "src": "394:6:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                            "typeString": "mapping(uint256 => struct Structs.Outer storage ref)"
+                          }
+                        },
+                        "id": 30532,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 30531,
+                          "name": "id",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 30519,
+                          "src": "401:2:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "394:10:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Outer_$30506_storage",
+                          "typeString": "struct Structs.Outer storage ref"
+                        }
+                      },
+                      "id": 30533,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "inners",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30505,
+                      "src": "394:17:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                        "typeString": "mapping(address => struct Structs.Inner storage ref)"
+                      }
+                    },
+                    "id": 30536,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30534,
+                        "name": "msg",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44151,
+                        "src": "412:3:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_magic_message",
+                          "typeString": "msg"
+                        }
+                      },
+                      "id": 30535,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "sender",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": null,
+                      "src": "412:10:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address_payable",
+                        "typeString": "address payable"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "394:29:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                      "typeString": "struct Structs.Inner storage ref"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "372:51:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30542,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30538,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "433:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30540,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "a",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30508,
+                      "src": "433:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30541,
+                      "name": "a",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30521,
+                      "src": "443:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "src": "433:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "id": 30543,
+                  "nodeType": "ExpressionStatement",
+                  "src": "433:11:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30548,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30544,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "454:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30546,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "b",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30510,
+                      "src": "454:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30547,
+                      "name": "b",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30523,
+                      "src": "464:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint16",
+                        "typeString": "uint16"
+                      }
+                    },
+                    "src": "454:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "id": 30549,
+                  "nodeType": "ExpressionStatement",
+                  "src": "454:11:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30554,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 30550,
+                        "name": "inner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30529,
+                        "src": "475:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner storage pointer"
+                        }
+                      },
+                      "id": 30552,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "c",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 30512,
+                      "src": "475:7:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint96",
+                        "typeString": "uint96"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30553,
+                      "name": "c",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30525,
+                      "src": "485:1:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint96",
+                        "typeString": "uint96"
+                      }
+                    },
+                    "src": "475:11:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "id": 30555,
+                  "nodeType": "ExpressionStatement",
+                  "src": "475:11:51"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30557,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "writeEach",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30526,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30519,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "316:7:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30518,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "316:4:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30521,
+                  "name": "a",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "325:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30520,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "325:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30523,
+                  "name": "b",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "335:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30522,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "335:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30525,
+                  "name": "c",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30557,
+                  "src": "345:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  },
+                  "typeName": {
+                    "id": 30524,
+                    "name": "uint96",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "345:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "315:39:51"
+            },
+            "returnParameters": {
+              "id": 30527,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "362:0:51"
+            },
+            "scope": 30588,
+            "src": "297:196:51",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 30586,
+              "nodeType": "Block",
+              "src": "564:110:51",
+              "statements": [
+                {
+                  "assignments": [
+                    30569
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 30569,
+                      "name": "inner",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 30586,
+                      "src": "574:18:51",
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_memory_ptr",
+                        "typeString": "struct Structs.Inner"
+                      },
+                      "typeName": {
+                        "contractScope": null,
+                        "id": 30568,
+                        "name": "Inner",
+                        "nodeType": "UserDefinedTypeName",
+                        "referencedDeclaration": 30513,
+                        "src": "574:5:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Inner_$30513_storage_ptr",
+                          "typeString": "struct Structs.Inner"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 30575,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 30571,
+                        "name": "a",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30561,
+                        "src": "605:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 30572,
+                        "name": "b",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30563,
+                        "src": "611:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 30573,
+                        "name": "c",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 30565,
+                        "src": "617:1:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint96",
+                          "typeString": "uint96"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        },
+                        {
+                          "typeIdentifier": "t_uint16",
+                          "typeString": "uint16"
+                        },
+                        {
+                          "typeIdentifier": "t_uint96",
+                          "typeString": "uint96"
+                        }
+                      ],
+                      "id": 30570,
+                      "name": "Inner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30513,
+                      "src": "595:5:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_struct$_Inner_$30513_storage_ptr_$",
+                        "typeString": "type(struct Structs.Inner storage pointer)"
+                      }
+                    },
+                    "id": 30574,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "structConstructorCall",
+                    "lValueRequested": false,
+                    "names": [
+                      "a",
+                      "b",
+                      "c"
+                    ],
+                    "nodeType": "FunctionCall",
+                    "src": "595:25:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_memory",
+                      "typeString": "struct Structs.Inner memory"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "574:46:51"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 30584,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 30576,
+                            "name": "outers",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 30517,
+                            "src": "630:6:51",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Outer_$30506_storage_$",
+                              "typeString": "mapping(uint256 => struct Structs.Outer storage ref)"
+                            }
+                          },
+                          "id": 30578,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 30577,
+                            "name": "id",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 30559,
+                            "src": "637:2:51",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "630:10:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Outer_$30506_storage",
+                            "typeString": "struct Structs.Outer storage ref"
+                          }
+                        },
+                        "id": 30579,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "inners",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 30505,
+                        "src": "630:17:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Inner_$30513_storage_$",
+                          "typeString": "mapping(address => struct Structs.Inner storage ref)"
+                        }
+                      },
+                      "id": 30582,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 30580,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 44151,
+                          "src": "648:3:51",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 30581,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "648:10:51",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "630:29:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                        "typeString": "struct Structs.Inner storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 30583,
+                      "name": "inner",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 30569,
+                      "src": "662:5:51",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Inner_$30513_memory_ptr",
+                        "typeString": "struct Structs.Inner memory"
+                      }
+                    },
+                    "src": "630:37:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_Inner_$30513_storage",
+                      "typeString": "struct Structs.Inner storage ref"
+                    }
+                  },
+                  "id": 30585,
+                  "nodeType": "ExpressionStatement",
+                  "src": "630:37:51"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 30587,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "writeOnce",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 30566,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 30559,
+                  "name": "id",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "518:7:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 30558,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "518:4:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30561,
+                  "name": "a",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "527:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30560,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "527:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30563,
+                  "name": "b",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "537:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 30562,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "537:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 30565,
+                  "name": "c",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 30587,
+                  "src": "547:8:51",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint96",
+                    "typeString": "uint96"
+                  },
+                  "typeName": {
+                    "id": 30564,
+                    "name": "uint96",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "547:6:51",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint96",
+                      "typeString": "uint96"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "517:39:51"
+            },
+            "returnParameters": {
+              "id": 30567,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "564:0:51"
+            },
+            "scope": 30588,
+            "src": "499:175:51",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 30589,
+        "src": "60:616:51"
+      }
+    ],
+    "src": "0:676:51"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.14+commit.01f1aaa4.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2021-02-25T05:30:06.449Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
