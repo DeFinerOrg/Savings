@@ -10,7 +10,7 @@
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "lint": "npx solium -d contracts/",
-    "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
+    "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true"
   },
   "repository": {
     "type": "git",
