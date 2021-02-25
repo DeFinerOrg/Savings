@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "compile": "truffle compile",
-    "test": "npx yarn prepare --max-old-space-size=4096 && npx hardhat test ./test/**/*.spec.ts",
-    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "test": "yarn prepare && npx hardhat test ./test/**/*.spec.ts",
+    "generate": "npx truffle compile --max-old-space-size=4096 && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "lint": "npx solium -d contracts/",
