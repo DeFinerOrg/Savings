@@ -1,29 +1,8 @@
 ## Compile the contract and run the tests:
-
-**1)** Download the compound-protocol as a submodule & install dependencies:  
-
-Use node version 10.23.0 with the following steps
-
-- **`cd Savings && git submodule init && git submodule update`**  
-- **`cd compound-protocol && sudo npm i`**  
-- **`cd scenario && npm i`**
-
-**2)** Install dependencies:
-
-**`cd Savings && yarn`**
-
-**3)** Launch buidler evm:
-
-**`npx hardhat node`**
-
-**4)** Run test scripts
-
-**`yarn test ./test/**/*`**
-
-**4)** If you want to use truffle test suite to run the test
-- Replace **`await testEngine.deploySavingAccount()`** to **`await testEngine.deploySavingAccountTruffle()`** 
-- Replace **`await testEngine.deploy()`** to **`await testEngine.deployTruffle()`** 
-- Then run **`truffle test`**
+1. Install the dependencies: `yarn install`
+2. Compile the project: `yarn generate`
+3. Run the tests: `yarn test`
+4. Run the coverage: `yarn coverage`
 
 ## Passing Tests:
 
