@@ -429,13 +429,7 @@ contract Accounts is Constant, Initializable{
     }
 
     struct LiquidationVars {
-        // address token;
-        // uint256 tokenPrice;
-        // uint256 coinValue;
         uint256 borrowerCollateralValue;
-        // uint256 tokenAmount;
-        // uint256 tokenDivisor;
-        // uint256 msgTotalBorrow;
         uint256 targetTokenBalance;
         uint256 targetTokenBalanceBorrowed;
         uint256 targetTokenPrice;
@@ -444,7 +438,6 @@ contract Accounts is Constant, Initializable{
         uint256 borrowPower;
         uint256 liquidateTokenBalance;
         uint256 liquidateTokenPrice;
-        // uint256 liquidateTokenValue;
         uint256 limitRepaymentValue;
         uint256 borrowTokenLTV;
         uint256 repayAmount;
