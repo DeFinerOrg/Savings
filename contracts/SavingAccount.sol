@@ -30,6 +30,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Withdraw(address indexed token, address from, uint256 amount);
     event WithdrawAll(address indexed token, address from, uint256 amount);
     event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
+    event Claim(address from, uint256 amount);
 
     modifier onlyEmergencyAddress() {
         require(msg.sender ==  EMERGENCY_ADDR, "User not authorized");
@@ -237,5 +238,15 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
         SavingLib.emergencyWithdraw(globalConfig, _token);
+    }
+
+    /**
+     * An account claim all mined FIN token
+     */
+    function claim() public nonReentrant {
+        uint FINAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+
+        emit Claim(msg.sender, FINAmount);
     }
 }

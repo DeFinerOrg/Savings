@@ -54,14 +54,14 @@ contract("SavingAccount.repay", async (accounts) => {
     const numOfWBTC = eightPrecision;
     const numOfUSDC = sixPrecision;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -97,7 +97,7 @@ contract("SavingAccount.repay", async (accounts) => {
         context(
             "Borrow out all the tokens in DeFiner, then repay, verify CToken and tokens in saving account",
             async () => {
-                it("Deposit DAI, borrows USDC and wants to withdraw", async function() {
+                it("Deposit DAI, borrows USDC and wants to withdraw", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -109,6 +109,9 @@ contract("SavingAccount.repay", async (accounts) => {
 
                     await erc20DAI.transfer(user1, numOfDAI);
                     await erc20USDC.transfer(user2, numOfUSDC);
+
+                    await savingAccount.fastForward(1000);
+
                     await erc20DAI.approve(savingAccount.address, numOfDAI, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, numOfUSDC, { from: user2 });
 
@@ -213,7 +216,7 @@ contract("SavingAccount.repay", async (accounts) => {
         // These tests can't be verified after integrated with compound
         context("Checking saving account's value after repayment", async () => {
             context("Should succeed.", async () => {
-                it("Repay all the outstandings DAI token", async function() {
+                it("Repay all the outstandings DAI token", async function () {
                     this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
@@ -275,7 +278,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -315,7 +318,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("Repay half the outstandings DAI token", async function() {
+                it("Repay half the outstandings DAI token", async function () {
                     this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
@@ -380,7 +383,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -416,7 +419,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("Repay with a small amount of DAI token", async function() {
+                it("Repay with a small amount of DAI token", async function () {
                     this.timeout(0);
                     /*
                      * Setting up collateral beforehand.
@@ -481,7 +484,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -525,7 +528,7 @@ contract("SavingAccount.repay", async (accounts) => {
 
         context("Repay partially several times.", async () => {
             context("Use DAI, should succeed", async () => {
-                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async function() {
+                it("Repay twice, every time repay 0.25 * 10^18 DAI tokens", async function () {
                     this.timeout(0);
 
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -584,7 +587,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -667,7 +670,7 @@ contract("SavingAccount.repay", async (accounts) => {
             });
 
             context("Use USDC, should succeed", async () => {
-                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async function() {
+                it("Repay twice, every time repay 0.25 * 10^6 USDC tokens", async function () {
                     this.timeout(0);
 
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -726,7 +729,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(2)), {
-                        from: user1
+                        from: user1,
                     });
 
                     await savAccBalVerify(
@@ -812,7 +815,7 @@ contract("SavingAccount.repay", async (accounts) => {
 
         context("with WBTC, 8 decimals token", async () => {
             context("should succeed", async () => {
-                it("When the repayment DAI Amount is less than the loan amount.", async function() {
+                it("When the repayment DAI Amount is less than the loan amount.", async function () {
                     this.timeout(0);
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -911,7 +914,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is equal than the loan amount.", async function() {
+                it("When the repayment DAI Amount is equal than the loan amount.", async function () {
                     this.timeout(0);
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -1011,7 +1014,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment DAI Amount is greater than the loan amount.", async function() {
+                it("When the repayment DAI Amount is greater than the loan amount.", async function () {
                     this.timeout(0);
                     // 1.1 Set up collateral.
                     await erc20DAI.transfer(user1, numOfDAI);
@@ -1113,7 +1116,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is less than the loan amount.", async function() {
+                it("When the repayment WBTC Amount is less than the loan amount.", async function () {
                     this.timeout(0);
                     let numOfDAI = eighteenPrecision.mul(new BN(2));
                     // 1.1 Set up collateral.
@@ -1214,7 +1217,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is equal to the loan amount.", async function() {
+                it("When the repayment WBTC Amount is equal to the loan amount.", async function () {
                     this.timeout(0);
                     // 1.1 Set up collateral.
                     let numOfDAI = eighteenPrecision.mul(new BN(2));
@@ -1315,7 +1318,7 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
                 });
 
-                it("When the repayment WBTC Amount is greater than the loan amount.", async function() {
+                it("When the repayment WBTC Amount is greater than the loan amount.", async function () {
                     this.timeout(0);
                     // 1.1 Set up collateral.
                     let numOfDAI = eighteenPrecision.mul(new BN(2));

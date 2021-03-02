@@ -26,6 +26,11 @@ contract Bank is Constant, Initializable{
 
     GlobalConfig globalConfig;            // global configuration contract address
 
+    mapping(address => mapping(uint => uint)) public depositFINRateIndex;
+    mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
+    mapping(address => uint) public lastDepositeFINRateCheckpoint;
+    mapping(address => uint) public lastBorrowFINRateCheckpoint;
+
     modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
             "Only authorized to call from DeFiner internal contracts.");
@@ -40,6 +45,8 @@ contract Bank is Constant, Initializable{
     }
 
     event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
+    event UpdateDepositFINIndex(address indexed _token, uint256 depositFINRateIndex);
+    event UpdateBorrowFINIndex(address indexed _token, uint256 borrowFINRateIndex);
 
     /**
      * Initialize the Bank
@@ -160,6 +167,45 @@ contract Bank is Constant, Initializable{
         // updateTotalLoan(_token);
         compoundAmount = updateTotalReserve(_token, _amount, _action);
         return compoundAmount;
+    }
+
+    function updateDepositFINIndex(address _token) public onlyAuthorized{
+        uint currentBlock = getBlockNumber();
+        uint deltaBlock;
+        // sichaoy: newRateIndexCheckpoint should never be called before this line, so the total deposit
+        // derived here is the total deposit in the last checkpoint without latest interests.
+        deltaBlock = lastDepositeFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
+        // sichaoy: How to deal with the case that totalDeposit = 0?
+        depositFINRateIndex[_token][currentBlock] = getTotalDepositStore(_token) == 0 ?
+            0 : depositFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]]
+                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
+                    .mul(deltaBlock)
+                    .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
+                    .div(getTotalDepositStore(_token))
+                );
+        lastDepositeFINRateCheckpoint[_token] = currentBlock;
+
+        emit UpdateDepositFINIndex(_token, depositFINRateIndex[_token][currentBlock]);
+    }
+
+    function updateBorrowFINIndex(address _token) public onlyAuthorized{
+        uint currentBlock = getBlockNumber();
+        uint deltaBlock;
+        deltaBlock = lastBorrowFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
+        borrowFINRateIndex[_token][currentBlock] = totalLoans[_token] == 0 ?
+            0 : borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]]
+                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
+                    .mul(deltaBlock)
+                    .mul(globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token))
+                    .div(totalLoans[_token]));
+        lastBorrowFINRateCheckpoint[_token] = currentBlock;
+
+        emit UpdateBorrowFINIndex(_token, borrowFINRateIndex[_token][currentBlock]);
+    }
+
+    function updateMining(address _token) public onlyAuthorized{
+        newRateIndexCheckpoint(_token);
+        updateTotalCompound(_token);
     }
 
     /**
@@ -368,6 +414,7 @@ contract Bank is Constant, Initializable{
     function getPoolAmount(address _token) public view returns(uint) {
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
+
  // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
     function deposit(address _to, address _token, uint256 _amount) external onlyAuthorized {
 
@@ -375,6 +422,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
+        updateDepositFINIndex(_token);
 
         // Update tokenInfo. Add the _amount to principal, and update the last deposit block in tokenInfo
         globalConfig.accounts().deposit(_to, _token, _amount);
@@ -392,6 +440,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
+        updateBorrowFINIndex(_token);
 
         // Update tokenInfo for the user
         globalConfig.accounts().borrow(_from, _token, _amount);
@@ -410,6 +459,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
+        updateBorrowFINIndex(_token);
 
         // Sanity check
         require(globalConfig.accounts().getBorrowPrincipal(_to, _token) > 0,
@@ -443,6 +493,7 @@ contract Bank is Constant, Initializable{
 
         // Add a new checkpoint on the index curve.
         newRateIndexCheckpoint(_token);
+        updateDepositFINIndex(_token);
 
         // Withdraw from the account
         uint amount = globalConfig.accounts().withdraw(_from, _token, _amount);

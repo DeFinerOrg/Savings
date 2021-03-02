@@ -64,14 +64,14 @@ contract("Integration Tests", async (accounts) => {
 
     context("Compound Model Validation", async () => {
         context("Uses WhitePaper Model", async () => {
-            before(function() {
+            before(function () {
                 // Things to initialize before all test
                 this.timeout(0);
                 testEngine = new TestEngine();
                 testEngine.deploy("whitePaperModel.scen");
             });
 
-            beforeEach(async function() {
+            beforeEach(async function () {
                 this.timeout(0);
                 savingAccount = await testEngine.deploySavingAccount();
                 // 1. initialization.
@@ -109,13 +109,15 @@ contract("Integration Tests", async (accounts) => {
                 cWBTC = await MockCToken.at(cWBTC_addr);
                 cZRX = await MockCToken.at(cZRX_addr);
             });
-            it("Deposit DAI and checkout the output rate", async function() {
+
+            it("Deposit DAI and checkout the output rate", async function () {
                 this.timeout(0);
+                await savingAccount.fastForward(1000);
                 console.log("-------------------------Initial Value---------------------------");
                 // 1. Check the compound rate before deposit
                 const borrowRateBeforeDeposit = await cZRX.borrowRatePerBlock({ from: user1 });
                 const depositRateBeforeDeposit = await cZRX.supplyRatePerBlock({
-                    from: user1
+                    from: user1,
                 });
                 console.log("Borrow rate ", borrowRateBeforeDeposit.toString());
                 console.log("Deposit rate ", depositRateBeforeDeposit.toString());
@@ -131,7 +133,7 @@ contract("Integration Tests", async (accounts) => {
                 const numOfZRX = eighteenPrecision;
                 await erc20ZRX.transfer(user1, numOfZRX.mul(new BN(4)));
                 await erc20ZRX.approve(savingAccount.address, numOfZRX.mul(new BN(4)), {
-                    from: user1
+                    from: user1,
                 });
                 await savingAccount.deposit(addressZRX, numOfZRX, { from: user1 });
                 // await erc20DAI.transfer(user2, numOfZRX.mul(new BN(4)));

@@ -75,14 +75,14 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
@@ -161,19 +161,19 @@ contract("SavingAccount.borrow", async (accounts) => {
                 "Use compound supported and unsupported tokens together (WBTC, TUSD)",
                 async () => {
                     context("Should fail", async () => {
-                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function() {
+                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
                              * Account1: deposits 1 WBTC
                              * Account2: deposits 100 TUSD
                              */
-                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1000)));
                             await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
                             await erc20WBTC.approve(
                                 savingAccount.address,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1000)),
                                 { from: user1 }
                             );
                             await erc20TUSD.approve(
@@ -182,9 +182,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 { from: user2 }
                             );
 
+                            await savingAccount.fastForward(1000);
+
                             await savingAccount.deposit(
                                 addressWBTC,
-                                eightPrecision.mul(new BN(1)),
+                                eightPrecision.mul(new BN(1000)),
                                 { from: user1 }
                             );
                             await savingAccount.deposit(
@@ -205,10 +207,10 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Insufficient collateral when borrow."
+                                "Lack of liquidity when borrow."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function() {
+                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -253,7 +255,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Insufficient collateral when borrow."
                             );
                         });
-                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function() {
+                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -298,7 +300,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "Borrow zero amount of token is not allowed."
                             );
                         });
-                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function() {
+                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -345,7 +347,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                         });
                     });
                     context("Should succeeed", async () => {
-                        it("Deposits WBTC, borrows a small amount of TUSD ", async function() {
+                        it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -417,10 +419,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                     savingsCompoundWBTCBeforeDeposit
                                 )
                             ).to.be.bignumber.equals(
-                                eightPrecision
-                                    .mul(new BN(1))
-                                    .mul(new BN(85))
-                                    .div(new BN(100))
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
                             );
 
                             expect(
@@ -428,7 +427,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             ).to.be.bignumber.equals(new BN(0));
                         });
 
-                        it("Deposits TUSD, borrows a small amount of WBTC ", async function() {
+                        it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -497,17 +496,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                                     savingsCompoundWBTCBeforeDeposit
                                 )
                             ).to.be.bignumber.equals(
-                                eightPrecision
-                                    .mul(new BN(1))
-                                    .mul(new BN(85))
-                                    .div(new BN(100))
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
                             );
 
                             expect(
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
                         });
-                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function() {
+                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -579,17 +575,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                                     savingsCompoundWBTCBeforeDeposit
                                 )
                             ).to.be.bignumber.equals(
-                                eightPrecision
-                                    .mul(new BN(1))
-                                    .mul(new BN(85))
-                                    .div(new BN(100))
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
                             );
 
                             expect(
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
                         });
-                        it("Deposits TUSD, borrows the same amount of borrowing power", async function() {
+                        it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
                             this.timeout(0);
                             /*
                              * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -667,10 +660,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                     savingsCompoundWBTCBeforeDeposit
                                 )
                             ).to.be.bignumber.equals(
-                                eightPrecision
-                                    .mul(new BN(100))
-                                    .mul(new BN(85))
-                                    .div(new BN(100))
+                                eightPrecision.mul(new BN(100)).mul(new BN(85)).div(new BN(100))
                             );
 
                             expect(
@@ -684,7 +674,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         context("Call multiple times", async () => {
             context("Should succeed", async () => {
-                it("Uses 18 decimals, TUSD", async function() {
+                it("Uses 18 decimals, TUSD", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -714,10 +704,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -759,7 +749,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
 
-                it("Uses 6 decimals, USDC", async function() {
+                it("Uses 6 decimals, USDC", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -775,7 +765,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
 
                     const savingsCompoundDAIBeforeDeposit = new BN(
@@ -795,10 +785,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(100)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(
@@ -890,7 +880,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     ).to.be.bignumber.equals(borrow.mul(new BN(2)));
                 });
 
-                it("Uses 8 decimals, WBTC", async function() {
+                it("Uses 8 decimals, WBTC", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -928,10 +918,10 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1000)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1000)), {
-                        from: user2
+                        from: user2,
                     });
 
                     await savAccBalVerify(

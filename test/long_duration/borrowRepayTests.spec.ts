@@ -155,6 +155,9 @@ contract("SavingAccount.borrowRepayTestsUSDC", async (accounts) => {
     context("Deposit, Borrow, Repay", async () => {
         context("should succeed", async () => {
             it("RateTest4: should deposit DAI, borrow USDC and repay after one month", async () => {
+                // this.timeout(0);
+                await savingAccount.fastForward(1000);
+
                 // 1. Initiate deposit
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = new BN(1000);

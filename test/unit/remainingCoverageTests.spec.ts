@@ -54,7 +54,7 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     beforeEach(async function () {
-        this.timeout(0)
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -69,28 +69,32 @@ contract("RemainingCoverage", async (accounts) => {
 
     context("approveAll", async () => {
         context("should fail", async function () {
-            this.timeout(0)
+            this.timeout(0);
             it("when cToken address is zero", async () => {
+                await savingAccount.fastForward(1000);
                 await expectRevert(savingAccount.approveAll(dummy), "cToken address is zero");
             });
         });
 
         context("should succeed", async () => {
             it("when all conditions are satisfied", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const ERC20TokenAddresses = testEngine.erc20Tokens;
+                console.log("ERC20TokenAddresses",ERC20TokenAddresses);
+                
                 // Approve all ERC20 tokens
                 for (let i = 0; i < ERC20TokenAddresses.length - 1; i++) {
-                    //console.log("tokens", ERC20TokenAddresses[i]);
-                    if (i == 3 || i == 4 || i == 9 || i == 10) {
-                        await expectRevert(
-                            savingAccount.approveAll(ERC20TokenAddresses[i]),
-                            "cToken address is zero"
-                        );
-                    } else {
-                        await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                    if (i != 9) {
+                        if (i == 3 || i == 4 || i == 10 || i == 11) {
+                            await expectRevert(
+                                savingAccount.approveAll(ERC20TokenAddresses[i]),
+                                "cToken address is zero"
+                            );
+                        } else {
+                            await savingAccount.approveAll(ERC20TokenAddresses[i]);
+                        }
+                        // Verification for approve?
                     }
-                    // Verification for approve?
                 }
             });
         });
@@ -103,7 +107,7 @@ contract("RemainingCoverage", async (accounts) => {
 
         context("should succeed", async () => {
             it("when supported token address is passed", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await globalConfig.updatedeFinerRate(50);
             });
 
@@ -115,11 +119,11 @@ contract("RemainingCoverage", async (accounts) => {
     });
 
     context("isAccountLiquidatable", async () => {
-        context("should fail", async () => { });
+        context("should fail", async () => {});
 
         context("should succeed", async () => {
             it("when borrower's collateral value drops", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -168,12 +172,14 @@ contract("RemainingCoverage", async (accounts) => {
 
                 await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
-                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable.call(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable.call(
+                    user2
+                );
                 expect(isAccountLiquidatableStr).equal(true);
             });
 
             it("when user has borrowed but his LTV doesn't change", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 const tokens = testEngine.erc20Tokens;
                 const addressDAI = tokens[0];
                 const addressUSDC = tokens[1];
@@ -207,7 +213,7 @@ contract("RemainingCoverage", async (accounts) => {
     context("updateDeFinerCommunityFund", async () => {
         context("should fail", async () => {
             it("when user's address is not same as definerCommunityFund", async function () {
-                this.timeout(0)
+                this.timeout(0);
                 await expectRevert(
                     globalConfig.updatedeFinerCommunityFund(user1, { from: user1 }),
                     "Ownable: caller is not the owner"

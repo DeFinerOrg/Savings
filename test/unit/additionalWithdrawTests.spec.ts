@@ -53,14 +53,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -95,7 +95,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     context("Addtional tests for withdraw", async () => {
         context("Deposit and withdraw with multiple kinds of tokens.", async () => {
             context("Should succeed", async () => {
-                it("Deposit DAI and USDC, withdraw partially", async function() {
+                it("Deposit DAI and USDC, withdraw partially", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfUSDC = new BN(1).mul(sixPrecision);
@@ -210,7 +210,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     ).to.be.bignumber.equal(BN(halfOfUSDC));
                 });
 
-                it("Deposit DAI and USDC, withdraw fully", async function() {
+                it("Deposit DAI and USDC, withdraw fully", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfUSDC = new BN(1).mul(sixPrecision);
@@ -323,7 +323,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     ).to.be.bignumber.equal(BN(numOfUSDC));
                 });
 
-                it("Deposit DAI and TUSD, withdraw partially", async function() {
+                it("Deposit DAI and TUSD, withdraw partially", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfTUSD = new BN(1).mul(eighteenPrecision);
@@ -406,7 +406,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     ).to.be.bignumber.equal(BN(halfOfTUSD));
                 });
 
-                it("Deposit DAI and TUSD, withdraw fully", async function() {
+                it("Deposit DAI and TUSD, withdraw fully", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfTUSD = new BN(1).mul(eighteenPrecision);
@@ -487,7 +487,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
 
             context("Should fail", async () => {
-                it("Deposit DAI and USDC, withdraw more USDC tokens than it deposits", async function() {
+                it("Deposit DAI and USDC, withdraw more USDC tokens than it deposits", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfUSDC = new BN(1).mul(sixPrecision);
@@ -580,7 +580,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         "Insufficient balance."
                     );
                 });
-                it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async function() {
+                it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async function () {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfTUSD = new BN(1).mul(eighteenPrecision);
@@ -662,8 +662,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
             });
         });
 
-        context("Withdraw when there is still borrow outstandings", async function() {
-            it("Deposit DAI, borrows USDC and wants to withdraw all", async function() {
+        context("Withdraw when there is still borrow outstandings", async function () {
+            it("Deposit DAI, borrows USDC and wants to withdraw all", async function () {
                 this.timeout(0);
                 /*
                  * Step 1
@@ -748,7 +748,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     "Insufficient collateral when withdraw."
                 );
             });
-            it("Deposit DAI, borrows USDC and wants to withdraw", async function() {
+            it("Deposit DAI, borrows USDC and wants to withdraw", async function () {
                 this.timeout(0);
                 /*
                  * Step 1
@@ -871,7 +871,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
         context("Withdraw partially multiple times", async () => {
             context("Should succeed", async () => {
-                it("Use DAI which 18 is decimals, deposit some tokens and withdraw all of them in four times", async function() {
+                it("Use DAI which 18 is decimals, deposit some tokens and withdraw all of them in four times", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -1029,7 +1029,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(0));
                 });
-                it("Use USDC which 6 is decimals, deposit some tokens and withdraw all of them in four times", async function() {
+                it("Use USDC which 6 is decimals, deposit some tokens and withdraw all of them in four times", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -1189,7 +1189,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     expect(BN(userTotalBalance)).to.be.bignumber.equal(new BN(0));
                 });
-                it("Use WBTC which 8 is decimals, deposit some tokens and withdraw all of them in four times", async function() {
+                it("Use WBTC which 8 is decimals, deposit some tokens and withdraw all of them in four times", async function () {
                     this.timeout(0);
                     /*
                      * Step 1
@@ -1345,7 +1345,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                 });
             });
             context("Should fail", async () => {
-                it("Use DAI, deposit 10^18 tokens, withdraw 1/4 of them the first time, then withdraw 10^18 tokens", async function() {
+                it("Use DAI, deposit 10^18 tokens, withdraw 1/4 of them the first time, then withdraw 10^18 tokens", async function () {
                     this.timeout(0);
                     /*
                      * Step 1

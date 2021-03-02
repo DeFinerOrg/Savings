@@ -78,14 +78,14 @@ contract("SavingAccount.deposit", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -159,7 +159,7 @@ contract("SavingAccount.deposit", async (accounts) => {
     context("Additional tests for Deposit", async () => {
         context("With multiple tokens", async () => {
             context("Should suceed", async () => {
-                it("Deposit DAI and USDC, both compound supported", async function() {
+                it("Deposit DAI and USDC, both compound supported", async function () {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -193,6 +193,8 @@ contract("SavingAccount.deposit", async (accounts) => {
                     await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1)));
                     await erc20USDC.transfer(user1, sixPrecision.mul(new BN(1)));
 
+                    await savingAccount.fastForward(1000);
+
                     await erc20DAI.approve(
                         savingAccount.address,
                         eighteenPrecision.mul(new BN(1)),
@@ -200,15 +202,15 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
 
                     await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
 
                     await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
 
                     /*
@@ -257,7 +259,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(userUSDCBalance).sub(BN(userUSDCBalanceBefore))
                     ).to.be.bignumber.equals(sixPrecision);
                 });
-                it("Deposit WBTC and TUSD, compound supported and unsupported", async function() {
+                it("Deposit WBTC and TUSD, compound supported and unsupported", async function () {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -279,7 +281,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                     await erc20TUSD.transfer(user1, eighteenPrecision);
 
                     await erc20WBTC.approve(savingAccount.address, eightPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await erc20TUSD.approve(
                         savingAccount.address,
@@ -296,10 +298,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision, {
-                        from: user1
+                        from: user1,
                     });
                     /*
                      * To verify:
@@ -335,7 +337,7 @@ contract("SavingAccount.deposit", async (accounts) => {
                         BN(userTUSDBalance).sub(BN(userTUSDBalanceBefore))
                     ).to.be.bignumber.equals(eighteenPrecision);
                 });
-                it("Deposit MKR and TUSD, both compound unsupported", async function() {
+                it("Deposit MKR and TUSD, both compound unsupported", async function () {
                     this.timeout(0);
                     /*
                      * Step 1. Assign tokens to each user and deposit them to DeFiner
@@ -376,10 +378,10 @@ contract("SavingAccount.deposit", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressMKR, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(1)), {
-                        from: user1
+                        from: user1,
                     });
                     /*
                      * To verify:
