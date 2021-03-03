@@ -126,6 +126,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                     );
                     const balSavingAccountBefore = await erc20DAI.balanceOf(savingAccount.address);
 
+                    await savingAccount.fastForward(1000);
                     await erc20DAI.transfer(user1, numOfToken);
                     await erc20DAI.transfer(user2, numOfToken);
                     await erc20DAI.approve(savingAccount.address, numOfToken, { from: user1 });

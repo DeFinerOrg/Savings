@@ -251,32 +251,6 @@
                 "aggregatorAddress": "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD",
                 "cTokenAddress": "0x0014f450b8ae7708593f4a46f8fa6e5d50620f96"
             }
-        },
-        {
-            "name": "DeFiner",
-            "symbol": "FIN",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": false,
-            "latestAnswer": "41623010370000000000",
-            "mainnet": {
-                "tokenAddress": "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40",
-                "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
-            }
-        },
-        {
-            "name": "LPToken",
-            "symbol": "LPToken",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": false,
-            "latestAnswer": "41623010370000000000",
-            "mainnet": {
-                "tokenAddress": "0x486792bcdb13F8aaCf85288D98850FA2804F95c7",
-                "aggregatorAddress": "0x444F88FDd587C1Bd6B50bB8924f964DEC590e403",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
-            }
         }
     ],
     "ETH": {
@@ -295,6 +269,30 @@
         },
         "rinkeby": {
             "cTokenAddress": "0xd6801a1dffcd0a410336ef88def4320d6df1883e"
+        }
+    },
+    "LPToken": {
+        "symbol": "LPToken",
+        "decimals": 18,
+        "isFeeEnabled": false,
+        "isSupportedByCompound": false,
+        "latestAnswer": "41623010370000000000",
+        "mainnet": {
+            "tokenAddress": "0x486792bcdb13F8aaCf85288D98850FA2804F95c7",
+            "aggregatorAddress": "0x444F88FDd587C1Bd6B50bB8924f964DEC590e403",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        }
+    },
+    "DeFiner": {
+        "symbol": "FIN",
+        "decimals": 18,
+        "isFeeEnabled": false,
+        "isSupportedByCompound": false,
+        "latestAnswer": "41623010370000000000",
+        "mainnet": {
+            "tokenAddress": "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40",
+            "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
     }
 }

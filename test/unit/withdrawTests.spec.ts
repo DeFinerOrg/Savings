@@ -160,6 +160,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         this.timeout(0);
                         const depositAmount = new BN(1000);
                         const withdrawAmount = new BN(20);
+                        await savingAccount.fastForward(1000);
                         const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
                             ETH_ADDRESS,
                             owner

@@ -15,8 +15,8 @@ const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
 const BitmapLib = artifacts.require("BitmapLib");
-const Utils: any = artifacts.require('Utils');
-const SavingLib = artifacts.require('SavingLib');
+const Utils: any = artifacts.require("Utils");
+const SavingLib = artifacts.require("SavingLib");
 
 var child_process = require("child_process");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -49,7 +49,6 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
 
     public deploy(script: String) {
-
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -60,13 +59,13 @@ export class TestEngine {
             // Do nothing
         } else if (script == "whitePaperModel.scen") {
             const log = shell.exec(command);
-            process.env.FLYWHEEL = "no"
+            process.env.FLYWHEEL = "no";
         } else {
             const log = shell.exec(command);
-            process.env.FLYWHEEL = "yes"
+            process.env.FLYWHEEL = "yes";
         }
 
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
@@ -74,7 +73,6 @@ export class TestEngine {
     }
 
     public deployTruffle(script: String) {
-
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -83,7 +81,7 @@ export class TestEngine {
 
         const log = shell.exec(command);
 
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json"
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
@@ -102,11 +100,11 @@ export class TestEngine {
         erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
         erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
         erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(ETH_ADDR);
-        this.erc20Tokens = erc20TokensFromCompound
-        return this.erc20Tokens;
+        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
+        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
+
+        return erc20TokensFromCompound;
     }
 
     public async getCompoundAddresses(): Promise<Array<string>> {
@@ -122,16 +120,16 @@ export class TestEngine {
         cTokensCompound.push(compoundTokens.Contracts.cZRX);
         cTokensCompound.push(compoundTokens.Contracts.cREP);
         cTokensCompound.push(compoundTokens.Contracts.cWBTC);
-        cTokensCompound.push(addressZero);
-        cTokensCompound.push(addressZero);
         cTokensCompound.push(compoundTokens.Contracts.cETH);
-        this.cTokens = cTokensCompound
-        return this.cTokens;
+        cTokensCompound.push(addressZero);
+        cTokensCompound.push(addressZero);
+
+        return cTokensCompound;
     }
 
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         const network = process.env.NETWORK;
-        if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators
+        if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators;
         await Promise.all(
             tokenData.tokens.map(async (token: any) => {
                 let addr;
@@ -150,13 +148,30 @@ export class TestEngine {
                 this.mockChainlinkAggregators.push(addr);
             })
         );
-        let addr = (
+        let ETHaddr = (
             await MockChainLinkAggregator.new(
                 tokenData.ETH.decimals,
                 new BN(tokenData.ETH.latestAnswer)
             )
         ).address;
-        this.mockChainlinkAggregators.push(addr);
+        this.mockChainlinkAggregators.push(ETHaddr);
+
+        let LPaddr = (
+            await MockChainLinkAggregator.new(
+                tokenData.LPToken.decimals,
+                new BN(tokenData.LPToken.latestAnswer)
+            )
+        ).address;
+        this.mockChainlinkAggregators.push(LPaddr);
+
+        let DeFiner = (
+            await MockChainLinkAggregator.new(
+                tokenData.DeFiner.decimals,
+                new BN(tokenData.DeFiner.latestAnswer)
+            )
+        ).address;
+        this.mockChainlinkAggregators.push(DeFiner);
+
         return this.mockChainlinkAggregators;
     }
 
@@ -197,8 +212,7 @@ export class TestEngine {
             // await Accounts.link(utils);
             await Accounts.link(accountTokenLib);
             await TokenRegistry.link(utils);
-        } catch (error) {
-        }
+        } catch (error) {}
 
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
@@ -207,9 +221,10 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
+            .new
             // this.tokenInfoRegistry.address
-        );
+            ();
         await chainLinkOracle.initialize(this.globalConfig.address);
 
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
@@ -245,17 +260,11 @@ export class TestEngine {
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(
-                this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
-            )
+            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(
-                this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
-            )
+            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         await savingAccountProxy.initialize(
@@ -270,11 +279,7 @@ export class TestEngine {
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(
-            this.bank.address,
-            proxyAdmin.address,
-            bank_initialize_data
-        );
+        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         this.accounts = Accounts.at(accountsProxy.address);
         this.bank = Bank.at(bankProxy.address);
@@ -304,11 +309,30 @@ export class TestEngine {
                 );
             })
         );
+
         await this.tokenInfoRegistry.addToken(
             ETH_ADDR,
             18,
             false,
             true,
+            cTokens[9],
+            aggregators[9]
+        );
+
+        await this.tokenInfoRegistry.addToken(
+            this.erc20Tokens[10],
+            18,
+            false,
+            false,
+            cTokens[10],
+            aggregators[10]
+        );
+
+        await this.tokenInfoRegistry.addToken(
+            this.erc20Tokens[11],
+            18,
+            false,
+            false,
             cTokens[11],
             aggregators[11]
         );
@@ -319,7 +343,6 @@ export class TestEngine {
         var COMPTokenAddress = compoundTokens.Contracts.COMP;
         return COMPTokenAddress;
     }
-
 
     // This acts the same as deploySavingAccount, but this one can be used in truffle test suite.
 
@@ -339,9 +362,10 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator.new(
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
+            .new
             // this.tokenInfoRegistry.address
-        );
+            ();
 
         await chainLinkOracle.initialize(this.globalConfig.address);
 
@@ -375,17 +399,11 @@ export class TestEngine {
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(
-                this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
-            )
+            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(
-                this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
-            )
+            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         await savingAccountProxy.initialize(
@@ -400,19 +418,12 @@ export class TestEngine {
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(
-            this.bank.address,
-            proxyAdmin.address,
-            bank_initialize_data
-        );
+        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
 
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
         this.accounts = Accounts.at(accountsProxy.address);
         this.bank = Bank.at(bankProxy.address);
 
         return proxy;
-
     }
-
-
 }
