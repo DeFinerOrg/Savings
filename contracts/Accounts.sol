@@ -188,7 +188,6 @@ contract Accounts is Constant, Initializable{
 
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
         // map directly without checking the borrow balance.
-        // uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
         setInBorrowBitmap(_accountAddr, tokenIndex);
     }
 
@@ -234,7 +233,7 @@ contract Accounts is Constant, Initializable{
     }
 
     function checkWithdrawalBorrowPower(address _accountAddr, address _token, uint256 _amount) internal view {
-        (, uint256 tokenDivisor, uint tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
+        (, uint256 tokenDivisor, uint256 tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
 
         // This if condition is to deal with the withdraw of collateral token in liquidation.
         // As the amount if borrowed asset is already large than the borrow power, we don't

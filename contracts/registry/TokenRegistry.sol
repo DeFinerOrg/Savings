@@ -307,6 +307,7 @@ contract TokenRegistry is Ownable, Constant {
     function getTokenInfoFromIndex(uint index)
         external
         view
+        whenTokenExists(addressFromIndex(index))
         returns (
             address,
             uint256,
@@ -314,7 +315,6 @@ contract TokenRegistry is Ownable, Constant {
             uint256
         )
     {
-        require(index < tokens.length, "Invalid token index");
         address token = tokens[index];
         return (
             token,
@@ -327,6 +327,7 @@ contract TokenRegistry is Ownable, Constant {
     function getTokenInfoFromAddress(address _token)
         external
         view
+        whenTokenExists(_token)
         returns (
             uint8,
             uint256,
