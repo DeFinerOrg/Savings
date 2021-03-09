@@ -200,15 +200,12 @@ contract Accounts is Constant, Initializable{
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
         uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
 
-        // This if condition is to deal with the withdraw of collateral token in liquidation.
-        // As the amount if borrowed asset is already large than the borrow power, we don't
-        // have to check the condition here.
-        if(getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr))
-            require(
-                getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(
-                    _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
-                    .mul(borrowLTV).div(Utils.getDivisor(address(globalConfig), _token)).div(100)
-                ), "Insufficient collateral when withdraw.");
+        // Check if there are enough collaterals after withdraw
+        require(
+            getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(
+                _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
+                .mul(borrowLTV).div(Utils.getDivisor(address(globalConfig), _token)).div(100)
+            ), "Insufficient collateral when withdraw.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint lastBlock = tokenInfo.getLastDepositBlock();
@@ -239,6 +236,41 @@ contract Accounts is Constant, Initializable{
         }
 
         return _amount.sub(commission);
+    }
+
+    /**
+     * This function is called in liquidation function. There two difference between this function and
+     * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
+     * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
+     */
+    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
+
+        // Check if withdraw amount is less than user's balance
+        require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint lastBlock = tokenInfo.getLastDepositBlock();
+        uint currentBlock = getBlockNumber();
+        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
+
+        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
+
+        if (tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        }
+
+        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
+        if(tokenInfo.getDepositPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            unsetFromDepositBitmap(_accountAddr, tokenIndex);
+        }
+
+        return _amount;
     }
 
     /**
