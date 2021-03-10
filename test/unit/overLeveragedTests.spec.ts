@@ -161,7 +161,10 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     );
                     expect(isUserLiquidatable).to.equal(true);
 
-                    await savingAccount.withdrawAll(addressDAI, { from: user1 });
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressDAI, { from: user1 }),
+                        "Insufficient collateral when withdraw."
+                    );
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(DAIprice);
                 });
@@ -202,24 +205,10 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     );
                     expect(isUserLiquidatable).to.equal(true);
 
-                    await savingAccount.withdrawAll(addressUSDC, { from: user2 });
-
-                    // const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
-                    //     addressUSDC,
-                    //     owner
-                    // );
-                    // const ownerDAIBefore = await accountsContract.getDepositBalanceCurrent(
-                    //     addressDAI,
-                    //     owner
-                    // );
-                    // const user2USDCBefore = await accountsContract.getDepositBalanceCurrent(
-                    //     addressUSDC,
-                    //     user2
-                    // );
-                    // const user2DAIBefore = await accountsContract.getBorrowBalanceCurrent(
-                    //     addressDAI,
-                    //     user2
-                    // );
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressUSDC, { from: user2 }),
+                        "Insufficient collateral when withdraw."
+                    );
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
@@ -282,8 +271,8 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     let updatedPrice = BN(originPrice).mul(new BN(70)).div(new BN(100));
 
-                    let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    let updatedPriceDAI = BN(originPriceDAI).mul(new BN(70)).div(new BN(100));
+                    // let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    // let updatedPriceDAI = BN(originPriceDAI).mul(new BN(70)).div(new BN(100));
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPriceDAI);
@@ -291,14 +280,84 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
                         user2
                     );
-                    expect(isUserLiquidatable).to.equal(true);
+                    // expect(isUserLiquidatable).to.equal(true);
 
                     // 5. withdraw without repaying
-                    await savingAccount.withdrawAll(addressUSDC, { from: user2 });
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressUSDC, { from: user2 }),
+                        "Insufficient collateral when withdraw."
+                    );
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
 
                 it(
-                    "OverLeveragedTest4: user deposits DAI, borrows ETH, deposits ETH, borrows USDC and withdraws without repaying"
+                    "OverLeveragedTest4: user deposits DAI, borrows ETH, deposits ETH, borrows USDC and withdraws without repaying", async function () {
+                    this.timeout(0);
+
+                    // 1. Approve tokens
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20USDC.transfer(user2, ONE_USDC);
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                        from: user2,
+                        value: ONE_ETH,
+                    });
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_ETH)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
+
+                    console.log("borrowAmt", borrowAmt.toString());
+
+                    // 2. Borrow and deposit
+                    await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
+                    await savingAccount.deposit(ETH_ADDRESS, borrowAmt, {
+                        from: user1,
+                        value: borrowAmt,
+                    });
+
+                    // 3. fastforward and borrow
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
+                        from: owner,
+                        value: new BN(10),
+                    });
+
+                    const borrowAmt2 = BN(borrowAmt)
+                        .mul(new BN(await tokenInfoRegistry.priceFromIndex(9)))
+                        .mul(new BN(50))
+                        .div(new BN(100))
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(1)));
+                    await savingAccount.borrow(addressDAI, borrowAmt2, { from: user1 });
+
+                    // 4. price of initial collateral drops
+                    let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    let updatedPrice = BN(originPrice).mul(new BN(80)).div(new BN(100));
+
+                    // let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    // let updatedPriceDAI = BN(originPriceDAI).mul(new BN(70)).div(new BN(100));
+
+                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+                    // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPriceDAI);
+
+                    const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
+                        user1
+                    );
+                    // expect(isUserLiquidatable).to.equal(true);
+
+                    // 5. withdraw without repaying
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressDAI, { from: user1 }),
+                        "Insufficient collateral when withdraw."
+                    );
+                    await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
+                    }
                 );
 
                 it(
