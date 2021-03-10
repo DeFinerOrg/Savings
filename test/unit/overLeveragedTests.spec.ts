@@ -50,6 +50,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let cWBTC: t.MockCTokenInstance;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
+    let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
@@ -57,11 +58,14 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let erc20TUSD: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_ETH: any;
     let ONE_USDC: any;
+    let ONE_MKR: any;
+    let ONE_TUSD: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
@@ -90,6 +94,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
 
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
+        mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
@@ -100,6 +105,9 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         );
         mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforUSDCAddress
+        );
+        mockChainlinkAggregatorforMKR = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforMKRAddress
         );
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
@@ -116,6 +124,8 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
         ONE_USDC = sixPrecision;
+        ONE_MKR = eighteenPrecision;
+        ONE_TUSD = eighteenPrecision;
 
         await savingAccount.fastForward(1000);
     });
@@ -360,10 +370,76 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     }
                 );
 
-                it(
-                    "OverLeveragedTest5: user deposits MKR, borrows DAI, deposits DAI, borrows TUSD and withdraws without repaying"
+                it("OverLeveragedTest5: user deposits MKR, borrows DAI, deposits DAI, borrows TUSD and withdraws without repaying", async function () {
+                    this.timeout(0);
+
+                    // 1. Approve tokens
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20MKR.transfer(user2, ONE_MKR.mul(new BN(2)));
+                    await erc20TUSD.transfer(user3, ONE_TUSD);
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(2)), { from: user2 });
+                    await erc20MKR.approve(savingAccount.address, ONE_MKR.mul(new BN(2)), { from: user2 });
+                    await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user2 });
+                    await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user3 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressMKR, ONE_MKR.mul(new BN(2)), { from: user2 });
+                    await savingAccount.deposit(addressTUSD, ONE_TUSD, { from: user3 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(4))
+                        .mul(new BN(30))
+                        .div(new BN(100))
+                        .mul(ONE_MKR)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+    
+                    // 2. Borrow and deposit
+                    console.log("111");
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                    console.log("222");
+                    await erc20DAI.approve(savingAccount.address, borrowAmt, { from: user2 });
+                    await savingAccount.deposit(addressDAI, borrowAmt, { from: user2 });
+
+                    // 3. fastforward and borrow
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
+                        from: owner,
+                        value: new BN(10),
+                    });
+
+                    // const borrowAmt2 = BN(borrowAmt)
+                    //     .mul(new BN(await tokenInfoRegistry.priceFromIndex(0)))
+                    //     .mul(new BN(10))
+                    //     .div(new BN(100))
+                    //     .div(new BN(await tokenInfoRegistry.priceFromIndex(3)));
+                    // console.log("borrowAmt", borrowAmt.toString());
+                    // console.log("borrowAmt2", borrowAmt2.toString());
+                    await savingAccount.borrow(addressTUSD, new BN(eighteenPrecision), { from: user2 });
+                    // 4. price of initial collateral drops
+                    let originPrice = await mockChainlinkAggregatorforMKR.latestAnswer();
+                    let updatedPrice = BN(originPrice).mul(new BN(80)).div(new BN(100));
+
+                    // let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    // let updatedPriceDAI = BN(originPriceDAI).mul(new BN(70)).div(new BN(100));
+
+                    await mockChainlinkAggregatorforMKR.updateAnswer(updatedPrice);
+                    // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPriceDAI);
+
+                    const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
+                        user1
+                    );
+                    // expect(isUserLiquidatable).to.equal(true);
+
+                    // 5. withdraw without repaying
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressMKR, { from: user2 }),
+                        "Insufficient collateral when withdraw."
+                    );
+                    await mockChainlinkAggregatorforMKR.updateAnswer(originPrice);
+                    }
                 );
-            });
+            })
         });
     });
 });
