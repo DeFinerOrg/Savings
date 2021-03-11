@@ -23,6 +23,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
+    let bank: t.BankInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -44,10 +45,12 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let cUSDC_addr: any;
     let cUSDT_addr: any;
     let cWBTC_addr: any;
+    let cETH_addr: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
     let cUSDT: t.MockCTokenInstance;
     let cWBTC: t.MockCTokenInstance;
+    let cETH: t.MockCTokenInstance;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforMKRAddress: any;
@@ -81,6 +84,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
+        bank = await testEngine.bank;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -116,10 +120,12 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cETH_addr = await testEngine.tokenInfoRegistry.getCToken(ETH_ADDRESS);
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+        cETH = await MockCToken.at(cETH_addr);
         numOfToken = new BN(1000);
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
@@ -138,29 +144,77 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 1. Approve 1000 tokens
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
-                    // await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    //await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    const savingAccountCETHTokenBeforeDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenBeforeDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
                     await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
                         from: user2,
                         value: ONE_ETH,
                     });
+                    await savAccBalVerify(
+                        0,
+                        ONE_ETH,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenBeforeDeposit,
+                        savingAccountETHTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
 
-                    console.log("borrowAmt", borrowAmt.toString());
-
                     // 2. Start borrowing.
+                    const savingAccountCETHTokenAfterDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenAfterDeposit = new BN(
+                        (await web3.eth.getBalance(savingAccount.address)).toString()
+                    );
+
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenAfterDeposit,
+                        savingAccountETHTokenAfterDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     // 3. Change the price.
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     console.log("DAIprice", DAIprice.toString());
 
-                    // update price of DAI to 70% of it's value
-
+                    // update price of DAI to 65% of it's value
                     let updatedPrice = BN(DAIprice).mul(new BN(65)).div(new BN(100));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
@@ -187,8 +241,45 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(2)));
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+
+                    await savAccBalVerify(
+                        0,
+                        ONE_USDC,
+                        addressUSDC,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
                     await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(2)));
 
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
@@ -200,7 +291,23 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
 
                     // 2. Start borrowing.
+                    const savingAccountCDAITokenBeforeBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeBorrow,
+                        savingAccountDAITokenBeforeBorrow,
+                        bank,
+                        savingAccount
+                    );
 
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -238,12 +345,51 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         savingAccount.address,
                         ONE_DAI.mul(new BN(100)).mul(new BN(2))
                     );
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)), {
                         from: user1,
                     });
+
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI.mul(new BN(100)),
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+
                     await savingAccount.deposit(addressUSDC, ONE_USDC.mul(new BN(100)), {
                         from: user2,
                     });
+
+                    await savAccBalVerify(
+                        0,
+                        ONE_USDC.mul(new BN(100)),
+                        addressUSDC,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     await savingAccount.deposit(
                         addressDAI,
                         ONE_DAI.mul(new BN(100)).mul(new BN(2))
@@ -258,8 +404,25 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
 
                     // 2. borrow and deposit
+                    const savingAccountCDAITokenBeforeBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     let user2bal = await erc20DAI.balanceOf(user2);
+
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeBorrow,
+                        savingAccountDAITokenBeforeBorrow,
+                        bank,
+                        savingAccount
+                    );
 
                     await erc20DAI.approve(savingAccount.address, borrowAmt, {
                         from: user2,
@@ -270,12 +433,30 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await savingAccount.fastForward(1000);
                     // await savingAccount.deposit(addressDAI, new BN(10));
 
+                    const savingAccountCDAITokenAfterFirstBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenAfterFirstBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     const borrowAmt2 = BN(borrowAmt)
                         .mul(new BN(await tokenInfoRegistry.priceFromIndex(0)))
                         .mul(new BN(50))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
                     await savingAccount.borrow(addressDAI, borrowAmt2, { from: user2 });
+
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt2,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenAfterFirstBorrow,
+                        savingAccountDAITokenAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
 
                     // 4. price of initial collateral drops
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -310,27 +491,96 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savAccBalVerify(
+                        0,
+                        ONE_USDC,
+                        addressUSDC,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    
+                    const savingAccountCETHTokenBeforeDeposit = BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountETHTokenBeforeDeposit = new BN(
+                        await web3.eth.getBalance(savingAccount.address)
+                    );
                     await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
                         from: user2,
                         value: ONE_ETH,
                     });
+                    await savAccBalVerify(
+                        0,
+                        ONE_ETH,
+                        ETH_ADDRESS,
+                        cETH,
+                        savingAccountCETHTokenBeforeDeposit,
+                        savingAccountETHTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_ETH)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(9)));
 
-                    console.log("borrowAmt", borrowAmt.toString());
-
                     // 2. Borrow and deposit
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
+
+                    const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                        savingAccount.address
+                    );
+                    const balCTokensBefore = new BN(
+                        await cETH.balanceOfUnderlying.call(savingAccount.address)
+                    );
                     await savingAccount.deposit(ETH_ADDRESS, borrowAmt, {
                         from: user1,
                         value: borrowAmt,
                     });
+
+                    await savAccBalVerify(
+                        0,
+                        borrowAmt,
+                        ETH_ADDRESS,
+                        cETH,
+                        balCTokensBefore,
+                        new BN(ETHbalanceBeforeDeposit),
+                        bank,
+                        savingAccount
+                    );
 
                     // 3. fastforward and borrow
                     await savingAccount.fastForward(1000);
@@ -339,12 +589,30 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         value: new BN(10),
                     });
 
+                    const savingAccountCDAITokenAfterFirstBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenAfterFirstBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
                     const borrowAmt2 = BN(borrowAmt)
                         .mul(new BN(await tokenInfoRegistry.priceFromIndex(9)))
                         .mul(new BN(50))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(1)));
                     await savingAccount.borrow(addressDAI, borrowAmt2, { from: user1 });
+
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt2,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenAfterFirstBorrow,
+                        savingAccountDAITokenAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
 
                     // 4. price of initial collateral drops
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -383,10 +651,45 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user2 });
                     await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user3 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+
+                    const savingAccountCDAITokenBeforeDeposit = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit,
+                        savingAccountDAITokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
                     await savingAccount.deposit(addressMKR, ONE_MKR.mul(new BN(2)), { from: user2 });
                     await savingAccount.deposit(addressTUSD, ONE_TUSD, { from: user3 });
+
+                    const savingAccountCDAITokenBeforeDeposit2 = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenBeforeDeposit2 = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    await savAccBalVerify(
+                        0,
+                        ONE_DAI.mul(new BN(100)),
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenBeforeDeposit2,
+                        savingAccountDAITokenBeforeDeposit2,
+                        bank,
+                        savingAccount
+                    );
                     
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(4))
                         .mul(new BN(30))
@@ -395,9 +698,24 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
     
                     // 2. Borrow and deposit
-                    console.log("111");
+                    const savingAccountCDAITokenAfterFirstBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenAfterFirstBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
-                    console.log("222");
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenAfterFirstBorrow,
+                        savingAccountDAITokenAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
+
                     await erc20DAI.approve(savingAccount.address, borrowAmt, { from: user2 });
                     await savingAccount.deposit(addressDAI, borrowAmt, { from: user2 });
 
@@ -416,6 +734,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // console.log("borrowAmt", borrowAmt.toString());
                     // console.log("borrowAmt2", borrowAmt2.toString());
                     await savingAccount.borrow(addressTUSD, new BN(eighteenPrecision), { from: user2 });
+
                     // 4. price of initial collateral drops
                     let originPrice = await mockChainlinkAggregatorforMKR.latestAnswer();
                     let updatedPrice = BN(originPrice).mul(new BN(80)).div(new BN(100));
