@@ -54,14 +54,17 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforMKRAddress: any;
+    let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
     let erc20MKR: t.MockErc20Instance;
     let erc20TUSD: t.MockErc20Instance;
+    let erc20WBTC: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforWBTC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
@@ -69,6 +72,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
     let ONE_USDC: any;
     let ONE_MKR: any;
     let ONE_TUSD: any;
+    let ONE_WBTC: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
@@ -93,17 +97,19 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         addressMKR = tokens[4];
         addressTUSD = tokens[3];
         addressUSDT = tokens[2];
-
         addressWBTC = tokens[8];
 
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
+        mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20MKR = await ERC20.at(addressMKR);
         erc20TUSD = await ERC20.at(addressTUSD);
+        erc20WBTC = await ERC20.at(addressWBTC);
+        
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
         );
@@ -116,6 +122,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
         );
+
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
@@ -132,6 +139,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         ONE_USDC = sixPrecision;
         ONE_MKR = eighteenPrecision;
         ONE_TUSD = eighteenPrecision;
+        ONE_WBTC = new BN(10).pow(new BN(8));
 
         await savingAccount.fastForward(1000);
     });
@@ -220,6 +228,17 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
                     // 4. withdraw
+                    const userBorrowVal = await accountsContract.getBorrowETH(
+                        user1
+                    );
+                    const getDeposits = await accountsContract.getDepositETH(
+                        user1
+                    );
+                    let UB = new BN(userBorrowVal).mul(new BN(100));
+                    let UD = new BN(getDeposits).mul(new BN(85));
+                    console.log("UD",UD.toString());
+                    console.log("UB",UB.toString());
+                    
                     const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
                         user1
                     );
@@ -748,6 +767,16 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
                         user1
                     );
+                    const userBorrowVal = await accountsContract.getBorrowETH(
+                        user2
+                    );
+                    const getDeposits = await accountsContract.getDepositETH(
+                        user2
+                    );
+                    let UB = new BN(userBorrowVal).mul(new BN(100));
+                    let UD = new BN(getDeposits).mul(new BN(85));
+                    console.log("UD",UD.toString());
+                    console.log("UB",UB.toString());
                     // expect(isUserLiquidatable).to.equal(true);
 
                     // 5. withdraw without repaying
@@ -758,6 +787,131 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await mockChainlinkAggregatorforMKR.updateAnswer(originPrice);
                     }
                 );
+
+                it("OverLeveragedTest6: user deposits WBTC, borrows DAI, deposits DAI, borrows USDC and withdraws without repaying", async function () {
+                    this.timeout(0);
+
+                    // 1. Approve tokens
+                    await erc20WBTC.transfer(user1, ONE_WBTC);
+                    await erc20USDC.transfer(user2, ONE_USDC);
+                    await erc20WBTC.approve(savingAccount.address, ONE_WBTC, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+
+                    const savingAccountCWBTCTokenBeforeDeposit = BN(
+                        await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountWBTCTokenBeforeDeposit = BN(
+                        await erc20WBTC.balanceOf(savingAccount.address)
+                    );
+                    await savingAccount.deposit(addressWBTC, ONE_WBTC, { from: user1 });
+                    await savAccBalVerify(
+                        0,
+                        ONE_WBTC,
+                        addressWBTC,
+                        cWBTC,
+                        savingAccountCWBTCTokenBeforeDeposit,
+                        savingAccountWBTCTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    const savingAccountCUSDCTokenBeforeDeposit = BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountUSDCTokenBeforeDeposit = BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savAccBalVerify(
+                        0,
+                        ONE_USDC,
+                        addressUSDC,
+                        cUSDC,
+                        savingAccountCUSDCTokenBeforeDeposit,
+                        savingAccountUSDCTokenBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+
+                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(8))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_WBTC).mul(new BN(10).pow(new BN(8)))
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0))).div(eighteenPrecision);
+
+                    // 2. Borrow and deposit
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user1 });
+                    await savingAccount.deposit(addressDAI, borrowAmt, { from: user1 })
+
+                    // 3. fastforward and borrow
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
+                        from: owner,
+                        value: new BN(10),
+                    });
+
+                    const savingAccountCDAITokenAfterFirstBorrow = BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingAccountDAITokenAfterFirstBorrow = BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
+
+                    const borrowAmt2 = BN(borrowAmt)
+                        .mul(new BN(await tokenInfoRegistry.priceFromIndex(0)))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+                    await savingAccount.borrow(addressDAI, borrowAmt2, { from: user1 });
+
+                    await savAccBalVerify(
+                        2,
+                        borrowAmt2,
+                        addressDAI,
+                        cDAI,
+                        savingAccountCDAITokenAfterFirstBorrow,
+                        savingAccountDAITokenAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
+
+                    // 4. price of initial collateral drops
+                    let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    let updatedPrice = BN(originPrice).mul(new BN(80)).div(new BN(100));
+
+                    // let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    // let updatedPriceDAI = BN(originPriceDAI).mul(new BN(70)).div(new BN(100));
+
+                    await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+                    // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPriceDAI);
+
+                    const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
+                        user1
+                    );
+                    const userBorrowVal = await accountsContract.getBorrowETH(
+                        user1
+                    );
+                    const getDeposits = await accountsContract.getDepositETH(
+                        user1
+                    );
+                    let UB = new BN(userBorrowVal).mul(new BN(100));
+                    let UD = new BN(getDeposits).mul(new BN(85));
+                    console.log("UD",UD.toString());
+                    console.log("UB",UB.toString());
+                    
+                    // expect(isUserLiquidatable).to.equal(true);
+                    
+                    // 5. withdraw without repaying
+                    await expectRevert(
+                        savingAccount.withdrawAll(addressWBTC, { from: user1 }),
+                        "Insufficient collateral when withdraw."
+                    );
+                    await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
+                });
             })
         });
     });
