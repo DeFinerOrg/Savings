@@ -243,18 +243,15 @@ contract Accounts is Constant, Initializable{
      * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
      * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
      */
-    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
+    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
-        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint lastBlock = tokenInfo.getLastDepositBlock();
         uint currentBlock = getBlockNumber();
         calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
-
-        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
 
         if (tokenInfo.getLastDepositBlock() == 0)
             tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
@@ -264,13 +261,10 @@ contract Accounts is Constant, Initializable{
             tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
         }
 
-        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
-
-        return _amount;
     }
 
     /**
@@ -462,7 +456,7 @@ contract Accounts is Constant, Initializable{
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
-        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) && totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
+        return totalBorrow > totalCollateral.mul(liquidationThreshold).div(100) && totalBorrow <= totalCollateral.mul(liquidationDiscountRatio).div(100);
     }
 
     struct LiquidationVars {
