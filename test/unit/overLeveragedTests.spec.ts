@@ -142,7 +142,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
         ONE_USDC = sixPrecision;
         ONE_MKR = eighteenPrecision;
         ONE_TUSD = eighteenPrecision;
-        ONE_WBTC = new BN(10).pow(new BN(8));
+        ONE_WBTC = eightPrecision;
 
         await savingAccount.fastForward(1000);
     });
@@ -677,14 +677,18 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     this.timeout(0);
 
                     // 1. Approve tokens
-                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20DAI.transfer(user1, ONE_DAI.mul(new BN(1000)));
                     await erc20MKR.transfer(user2, ONE_MKR);
-                    await erc20TUSD.transfer(user3, ONE_TUSD);
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20TUSD.transfer(user3, ONE_TUSD.mul(new BN(1000)));
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(1000)), {
+                        from: user1
+                    });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user2 });
                     await erc20MKR.approve(savingAccount.address, ONE_MKR, { from: user2 });
                     await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user2 });
-                    await erc20TUSD.approve(savingAccount.address, ONE_TUSD, { from: user3 });
+                    await erc20TUSD.approve(savingAccount.address, ONE_TUSD.mul(new BN(1000)), {
+                        from: user3
+                    });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
 
                     const savingAccountCDAITokenBeforeDeposit = BN(
@@ -693,10 +697,12 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenBeforeDeposit = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(1000)), {
+                        from: user1
+                    });
                     await savAccBalVerify(
                         0,
-                        ONE_DAI,
+                        ONE_DAI.mul(new BN(1000)),
                         addressDAI,
                         cDAI,
                         savingAccountCDAITokenBeforeDeposit,
@@ -706,7 +712,9 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     );
 
                     await savingAccount.deposit(addressMKR, ONE_MKR, { from: user2 });
-                    await savingAccount.deposit(addressTUSD, ONE_TUSD, { from: user3 });
+                    await savingAccount.deposit(addressTUSD, ONE_TUSD.mul(new BN(1000)), {
+                        from: user3
+                    });
 
                     const savingAccountCDAITokenBeforeDeposit2 = BN(
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -727,7 +735,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     );
 
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(4))
-                        .mul(new BN(40))
+                        .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_MKR)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
@@ -770,19 +778,19 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
 
                     const borrowAmt2 = BN(borrowAmt)
                         .mul(new BN(await tokenInfoRegistry.priceFromIndex(0)))
-                        .mul(new BN(10))
+                        .mul(new BN(59))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(3)));
                     // console.log("borrowAmt", borrowAmt.toString());
                     // console.log("borrowAmt2", borrowAmt2.toString());
-                    await savingAccount.borrow(addressTUSD, new BN(eighteenPrecision), {
+                    await savingAccount.borrow(addressTUSD, borrowAmt2, {
                         from: user2
                     });
 
                     // 4. price of initial collateral drops
                     let originPrice = await mockChainlinkAggregatorforMKR.latestAnswer();
                     let updatedPrice = BN(originPrice)
-                        .mul(new BN(70))
+                        .mul(new BN(10))
                         .div(new BN(100));
 
                     // let originPriceDAI = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -792,7 +800,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // await mockChainlinkAggregatorforDAI.updateAnswer(updatedPriceDAI);
 
                     const isUserLiquidatable = await accountsContract.isAccountLiquidatable.call(
-                        user1
+                        user2
                     );
                     const userBorrowVal2 = await accountsContract.getBorrowETH(user2);
                     const getDeposits2 = await accountsContract.getDepositETH(user2);
@@ -817,9 +825,11 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     await erc20WBTC.transfer(user1, ONE_WBTC);
                     await erc20USDC.transfer(user2, ONE_USDC);
                     await erc20WBTC.approve(savingAccount.address, ONE_WBTC, { from: user1 });
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100000)), {
+                        from: user1
+                    });
                     await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
-                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100)));
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI.mul(new BN(100000)));
 
                     const savingAccountCWBTCTokenBeforeDeposit = BN(
                         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
@@ -857,7 +867,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         savingAccount
                     );
 
-                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(100000)));
 
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(8))
                         .mul(new BN(60))
@@ -868,6 +878,8 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(eightPrecision);
 
                     console.log("borrowAmt", borrowAmt.toString());
+                    let SA = new BN(await erc20DAI.balanceOf(savingAccount.address));
+                    console.log("SA", SA.toString());
 
                     // 2. Borrow and deposit
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user1 });
@@ -889,10 +901,12 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
 
                     const borrowAmt2 = BN(borrowAmt)
                         .mul(new BN(await tokenInfoRegistry.priceFromIndex(0)))
-                        .mul(new BN(60))
+                        .mul(new BN(59))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
                     await savingAccount.borrow(addressDAI, borrowAmt2, { from: user1 });
+                    console.log("borrowAmt", borrowAmt.toString());
+                    console.log("borrowAmt2", borrowAmt2.toString());
 
                     await savAccBalVerify(
                         2,
