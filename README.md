@@ -1,3 +1,5 @@
+<p align='center'><img src='https://user-images.githubusercontent.com/20457952/111775007-347e3f80-88d6-11eb-865d-ef1259d3affe.png' width='600' /></p>
+
 [![CircleCI](https://circleci.com/gh/DeFinerOrg/Savings.svg?style=svg&circle-token=16ee6271ac298229299363b78349e81bda1c1627)](https://circleci.com/gh/DeFinerOrg/Savings) [![node](https://img.shields.io/badge/node-v10.23.0-green)](https://nodejs.org/en/blog/release/v10.23.0/) [![solc](https://img.shields.io/badge/solc-v0.5.16-blue)](https://www.npmjs.com/package/solc/v/0.5.16)
  
 We recommend [solc-select](https://github.com/crytic/solc-select) for switching the solc compiler version.   
