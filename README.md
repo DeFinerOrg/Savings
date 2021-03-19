@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/DeFinerOrg/Savings.svg?style=svg&circle-token=16ee6271ac298229299363b78349e81bda1c1627)](https://circleci.com/gh/DeFinerOrg/Savings)
+
 ## Pre-requisites
 Use the following versions of these dependencies:  
  - Node: v10.23.0
