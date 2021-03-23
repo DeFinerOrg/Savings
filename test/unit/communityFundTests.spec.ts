@@ -394,9 +394,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             .mul(new BN(90))
                             .div(new BN(100));
 
-                        // expect(userBalanceBeforeWithdrawDAI).to.be.bignumber.equal(
-                        //     userBalanceAfterWithdrawDAI
-                        // );
                         expect(
                             user1BalanceInit.add(finalInterestWithdrawnUser)
                         ).to.be.bignumber.equal(userBalanceAfterWithdrawDAI);
