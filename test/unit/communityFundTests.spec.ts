@@ -78,14 +78,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitepapermodel.scen");
     });
 
-    beforeEach(async function () {
+    beforeEach(async function() {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -158,7 +158,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         context("Single Token", async () => {
             context("eighten decimal token", async () => {
                 context("should succeed", async () => {
-                    it("when full DAI tokens withdrawn", async function () {
+                    it("when full DAI tokens withdrawn", async function() {
                         this.timeout(0);
                         await savingAccount.fastForward(10000);
                         const depositAmount = ONE_DAI;
@@ -201,10 +201,10 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         // deposit tokens
                         await erc20DAI.approve(savingAccount.address, TWO_DAI, {
-                            from: user1,
+                            from: user1
                         });
                         await savingAccount.deposit(erc20DAI.address, depositAmount, {
-                            from: user1,
+                            from: user1
                         });
                         console.log("check2");
 
@@ -233,11 +233,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         await savingAccount.fastForward(10000);
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                            from: user1,
+                            from: user1
                         });
                         await savingAccount.fastForward(10000);
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                            from: user1,
+                            from: user1
                         });
 
                         // Withdrawing DAI
@@ -264,7 +264,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
 
                         await savingAccount.withdrawAll(erc20DAI.address, {
-                            from: user1,
+                            from: user1
                         });
 
                         const user1DepositPrincipal = await savingAccount.getDepositPrincipal(
@@ -292,7 +292,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             addressDAI,
                             owner,
                             {
-                                from: user1,
+                                from: user1
                             }
                         ); // 135809999 = 10% of user's interest
                         console.log(
@@ -320,13 +320,14 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         // );
                     });
 
-                    it("D4: when full tokens withdrawn after some blocks", async function () {
+                    it("D4: when full tokens withdrawn after some blocks", async function() {
                         this.timeout(0);
                         const depositAmount = ONE_DAI;
                         await erc20DAI.transfer(user1, TWO_DAI);
                         await erc20DAI.approve(savingAccount.address, TWO_DAI, {
-                            from: user1,
+                            from: user1
                         });
+                        let user1BalanceInit = new BN(await erc20DAI.balanceOf(user1));
                         let userBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(user1);
                         let accountBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(
                             savingAccount.address
@@ -351,7 +352,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                         // deposit tokens
                         await savingAccount.deposit(erc20DAI.address, depositAmount, {
-                            from: user1,
+                            from: user1
                         });
 
                         const savingAccountCDAITokenAfterDeposit = BN(
@@ -375,19 +376,30 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         await savingAccount.fastForward(10000);
                         // deposit for rate checkpoint
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                            from: user1,
+                            from: user1
                         });
 
                         // Withdrawing DAI
+                        const user1DepositInterestBefore = await savingAccount.getDepositInterest(
+                            addressDAI,
+                            { from: user1 }
+                        );
                         await savingAccount.withdrawAll(erc20DAI.address, {
-                            from: user1,
+                            from: user1
                         });
                         let userBalanceAfterWithdrawDAI = await erc20DAI.balanceOf(user1);
 
                         // Verify user balance
-                        expect(userBalanceBeforeWithdrawDAI).to.be.bignumber.equal(
-                            userBalanceAfterWithdrawDAI
-                        );
+                        let finalInterestWithdrawnUser = new BN(user1DepositInterestBefore)
+                            .mul(new BN(90))
+                            .div(new BN(100));
+
+                        // expect(userBalanceBeforeWithdrawDAI).to.be.bignumber.equal(
+                        //     userBalanceAfterWithdrawDAI
+                        // );
+                        expect(
+                            user1BalanceInit.add(finalInterestWithdrawnUser)
+                        ).to.be.bignumber.equal(userBalanceAfterWithdrawDAI);
 
                         // await savAccBalVerify(
                         //     1,
