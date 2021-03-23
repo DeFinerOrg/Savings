@@ -15,7 +15,7 @@ const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.withdraw", async (accounts) => {
+contract("SavingAccount.communityFund", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -74,6 +74,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let ONE_DAI: any;
     let TWO_DAI: any;
     let ONE_USDC: any;
+    let ONE_MKR: any;
+    let ONE_WBTC: any;
     let ZERO: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
@@ -150,7 +152,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
         ONE_DAI = eighteenPrecision;
         TWO_DAI = eighteenPrecision.mul(new BN(2));
+        ONE_MKR = eighteenPrecision;
         ONE_USDC = sixPrecision;
+        ONE_WBTC = eightPrecision;
         ZERO = new BN(0);
     });
 
@@ -219,17 +223,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         const savingAccountDAITokenAfterDeposit = BN(
                             await erc20DAI.balanceOf(savingAccount.address)
                         );
-
-                        // await savAccBalVerify(
-                        //     0,
-                        //     depositAmount,
-                        //     erc20DAI.address,
-                        //     cDAI,
-                        //     balCTokensBefore,
-                        //     BN(balSavingAccountUserBefore),
-                        //     bank,
-                        //     savingAccount
-                        // );
 
                         await savingAccount.fastForward(10000);
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
@@ -308,20 +301,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         // expect(
                         //     user1BalanceInit.add(finalInterestWithdrawnUser)
                         // ).to.be.bignumber.equal(userBalanceAfterWithdrawDAI); // 2000000001222289999 != 2000000001222290000
-
-                        // await savAccBalVerify(
-                        //     1,
-                        //     depositAmount,
-                        //     erc20DAI.address,
-                        //     cDAI,
-                        //     savingAccountCDAITokenAfterDeposit,
-                        //     savingAccountDAITokenAfterDeposit,
-                        //     bank,
-                        //     savingAccount
-                        // );
                     });
 
-                    it("D4: when full tokens withdrawn after some blocks", async function() {
+                    it("when full tokens withdrawn after some blocks", async function() {
                         this.timeout(0);
                         const depositAmount = ONE_DAI;
                         await erc20DAI.transfer(user1, TWO_DAI);
@@ -363,17 +345,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             await erc20DAI.balanceOf(savingAccount.address)
                         );
 
-                        // await savAccBalVerify(
-                        //     0,
-                        //     depositAmount,
-                        //     erc20DAI.address,
-                        //     cDAI,
-                        //     balCTokensBefore,
-                        //     BN(balSavingAccountUserBefore),
-                        //     bank,
-                        //     savingAccount
-                        // );
-
                         await savingAccount.fastForward(10000);
                         // deposit for rate checkpoint
                         await savingAccount.deposit(erc20DAI.address, new BN(10), {
@@ -398,17 +369,178 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         expect(
                             user1BalanceInit.add(finalInterestWithdrawnUser)
                         ).to.be.bignumber.equal(userBalanceAfterWithdrawDAI);
+                    });
 
-                        // await savAccBalVerify(
-                        //     1,
-                        //     depositAmount,
-                        //     erc20DAI.address,
-                        //     cDAI,
-                        //     savingAccountCDAITokenAfterDeposit,
-                        //     savingAccountDAITokenAfterDeposit,
-                        //     bank,
-                        //     savingAccount
-                        // );
+                    it("when USDC tokens withdrawn after some blocks", async function() {
+                        this.timeout(0);
+                        const depositAmount = ONE_USDC;
+                        await erc20USDC.transfer(user1, ONE_USDC.mul(new BN(2)));
+                        await erc20USDC.approve(savingAccount.address, ONE_USDC.mul(new BN(2)), {
+                            from: user1
+                        });
+                        let user1BalanceInit = new BN(await erc20USDC.balanceOf(user1));
+                        let userBalanceBeforeWithdrawUSDC = await erc20USDC.balanceOf(user1);
+                        let accountBalanceBeforeWithdrawUSDC = await erc20USDC.balanceOf(
+                            savingAccount.address
+                        );
+                        const balCTokenContractBefore = await erc20USDC.balanceOf(cUSDC_addr);
+                        const balSavingAccountUserBefore = await erc20USDC.balanceOf(
+                            savingAccount.address
+                        );
+                        const balCTokensBefore = new BN(
+                            await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        );
+
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20USDC.address,
+                            user1
+                        );
+                        const compCUSDCBefore = await cUSDC.balanceOfUnderlying.call(
+                            savingAccount.address
+                        );
+
+                        const compUSDCBefore = await erc20USDC.balanceOf(cUSDC_addr);
+
+                        // deposit tokens
+                        await savingAccount.deposit(erc20USDC.address, depositAmount, {
+                            from: user1
+                        });
+
+                        const savingAccountCUSDCTokenAfterDeposit = BN(
+                            await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                        );
+                        const savingAccountUSDCTokenAfterDeposit = BN(
+                            await erc20USDC.balanceOf(savingAccount.address)
+                        );
+
+                        await savingAccount.fastForward(10000);
+                        // deposit for rate checkpoint
+                        await savingAccount.deposit(erc20USDC.address, new BN(10), {
+                            from: user1
+                        });
+
+                        // Withdrawing DAI
+                        const user1DepositInterestBefore = await savingAccount.getDepositInterest(
+                            addressUSDC,
+                            { from: user1 }
+                        );
+                        await savingAccount.withdrawAll(erc20USDC.address, {
+                            from: user1
+                        });
+                        let userBalanceAfterWithdrawUSDC = await erc20USDC.balanceOf(user1);
+
+                        // Verify user balance
+                        let finalInterestWithdrawnUser = new BN(user1DepositInterestBefore)
+                            .mul(new BN(90))
+                            .div(new BN(100));
+
+                        expect(
+                            user1BalanceInit.add(finalInterestWithdrawnUser)
+                        ).to.be.bignumber.equal(userBalanceAfterWithdrawUSDC);
+                    });
+
+                    it("when MKR tokens withdrawn after some blocks", async function() {
+                        this.timeout(0);
+                        const depositAmount = ONE_MKR;
+                        await erc20MKR.transfer(user1, ONE_MKR.mul(new BN(2)));
+                        await erc20MKR.approve(savingAccount.address, ONE_MKR.mul(new BN(2)), {
+                            from: user1
+                        });
+                        let user1BalanceInit = new BN(await erc20MKR.balanceOf(user1));
+                        let userBalanceBeforeWithdrawMKR = await erc20MKR.balanceOf(user1);
+                        let accountBalanceBeforeWithdrawMKR = await erc20MKR.balanceOf(
+                            savingAccount.address
+                        );
+                        const balSavingAccountUserBefore = await erc20MKR.balanceOf(
+                            savingAccount.address
+                        );
+
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20MKR.address,
+                            user1
+                        );
+
+                        // deposit tokens
+                        await savingAccount.deposit(erc20MKR.address, depositAmount, {
+                            from: user1
+                        });
+
+                        await savingAccount.fastForward(10000);
+                        // deposit for rate checkpoint
+                        await savingAccount.deposit(erc20MKR.address, new BN(10), {
+                            from: user1
+                        });
+
+                        // Withdrawing DAI
+                        const user1DepositInterestBefore = await savingAccount.getDepositInterest(
+                            addressMKR,
+                            { from: user1 }
+                        );
+                        await savingAccount.withdrawAll(erc20MKR.address, {
+                            from: user1
+                        });
+                        let userBalanceAfterWithdrawMKR = await erc20MKR.balanceOf(user1);
+
+                        // Verify user balance
+                        let finalInterestWithdrawnUser = new BN(user1DepositInterestBefore)
+                            .mul(new BN(90))
+                            .div(new BN(100));
+
+                        expect(
+                            user1BalanceInit.add(finalInterestWithdrawnUser)
+                        ).to.be.bignumber.equal(userBalanceAfterWithdrawMKR);
+                    });
+
+                    it("when WBTC tokens withdrawn after some blocks", async function() {
+                        this.timeout(0);
+                        const depositAmount = ONE_WBTC;
+                        await erc20WBTC.transfer(user1, ONE_WBTC.mul(new BN(2)));
+                        await erc20WBTC.approve(savingAccount.address, ONE_WBTC.mul(new BN(2)), {
+                            from: user1
+                        });
+                        let user1BalanceInit = new BN(await erc20WBTC.balanceOf(user1));
+                        let userBalanceBeforeWithdrawWBTC = await erc20WBTC.balanceOf(user1);
+                        let accountBalanceBeforeWithdrawWBTC = await erc20WBTC.balanceOf(
+                            savingAccount.address
+                        );
+                        const balSavingAccountUserBefore = await erc20WBTC.balanceOf(
+                            savingAccount.address
+                        );
+
+                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
+                            erc20WBTC.address,
+                            user1
+                        );
+
+                        // deposit tokens
+                        await savingAccount.deposit(erc20WBTC.address, depositAmount, {
+                            from: user1
+                        });
+
+                        await savingAccount.fastForward(10000);
+                        // deposit for rate checkpoint
+                        await savingAccount.deposit(erc20WBTC.address, new BN(10), {
+                            from: user1
+                        });
+
+                        // Withdrawing DAI
+                        const user1DepositInterestBefore = await savingAccount.getDepositInterest(
+                            addressWBTC,
+                            { from: user1 }
+                        );
+                        await savingAccount.withdrawAll(erc20WBTC.address, {
+                            from: user1
+                        });
+                        let userBalanceAfterWithdrawWBTC = await erc20WBTC.balanceOf(user1);
+
+                        // Verify user balance
+                        let finalInterestWithdrawnUser = new BN(user1DepositInterestBefore)
+                            .mul(new BN(90))
+                            .div(new BN(100));
+
+                        expect(
+                            user1BalanceInit.add(finalInterestWithdrawnUser)
+                        ).to.be.bignumber.equal(userBalanceAfterWithdrawWBTC);
                     });
                 });
             });
