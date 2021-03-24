@@ -4,12 +4,13 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../config/GlobalConfig.sol";
 import "../lib/Utils.sol";
+import "../config/Constant.sol";
 
 /**
  * @dev Token Info Registry to manage Token information
  *      The Owner of the contract allowed to update the information
  */
-contract TokenRegistry is Ownable {
+contract TokenRegistry is Ownable, Constant {
 
     using SafeMath for uint256;
 
@@ -293,6 +294,53 @@ contract TokenRegistry is Ownable {
             return 1e18;
         }
         return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
+    }
+
+     function _priceFromAddress(address _token) internal view returns (uint) {
+        return _token != ETH_ADDR ? uint256(globalConfig.chainLink().getLatestAnswer(_token)) : INT_UNIT;
+    }
+
+    function _tokenDivisor(address _token) internal view returns (uint) {
+        return _token != ETH_ADDR ? 10**uint256(tokenInfo[_token].decimals) : INT_UNIT;
+    }
+
+    function getTokenInfoFromIndex(uint index)
+        external
+        view
+        whenTokenExists(addressFromIndex(index))
+        returns (
+            address,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        address token = tokens[index];
+        return (
+            token,
+            _tokenDivisor(token),
+            _priceFromAddress(token),
+            tokenInfo[token].borrowLTV
+        );
+    }
+
+    function getTokenInfoFromAddress(address _token)
+        external
+        view
+        whenTokenExists(_token)
+        returns (
+            uint8,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (
+            tokenInfo[_token].index,
+            _tokenDivisor(_token),
+            _priceFromAddress(_token),
+            tokenInfo[_token].borrowLTV
+        );
     }
 
     // function _isETH(address _token) public view returns (bool) {

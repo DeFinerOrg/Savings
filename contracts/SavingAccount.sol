@@ -10,13 +10,13 @@ import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-import "openzeppelin-solidity/contracts/math/Math.sol";
+// import "openzeppelin-solidity/contracts/math/Math.sol";
 // import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    using Math for uint256;
+    // using Math for uint256;
 
     GlobalConfig public globalConfig;
 
@@ -29,6 +29,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Deposit(address indexed token, address from, uint256 amount);
     event Withdraw(address indexed token, address from, uint256 amount);
     event WithdrawAll(address indexed token, address from, uint256 amount);
+    event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
     event Claim(address from, uint256 amount);
 
     modifier onlyEmergencyAddress() {
@@ -208,79 +209,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         emit WithdrawAll(_token, msg.sender, actualAmount);
     }
 
-    struct LiquidationVars {
-        // address token;
-        // uint256 tokenPrice;
-        // uint256 coinValue;
-        uint256 borrowerCollateralValue;
-        // uint256 tokenAmount;
-        // uint256 tokenDivisor;
-        uint256 msgTotalBorrow;
-        uint256 targetTokenBalance;
-        uint256 targetTokenBalanceBorrowed;
-        uint256 targetTokenPrice;
-        uint256 liquidationDiscountRatio;
-        uint256 totalBorrow;
-        uint256 borrowPower;
-        uint256 liquidateTokenBalance;
-        uint256 liquidateTokenPrice;
-        // uint256 liquidateTokenValue;
-        uint256 limitRepaymentValue;
-        uint256 borrowTokenLTV;
-        uint256 repayAmount;
-        uint256 payAmount;
-    }
-
     function liquidate(address _borrower, address _borrowedToken, address _collateralToken) public onlySupportedToken(_borrowedToken) onlySupportedToken(_collateralToken) whenNotPaused nonReentrant {
+        (uint256 repayAmount, uint256 payAmount) = globalConfig.accounts().liquidate(msg.sender, _borrower, _borrowedToken, _collateralToken);
 
-        require(globalConfig.accounts().isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
-        LiquidationVars memory vars;
-
-        // It is required that the liquidator doesn't exceed it's borrow power.
-        vars.msgTotalBorrow = globalConfig.accounts().getBorrowETH(msg.sender);
-        require(
-            vars.msgTotalBorrow < globalConfig.accounts().getBorrowPower(msg.sender),
-            "No extra funds are used for liquidation."
-        );
-
-        // _borrowedToken balance of the liquidator (deposit balance)
-        vars.targetTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_borrowedToken, msg.sender);
-        require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
-
-        // _borrowedToken balance of the borrower (borrow balance)
-        vars.targetTokenBalanceBorrowed = globalConfig.accounts().getBorrowBalanceCurrent(_borrowedToken, _borrower);
-        require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
-
-        // _borrowedToken available for liquidation
-        uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
-
-        // _collateralToken balance of the borrower (deposit balance)
-        vars.liquidateTokenBalance = globalConfig.accounts().getDepositBalanceCurrent(_collateralToken, _borrower);
-        vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
-
-        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
-        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
-
-        // _collateralToken to purchase so that borrower's balance matches its borrow power
-        vars.totalBorrow = globalConfig.accounts().getBorrowETH(_borrower);
-        vars.borrowPower = globalConfig.accounts().getBorrowPower(_borrower);
-        vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        vars.borrowTokenLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_borrowedToken);
-        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
-
-        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
-
-        vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).mul(100).div(divisor).div(vars.liquidationDiscountRatio));
-
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
-        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
-        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
-
-        globalConfig.accounts().deposit(msg.sender, _collateralToken, vars.payAmount);
-        globalConfig.accounts().withdraw_liquidate(msg.sender, _borrowedToken, vars.repayAmount);
-        globalConfig.accounts().withdraw_liquidate(_borrower, _collateralToken, vars.payAmount);
-        globalConfig.accounts().repay(_borrower, _borrowedToken, vars.repayAmount);
+        emit Liquidate(msg.sender, _borrower, _borrowedToken, repayAmount, _collateralToken, payAmount);
     }
 
     /**
