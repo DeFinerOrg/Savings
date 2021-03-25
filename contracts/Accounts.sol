@@ -247,6 +247,41 @@ contract Accounts is Constant, Initializable{
     }
 
     /**
+     * This function is called in liquidation function. There two difference between this function and
+     * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
+     * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
+     */
+    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
+
+        // Check if withdraw amount is less than user's balance
+        require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
+
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint lastBlock = tokenInfo.getLastDepositBlock();
+        uint currentBlock = getBlockNumber();
+        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
+
+        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
+
+        if (tokenInfo.getLastDepositBlock() == 0)
+            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+        else {
+            // As the last deposit block exists, the block is also a check point on index curve.
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+        }
+
+        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
+        if(tokenInfo.getDepositPrincipal() == 0) {
+            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+            unsetFromDepositBitmap(_accountAddr, tokenIndex);
+        }
+
+        return _amount;
+    }
+
+    /**
      * Update token info for deposit
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
@@ -446,7 +481,7 @@ contract Accounts is Constant, Initializable{
         address _borrower,
         address _borrowedToken,
         address _collateralToken
-    ) 
+    )
         external
         onlyAuthorized
         returns (

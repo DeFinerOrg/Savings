@@ -341,7 +341,7 @@ contract TokenRegistry is Ownable, Constant {
             _priceFromAddress(_token),
             tokenInfo[_token].borrowLTV
         );
-    }   
+    }
 
     // function _isETH(address _token) public view returns (bool) {
     //     return globalConfig.constants().ETH_ADDR() == _token;
