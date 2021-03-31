@@ -238,12 +238,10 @@ contract Accounts is Constant, Initializable{
         // This if condition is to deal with the withdraw of collateral token in liquidation.
         // As the amount if borrowed asset is already large than the borrow power, we don't
         // have to check the condition here.
-        uint borrowETH = getBorrowETH(_accountAddr);
-        uint borrowPower = getBorrowPower(_accountAddr);
-        if(borrowETH <= borrowPower) {
-            uint withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
-            require(borrowETH <= borrowPower.sub(withdrawETH), "Insufficient collateral when withdraw.");
-        }
+        uint256 borrowETH = getBorrowETH(_accountAddr);
+        uint256 borrowPower = getBorrowPower(_accountAddr);
+        uint256 withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
+        require(borrowETH <= borrowPower.sub(withdrawETH), "Insufficient collateral when withdraw.");
     }
 
     /**
@@ -251,14 +249,14 @@ contract Accounts is Constant, Initializable{
      * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
      * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
      */
-    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
+    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) internal onlyAuthorized {
 
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint lastBlock = tokenInfo.getLastDepositBlock();
-        uint currentBlock = getBlockNumber();
+        uint256 lastBlock = tokenInfo.getLastDepositBlock();
+        uint256 currentBlock = getBlockNumber();
         calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
 
         if (tokenInfo.getLastDepositBlock() == 0)
@@ -508,8 +506,8 @@ contract Accounts is Constant, Initializable{
         vars.liquidateTokenBalance = getDepositBalanceCurrent(_collateralToken, _borrower);
         vars.liquidateTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_collateralToken);
 
-        uint divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
-        uint liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
+        uint256 divisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_borrowedToken));
+        uint256 liquidateTokendivisor = 10 ** uint256(globalConfig.tokenInfoRegistry().getTokenDecimals(_collateralToken));
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
         vars.totalBorrow = getBorrowETH(_borrower);
@@ -521,15 +519,15 @@ contract Accounts is Constant, Initializable{
         uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
 
         vars.targetTokenPrice = globalConfig.tokenInfoRegistry().priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).div(divisor).mul(100).div(vars.liquidationDiscountRatio));
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).mul(100).div(divisor).div(vars.liquidationDiscountRatio));
 
         vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
         vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
         vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
 
         deposit(_liquidator, _collateralToken, vars.payAmount);
-        withdraw(_liquidator, _borrowedToken, vars.repayAmount);
-        withdraw(_borrower, _collateralToken, vars.payAmount);
+        withdraw_liquidate(_liquidator, _borrowedToken, vars.repayAmount);
+        withdraw_liquidate(_borrower, _collateralToken, vars.payAmount);
         repay(_borrower, _borrowedToken, vars.repayAmount);
 
         return (vars.repayAmount, vars.payAmount);
