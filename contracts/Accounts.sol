@@ -195,12 +195,29 @@ contract Accounts is Constant, Initializable{
     /**
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
-    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns(uint256) {
+    function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns (uint256) {
+        (, uint256 tokenDivisor, uint256 tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
 
+        uint256 withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
+        require(getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(withdrawETH), "Insufficient collateral when withdraw.");
+
+        (uint256 amountAfterCommission, ) = _withdraw(_accountAddr, _token, _amount, true);
+
+        return amountAfterCommission;
+    }
+
+    /**
+     * This function is called in liquidation function. There two difference between this function and
+     * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
+     * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
+     */
+    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) internal {
+        _withdraw(_accountAddr, _token, _amount, false);
+    }
+
+    function _withdraw(address _accountAddr, address _token, uint256 _amount, bool _isCommission) internal returns (uint256, uint256) {
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
-
-        checkWithdrawalBorrowPower(_accountAddr, _token, _amount);
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint lastBlock = tokenInfo.getLastDepositBlock();
@@ -224,62 +241,14 @@ contract Accounts is Constant, Initializable{
         }
 
         uint commission = 0;
-        if (_accountAddr != globalConfig.deFinerCommunityFund()) {
+        if (_isCommission && _accountAddr != globalConfig.deFinerCommunityFund()) {
             // DeFiner takes 10% commission on the interest a user earn
             commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
             deposit(globalConfig.deFinerCommunityFund(), _token, commission);
+            _amount = _amount.sub(commission);
         }
 
-        return _amount.sub(commission);
-    }
-
-    function checkWithdrawalBorrowPower(address _accountAddr, address _token, uint256 _amount) internal view {
-        (, uint256 tokenDivisor, uint256 tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
-
-        // This if condition is to deal with the withdraw of collateral token in liquidation.
-        // As the amount if borrowed asset is already large than the borrow power, we don't
-        // have to check the condition here.
-        uint borrowETH = getBorrowETH(_accountAddr);
-        uint borrowPower = getBorrowPower(_accountAddr);
-        if(borrowETH <= borrowPower) {
-            uint withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
-            require(borrowETH <= borrowPower.sub(withdrawETH), "Insufficient collateral when withdraw.");
-        }
-    }
-
-    /**
-     * This function is called in liquidation function. There two difference between this function and
-     * the Account.withdraw function: 1) It doesn't check the user's borrow power, because the user
-     * is already borrowed more than it's borrowing power. 2) It doesn't take commissions.
-     */
-    function withdraw_liquidate(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized returns(uint256) {
-
-        // Check if withdraw amount is less than user's balance
-        require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
-        uint256 borrowLTV = globalConfig.tokenInfoRegistry().getBorrowLTV(_token);
-
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        uint lastBlock = tokenInfo.getLastDepositBlock();
-        uint currentBlock = getBlockNumber();
-        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
-
-        uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
-
-        if (tokenInfo.getLastDepositBlock() == 0)
-            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
-        else {
-            // As the last deposit block exists, the block is also a check point on index curve.
-            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
-        }
-
-        uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
-        if(tokenInfo.getDepositPrincipal() == 0) {
-            uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
-            unsetFromDepositBitmap(_accountAddr, tokenIndex);
-        }
-
-        return _amount;
+        return (_amount, commission);
     }
 
     /**
@@ -430,10 +399,10 @@ contract Accounts is Constant, Initializable{
     }
 
     /**
-	 * Check if the account is liquidatable
+     * Check if the account is liquidatable
      * @param _borrower borrower's account
      * @return true if the account is liquidatable
-	 */
+     */
     function isAccountLiquidatable(address _borrower) public returns (bool) {
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
         Bank bank = globalConfig.bank();
@@ -535,8 +504,8 @@ contract Accounts is Constant, Initializable{
         vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
 
         deposit(_liquidator, _collateralToken, vars.payAmount);
-        withdraw(_liquidator, _borrowedToken, vars.repayAmount);
-        withdraw(_borrower, _collateralToken, vars.payAmount);
+        withdraw_liquidate(_liquidator, _borrowedToken, vars.repayAmount);
+        withdraw_liquidate(_borrower, _collateralToken, vars.payAmount);
         repay(_borrower, _borrowedToken, vars.repayAmount);
 
         return (vars.repayAmount, vars.payAmount);
