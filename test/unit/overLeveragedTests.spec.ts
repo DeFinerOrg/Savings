@@ -238,8 +238,11 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 4. withdraw
                     const userBorrowVal = await accountsContract.getBorrowETH(user1);
                     const getDeposits = await accountsContract.getDepositETH(user1);
+                    const userBorrowPower = await accountsContract.getBorrowPower(user1);
                     let UB = new BN(userBorrowVal).mul(new BN(100));
                     let UD = new BN(getDeposits).mul(new BN(95));
+                    console.log("userBorrowVal",userBorrowVal.toString());
+                    console.log("userBorrowPower",userBorrowPower.toString())
                     console.log("UD", UD.toString());
                     console.log("UB", UB.toString());
 
