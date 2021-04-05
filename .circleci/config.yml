@@ -79,5 +79,7 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: yarn test ./test/**/* # triggers truffle test
-            no_output_timeout: 60m
+      - run:
+          name: Run tests
+          command: yarn test ./test/**/* # triggers truffle test
+          no_output_timeout: 60m
