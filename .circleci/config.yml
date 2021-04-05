@@ -82,4 +82,6 @@ jobs:
       - run:
           name: Run tests
           command: yarn test ./test/**/* # triggers truffle test
-          no_output_timeout: 30m
+          no_output_timeout: 20m
+          environment:
+            NODE_OPTIONS=--max_old_space_size=4096
