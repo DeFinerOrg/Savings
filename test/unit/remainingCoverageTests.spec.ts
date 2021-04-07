@@ -18,7 +18,6 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.req
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("RemainingCoverage", async (accounts) => {
-    const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const tempToken: string = "0x7B175474E89094C44Da98b954EedeAC495271d0F";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";

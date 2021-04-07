@@ -32,11 +32,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
     event Claim(address from, uint256 amount);
 
-    modifier onlyEmergencyAddress() {
-        require(msg.sender ==  EMERGENCY_ADDR, "User not authorized");
-        _;
-    }
-
     modifier onlySupportedToken(address _token) {
         if(!Utils._isETH(address(globalConfig), _token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");

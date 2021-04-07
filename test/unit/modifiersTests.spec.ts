@@ -18,7 +18,6 @@ const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("SavingAccount.withdraw", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
-    const EMERGENCY_ADDR: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;

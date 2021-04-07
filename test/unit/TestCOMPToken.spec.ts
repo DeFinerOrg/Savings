@@ -14,7 +14,6 @@ const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("Ch
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("SavingAccount.COMP", async (accounts) => {
-    const EMERGENCY_ADDRESS: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
