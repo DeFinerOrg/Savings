@@ -236,10 +236,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     function() external payable{}
 
-    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        SavingLib.emergencyWithdraw(globalConfig, _token);
-    }
-
     /**
      * An account claim all mined FIN token
      */

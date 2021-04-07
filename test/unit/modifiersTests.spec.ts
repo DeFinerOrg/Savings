@@ -220,25 +220,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
         });
     });
 
-    context("onlyEmergencyAddress", async () => {
-        context("should fail", async function () {
-            it("when the calling address is other than EMERGENCY_ADDR", async () => {
-                await expectRevert(
-                    savingAccount.emergencyWithdraw(addressDAI),
-                    "User not authorized"
-                );
-            });
-        });
-
-        context("should succeeed", async function () {
-            // it("when the calling address is EMERGENCY_ADDR", async () => {
-            //     await savingAccount.emergencyWithdraw(addressDAI, {
-            //         from: EMERGENCY_ADDR,
-            //     });
-            // });
-        });
-    });
-
     context("onlySupportedToken", async () => {
         context("should fail", async function () {
             it("when unsupported token address is passed", async () => {
