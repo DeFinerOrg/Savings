@@ -566,7 +566,7 @@ contract Accounts is Constant, Initializable{
                                 .sub(bank.depositFINRateIndex(_token, _lastBlock));
         uint256 getFIN = getDepositBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
-                        .div(bank.depositeRateIndex(_token, getBlockNumber()));
+                        .div(bank.depositeRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
@@ -580,7 +580,7 @@ contract Accounts is Constant, Initializable{
                                 .sub(bank.borrowFINRateIndex(_token, _lastBlock));
         uint256 getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
-                        .div(bank.borrowRateIndex(_token, getBlockNumber()));
+                        .div(bank.borrowRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }
