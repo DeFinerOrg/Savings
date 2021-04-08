@@ -26,6 +26,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
             node -v
+            npm -v
       - run:
         |
           sudo apt-get update -y
