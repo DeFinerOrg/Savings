@@ -28,7 +28,7 @@ jobs:
             node -v
       - run:
         |
-          sudo apt-get install libudev-dev
+          sudo apt-get install -y libudev-dev
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
