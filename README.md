@@ -4,7 +4,7 @@
  
 We recommend using [solc-select](https://github.com/crytic/solc-select) for switching the solc compiler version.   
 
-## Compile the contracts and run the tests:
+## Compile the contracts and run tests:
 
 Clone the repository and follow these steps to compile the contracts and run tests:
 
