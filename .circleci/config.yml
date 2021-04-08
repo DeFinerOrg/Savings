@@ -22,8 +22,10 @@ jobs:
       - run:
           name: Install node@v10.23.0
           command: |
-            ./load-nvm.sh
-            nvm install v10.23.0
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
+            node -v
       - run:
         |
           sudo apt-get update -y
