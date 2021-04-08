@@ -59,6 +59,7 @@ jobs:
 
       - run: cd compound-protocol && yarn install --lock-file
       - run: cd compound-protocol/scenario && npm i
+      - run: sudo apt-get install npm
       - run: sudo npm i
 
       - save_cache:
