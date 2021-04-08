@@ -20,6 +20,11 @@ jobs:
 
     steps:
       - run:
+          name: Install node@v10.23.0
+          command: |
+            ./load-nvm.sh
+            nvm install v10.23.0
+      - run:
         |
           sudo apt-get install libudev-dev
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
