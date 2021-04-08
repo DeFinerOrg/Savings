@@ -94,4 +94,4 @@ jobs:
           command: yarn test ./test/**/* # triggers truffle test
           no_output_timeout: 15m
           environment:
-            NODE_OPTIONS: --max_old_space_size=4096
+            NODE_OPTIONS: --max_old_space_size=8192
