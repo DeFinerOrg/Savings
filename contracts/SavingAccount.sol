@@ -10,18 +10,13 @@ import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-// import "openzeppelin-solidity/contracts/math/Math.sol";
 // import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    // using Math for uint256;
 
     GlobalConfig public globalConfig;
-
-    // Following are the constants, initialized via upgradable proxy contract
-    // This is emergency address to allow withdrawal of funds from the contract
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -48,11 +43,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         require(msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
-    }
-
-    constructor() public {
-        // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
-        // console.log("Start to construct", msg.sender);
     }
 
     /**
