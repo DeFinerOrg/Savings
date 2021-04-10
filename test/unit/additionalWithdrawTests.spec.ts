@@ -99,6 +99,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     this.timeout(0);
                     const numOfDAI = new BN(1).mul(eighteenPrecision);
                     const numOfUSDC = new BN(1).mul(sixPrecision);
+                    await savingAccount.fastForward(1000);
+
                     /*
                      * Step 1
                      * Assign 10^18 DAI and 10^6 USDC to user 1
@@ -577,7 +579,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20USDC.address, doubleOfUSDC, { from: user1 }),
-                        "Insufficient balance."
+                        "SafeMath: subtraction overflow"
                     );
                 });
                 it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async function () {
@@ -656,7 +658,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20TUSD.address, doubleOfTUSD, { from: user1 }),
-                        "Insufficient balance."
+                        "SafeMath: subtraction overflow"
                     );
                 });
             });
@@ -1415,7 +1417,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, numOfDAI, { from: user1 }),
-                        "Insufficient balance."
+                        "SafeMath: subtraction overflow"
                     );
                 });
             });
