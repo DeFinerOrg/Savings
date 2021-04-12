@@ -9,7 +9,8 @@ jobs:
     machine:
       # specify the version you desire here
       image: ubuntu-2004:202010-01
-      command: circleci update build-agent
+      - run:
+          command: circleci update build-agent
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
