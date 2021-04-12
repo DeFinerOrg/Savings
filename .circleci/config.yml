@@ -20,8 +20,6 @@ jobs:
 
     steps:
       - run:
-          command: circleci update build-agent
-      - run:
           name: Install node@v10.23.0
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
@@ -94,6 +92,7 @@ jobs:
       - run:
           name: Run tests
           command: yarn test ./test/**/* # triggers truffle test
+          true
           #no_output_timeout: 15m
           # environment:
           #   NODE_OPTIONS: --max_old_space_size=7168
