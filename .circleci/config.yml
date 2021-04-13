@@ -20,6 +20,14 @@ jobs:
 
     steps:
       - run:
+          command: |
+            while true; do
+              sleep 5
+              ps auxwwf
+              echo "======"
+            done
+          background: true
+      - run:
           name: Install node@v10.23.0
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
@@ -33,7 +41,6 @@ jobs:
             sudo rm -rf /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock
             sudo apt-get clean all
             sudo apt-get update && sudo apt-get upgrade
-            sudo apt-get dist-upgrade
             sudo dpkg -l | grep ^..r | apt-get purge
       - run:
         |
@@ -101,5 +108,5 @@ jobs:
           name: Run tests
           command: yarn test ./test/**/* # triggers truffle test
           #no_output_timeout: 15m
-          # environment:
-          #   NODE_OPTIONS: --max_old_space_size=7168
+          environment:
+            NODE_OPTIONS: --max_old_space_size=6144
