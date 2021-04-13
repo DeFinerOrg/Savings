@@ -257,11 +257,11 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.claim({ from: user1 });
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("100999805465840288185713")
+                                new BN("101000050005000500050004")
                             );
                             const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("100999805465840288185713")
+                                new BN("101000050005000500050004")
                             );
                             //console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
@@ -425,10 +425,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINUser2Diff", balFINUser2Diff.toString());
                             console.log("balFINUser1Diff", balFINUser1Diff.toString());
                             expect(BN(balFINUser2Diff)).to.be.bignumber.equal(
-                                new BN("115999738368052403981072")
+                                new BN("116000015400862241405978")
                             );
                             expect(BN(balFINUser1Diff)).to.be.bignumber.equal(
-                                new BN("105999713477348234540577")
+                                new BN("105999985119111412910479")
                             );
                         });
                         it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function() {
@@ -579,10 +579,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser2", balFINAfterUser2.toString());
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("100999777201930249141100")
+                                new BN("101000000209711302546000")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("100999777201930249137700")
+                                new BN("101000000209711302542600")
                             );
                         });
                         it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function() {
@@ -639,10 +639,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser2", balFINAfterUser2.toString());
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("115999761461807585621800")
+                                new BN("116000013845483105597000")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("105999739046325127625324")
+                                new BN("105999986574362299011575")
                             );
                         });
                         it("Deposit DAI, USDC and borrow large amount of DAI", async function() {
@@ -709,7 +709,7 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser2", balFINAfterUser2.toString());
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252499462278841101482299")
+                                new BN("252500000258173303248999")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50500000258173303210200")
@@ -775,7 +775,7 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser2", balFINAfterUser2.toString());
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252518889204909961677718")
+                                new BN("252519964064683569574765")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50500000000000000000000")
@@ -843,7 +843,7 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser2", balFINAfterUser2.toString());
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252499044134869581344411")
+                                new BN("252500000164277350814620")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50499999495000540349421")

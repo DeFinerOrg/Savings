@@ -169,20 +169,23 @@ contract Bank is Constant, Initializable{
         return compoundAmount;
     }
 
+    /**
+     * The function is called in Bank.deposit(), Bank.withdraw() and Accounts.claim() functions.
+     * The function should be called AFTER the newRateIndexCheckpoint function so that the account balances are
+     * accurate, and BEFORE the account balance acutally updated due to deposit/withdraw activities.
+     */
     function updateDepositFINIndex(address _token) public onlyAuthorized{
         uint currentBlock = getBlockNumber();
         uint deltaBlock;
-        // sichaoy: newRateIndexCheckpoint should never be called before this line, so the total deposit
-        // derived here is the total deposit in the last checkpoint without latest interests.
+        // If it is the first deposit FIN rate checkpoint, set the deltaBlock value be 0 so that the first
+        // point on depositFINRateIndex is zero.
         deltaBlock = lastDepositeFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositeFINRateCheckpoint[_token]);
-        // sichaoy: How to deal with the case that totalDeposit = 0?
-        depositFINRateIndex[_token][currentBlock] = getTotalDepositStore(_token) == 0 ?
-            0 : depositFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]]
-                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
-                    .mul(deltaBlock)
-                    .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
-                    .div(getTotalDepositStore(_token))
-                );
+        // If the totalDeposit of the token is zero, no FIN token should be mined and the FINRateINdex is unchanged.
+        depositFINRateIndex[_token][currentBlock] = depositFINRateIndex[_token][lastDepositeFINRateCheckpoint[_token]].add(
+            getTotalDepositStore(_token) == 0 ? 0 : depositeRateIndex[_token][lastCheckpoint[_token]]
+                .mul(deltaBlock)
+                .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
+                .div(getTotalDepositStore(_token)));
         lastDepositeFINRateCheckpoint[_token] = currentBlock;
 
         emit UpdateDepositFINIndex(_token, depositFINRateIndex[_token][currentBlock]);
@@ -191,10 +194,12 @@ contract Bank is Constant, Initializable{
     function updateBorrowFINIndex(address _token) public onlyAuthorized{
         uint currentBlock = getBlockNumber();
         uint deltaBlock;
+        // If it is the first borrow FIN rate checkpoint, set the deltaBlock value be 0 so that the first
+        // point on borrowFINRateIndex is zero.
         deltaBlock = lastBorrowFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastBorrowFINRateCheckpoint[_token]);
-        borrowFINRateIndex[_token][currentBlock] = totalLoans[_token] == 0 ?
-            0 : borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]]
-                .add(depositeRateIndex[_token][lastCheckpoint[_token]]
+        // If the totalBorrow of the token is zero, no FIN token should be mined and the FINRateINdex is unchanged.
+        borrowFINRateIndex[_token][currentBlock] = borrowFINRateIndex[_token][lastBorrowFINRateCheckpoint[_token]].add(
+            totalLoans[_token] == 0 ? 0 : borrowRateIndex[_token][lastCheckpoint[_token]]
                     .mul(deltaBlock)
                     .mul(globalConfig.tokenInfoRegistry().borrowMiningSpeeds(_token))
                     .div(totalLoans[_token]));
@@ -226,7 +231,6 @@ contract Bank is Constant, Initializable{
     /**
     * Get Deposit Rate.  Deposit APR = (Borrow APR * Utilization Rate (U) +  Compound Supply Rate *
     * Capital Compound Ratio (C) )* (1- DeFiner Community Fund Ratio (D)). The scaling is 10 ** 18
-    * sichaoy: make sure the ratePerBlock is zero if both U and C are zero.
     * @param _token token address
     * @return deposite rate of blocks before the current block
     */
@@ -272,8 +276,6 @@ contract Bank is Constant, Initializable{
      * @param _depositRateRecordStart the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
-    // sichaoy: this function could be more general to have an end checkpoit as a parameter.
-    // sichaoy: require:what if a index point doesn't exist?
     function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
         uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
         require(depositRate != 0, "_depositRateRecordStart is not a check point on index curve.");
@@ -286,8 +288,6 @@ contract Bank is Constant, Initializable{
      * @param _borrowRateRecordStart the start block of the interval
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
-    // sichaoy: actually the rate + 1, add a require statement here to make sure
-    // the checkpoint for current block exists.
     function getBorrowAccruedRate(address _token, uint _borrowRateRecordStart) external view returns (uint256) {
         uint256 borrowRate = borrowRateIndex[_token][_borrowRateRecordStart];
         require(borrowRate != 0, "_borrowRateRecordStart is not a check point on index curve.");
@@ -323,7 +323,6 @@ contract Bank is Constant, Initializable{
                 compoundPool[_token].supported = true;
                 uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
-                // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
                 compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
                 compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
@@ -370,7 +369,6 @@ contract Bank is Constant, Initializable{
      * Calculate a token deposite rate of current block
      * @param _token token address
      * @dev This is an looking forward estimation from last checkpoint and not the exactly rate that the user will pay or earn.
-     * sichaoy: to make the notation consistent, change the name from depositRateIndexNow to depositRateIndexCurrent
      */
     function depositRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
@@ -415,7 +413,6 @@ contract Bank is Constant, Initializable{
         return totalReserve[_token].add(totalCompound[globalConfig.tokenInfoRegistry().getCToken(_token)]);
     }
 
- // sichaoy: should not be public, why cannot we find _tokenIndex from token address?
     function deposit(address _to, address _token, uint256 _amount) external onlyAuthorized {
 
         require(_amount != 0, "Amount is zero");

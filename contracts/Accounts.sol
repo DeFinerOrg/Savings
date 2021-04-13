@@ -293,7 +293,6 @@ contract Accounts is Constant, Initializable{
         return remain;
     }
 
-    // sichaoy: switch the order of the parameters
     function getDepositBalanceCurrent(
         address _token,
         address _accountAddr
@@ -320,7 +319,6 @@ contract Accounts is Constant, Initializable{
      * @param _token token address
      * @dev This is an estimation. Add a new checkpoint first, if you want to derive the exact balance.
      */
-    // sichaoy: What's the diff of getBorrowBalance with getBorrowAcruedRate?
     function getBorrowBalanceCurrent(
         address _token,
         address _accountAddr
@@ -381,7 +379,6 @@ contract Accounts is Constant, Initializable{
     /**
      * Get borrowed balance of a token in the uint256 of Wei
      */
-    // sichaoy: change name to getTotalBorrowInETH()
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
