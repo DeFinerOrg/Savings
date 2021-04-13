@@ -8,7 +8,7 @@ jobs:
   build:
     machine:
       # specify the version you desire here
-      image: ubuntu-2004:202010-01
+      image: ubuntu:18.04
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -20,14 +20,6 @@ jobs:
 
     steps:
       - run:
-          command: |
-            while true; do
-              sleep 5
-              ps auxwwf
-              echo "======"
-            done
-          background: true
-      - run:
           name: Install node@v10.23.0
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
@@ -35,11 +27,6 @@ jobs:
             nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
             node -v
             npm -v
-      - run:
-          name: fix segmentation
-          command: |
-            sudo rm -rf /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock
-            sudo apt-get clean all
       - run:
         |
           sudo apt-get update -y
