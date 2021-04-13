@@ -40,7 +40,7 @@ jobs:
           command: |
             sudo rm -rf /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock
             sudo apt-get clean all
-            sudo apt-get update && sudo apt-get upgrade
+            sudo apt-get dist-upgrade
             sudo dpkg -l | grep ^..r | apt-get purge
       - run:
         |
