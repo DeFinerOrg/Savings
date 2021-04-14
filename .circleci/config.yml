@@ -8,7 +8,8 @@ jobs:
   build:
     machine:
       # specify the version you desire here
-      image: ubuntu-2004:202010-01
+      - image: circleci/node:10.23.0
+      # image: ubuntu-2004:202010-01
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -19,14 +20,14 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - run:
-          name: Install node@v10.23.0
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
-            node -v
-            npm -v
+      # - run:
+      #     name: Install node@v10.23.0
+      #     command: |
+      #       export NVM_DIR="/opt/circleci/.nvm"
+      #       [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+      #       nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
+      #       node -v
+      #       npm -v
       - run:
         |
           sudo apt-get update -y
@@ -39,44 +40,44 @@ jobs:
           command: |
             git submodule init
             git submodule update
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
 
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+      # # Download and cache dependencies
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
 
       - run: cd compound-protocol && yarn install --lock-file
       - run: cd compound-protocol/scenario && npm i
       - run: sudo apt-get install npm
       - run: sudo npm i
 
-      - save_cache:
-          paths:
-            - compound-protocol/node_modules
-          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+      # - save_cache:
+      #     paths:
+      #       - compound-protocol/node_modules
+      #     key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
 
-      - save_cache:
-          paths:
-            - compound-protocol/scenario/node_modules
-          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+      # - save_cache:
+      #     paths:
+      #       - compound-protocol/scenario/node_modules
+      #     key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
 
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+      # - save_cache:
+      #     paths:
+      #       - node_modules
+      #     key: v1-dependencies-{{ checksum "package.json" }}
       
       # - run:
       #     name: "Coverage environment"
