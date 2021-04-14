@@ -10,18 +10,12 @@ import "./InitializableReentrancyGuard.sol";
 import "./InitializablePausable.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
-// import "openzeppelin-solidity/contracts/math/Math.sol";
-// import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
-    // using Math for uint256;
 
     GlobalConfig public globalConfig;
-
-    // Following are the constants, initialized via upgradable proxy contract
-    // This is emergency address to allow withdrawal of funds from the contract
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -31,11 +25,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event WithdrawAll(address indexed token, address from, uint256 amount);
     event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
     event Claim(address from, uint256 amount);
-
-    modifier onlyEmergencyAddress() {
-        require(msg.sender ==  EMERGENCY_ADDR, "User not authorized");
-        _;
-    }
 
     modifier onlySupportedToken(address _token) {
         if(!Utils._isETH(address(globalConfig), _token)) {
@@ -53,11 +42,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         require(msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
         _;
-    }
-
-    constructor() public {
-        // THIS SHOULD BE EMPTY FOR UPGRADABLE CONTRACTS
-        // console.log("Start to construct", msg.sender);
     }
 
     /**
@@ -235,10 +219,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     }
 
     function() external payable{}
-
-    function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        SavingLib.emergencyWithdraw(globalConfig, _token);
-    }
 
     /**
      * An account claim all mined FIN token

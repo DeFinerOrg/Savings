@@ -18,7 +18,6 @@ const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("SavingAccount.withdraw", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
-    const EMERGENCY_ADDR: string = "0xc04158f7dB6F9c9fFbD5593236a1a3D69F92167c";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
@@ -217,25 +216,6 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     "Only authorized to call from DeFiner internal contracts."
                 );
             });
-        });
-    });
-
-    context("onlyEmergencyAddress", async () => {
-        context("should fail", async function () {
-            it("when the calling address is other than EMERGENCY_ADDR", async () => {
-                await expectRevert(
-                    savingAccount.emergencyWithdraw(addressDAI),
-                    "User not authorized"
-                );
-            });
-        });
-
-        context("should succeeed", async function () {
-            // it("when the calling address is EMERGENCY_ADDR", async () => {
-            //     await savingAccount.emergencyWithdraw(addressDAI, {
-            //         from: EMERGENCY_ADDR,
-            //     });
-            // });
         });
     });
 

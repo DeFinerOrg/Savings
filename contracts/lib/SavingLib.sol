@@ -1,15 +1,10 @@
 pragma solidity 0.5.14;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../config/GlobalConfig.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
+import "../config/GlobalConfig.sol";
 import "./Utils.sol";
-import { ICToken } from "../compound/ICompound.sol";
-import { ICETH } from "../compound/ICompound.sol";
-// import "@nomiclabs/buidler/console.sol";
 
 library SavingLib {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /**
@@ -37,26 +32,6 @@ library SavingLib {
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(msg.sender, _amount);
-        }
-    }
-
-    // ============================================
-    // EMERGENCY WITHDRAWAL FUNCTIONS
-    // Needs to be removed when final version deployed
-    // ============================================
-    function emergencyWithdraw(GlobalConfig globalConfig, address _token) public {
-        address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if(Utils._isETH(address(globalConfig), _token)) {
-            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
-            require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
-            globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
-        } else {
-            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
-            if(cToken != address(0)) {
-                require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
-            }
-            // uint256 amount = IERC20(_token).balanceOf(address(this));
-            require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), IERC20(_token).balanceOf(address(this))), "transfer failed");
         }
     }
 

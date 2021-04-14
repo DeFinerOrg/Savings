@@ -9,7 +9,6 @@ import "./Bank.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
-// import "@nomiclabs/buidler/console.sol";
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;

@@ -6,7 +6,6 @@ import "./config/GlobalConfig.sol";
 import { ICToken } from "./compound/ICompound.sol";
 import { ICETH } from "./compound/ICompound.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-// import "@nomiclabs/buidler/console.sol";
 
 contract Bank is Constant, Initializable{
     using SafeMath for uint256;
