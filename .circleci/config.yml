@@ -6,9 +6,10 @@
 version: 2
 jobs:
   build:
-    docker:
+    machine:
       # specify the version you desire here
-      - image: circleci/node:10.23.0
+      # - image: circleci/node:10.23.0
+      image: ubuntu-2004:202010-01
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -20,10 +21,24 @@ jobs:
 
     steps:
       - run:
+          name: Install node@v10.23.0
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install v10.23.0 && nvm use v10.23.0 && nvm alias default v10.23.0
+            node -v
+            npm -v
+      - run:
+          name: Install truffle
+          command: |
+            npm install -g truffle
+      - run:
         |
-          sudo apt-get install libudev-dev
+          sudo apt-get update -y
+          sudo apt-get install -y libudev-dev
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
+          solc --version
       - checkout
       - run:
           name: "Pull Submodules"
@@ -51,6 +66,7 @@ jobs:
 
       - run: cd compound-protocol && yarn install --lock-file
       - run: cd compound-protocol/scenario && npm i
+      - run: sudo apt-get install npm
       - run: sudo npm i
 
       - save_cache:
@@ -79,4 +95,9 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: yarn test ./test/**/* # triggers truffle test
+      - run:
+          name: Run tests
+          command: yarn test ./test/**/* # triggers truffle test
+          #no_output_timeout: 15m
+          environment:
+            NODE_OPTIONS: --max_old_space_size=6144
