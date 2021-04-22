@@ -1,8 +1,10 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../test-helpers/SnapshotUtils";
 
 var chai = require("chai");
 var expect = chai.expect;
+let snapshotId: string;
 var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -59,11 +61,11 @@ contract("depositMiningTests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
+        testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async function() {
         this.timeout(0);
-        testEngine.deploy("whitePaperModel.scen");
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
 
@@ -109,6 +111,12 @@ contract("depositMiningTests", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("Mining tests", async () => {
