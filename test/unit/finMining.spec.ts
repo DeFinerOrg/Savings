@@ -1,11 +1,13 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../test-helpers/SnapshotUtils";
 import { saveContract } from "../../compound-protocol/scenario/src/Networks";
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
 var chai = require("chai");
 var expect = chai.expect;
+let snapshotId: string;
 var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
@@ -79,17 +81,17 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(function() {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
+        testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function () {
+    beforeEach(async function() {
         this.timeout(0);
-        testEngine.deploy("whitePaperModel.scen");
-
         savingAccount = await testEngine.deploySavingAccount();
+
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
@@ -163,13 +165,20 @@ contract("SavingAccount.borrow", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
+
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("borrow()", async () => {
         context("with Token", async () => {
             context("should succeed", async () => {
                 // modified
-                it("FinMiningTest1: Two users deposit in the same block with one borrow", async function () {
+                it("FinMiningTest1: Two users deposit in the same block with one borrow", async function() {
                     this.timeout(0);
                     await erc20FIN.transfer(savingAccount.address, ONE_FIN.mul(new BN(1000000)));
                     // 1.1 Transfer DAI to user1 & user2.
@@ -211,7 +220,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -256,14 +265,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1,
+                        from: user1
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -292,7 +301,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("50000000239635890844809"));
                 });
 
-                it("FinMiningTest2: Two user deposit in different blocks with one borrow", async function () {
+                it("FinMiningTest2: Two user deposit in different blocks with one borrow", async function() {
                     this.timeout(0);
                     await erc20FIN.transfer(savingAccount.address, ONE_FIN.mul(new BN(1000000)));
                     // 1.1 Transfer DAI to user1 & user2.
@@ -337,7 +346,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -382,14 +391,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1,
+                        from: user1
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -418,7 +427,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("150000001088430855561536"));
                 });
 
-                it("FinMiningTest3: Three user deposit in different blocks with one borrow", async function () {
+                it("FinMiningTest3: Three user deposit in different blocks with one borrow", async function() {
                     this.timeout(0);
                     await erc20FIN.transfer(savingAccount.address, ONE_FIN.mul(new BN(1000000)));
                     // 1.1 Transfer DAI to user1 & user2.
@@ -469,7 +478,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -522,21 +531,21 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1,
+                        from: user1
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
                     const user3BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user3 }
                     );
                     const user3BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user3,
+                        from: user3
                     });
 
                     console.log("1111", user3DepositPrincipal.toString());
@@ -573,7 +582,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("183333351461896584727671")); // 1.8333335036068736e-12
                 });
 
-                it("FinMiningTest4: Two user deposit in different blocks with two borrows", async function () {
+                it("FinMiningTest4: Two user deposit in different blocks with two borrows", async function() {
                     this.timeout(0);
                     await erc20FIN.transfer(savingAccount.address, ONE_FIN.mul(new BN(1000000)));
                     // 1.1 Transfer DAI to user1 & user2.
@@ -620,7 +629,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -665,14 +674,14 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1,
+                        from: user1
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -701,7 +710,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("278571581765745567836486"));
                 });
 
-                it("FinMiningTest5: Three user deposit in different blocks with two borrows", async function () {
+                it("FinMiningTest5: Three user deposit in different blocks with two borrows", async function() {
                     this.timeout(0);
                     await erc20FIN.transfer(savingAccount.address, ONE_FIN.mul(new BN(1000000)));
                     // 1.1 Transfer DAI to user1 & user2.
@@ -754,7 +763,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 3.1 Verify the deposit/loan/reservation/compound ledger of the pool
                     const tokenState = await savingAccount.getTokenState(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
 
                     // Verify that reservation equals to the token in pool's address
@@ -807,21 +816,21 @@ contract("SavingAccount.borrow", async (accounts) => {
                         { from: user1 }
                     );
                     const user1BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user1,
+                        from: user1
                     });
                     const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user2 }
                     );
                     const user2BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user2,
+                        from: user2
                     });
                     const user3BorrowPrincipal = await savingAccount.getBorrowPrincipal(
                         addressDAI,
                         { from: user3 }
                     );
                     const user3BorrowInterest = await savingAccount.getBorrowInterest(addressDAI, {
-                        from: user3,
+                        from: user3
                     });
 
                     console.log("1111", user3DepositPrincipal.toString());

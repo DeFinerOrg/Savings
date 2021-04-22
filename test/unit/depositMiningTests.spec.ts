@@ -112,6 +112,7 @@ contract("depositMiningTests", async (accounts) => {
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
 
+        // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });
 
