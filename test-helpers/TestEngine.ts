@@ -1,6 +1,9 @@
+import { Contract } from "./../compound-protocol/scenario/src/Contract";
 import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { takeSnapshot, revertToSnapShot } from "./SnapshotUtils";
+import { CompoundUtils } from "./CompoundUtils";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
@@ -35,6 +38,10 @@ var compoundTokens: any;
 const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
+export class Compound {
+    public compoundUtil!: CompoundUtils;
+}
+
 export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
@@ -44,11 +51,48 @@ export class TestEngine {
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
+    public compoundC: any;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
+    private compoundUtil = new CompoundUtils();
 
-    public deploy(script: String) {
+    // private loanJson() {
+    //     this.compoundC = require("../compound-protocol/networks/development.json");
+    //     console.log("---------------- 2 ----------------------");
+    // }
+
+    // public getComptroller(): string {
+    //     this.loanJson();
+    //     console.log("---------------- 3 ----------------------");
+    //     return this.compoundC.Contracts.Comptroller;
+    // }
+
+    public async deploy(script: String) {
+        console.log("---------------- deploy Compound ----------------------");
+        let jsonFileExists = true;
+
+        try {
+            this.compoundUtil.getComptroller();
+            console.log("--------------comptr receved----------------");
+        } catch (err) {
+            jsonFileExists = false;
+        }
+
+        if (jsonFileExists) {
+            console.log("--------------JSON----------------");
+            const code = await web3.eth.getCode(this.compoundUtil.getComptroller());
+            const isDeployed = code !== "0x";
+
+            if (isDeployed) {
+                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                process.env.SNAPSHOT_ID = await takeSnapshot();
+                console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
+                return; // no need to deploy compound
+            }
+        }
+
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -70,9 +114,15 @@ export class TestEngine {
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
         compoundTokens = require(configFile);
+
+        const comptr = await web3.eth.getCode(this.compoundUtil.getComptroller());
+        console.log("comptr", comptr);
+
+        process.env.SNAPSHOT_ID = await takeSnapshot();
+        console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
     }
 
-    public deployTruffle(script: String) {
+    public async deployCompound(script: String) {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
