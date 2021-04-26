@@ -69,12 +69,17 @@ export class TestEngine {
     // }
 
     public async deploy(script: String) {
-        console.log("---------------- deploy Compound ----------------------");
         let jsonFileExists = true;
 
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
+        const configFile = "../compound-protocol/networks/" + fileName;
+        // clean import caches
+        // delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
+
         try {
-            this.compoundUtil.getComptroller();
-            console.log("--------------comptr receved----------------");
+            compoundTokens = require(configFile);
+            compoundTokens.Contracts.Comptroller;
+            console.log("--------------comptr received----------------");
         } catch (err) {
             jsonFileExists = false;
         }
@@ -93,6 +98,8 @@ export class TestEngine {
             }
         }
 
+        console.log("---------------- deploy Compound ----------------------");
+
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -109,34 +116,31 @@ export class TestEngine {
             process.env.FLYWHEEL = "yes";
         }
 
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-        const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
         compoundTokens = require(configFile);
 
-        const comptr = await web3.eth.getCode(this.compoundUtil.getComptroller());
-        console.log("comptr", comptr);
+        // const comptr = await web3.eth.getCode(this.compoundUtil.getComptroller());
+        // console.log("comptr", comptr);
 
         process.env.SNAPSHOT_ID = await takeSnapshot();
         console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
     }
 
-    public async deployCompound(script: String) {
-        const currentPath = process.cwd();
-        const compound = `${currentPath}/compound-protocol`;
-        const scriptPath = `${compound}/script/scen/${script}`;
-        const portNumber = process.env.COVERAGE ? "8546" : "8545";
-        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+    // public async deployCompound(script: String) {
+    //     const currentPath = process.cwd();
+    //     const compound = `${currentPath}/compound-protocol`;
+    //     const scriptPath = `${compound}/script/scen/${script}`;
+    //     const portNumber = process.env.COVERAGE ? "8546" : "8545";
+    //     const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
 
-        const log = shell.exec(command);
+    //     const log = shell.exec(command);
 
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-        const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
-        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-        compoundTokens = require(configFile);
-    }
+    //     const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
+    //     const configFile = "../compound-protocol/networks/" + fileName;
+    //     // clean import caches
+    //     delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
+    //     compoundTokens = require(configFile);
+    // }
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
