@@ -4,7 +4,6 @@ import { SavingAccountWithControllerInstance } from "./../types/truffle-contract
 import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { takeSnapshot, revertToSnapShot } from "./SnapshotUtils";
-import { CompoundUtils } from "./CompoundUtils";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
@@ -39,10 +38,6 @@ var compoundTokens: any;
 const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
-export class Compound {
-    public compoundUtil!: CompoundUtils;
-}
-
 export class TestEngine {
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
@@ -56,7 +51,6 @@ export class TestEngine {
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
-    private compoundUtil = new CompoundUtils();
 
     public async deploy(script: String) {
         let jsonFileExists = true;
@@ -133,9 +127,6 @@ export class TestEngine {
 
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
         compoundTokens = require(configFile);
-
-        // const comptr = await web3.eth.getCode(this.compoundUtil.getComptroller());
-        // console.log("comptr", comptr);
 
         process.env.SNAPSHOT_ID = await takeSnapshot();
         console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
