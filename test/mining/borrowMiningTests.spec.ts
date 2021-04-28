@@ -55,14 +55,14 @@ contract("borrowMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function() {
+    before(function () {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
         testEngine.deploy("whitePaperModel.scen");
     });
 
-    beforeEach(async function() {
+    beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
@@ -120,7 +120,7 @@ contract("borrowMiningTests", async (accounts) => {
             context("borrow mining", async () => {
                 context("Compound supported 18 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function() {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -132,10 +132,10 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20DAI.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user1 });
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
@@ -161,10 +161,10 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2
+                                from: user2,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -175,7 +175,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             // Verifty that compound equals cToken underlying balance in pool's address
                             // It also verifies that (Deposit = Loan + Compound + Reservation)
@@ -222,7 +222,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user1BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user1
+                                    from: user1,
                                 }
                             );
                             const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
@@ -232,7 +232,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user2BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user2
+                                    from: user2,
                                 }
                             );
                             console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -274,7 +274,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             //console.log("balFINAfterUser1", balFINAfterUser1.toString());
                         });
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function() {
+                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -286,10 +286,10 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20DAI.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(
                                 addressDAI,
@@ -333,7 +333,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -344,7 +344,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             const compoundAfterFastForward = BN(
                                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -389,7 +389,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user1BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user1
+                                    from: user1,
                                 }
                             );
                             const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
@@ -399,7 +399,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user2BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user2
+                                    from: user2,
                                 }
                             );
                             console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -440,7 +440,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("105999985119111412910479")
                             );
                         });
-                        it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function() {
+                        it("borrowMining3: Deposit DAI then user 1 & 2 borrow large amount of DAI on same block", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -454,10 +454,10 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20DAI.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
                             await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
@@ -483,7 +483,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -494,7 +494,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             const compoundAfterFastForward = BN(
                                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -539,7 +539,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user1BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user1
+                                    from: user1,
                                 }
                             );
                             const user2BorrowPrincipal = await savingAccount.getBorrowPrincipal(
@@ -549,7 +549,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const user2BorrowInterest = await savingAccount.getBorrowInterest(
                                 addressDAI,
                                 {
-                                    from: user2
+                                    from: user2,
                                 }
                             );
                             console.log("user1DepositInterest", user1DepositInterest.toString());
@@ -594,7 +594,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("101000000209711302542600")
                             );
                         });
-                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function() {
+                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -608,10 +608,10 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20DAI.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
                             await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
@@ -628,7 +628,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -639,7 +639,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
@@ -654,7 +654,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("105999986574362299011575")
                             );
                         });
-                        it("Deposit DAI, USDC and borrow large amount of DAI", async function() {
+                        it("Deposit DAI, USDC and borrow large amount of DAI", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -670,27 +670,27 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user2, numOfDAI);
                             await erc20USDC.transfer(user2, numOfUSDC);
                             await erc20DAI.approve(savingAccount.address, numOfDAI, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfDAI, {
-                                from: user2
+                                from: user2,
                             });
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user1
+                                from: user1,
                             });
                             await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
-                                from: user2
+                                from: user2,
                             });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                             await savingAccount.borrow(addressDAI, borrowAmount, {
-                                from: user2
+                                from: user2,
                             });
                             // 3. Verify the loan amount.
                             const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
@@ -700,7 +700,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -709,7 +709,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
@@ -729,7 +729,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                 context("Compound supported 6 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI & USDC then borrow small amount of USDC", async function() {
+                        it("Deposit DAI & USDC then borrow small amount of USDC", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -743,13 +743,13 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20USDC.transfer(user1, numOfToken);
                             await erc20USDC.transfer(user2, numOfToken);
                             await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await erc20USDC.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressUSDC, new BN(5000), { from: user1 });
                             await savingAccount.deposit(addressDAI, new BN(5000), { from: user2 });
@@ -764,7 +764,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2
+                                from: user2,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -774,7 +774,7 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("USDC1");
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2
+                                from: user2,
                             });
                             console.log("USDC2");
                             await savingAccount.claim({ from: user2 });
@@ -790,7 +790,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN("50500000000000000000000")
                             );
                         });
-                        it("Deposit DAI & USDC then borrow large amount of USDC", async function() {
+                        it("Deposit DAI & USDC then borrow large amount of USDC", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -805,27 +805,27 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20USDC.transfer(user1, numOfUSDC);
                             await erc20USDC.transfer(user2, numOfUSDC);
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
                             await erc20USDC.approve(savingAccount.address, numOfUSDC, {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressUSDC, numOfUSDC.div(new BN(2)), {
-                                from: user1
+                                from: user1,
                             });
                             await savingAccount.deposit(addressDAI, numOfToken.div(new BN(2)), {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.deposit(addressUSDC, numOfUSDC.div(new BN(2)), {
-                                from: user2
+                                from: user2,
                             });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
                             await savingAccount.borrow(addressUSDC, new BN(10).mul(sixPrecision), {
-                                from: user2
+                                from: user2,
                             });
                             const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -834,7 +834,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2
+                                from: user2,
                             });
                             // 4. Claim the minted tokens
                             // fastforward
@@ -843,7 +843,7 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.fastForward(100000);
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user2
+                                from: user2,
                             });
                             await savingAccount.claim({ from: user2 });
                             await savingAccount.claim({ from: user1 });
@@ -863,7 +863,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                 context("Compound unsupported 18 decimal Token", async () => {
                     context("Should succeed", async () => {
-                        it("Deposit DAI to borrow a small amount of MKR.", async function() {
+                        it("Deposit DAI to borrow a small amount of MKR.", async function () {
                             this.timeout(0);
                             let numOfToken = new BN(100000);
                             await erc20FIN.transfer(
@@ -875,18 +875,18 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20MKR.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
 
                             await savingAccount.deposit(addressDAI, new BN(50000), {
-                                from: user1
+                                from: user1,
                             });
 
                             await savingAccount.deposit(addressMKR, new BN(50000), {
-                                from: user2
+                                from: user2,
                             });
 
                             // 2. Start borrowing.
@@ -908,7 +908,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
 
                             await savingAccount.claim({ from: user2 });
@@ -927,7 +927,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                         });
 
-                        it("Deposit DAI to borrow a large amount of MKR.", async function() {
+                        it("Deposit DAI to borrow a large amount of MKR.", async function () {
                             this.timeout(0);
                             let numOfToken = new BN(1000).mul(eighteenPrecision);
                             let depositAmountMKR = new BN(10).mul(eighteenPrecision);
@@ -942,18 +942,18 @@ contract("borrowMiningTests", async (accounts) => {
                             await erc20DAI.transfer(user1, numOfToken);
                             await erc20MKR.transfer(user2, numOfToken);
                             await erc20DAI.approve(savingAccount.address, numOfToken, {
-                                from: user1
+                                from: user1,
                             });
                             await erc20MKR.approve(savingAccount.address, numOfToken, {
-                                from: user2
+                                from: user2,
                             });
 
                             await savingAccount.deposit(addressDAI, depositAmountDAI, {
-                                from: user1
+                                from: user1,
                             });
 
                             await savingAccount.deposit(addressMKR, depositAmountMKR, {
-                                from: user2
+                                from: user2,
                             });
 
                             // 2. Start borrowing.
@@ -975,7 +975,7 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // Deposit an extra tokens to create a new rate check point
                             await savingAccount.deposit(erc20DAI.address, new BN(10), {
-                                from: user1
+                                from: user1,
                             });
 
                             await savingAccount.claim({ from: user2 });
