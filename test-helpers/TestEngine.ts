@@ -1,3 +1,4 @@
+import { InterestRateModel } from "./../compound-protocol/scenario/src/Contract/InterestRateModel";
 import { Contract } from "./../compound-protocol/scenario/src/Contract";
 import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
@@ -57,39 +58,51 @@ export class TestEngine {
     public cTokensCompound: Array<string> = new Array();
     private compoundUtil = new CompoundUtils();
 
-    // private loanJson() {
-    //     this.compoundC = require("../compound-protocol/networks/development.json");
-    //     console.log("---------------- 2 ----------------------");
-    // }
-
-    // public getComptroller(): string {
-    //     this.loanJson();
-    //     console.log("---------------- 3 ----------------------");
-    //     return this.compoundC.Contracts.Comptroller;
-    // }
-
     public async deploy(script: String) {
         let jsonFileExists = true;
 
         const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
         const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
-        // delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const scriptPath = `${compound}/script/scen/${script}`;
+        const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
 
         try {
             compoundTokens = require(configFile);
             compoundTokens.Contracts.Comptroller;
-            console.log("--------------comptr received----------------");
+            console.log("--------------Comptroller received----------------");
         } catch (err) {
             jsonFileExists = false;
         }
 
         if (jsonFileExists) {
+            compoundTokens = require(configFile);
+
+            const code0 = compoundTokens.InterestRateModel;
+            const InterestRateModel = Object.keys(code0);
+            console.log("InterestRateModel", InterestRateModel[0]);
             console.log("--------------JSON----------------");
-            const code = await web3.eth.getCode(this.compoundUtil.getComptroller());
+
+            const code = await web3.eth.getCode(compoundTokens.Contracts.Comptroller);
             const isDeployed = code !== "0x";
 
-            if (isDeployed) {
+            if (
+                isDeployed &&
+                InterestRateModel[0] == "StdInterest" &&
+                script == "scriptFlywheel.scen"
+            ) {
+                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                process.env.SNAPSHOT_ID = await takeSnapshot();
+                console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
+                return; // no need to deploy compound
+            } else if (
+                isDeployed &&
+                InterestRateModel[0] == "MyInterestModel" &&
+                script == "whitePaperModel.scen"
+            ) {
                 await revertToSnapShot(process.env.SNAPSHOT_ID || "");
                 console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
                 process.env.SNAPSHOT_ID = await takeSnapshot();
@@ -100,11 +113,13 @@ export class TestEngine {
 
         console.log("---------------- deploy Compound ----------------------");
 
-        const currentPath = process.cwd();
-        const compound = `${currentPath}/compound-protocol`;
-        const scriptPath = `${compound}/script/scen/${script}`;
-        const portNumber = process.env.COVERAGE ? "8546" : "8545";
-        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+        // const currentPath = process.cwd();
+        // const compound = `${currentPath}/compound-protocol`;
+        // const scriptPath = `${compound}/script/scen/${script}`;
+        // const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        // const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+
+        shell.exec(`rm -rf ${compound}/networks/development.json`);
 
         if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
             // Do nothing
