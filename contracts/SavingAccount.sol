@@ -240,7 +240,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * Withdraw COMP token to beneficiary
      */
     function withdrawCOMP(address _beneficiary) external onlyOwner {
-        uint compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
+        uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
         IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
 
         emit WithdrawCOMP(_beneficiary, compBalance);
