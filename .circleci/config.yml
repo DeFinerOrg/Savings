@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test1:
+  build1:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.23.0
@@ -76,7 +76,7 @@ jobs:
 
       - run: yarn test ./test/integration/*.ts ./test/long_duration/*.ts ./test/mining/*.ts ./test/others/*.ts # triggers truffle test
 
-  test2:
+  build2:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.23.0
