@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  one:
+  build:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.23.0
@@ -74,87 +74,4 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: yarn test ./test/integration/*.ts ./test/long_duration/*.ts ./test/mining/*.ts ./test/others/*.ts # triggers truffle test
-
-  two:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.23.0
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
-
-    working_directory: ~/repo
-
-    steps:
-      - run:
-        |
-          sudo apt-get install libudev-dev
-          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
-          sudo chmod +x /usr/local/bin/solc
-      - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
-      - run: sudo npm i
-
-      - save_cache:
-          paths:
-            - compound-protocol/node_modules
-          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
-
-      - save_cache:
-          paths:
-            - compound-protocol/scenario/node_modules
-          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-      
-      # - run:
-      #     name: "Coverage environment"
-      #     background: true
-      #     command: yarn coverage-setup
-
-      # - run: yarn coverage
-      - run: 
-          name: Start EVM
-          background: true
-          command: npx hardhat node
-
-      - run: yarn test ./test/unit/*.ts # triggers truffle test
-
-workflows:
-    version: 2
-    build:
-        jobs:
-            - one
-            - two
+      - run: yarn test ./test/**/* # triggers truffle test
