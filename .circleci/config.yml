@@ -74,4 +74,4 @@ jobs:
           background: true
           command: npx hardhat node
 
-      - run: yarn test ./test/**/* # triggers truffle test
+      - run: yarn test test/**/*.spec.ts # triggers truffle test
