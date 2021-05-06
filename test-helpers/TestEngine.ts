@@ -87,8 +87,8 @@ export class TestEngine {
             console.log("script", script);
 
             if (InterestRateModel[0] == "StdInterest" && script == "scriptFlywheel.scen") {
-                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
-                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                // await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                // console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
                 process.env.SNAPSHOT_ID = await takeSnapshot();
                 console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
                 return; // no need to deploy compound
@@ -165,6 +165,8 @@ export class TestEngine {
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.FIN);
 
+        // console.log("erc20TokensFromCompound", erc20TokensFromCompound);
+
         return erc20TokensFromCompound;
     }
 
@@ -184,6 +186,8 @@ export class TestEngine {
         cTokensCompound.push(this.compoundTokens.Contracts.cETH);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
+
+        // console.log("cTokensCompound", cTokensCompound);
 
         return cTokensCompound;
     }
