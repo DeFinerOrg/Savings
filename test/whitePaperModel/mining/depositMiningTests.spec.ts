@@ -61,7 +61,7 @@ contract("depositMiningTests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("whitePaperModel.scen");
+        // testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async function () {
@@ -116,18 +116,18 @@ contract("depositMiningTests", async (accounts) => {
         snapshotId = await takeSnapshot();
     });
 
-    afterEach(async () => {
+    afterEach(async function () {
         await revertToSnapShot(snapshotId);
     });
 
-    context("Mining tests", async () => {
-        context("Single Token", async () => {
-            context("deposit mining", async () => {
-                context("Single user, single token", async () => {
-                    context("With ETH", async () => {
-                        context("should succeed", async () => {
-                            it("when small amount of ETH is deposited", async () => {
-                                //this.timeout(0);
+    context("Mining tests", async function () {
+        context("Single Token", async function () {
+            context("deposit mining", async function () {
+                context("Single user, single token", async function () {
+                    context("With ETH", async function () {
+                        context("should succeed", async function () {
+                            it("when small amount of ETH is deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -196,7 +196,7 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("100999999999999999999999")
                                 );
                             });
-                            it("when large amount of ETH is deposited", async () => {
+                            it("when large amount of ETH is deposited", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -268,8 +268,8 @@ contract("depositMiningTests", async (accounts) => {
                         });
                     });
 
-                    context("Compound Supported 18 decimal Token", async () => {
-                        context("should succeed", async () => {
+                    context("Compound Supported 18 decimal Token", async function () {
+                        context("should succeed", async function () {
                             it("when small amount of DAI is deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
@@ -456,10 +456,10 @@ contract("depositMiningTests", async (accounts) => {
                         });
                     });
 
-                    context("Compound Supported 6 decimals Token", async () => {
-                        context("Should succeed", async () => {
-                            it("when small amount of USDC tokens are deposited", async () => {
-                                //this.timeout(0);
+                    context("Compound Supported 6 decimals Token", async function () {
+                        context("Should succeed", async function () {
+                            it("when small amount of USDC tokens are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -552,8 +552,8 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("101019924287706714484957")
                                 );
                             });
-                            it("when large amount of USDC tokens are deposited", async () => {
-                                //this.timeout(0);
+                            it("when large amount of USDC tokens are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -647,10 +647,10 @@ contract("depositMiningTests", async (accounts) => {
                         });
                     });
 
-                    context("Compound Supported 8 decimals Token", async () => {
-                        context("Should succeed", async () => {
-                            it("when small amount of WBTC tokens are deposited", async () => {
-                                //this.timeout(0);
+                    context("Compound Supported 8 decimals Token", async function () {
+                        context("Should succeed", async function () {
+                            it("when small amount of WBTC tokens are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -737,8 +737,8 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("100999999999999999999999")
                                 );
                             });
-                            it("when large amount of WBTC tokens are deposited", async () => {
-                                //this.timeout(0);
+                            it("when large amount of WBTC tokens are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -826,8 +826,8 @@ contract("depositMiningTests", async (accounts) => {
                         });
                     });
 
-                    context("Compound unsupported 18 decimal Token", async () => {
-                        context("Should succeed", async () => {
+                    context("Compound unsupported 18 decimal Token", async function () {
+                        context("Should succeed", async function () {
                             it("when small amount of MKR tokens are deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
@@ -906,8 +906,8 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when large amount of MKR tokens are deposited", async () => {
-                                //this.timeout(0);
+                            it("when large amount of MKR tokens are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -989,7 +989,7 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when small amount of FIN tokens are deposited", async () => {
+                            it("when small amount of FIN tokens are deposited", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -1069,7 +1069,7 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when large amount of FIN tokens are deposited", async () => {
+                            it("when large amount of FIN tokens are deposited", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -1150,7 +1150,7 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when small amount of LP tokens are deposited", async () => {
+                            it("when small amount of LP tokens are deposited", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -1230,7 +1230,7 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when large amount of LP tokens are deposited", async () => {
+                            it("when large amount of LP tokens are deposited", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -1319,9 +1319,9 @@ contract("depositMiningTests", async (accounts) => {
                     });
                 });
 
-                context("Single user, multiple tokens", async () => {
-                    context("With ETH", async () => {
-                        context("should succeed", async () => {
+                context("Single user, multiple tokens", async function () {
+                    context("With ETH", async function () {
+                        context("should succeed", async function () {
                             it("when small amount of ETH & DAI are deposited");
 
                             it("when small amount of ETH & MKR are deposited");
@@ -1336,8 +1336,8 @@ contract("depositMiningTests", async (accounts) => {
                         });
                     });
 
-                    context("Compound Supported 18 decimal Token", async () => {
-                        context("should succeed", async () => {
+                    context("Compound Supported 18 decimal Token", async function () {
+                        context("should succeed", async function () {
                             it("when small amount of DAI & USDC are deposited", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
@@ -1459,8 +1459,8 @@ contract("depositMiningTests", async (accounts) => {
                                 );
                             });
 
-                            it("when large amount of DAI & USDC are deposited", async () => {
-                                // this.timeout(0);
+                            it("when large amount of DAI & USDC are deposited", async function () {
+                                this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -1597,7 +1597,7 @@ contract("depositMiningTests", async (accounts) => {
                     });
                 });
 
-                context("Multiple different users, multiple tokens", async () => {});
+                context("Multiple different users, multiple tokens", async function () {});
             });
         });
     });
