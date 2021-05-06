@@ -25,3 +25,6 @@ cache
 artifacts
 
 .openzeppelin/.session
+
+# snapshots folder
+./snapshots
