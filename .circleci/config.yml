@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -69,9 +69,11 @@ jobs:
       #     command: yarn coverage-setup
 
       # - run: yarn coverage
-      - run: 
-          name: Start EVM
-          background: true
-          command: npx hardhat node
+      # - run: 
+      #     name: Start EVM
+      #     background: true
+      #     command: npx hardhat node
 
-      - run: yarn test test/**/*.spec.ts # triggers truffle test
+      - run: 
+          name: Run tests
+          command: sh runtests.sh  #triggers truffle test

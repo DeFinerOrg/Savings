@@ -77,7 +77,7 @@ contract("Integration Tests", async (accounts) => {
         this.timeout(0);
         // Things to initialize before all test
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        // testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {

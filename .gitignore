@@ -27,4 +27,4 @@ artifacts
 .openzeppelin/.session
 
 # snapshots folder
-./snapshots
+/snapshots

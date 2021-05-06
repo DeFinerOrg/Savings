@@ -30,7 +30,7 @@ contract("SavingAccount", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("scriptFlywheel.scen");
+        // testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {
