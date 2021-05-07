@@ -2,6 +2,8 @@
 
 failed=0
 
+yarn prepare
+
 declare -a modelArr=("whitePaperModel" "scriptFlywheel")
 
 for model in "${modelArr[@]}"
