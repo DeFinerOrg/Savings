@@ -32,6 +32,7 @@ contract Accounts is Constant, Initializable{
         mapping(address => AccountTokenLib.TokenInfo) tokenInfos;
         uint128 depositBitmap;
         uint128 borrowBitmap;
+        uint128 collateralBitmap;
     }
 
     /**
@@ -42,6 +43,50 @@ contract Accounts is Constant, Initializable{
         GlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
+    }
+
+    function x() public view returns (bool) {
+        Account storage account = accounts[_account];
+        // if a user have deposits in some tokens and collateral enabled for some
+        // then we need to iterate over his deposits for which collateral is also enabled.
+        // Hence, we can derive this information by perorming AND bitmap operation
+        // hasCollnDepositBitmap = collateralEnabled & hasDeposit
+        // Example:
+        // collateralBitmap         = 0101
+        // depositBitmap            = 0110
+        // ================================== OP AND
+        // hasCollnDepositBitmap    = 0100 (user can only use his 3rd token as borrow power)
+        uint128 hasCollnDepositBitmap = account.collateralBitmap & account.depositBitmap;
+
+        // This loop has max "O(n)" complexity where "n = TokensLength", but the loop
+        // calculates borrow power only for the `hasCollnDepositBitmap` bit
+        // NOTE: When transaction gas-cost goes above the block gas limit, a user can
+        //      disable some of his collaterals so that he can perform the borrow.
+        //      Earlier loop implementation was iterating over all tokens, hence its possible to
+        //      have DoS attack.
+        for(uint i = 0; i < 128; i++) {
+            // if hasCollnDepositBitmap = 0000 then break the loop
+            if(hasCollnDepositBitmap > 0) {
+                // hasCollnDepositBitmap = 0100
+                // mask                  = 0001
+                // =============================== OP AND
+                // result                = 0000
+                uint128 isEnabled = hasCollnDepositBitmap & uint128(1);
+                if(isEnabled) {
+                    // continue calculating borrow power for i(th) token
+                }
+
+                // right shift by 1
+                // hasCollnDepositBitmap = 0100
+                // BITWISE RIGHTSHIFT 1 on hasCollnDepositBitmap = 0010
+                hasCollnDepositBitmap = hasCollnDepositBitmap >> 1;
+                // continue loop and repeat the steps until `hasCollnDepositBitmap == 0`
+            } else {
+                break;
+            }
+        }
+
+        return true;
     }
 
     /**
