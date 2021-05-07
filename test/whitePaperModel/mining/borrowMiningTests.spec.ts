@@ -59,7 +59,7 @@ contract("borrowMiningTests", async (accounts) => {
         // Things to initialize before all test
         this.timeout(0);
         testEngine = new TestEngine();
-        testEngine.deploy("whitePaperModel.scen");
+        // testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async function () {

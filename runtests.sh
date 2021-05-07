@@ -2,24 +2,23 @@
 
 failed=0
 
-# rm -rf snapshots/scriptFlywheel compound-protocol/networks/development.json
-# unzip -qq snapshots/scriptFlywheel.zip -d ./snapshots
-# cp snapshots/config/scriptFlywheel.json compound-protocol/networks/development.json
-
-declare -a modelArr=("scriptFlywheel" "whitePaperModel")
+declare -a modelArr=("whitePaperModel" "scriptFlywheel")
 
 for model in "${modelArr[@]}"
 do
-    rm -rf snapshots/$model compound-protocol/networks/development.json
-    unzip -qq snapshots/$model.zip -d ./snapshots
+    echo "$model"
+    rm -rf compound-protocol/networks/development.json
     cp snapshots/config/$model.json compound-protocol/networks/development.json
 
-    echo "$model"
     # Run each test file individually
     for file in $(find ./test/$model -type f -name "*.spec.ts");
-    do 
+    do
+      # delete previous ganache snapshot and extract a fresh copy  
+      rm -rf snapshots/$model
+      unzip -qq snapshots/$model.zip -d ./snapshots
+
       echo "Starting Ganache..."
-      ganache-cli --gasLimit 0x1fffffffffffff \
+      npx ganache-cli --gasLimit 0x1fffffffffffff \
         --gasPrice 20000000 \
         --defaultBalanceEther 1000000000 \
         --allowUnlimitedContractSize true \

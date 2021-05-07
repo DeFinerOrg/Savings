@@ -65,7 +65,7 @@ contract("Integration Tests", async (accounts) => {
         this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-        testEngine.deploy("whitePaperModel.scen");
+        // testEngine.deploy("whitePaperModel.scen");
     });
 
     beforeEach(async function () {
