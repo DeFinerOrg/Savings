@@ -76,19 +76,13 @@ export class TestEngine {
 
             const code0 = this.compoundTokens.InterestRateModel;
             const InterestRateModel = Object.keys(code0);
-            console.log("InterestRateModel", InterestRateModel[0]);
-            console.log("--------------JSON----------------");
-
             const code = await web3.eth.getCode(this.compoundTokens.Contracts.Comptroller);
-            // const isDeployed = code !== "0x";
-            console.log("--------------Comptroller received 2----------------");
-            // console.log("isDeployed", isDeployed.toString());
             console.log("InterestRateModel[0]", InterestRateModel[0].toString());
             console.log("script", script);
 
             if (InterestRateModel[0] == "StdInterest" && script == "scriptFlywheel.scen") {
-                // await revertToSnapShot(process.env.SNAPSHOT_ID || "");
-                // console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
                 process.env.SNAPSHOT_ID = await takeSnapshot();
                 console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
                 return; // no need to deploy compound
@@ -105,7 +99,6 @@ export class TestEngine {
         }
 
         console.log("---------------- deploy Compound ----------------------");
-        return;
 
         // const currentPath = process.cwd();
         // const compound = `${currentPath}/compound-protocol`;
@@ -132,25 +125,24 @@ export class TestEngine {
         console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
     }
 
-    // public async deployCompound(script: String) {
-    //     const currentPath = process.cwd();
-    //     const compound = `${currentPath}/compound-protocol`;
-    //     const scriptPath = `${compound}/script/scen/${script}`;
-    //     const portNumber = process.env.COVERAGE ? "8546" : "8545";
-    //     const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+    public async deployTruffle(script: String) {
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const scriptPath = `${compound}/script/scen/${script}`;
+        const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
 
-    //     const log = shell.exec(command);
+        const log = shell.exec(command);
 
-    //     const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-    //     const configFile = "../compound-protocol/networks/" + fileName;
-    //     // clean import caches
-    //     delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-    //     compoundTokens = require(configFile);
-    // }
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
+        const configFile = "../compound-protocol/networks/" + fileName;
+        // clean import caches
+        delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
+        this.compoundTokens = require(configFile);
+    }
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
-        // compoundTokens = require("../compound-protocol/networks/development.json");
         var erc20TokensFromCompound = new Array();
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.DAI);
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.USDC);
@@ -164,8 +156,6 @@ export class TestEngine {
         erc20TokensFromCompound.push(ETH_ADDR);
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.LPToken);
         erc20TokensFromCompound.push(this.compoundTokens.Contracts.FIN);
-
-        // console.log("erc20TokensFromCompound", erc20TokensFromCompound);
 
         return erc20TokensFromCompound;
     }
@@ -186,8 +176,6 @@ export class TestEngine {
         cTokensCompound.push(this.compoundTokens.Contracts.cETH);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
-
-        // console.log("cTokensCompound", cTokensCompound);
 
         return cTokensCompound;
     }
