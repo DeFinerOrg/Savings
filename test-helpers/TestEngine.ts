@@ -1,6 +1,9 @@
+import { InterestRateModel } from "./../compound-protocol/scenario/src/Contract/InterestRateModel";
+import { Contract } from "./../compound-protocol/scenario/src/Contract";
 import { SavingAccountWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { BankWithControllerInstance } from "./../types/truffle-contracts/index.d";
 import { AccountsWithControllerInstance } from "./../types/truffle-contracts/index.d";
+import { takeSnapshot, revertToSnapShot } from "./SnapshotUtils";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
@@ -31,7 +34,7 @@ const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
 var tokenData = require("../test-helpers/tokenData.json");
 
 // var compoundTokens: any = require("../compound-protocol/networks/development.json");
-var compoundTokens: any;
+// var compoundTokens: any;
 const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
@@ -44,16 +47,66 @@ export class TestEngine {
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
+    public compoundTokens: any = require("../compound-protocol/networks/development.json");
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
-    public deploy(script: String) {
+    public async deploy(script: String) {
+        let jsonFileExists = true;
+
+        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
+        const configFile = "../compound-protocol/networks/" + fileName;
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
         const portNumber = process.env.COVERAGE ? "8546" : "8545";
         const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+
+        try {
+            this.compoundTokens;
+            this.compoundTokens.Contracts.Comptroller;
+            console.log("--------------Comptroller received----------------");
+        } catch (err) {
+            jsonFileExists = false;
+        }
+
+        if (jsonFileExists) {
+            // compoundTokens = require(configFile);
+
+            const code0 = this.compoundTokens.InterestRateModel;
+            const InterestRateModel = Object.keys(code0);
+            const code = await web3.eth.getCode(this.compoundTokens.Contracts.Comptroller);
+            console.log("InterestRateModel[0]", InterestRateModel[0].toString());
+            console.log("script", script);
+
+            if (InterestRateModel[0] == "StdInterest" && script == "scriptFlywheel.scen") {
+                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                process.env.SNAPSHOT_ID = await takeSnapshot();
+                console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
+                return; // no need to deploy compound
+            } else if (
+                InterestRateModel[0] == "MyInterestModel" &&
+                script == "whitePaperModel.scen"
+            ) {
+                await revertToSnapShot(process.env.SNAPSHOT_ID || "");
+                console.log("Reverted to snapshotId: " + process.env.SNAPSHOT_ID);
+                process.env.SNAPSHOT_ID = await takeSnapshot();
+                console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
+                return; // no need to deploy compound
+            }
+        }
+
+        console.log("---------------- deploy Compound ----------------------");
+
+        // const currentPath = process.cwd();
+        // const compound = `${currentPath}/compound-protocol`;
+        // const scriptPath = `${compound}/script/scen/${script}`;
+        // const portNumber = process.env.COVERAGE ? "8546" : "8545";
+        // const command = `PROVIDER="http://localhost:${portNumber}/" yarn --cwd ${compound} run repl -s ${scriptPath}`;
+
+        shell.exec(`rm -rf ${compound}/networks/development.json`);
 
         if (process.env.FLYWHEEL == "yes" && script == "scriptFlywheel.scen") {
             // Do nothing
@@ -65,14 +118,14 @@ export class TestEngine {
             process.env.FLYWHEEL = "yes";
         }
 
-        const fileName = process.env.COVERAGE ? "coverage.json" : "development.json";
-        const configFile = "../compound-protocol/networks/" + fileName;
-        // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-        compoundTokens = require(configFile);
+        // compoundTokens = require(configFile);
+
+        process.env.SNAPSHOT_ID = await takeSnapshot();
+        console.log("Snapshot Taken: snapshotId: " + process.env.SNAPSHOT_ID);
     }
 
-    public deployTruffle(script: String) {
+    public async deployTruffle(script: String) {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
         const scriptPath = `${compound}/script/scen/${script}`;
@@ -85,24 +138,24 @@ export class TestEngine {
         const configFile = "../compound-protocol/networks/" + fileName;
         // clean import caches
         delete require.cache[require.resolve("../compound-protocol/networks/" + fileName)];
-        compoundTokens = require(configFile);
+        this.compoundTokens = require(configFile);
     }
 
     public async getERC20AddressesFromCompound(): Promise<Array<string>> {
         const network = process.env.NETWORK;
         var erc20TokensFromCompound = new Array();
-        erc20TokensFromCompound.push(compoundTokens.Contracts.DAI);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.USDC);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.USDT);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.TUSD);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.MKR);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.BAT);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.ZRX);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.REP);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.WBTC);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.DAI);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.USDC);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.USDT);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.TUSD);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.MKR);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.BAT);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.ZRX);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.REP);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.WBTC);
         erc20TokensFromCompound.push(ETH_ADDR);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.LPToken);
-        erc20TokensFromCompound.push(compoundTokens.Contracts.FIN);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.LPToken);
+        erc20TokensFromCompound.push(this.compoundTokens.Contracts.FIN);
 
         return erc20TokensFromCompound;
     }
@@ -111,16 +164,16 @@ export class TestEngine {
         const network = process.env.NETWORK;
 
         var cTokensCompound = new Array();
-        cTokensCompound.push(compoundTokens.Contracts.cDAI);
-        cTokensCompound.push(compoundTokens.Contracts.cUSDC);
-        cTokensCompound.push(compoundTokens.Contracts.cUSDT);
+        cTokensCompound.push(this.compoundTokens.Contracts.cDAI);
+        cTokensCompound.push(this.compoundTokens.Contracts.cUSDC);
+        cTokensCompound.push(this.compoundTokens.Contracts.cUSDT);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
-        cTokensCompound.push(compoundTokens.Contracts.cBAT);
-        cTokensCompound.push(compoundTokens.Contracts.cZRX);
-        cTokensCompound.push(compoundTokens.Contracts.cREP);
-        cTokensCompound.push(compoundTokens.Contracts.cWBTC);
-        cTokensCompound.push(compoundTokens.Contracts.cETH);
+        cTokensCompound.push(this.compoundTokens.Contracts.cBAT);
+        cTokensCompound.push(this.compoundTokens.Contracts.cZRX);
+        cTokensCompound.push(this.compoundTokens.Contracts.cREP);
+        cTokensCompound.push(this.compoundTokens.Contracts.cWBTC);
+        cTokensCompound.push(this.compoundTokens.Contracts.cETH);
         cTokensCompound.push(addressZero);
         cTokensCompound.push(addressZero);
 
@@ -255,16 +308,16 @@ export class TestEngine {
                 this.erc20Tokens,
                 cTokens,
                 this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
+                this.compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         await savingAccountProxy.initialize(
@@ -340,7 +393,7 @@ export class TestEngine {
 
     public async getCOMPTokenAddress(): Promise<string> {
         const network = process.env.NETWORK;
-        var COMPTokenAddress = compoundTokens.Contracts.COMP;
+        var COMPTokenAddress = this.compoundTokens.Contracts.COMP;
         return COMPTokenAddress;
     }
 
@@ -394,16 +447,16 @@ export class TestEngine {
                 this.erc20Tokens,
                 cTokens,
                 this.globalConfig.address,
-                compoundTokens.Contracts.Comptroller
+                this.compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
 
         const bank_initialize_data = this.bank.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         const accounts_initialize_data = this.accounts.contract.methods
-            .initialize(this.globalConfig.address, compoundTokens.Contracts.Comptroller)
+            .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
         await savingAccountProxy.initialize(
