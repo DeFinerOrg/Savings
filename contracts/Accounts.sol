@@ -45,7 +45,7 @@ contract Accounts is Constant, Initializable{
         globalConfig = _globalConfig;
     }
 
-    function x() public view returns (bool) {
+    function x(address _account) public view returns (bool) {
         Account storage account = accounts[_account];
         // if a user have deposits in some tokens and collateral enabled for some
         // then we need to iterate over his deposits for which collateral is also enabled.
@@ -72,7 +72,7 @@ contract Accounts is Constant, Initializable{
                 // =============================== OP AND
                 // result                = 0000
                 uint128 isEnabled = hasCollnDepositBitmap & uint128(1);
-                if(isEnabled) {
+                if(isEnabled > 0) {
                     // continue calculating borrow power for i(th) token
                 }
 
