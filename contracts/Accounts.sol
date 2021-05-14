@@ -33,7 +33,10 @@ contract Accounts is Constant, Initializable{
         uint128 depositBitmap;
         uint128 borrowBitmap;
         uint128 collateralBitmap;
+        bool isCollInit;
     }
+
+    event CollateralFlagChanged(address indexed _account, uint8 _index, bool _enabled);
 
     /**
      * Initialize the Accounts
@@ -43,6 +46,78 @@ contract Accounts is Constant, Initializable{
         GlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
+    }
+
+    /**
+     * @dev Initialize the Collateral flag Bitmap for given account
+     * @notice This function is required for the contract upgrade, as previous users didn't
+     *         have this collateral feature. So need to init the collateralBitmap for each user.
+     * @param _account User account address
+    */
+    function initCollateralFlag(address _account) public {
+        Account storage account = accounts[_account];
+
+        // For all users by default `isCollInit` will be `false`
+        if(account.isCollInit == false) {
+            // Two conditions:
+            // 1) An account has some position previous to this upgrade
+            //    THEN: copy `depositBitmap` to `collateralBitmap`
+            // 2) A new account is setup after this upgrade
+            //    THEN: `depositBitmap` will be zero for that user, so don't copy
+
+            // all deposited tokens be treated as collateral
+            if(account.depositBitmap > 0) account.collateralBitmap = account.depositBitmap;
+            account.isCollInit = true;
+        }
+
+        // when isCollInit == true, function will just return after if condition check
+    }
+
+    /**
+     * @dev Enable/Disable collateral for a given token
+     * @param _tokenIndex Index of the token
+     * @param _enable `true` to enable the collateral, `false` to disable
+     */
+    function setCollateral(uint8 _tokenIndex, bool _enable) public {
+        Account storage account = accounts[msg.sender];
+
+        if(_enable) {
+            account.collateralBitmap = account.collateralBitmap.setBit(_tokenIndex);
+            // when set new collateral, no need to evaluate borrow power
+        } else {
+            account.collateralBitmap = account.collateralBitmap.unsetBit(_tokenIndex);
+            // when unset collateral, evaluate borrow power
+            // TODO Evaluate borrow power
+        }
+
+        emit CollateralFlagChanged(msg.sender, _tokenIndex, _enable);
+    }
+
+    function setCollateral(uint8[] calldata _tokenIndexArr, bool[] calldata _enableArr) external {
+        require(_tokenIndexArr.length == _enableArr.length, "array length does not match");
+        for(uint i = 0; i < _tokenIndexArr.length; i++) {
+            setCollateral(_tokenIndexArr[i], _enableArr[i]);
+        }
+    }
+
+    function getCollateralStatus(address _account)
+        external
+        view
+        returns (address[] memory tokens, bool[] memory status)
+    {
+        Account memory account = accounts[msg.sender];
+        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        uint256 tokenNum = tokenRegistry.getCoinLength();
+        tokens = new address[](tokenNum);
+        status = new bool[](tokenNum);
+        // TODO we can just return bitmap
+        uint128 collBitmap = account.collateralBitmap;
+        uint128 mask = uint128(1);
+        for(uint i = 0; i < tokenNum; i++) {
+            mask = mask << uint128(i);
+            bool isEnabled = (collBitmap & mask) > 0;
+            if(isEnabled) status[i] = true;
+        }
     }
 
     function x(address _account) public view returns (bool) {
@@ -59,11 +134,13 @@ contract Accounts is Constant, Initializable{
         uint128 hasCollnDepositBitmap = account.collateralBitmap & account.depositBitmap;
 
         // This loop has max "O(n)" complexity where "n = TokensLength", but the loop
-        // calculates borrow power only for the `hasCollnDepositBitmap` bit
+        // calculates borrow power only for the `hasCollnDepositBitmap` bit, hence the loop
+        // iterates only till the highest bit set. Example 00000100, the loop will iterate
+        // only for 4 times, and only 1 time to calculate borrow the power.
         // NOTE: When transaction gas-cost goes above the block gas limit, a user can
         //      disable some of his collaterals so that he can perform the borrow.
-        //      Earlier loop implementation was iterating over all tokens, hence its possible to
-        //      have DoS attack.
+        //      Earlier loop implementation was iterating over all tokens, hence the platform
+        //      were not able to add new tokens
         for(uint i = 0; i < 128; i++) {
             // if hasCollnDepositBitmap = 0000 then break the loop
             if(hasCollnDepositBitmap > 0) {
@@ -71,8 +148,9 @@ contract Accounts is Constant, Initializable{
                 // mask                  = 0001
                 // =============================== OP AND
                 // result                = 0000
-                uint128 isEnabled = hasCollnDepositBitmap & uint128(1);
-                if(isEnabled > 0) {
+                bool isEnabled = (hasCollnDepositBitmap & uint128(1)) > 0;
+                // Is i(th) token enabled?
+                if(isEnabled) {
                     // continue calculating borrow power for i(th) token
                 }
 
@@ -212,6 +290,7 @@ contract Accounts is Constant, Initializable{
     }
 
     function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
+        initCollateralFlag(_accountAddr);
         require(_amount != 0, "Borrow zero amount of token is not allowed.");
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         (uint8 tokenIndex, uint256 tokenDivisor, uint256 tokenPrice,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
@@ -240,6 +319,7 @@ contract Accounts is Constant, Initializable{
      * Update token info for withdraw. The interest will be withdrawn with higher priority.
      */
     function withdraw(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns (uint256) {
+        initCollateralFlag(_accountAddr);
         (, uint256 tokenDivisor, uint256 tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
 
         uint256 withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
@@ -299,6 +379,7 @@ contract Accounts is Constant, Initializable{
      * Update token info for deposit
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
+        initCollateralFlag(_accountAddr);
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
@@ -315,6 +396,7 @@ contract Accounts is Constant, Initializable{
     }
 
     function repay(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized returns(uint256){
+        initCollateralFlag(_accountAddr);
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint256 amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
