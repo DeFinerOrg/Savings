@@ -1,21 +1,21 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
-import "./lib/SavingLib.sol";
-import "./lib/Utils.sol";
+import "./config/ConstantV2.sol";
+import "./config/GlobalConfigV2.sol";
+import "./lib/SavingLibV2.sol";
+import "./lib/UtilsV2.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "./InitializableReentrancyGuard.sol";
-import "./InitializablePausable.sol";
-import { ICToken } from "./compound/ICompound.sol";
-import { ICETH } from "./compound/ICompound.sol";
+import "./InitializableReentrancyGuardV2.sol";
+import "./InitializablePausableV2.sol";
+import { ICTokenV2 } from "./compound/ICompoundV2.sol";
+import { ICETH } from "./compound/ICompoundV2.sol";
 
-contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant, InitializablePausable {
+contract SavingAccountV2 is Initializable, InitializableReentrancyGuardV2, ConstantV2, InitializablePausableV2 {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    GlobalConfig public globalConfig;
+    GlobalConfigV2 public globalConfig;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -27,7 +27,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event Claim(address from, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
-        if(!Utils._isETH(address(globalConfig), _token)) {
+        if(!UtilsV2._isETH(address(globalConfig), _token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
@@ -53,7 +53,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
-        GlobalConfig _globalConfig
+        GlobalConfigV2 _globalConfig
     )
         public
         initializer
@@ -119,7 +119,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         globalConfig.bank().borrow(msg.sender, _token, _amount);
 
         // Transfer the token on Ethereum
-        SavingLib.send(globalConfig, _amount, _token);
+        SavingLibV2.send(globalConfig, _amount, _token);
 
         emit Borrow(_token, msg.sender, _amount);
     }
@@ -132,14 +132,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      */
     function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        SavingLib.receive(globalConfig, _amount, _token);
+        SavingLibV2.receive(globalConfig, _amount, _token);
 
         // Add a new checkpoint on the index curve.
         uint256 amount = globalConfig.bank().repay(msg.sender, _token, _amount);
 
         // Send the remain money back
         if(amount < _amount) {
-            SavingLib.send(globalConfig, _amount.sub(amount), _token);
+            SavingLibV2.send(globalConfig, _amount.sub(amount), _token);
         }
 
         emit Repay(_token, msg.sender, amount);
@@ -152,7 +152,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      */
     function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        SavingLib.receive(globalConfig, _amount, _token);
+        SavingLibV2.receive(globalConfig, _amount, _token);
         globalConfig.bank().deposit(msg.sender, _token, _amount);
 
         emit Deposit(_token, msg.sender, _amount);
@@ -166,7 +166,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     function withdraw(address _token, uint256 _amount) external onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
-        SavingLib.send(globalConfig, amount, _token);
+        SavingLibV2.send(globalConfig, amount, _token);
 
         emit Withdraw(_token, msg.sender, amount);
     }
@@ -188,7 +188,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
         uint256 actualAmount = globalConfig.bank().withdraw(msg.sender, _token, amount);
         if(actualAmount != 0) {
-            SavingLib.send(globalConfig, actualAmount, _token);
+            SavingLibV2.send(globalConfig, actualAmount, _token);
         }
         emit WithdrawAll(_token, msg.sender, actualAmount);
     }
@@ -205,16 +205,16 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) external onlyAuthorized {
-        require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
+        require(ICTokenV2(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
     }
 
     function toCompound(address _token, uint _amount) external onlyAuthorized {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (Utils._isETH(address(globalConfig), _token)) {
+        if (UtilsV2._isETH(address(globalConfig), _token)) {
             ICETH(cToken).mint.value(_amount)();
         } else {
             // uint256 success = ICToken(cToken).mint(_amount);
-            require(ICToken(cToken).mint(_amount) == 0, "mint failed");
+            require(ICTokenV2(cToken).mint(_amount) == 0, "mint failed");
         }
     }
 

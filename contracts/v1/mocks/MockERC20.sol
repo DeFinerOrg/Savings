@@ -6,19 +6,19 @@ import { ERC20Mintable } from "openzeppelin-solidity/contracts/token/ERC20/ERC20
 contract MockERC20 is ERC20Detailed, ERC20Mintable {
 
     constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals,
+        string memory name,
+        string memory symbol,
+        uint8 decimals,
         uint256 initialiSupply
     )
         public
         ERC20Detailed(
-            _name,
-            _symbol,
-            _decimals
+            name,
+            symbol,
+            decimals
         )
     {
-        uint256 tokens = initialiSupply * (10 ** uint256(_decimals));
+        uint256 tokens = initialiSupply * (10 ** uint256(decimals));
         mint(msg.sender, tokens);
     }
 }
