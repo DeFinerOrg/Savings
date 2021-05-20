@@ -81,14 +81,13 @@ contract("SavingAccount()", async (accounts) => {
         // ======================
         const savingAccountProxy = await upgrades.deployProxy(
             SavingAccountV1,
-            [],
-            [],
-            ETH_ADDRESS,
-            { initializer: "initialize" },
-            {
-                unsafeAllow: ["external-library-linking"],
-            }
+            [[], [], ETH_ADDRESS],
+            { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
         );
+
+        const SAV2 = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccountV2, {
+            unsafeAllow: ["external-library-linking"],
+        });
 
         // 1. initialization.
         // SavingAccountV1 = await ethers.getContractFactory("SavingAccount");
