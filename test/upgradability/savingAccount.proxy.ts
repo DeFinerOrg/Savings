@@ -25,37 +25,54 @@ contract("SavingAccount()", async (accounts) => {
     beforeEach(async function () {
         this.timeout(0);
 
+        // ==================
+        // SavingAccount V1
+        // ==================
+        console.log("------------------ 0 ------------------");
+        await ethers.getContractFactory("Utils");
         console.log("------------------ 1 ------------------");
         const Utils = await ethers.getContractFactory("Utils");
         console.log("============ 2 ==============");
 
         // console.log("Utils", Utils.address);
-        const utils = Utils.deploy();
+        const utils = await Utils.deploy();
         console.log("utils", utils.address);
 
-        const SavingLib = await ethers.getContractFactory("SavingLib");
-        console.log("savingLib", SavingLib.address);
-        const savingLib = SavingLib.deploy();
+        const SavingLib = await ethers.getContractFactory("SavingLib", {
+            libraries: {
+                Utils: utils.address,
+            },
+        });
+        const savingLib = await SavingLib.deploy();
         console.log("savingLib", savingLib.address);
+
+        const SavingAccountV1 = await ethers.getContractFactory("SavingAccount", {
+            libraries: { SavingLib: savingLib.address, Utils: utils.address },
+        });
+        const savingAccV1 = await SavingAccountV1.deploy();
+        console.log("savingAccV1", savingAccV1.address);
+        // ==================
+        // SavingAccount V2
+        // ==================
 
         // 1. initialization.
         // SavingAccountV1 = await ethers.getContractFactory("SavingAccount");
-        console.log("------------------ 4 ------------------");
-        SavingAccountV2 = await ethers.getContractFactory("SavingAccountV2");
-        console.log("------------------ 5 ------------------");
+        // console.log("------------------ 4 ------------------");
+        // SavingAccountV2 = await ethers.getContractFactory("SavingAccountV2");
+        // console.log("------------------ 5 ------------------");
 
-        // savingAccountV1 = await upgrades.deployProxy(SavingAccountV1, {
-        //     initializer: "initialize",
-        // });
-        console.log("------------------ 6 ------------------");
-        // savingAccountV2 = await upgrades.upgradeProxy(savingAccountV1.address, SavingAccountV2);
-        console.log("------------------ 7 ------------------");
+        // // savingAccountV1 = await upgrades.deployProxy(SavingAccountV1, {
+        // //     initializer: "initialize",
+        // // });
+        // console.log("------------------ 6 ------------------");
+        // // savingAccountV2 = await upgrades.upgradeProxy(savingAccountV1.address, SavingAccountV2);
+        // console.log("------------------ 7 ------------------");
     });
 
     context("upgrade", async () => {
         it("verify - 1", async () => {
             console.log("------------------ 8 ------------------");
-            await savingAccountV2.approveAll(ETH_ADDRESS);
+            // await savingAccountV2.approveAll(ETH_ADDRESS);
             console.log("------------------ 9 ------------------");
         });
     });

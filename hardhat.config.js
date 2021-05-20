@@ -3,7 +3,6 @@ require("hardhat-typechain");
 require("ts-node/register");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
-require("@nomiclabs/hardhat-ethers");
 require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
