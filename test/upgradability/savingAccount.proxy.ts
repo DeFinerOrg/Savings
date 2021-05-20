@@ -49,11 +49,46 @@ contract("SavingAccount()", async (accounts) => {
         const SavingAccountV1 = await ethers.getContractFactory("SavingAccount", {
             libraries: { SavingLib: savingLib.address, Utils: utils.address },
         });
-        const savingAccV1 = await SavingAccountV1.deploy();
-        console.log("savingAccV1", savingAccV1.address);
+
         // ==================
         // SavingAccount V2
         // ==================
+        console.log("------------------ 0 ------------------");
+        await ethers.getContractFactory("UtilsV2");
+        console.log("------------------ 1 ------------------");
+        const UtilsV2 = await ethers.getContractFactory("UtilsV2");
+        console.log("============ 2 ==============");
+
+        // console.log("Utils", Utils.address);
+        const utilsV2 = await Utils.deploy();
+        console.log("utilsV2", utilsV2.address);
+        console.log("============ 3 ==============");
+
+        const SavingLibV2 = await ethers.getContractFactory("SavingLibV2", {
+            libraries: {
+                UtilsV2: utilsV2.address,
+            },
+        });
+        console.log("============ 4 ==============");
+        const savingLibV2 = await SavingLibV2.deploy();
+        console.log("savingLibV2", savingLibV2.address);
+        const SavingAccountV2 = await ethers.getContractFactory("SavingAccountV2", {
+            libraries: { SavingLibV2: savingLibV2.address, UtilsV2: utilsV2.address },
+        });
+
+        // ======================
+        // SavingAccount V1 Proxy
+        // ======================
+        const savingAccountProxy = await upgrades.deployProxy(
+            SavingAccountV1,
+            [],
+            [],
+            ETH_ADDRESS,
+            { initializer: "initialize" },
+            {
+                unsafeAllow: ["external-library-linking"],
+            }
+        );
 
         // 1. initialization.
         // SavingAccountV1 = await ethers.getContractFactory("SavingAccount");
