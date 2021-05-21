@@ -22,11 +22,11 @@ contract InitializablePausableV2 {
      */
     event Unpaused(address account);
     
-    address private globalConfigPausable;
+    address private globalConfig;
     bool private _paused;
 
     function _initialize(address _globalConfig) internal {
-        globalConfigPausable = _globalConfig;
+        globalConfig = _globalConfig;
         _paused = false;
     }
 
@@ -58,7 +58,7 @@ contract InitializablePausableV2 {
      */
     function pause() public onlyPauser whenNotPaused {
         _paused = true;
-        emit Paused(GlobalConfigV2(globalConfigPausable).owner());
+        emit Paused(GlobalConfigV2(globalConfig).owner());
     }
 
     /**
@@ -66,11 +66,11 @@ contract InitializablePausableV2 {
      */
     function unpause() public onlyPauser whenPaused {
         _paused = false;
-        emit Unpaused(GlobalConfigV2(globalConfigPausable).owner());
+        emit Unpaused(GlobalConfigV2(globalConfig).owner());
     }
 
     modifier onlyPauser() {
-        require(msg.sender == GlobalConfigV2(globalConfigPausable).owner(), "PauserRole: caller does not have the Pauser role");
+        require(msg.sender == GlobalConfigV2(globalConfig).owner(), "PauserRole: caller does not have the Pauser role");
         _;
     }
 }

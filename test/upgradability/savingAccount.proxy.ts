@@ -5,11 +5,9 @@ var chai = require("chai");
 
 const { ethers, upgrades } = require("hardhat");
 
-// const SavingLib = artifacts.require("SavingLibV2");
-// const Utils = artifacts.require("Utils");
-
-contract("SavingAccount()", async (accounts) => {
+contract("SavingAccount() proxy", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+    const ADDRESS1: string = "0x0000000000000000000000000000000000000001";
 
     // let Utils: any;
     let savingAccountV1: t.SavingAccountWithControllerInstance;
@@ -104,9 +102,9 @@ contract("SavingAccount()", async (accounts) => {
     });
 
     context("upgrade", async () => {
-        it("verify - 1", async () => {
+        it("verify SavingAccount upgrade", async () => {
             console.log("------------------ 8 ------------------");
-            // await savingAccountV2.approveAll(ETH_ADDRESS);
+            // await SAV2.approveAll(ADDRESS1);
             console.log("------------------ 9 ------------------");
         });
     });
