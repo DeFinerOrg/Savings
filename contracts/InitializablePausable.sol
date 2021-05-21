@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-import "./config/GlobalConfigV2.sol";
+import "./config/GlobalConfig.sol";
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -11,7 +11,7 @@ import "./config/GlobalConfigV2.sol";
  * the functions of your contract. Note that they will not be pausable by
  * simply including this module, only once the modifiers are put in place.
  */
-contract InitializablePausableV2 {
+contract InitializablePausable {
     /**
      * @dev Emitted when the pause is triggered by a pauser (`account`).
      */
@@ -22,11 +22,11 @@ contract InitializablePausableV2 {
      */
     event Unpaused(address account);
     
-    address private globalConfig;
+    address private globalConfigPausable;
     bool private _paused;
 
     function _initialize(address _globalConfig) internal {
-        globalConfig = _globalConfig;
+        globalConfigPausable = _globalConfig;
         _paused = false;
     }
 
@@ -58,7 +58,7 @@ contract InitializablePausableV2 {
      */
     function pause() public onlyPauser whenNotPaused {
         _paused = true;
-        emit Paused(GlobalConfigV2(globalConfig).owner());
+        emit Paused(GlobalConfig(globalConfigPausable).owner());
     }
 
     /**
@@ -66,11 +66,11 @@ contract InitializablePausableV2 {
      */
     function unpause() public onlyPauser whenPaused {
         _paused = false;
-        emit Unpaused(GlobalConfigV2(globalConfig).owner());
+        emit Unpaused(GlobalConfig(globalConfigPausable).owner());
     }
 
     modifier onlyPauser() {
-        require(msg.sender == GlobalConfigV2(globalConfig).owner(), "PauserRole: caller does not have the Pauser role");
+        require(msg.sender == GlobalConfig(globalConfigPausable).owner(), "PauserRole: caller does not have the Pauser role");
         _;
     }
 }

@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-interface ICTokenV2 {
+interface ICToken {
     function supplyRatePerBlock() external view returns (uint);
     function borrowRatePerBlock() external view returns (uint);
     function mint(uint mintAmount) external returns (uint);

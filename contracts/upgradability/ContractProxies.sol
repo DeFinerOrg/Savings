@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 
-contract SavingAccountProxyV2 is InitializableAdminUpgradeabilityProxy {
+contract SavingAccountProxy is InitializableAdminUpgradeabilityProxy {
 
     /**
      * @dev Overriding Proxy's fallback function to allow it to receive ETH

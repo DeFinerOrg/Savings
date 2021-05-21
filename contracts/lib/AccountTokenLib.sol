@@ -3,7 +3,7 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 // This is for per user
-library AccountTokenLibV2 {
+library AccountTokenLib {
     using SafeMath for uint256;
     struct TokenInfo {
         // Deposit info

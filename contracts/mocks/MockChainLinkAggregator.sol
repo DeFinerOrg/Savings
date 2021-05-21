@@ -9,7 +9,7 @@ import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
  * aggregator contract, but how the aggregator got
  * its answer is unimportant
  */
-contract MockChainLinkAggregatorV2 is AggregatorInterface {
+contract MockChainLinkAggregator is AggregatorInterface {
     uint8 public decimals;
     int256 public latestAnswer;
     uint256 public latestTimestamp;

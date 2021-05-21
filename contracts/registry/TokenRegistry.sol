@@ -2,15 +2,15 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../config/GlobalConfigV2.sol";
-import "../lib/UtilsV2.sol";
-import "../config/ConstantV2.sol";
+import "../config/GlobalConfig.sol";
+import "../lib/Utils.sol";
+import "../config/Constant.sol";
 
 /**
  * @dev Token Info Registry to manage Token information
  *      The Owner of the contract allowed to update the information
  */
-contract TokenRegistryV2 is Ownable, ConstantV2 {
+contract TokenRegistry is Ownable, Constant {
 
     using SafeMath for uint256;
 
@@ -49,7 +49,7 @@ contract TokenRegistryV2 is Ownable, ConstantV2 {
 
     // TokenAddress array
     address[] public tokens;
-    GlobalConfigV2 public globalConfig;
+    GlobalConfig public globalConfig;
 
     /**
      */
@@ -61,7 +61,7 @@ contract TokenRegistryV2 is Ownable, ConstantV2 {
     /**
      *  initializes the symbols structure
      */
-    function initialize(GlobalConfigV2 _globalConfig) public onlyOwner{
+    function initialize(GlobalConfig _globalConfig) public onlyOwner{
         globalConfig = _globalConfig;
     }
 
@@ -283,14 +283,14 @@ contract TokenRegistryV2 is Ownable, ConstantV2 {
         require(index < tokens.length, "coinIndex must be smaller than the coins length.");
         address tokenAddress = tokens[index];
         // Temp fix
-        if(UtilsV2._isETH(address(globalConfig), tokenAddress)) {
+        if(Utils._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
         return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(address tokenAddress) public view returns(uint256) {
-        if(UtilsV2._isETH(address(globalConfig), tokenAddress)) {
+        if(Utils._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
         return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));

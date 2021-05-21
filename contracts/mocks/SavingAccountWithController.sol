@@ -1,16 +1,16 @@
 pragma solidity 0.5.14;
 
-import "../SavingAccountV2.sol";
-import { IController } from "../compound/ICompoundV2.sol";
-import "../AccountsV2.sol";
+import "../SavingAccount.sol";
+import { IController } from "../compound/ICompound.sol";
+import "../Accounts.sol";
 //import { TokenRegistry } from "../registry/TokenRegistry.sol";
 //import { Bank } from "../Bank.sol";
 //import "../config/GlobalConfig.sol";
 
 // This file is only for testing purpose only
-contract SavingAccountWithControllerV2 is SavingAccountV2 {
+contract SavingAccountWithController is SavingAccount {
 
-    AccountsV2.Account public accountVariable;
+    Accounts.Account public accountVariable;
     //GlobalConfig public globalConfig;
     address comptroller;
 
@@ -30,7 +30,7 @@ contract SavingAccountWithControllerV2 is SavingAccountV2 {
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses, 
         //TokenRegistry _tokenRegistry, // can remove
-        GlobalConfigV2 _globalConfig,
+        GlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
         comptroller = _comptroller;

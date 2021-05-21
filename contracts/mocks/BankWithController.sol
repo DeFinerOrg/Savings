@@ -1,14 +1,14 @@
 pragma solidity 0.5.14;
 
-import "../BankV2.sol";
-import { IController } from "../compound/ICompoundV2.sol";
+import "../Bank.sol";
+import { IController } from "../compound/ICompound.sol";
 
-contract BankWithControllerV2 is BankV2 {
+contract BankWithController is Bank {
 
     address comptroller;
 
     function initialize(
-        GlobalConfigV2 _globalConfig,
+        GlobalConfig _globalConfig,
         address _comptroller
     ) external initializer {
         super.initialize(_globalConfig); // expected 3 passed 5 args

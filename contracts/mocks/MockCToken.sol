@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-contract MockCTokenV2 {
+contract MockCToken {
 
     // 1. CERC20 
     function mint(uint mintAmount) external returns (uint);

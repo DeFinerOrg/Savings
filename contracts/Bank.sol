@@ -1,13 +1,13 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./config/ConstantV2.sol";
-import "./config/GlobalConfigV2.sol";
-import { ICTokenV2 } from "./compound/ICompoundV2.sol";
-import { ICETH } from "./compound/ICompoundV2.sol";
+import "./config/Constant.sol";
+import "./config/GlobalConfig.sol";
+import { ICToken } from "./compound/ICompound.sol";
+import { ICETH } from "./compound/ICompound.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
-contract BankV2 is ConstantV2, Initializable{
+contract Bank is Constant, Initializable{
     using SafeMath for uint256;
 
     mapping(address => uint256) public totalLoans;     // amount of lended tokens
@@ -23,7 +23,7 @@ contract BankV2 is ConstantV2, Initializable{
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
-    GlobalConfigV2 globalConfig;            // global configuration contract address
+    GlobalConfig globalConfig;            // global configuration contract address
 
     mapping(address => mapping(uint => uint)) public depositFINRateIndex;
     mapping(address => mapping(uint => uint)) public borrowFINRateIndex;
@@ -52,7 +52,7 @@ contract BankV2 is ConstantV2, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfigV2 _globalConfig
+        GlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }
@@ -74,7 +74,7 @@ contract BankV2 is ConstantV2, Initializable{
     function updateTotalCompound(address _token) internal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
-            totalCompound[cToken] = ICTokenV2(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
+            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
         }
     }
 
@@ -320,11 +320,11 @@ contract BankV2 is ConstantV2, Initializable{
             }
             else {
                 compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICTokenV2(cToken).exchangeRateCurrent();
+                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICTokenV2(cToken).borrowRatePerBlock();  // initial value
-                compoundPool[_token].depositRatePerBlock = ICTokenV2(cToken).supplyRatePerBlock(); // initial value
+                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
+                compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
                 borrowRateIndex[_token][blockNumber] = UNIT;
                 depositRateIndex[_token][blockNumber] = UNIT;
                 // Update the last checkpoint
@@ -341,10 +341,10 @@ contract BankV2 is ConstantV2, Initializable{
                 lastCheckpoint[_token] = blockNumber;
             } else {
                 compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICTokenV2(cToken).exchangeRateCurrent();
+                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICTokenV2(cToken).borrowRatePerBlock();
+                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
                 compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
                     .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);

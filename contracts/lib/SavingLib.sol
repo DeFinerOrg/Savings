@@ -1,10 +1,10 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
-import "../config/GlobalConfigV2.sol";
-import "./UtilsV2.sol";
+import "../config/GlobalConfig.sol";
+import "./Utils.sol";
 
-library SavingLibV2 {
+library SavingLib {
     using SafeERC20 for IERC20;
 
     /**
@@ -12,8 +12,8 @@ library SavingLibV2 {
      * @param _amount amount of token
      * @param _token token address
      */
-    function receive(GlobalConfigV2 globalConfig, uint256 _amount, address _token) public {
-        if (UtilsV2._isETH(address(globalConfig), _token)) {
+    function receive(GlobalConfig globalConfig, uint256 _amount, address _token) public {
+        if (Utils._isETH(address(globalConfig), _token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
@@ -27,8 +27,8 @@ library SavingLibV2 {
      * @param _amount amount of token
      * @param _token token address
      */
-    function send(GlobalConfigV2 globalConfig, uint256 _amount, address _token) public {
-        if (UtilsV2._isETH(address(globalConfig), _token)) {
+    function send(GlobalConfig globalConfig, uint256 _amount, address _token) public {
+        if (Utils._isETH(address(globalConfig), _token)) {
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(msg.sender, _amount);

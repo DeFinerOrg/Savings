@@ -2,15 +2,15 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../registry/TokenRegistryV2.sol";
-import "../SavingAccountV2.sol";
-import "../BankV2.sol";
-import "../AccountsV2.sol";
-import "./ConstantV2.sol";
+import "../registry/TokenRegistry.sol";
+import "../SavingAccount.sol";
+import "../Bank.sol";
+import "../Accounts.sol";
+import "./Constant.sol";
 // import "@nomiclabs/buidler/console.sol";
-import "../oracle/ChainLinkAggregatorV2.sol";
+import "../oracle/ChainLinkAggregator.sol";
 
-contract GlobalConfigV2 is Ownable {
+contract GlobalConfig is Ownable {
     using SafeMath for uint256;
 
     uint256 public communityFundRatio = 10;
@@ -25,12 +25,12 @@ contract GlobalConfigV2 is Ownable {
     uint256 public deFinerRate = 10;
     address payable public deFinerCommunityFund = msg.sender;
 
-    BankV2 public bank;                               // the Bank contract
-    SavingAccountV2 public savingAccount;             // the SavingAccount contract
-    TokenRegistryV2 public tokenInfoRegistry;     // the TokenRegistry contract
-    AccountsV2 public accounts;                       // the Accounts contract
-    ConstantV2 public constants;                      // the constants contract
-    ChainLinkAggregatorV2 public chainLink;
+    Bank public bank;                               // the Bank contract
+    SavingAccount public savingAccount;             // the SavingAccount contract
+    TokenRegistry public tokenInfoRegistry;     // the TokenRegistry contract
+    Accounts public accounts;                       // the Accounts contract
+    Constant public constants;                      // the constants contract
+    ChainLinkAggregator public chainLink;
 
     event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
     event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
@@ -52,12 +52,12 @@ contract GlobalConfigV2 is Ownable {
 
 
     function initialize(
-        BankV2 _bank,
-        SavingAccountV2 _savingAccount,
-        TokenRegistryV2 _tokenInfoRegistry,
-        AccountsV2 _accounts,
-        ConstantV2 _constants,
-        ChainLinkAggregatorV2 _chainLink
+        Bank _bank,
+        SavingAccount _savingAccount,
+        TokenRegistry _tokenInfoRegistry,
+        Accounts _accounts,
+        Constant _constants,
+        ChainLinkAggregator _chainLink
     ) public onlyOwner {
         bank = _bank;
         savingAccount = _savingAccount;
@@ -173,31 +173,31 @@ contract GlobalConfigV2 is Ownable {
         emit rateCurveConstantUpdated(_rateCurveConstant);
     }
 
-    function updateBank(BankV2 _bank) external onlyOwner{
+    function updateBank(Bank _bank) external onlyOwner{
         bank = _bank;
 
         emit BankUpdated(address(_bank));
     }
 
-    function updateSavingAccount(SavingAccountV2 _savingAccount) external onlyOwner{
+    function updateSavingAccount(SavingAccount _savingAccount) external onlyOwner{
         savingAccount = _savingAccount;
 
         emit SavingAccountUpdated(address(_savingAccount));
     }
 
-    function updateTokenInfoRegistry(TokenRegistryV2 _tokenInfoRegistry) external onlyOwner{
+    function updateTokenInfoRegistry(TokenRegistry _tokenInfoRegistry) external onlyOwner{
         tokenInfoRegistry = _tokenInfoRegistry;
 
         emit TokenInfoRegistryUpdated(address(_tokenInfoRegistry));
     }
 
-    function updateAccounts(AccountsV2 _accounts) external onlyOwner{
+    function updateAccounts(Accounts _accounts) external onlyOwner{
         accounts = _accounts;
 
         emit AccountsUpdated(address(_accounts));
     }
 
-    function updateConstant(ConstantV2 _constants) external onlyOwner{
+    function updateConstant(Constant _constants) external onlyOwner{
         constants = _constants;
 
         emit ConstantUpdated(address(_constants));
@@ -216,7 +216,7 @@ contract GlobalConfigV2 is Ownable {
         emit DeFinerRateUpdated(_deFinerRate);
     }
 
-    function updateChainLink(ChainLinkAggregatorV2 _chainLink) external onlyOwner{
+    function updateChainLink(ChainLinkAggregator _chainLink) external onlyOwner{
         chainLink = _chainLink;
 
         emit ChainLinkUpdated(address(_chainLink));

@@ -22,7 +22,7 @@ pragma solidity 0.5.14;
  * _Since v2.5.0:_ this module is now much more gas efficient, given net gas
  * metering changes introduced in the Istanbul hardfork.
  */
-contract InitializableReentrancyGuardV2 {
+contract InitializableReentrancyGuard {
     bool private _notEntered;
 
     function _initialize() internal {

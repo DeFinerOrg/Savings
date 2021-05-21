@@ -2,15 +2,15 @@ pragma solidity 0.5.14;
 
 import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "../config/GlobalConfigV2.sol";
+import "../config/GlobalConfig.sol";
 // import "../registry/TokenRegistry.sol";
 
 /**
  */
-contract ChainLinkAggregatorV2 is Ownable{
+contract ChainLinkAggregator is Ownable{
 
     // TokenRegistry public import "../config/GlobalConfig.sol";;
-    GlobalConfigV2 public globalConfig;
+    GlobalConfig public globalConfig;
 
     /**
      * Constructor
@@ -23,7 +23,7 @@ contract ChainLinkAggregatorV2 is Ownable{
     /**
      *  initializes the symbols structure
      */
-    function initialize(GlobalConfigV2 _globalConfig) public onlyOwner{
+    function initialize(GlobalConfig _globalConfig) public onlyOwner{
         globalConfig = _globalConfig;
     }
 

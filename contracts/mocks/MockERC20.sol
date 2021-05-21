@@ -3,7 +3,7 @@ pragma solidity 0.5.14;
 import { ERC20Detailed } from "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 import { ERC20Mintable } from "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
 
-contract MockERC20V2 is ERC20Detailed, ERC20Mintable {
+contract MockERC20 is ERC20Detailed, ERC20Mintable {
 
     constructor(
         string memory _name,

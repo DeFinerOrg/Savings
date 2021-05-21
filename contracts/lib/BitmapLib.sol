@@ -3,7 +3,7 @@ pragma solidity 0.5.14;
 /**
  * @notice Bitmap library to set or unset bits on bitmap value
  */
-library BitmapLibV2 {
+library BitmapLib {
 
     /**
      * @dev Sets the given bit in the bitmap value
