@@ -34,7 +34,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
     }
 
     modifier onlySupportedToken(address _token) {
-        if(!Utils._isETH(address(globalConfig), _token)) {
+        if(!UtilsV1._isETH(address(globalConfig), _token)) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
@@ -322,7 +322,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
 
     function toCompound(address _token, uint _amount) public onlyInternal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if (Utils._isETH(address(globalConfig), _token)) {
+        if (UtilsV1._isETH(address(globalConfig), _token)) {
             ICETH(cToken).mint.value(_amount)();
         } else {
             // uint256 success = ICToken(cToken).mint(_amount);

@@ -282,14 +282,14 @@ contract TokenRegistryV1 is Ownable {
         require(index < tokens.length, "coinIndex must be smaller than the coins length.");
         address tokenAddress = tokens[index];
         // Temp fix
-        if(Utils._isETH(address(globalConfig), tokenAddress)) {
+        if(UtilsV1._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
         return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
     }
 
     function priceFromAddress(address tokenAddress) public view returns(uint256) {
-        if(Utils._isETH(address(globalConfig), tokenAddress)) {
+        if(UtilsV1._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
         return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));

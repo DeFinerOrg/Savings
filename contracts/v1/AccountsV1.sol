@@ -152,7 +152,7 @@ contract AccountsV1 is ConstantV1, Initializable{
         require(
             getBorrowETH(_accountAddr).add(
                 _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
-                .div(Utils.getDivisor(address(globalConfig), _token))
+                .div(UtilsV1.getDivisor(address(globalConfig), _token))
             )
             <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow.");
 
@@ -183,7 +183,7 @@ contract AccountsV1 is ConstantV1, Initializable{
             require(
                 getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(
                     _amount.mul(globalConfig.tokenInfoRegistry().priceFromAddress(_token))
-                    .mul(borrowLTV).div(Utils.getDivisor(address(globalConfig), _token)).div(100)
+                    .mul(borrowLTV).div(UtilsV1.getDivisor(address(globalConfig), _token)).div(100)
                 ), "Insufficient collateral when withdraw.");
 
         AccountTokenLibV1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];

@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "../config/GlobalConfigV1.sol";
 
-library Utils{
+library UtilsV1{
 
     function _isETH(address globalConfig, address _token) public view returns (bool) {
         return GlobalConfigV1(globalConfig).constants().ETH_ADDR() == _token;

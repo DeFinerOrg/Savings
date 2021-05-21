@@ -18,7 +18,7 @@ library SavingLibV1 {
      * @param _token token address
      */
     function receive(GlobalConfigV1 globalConfig, uint256 _amount, address _token) public {
-        if (Utils._isETH(address(globalConfig), _token)) {
+        if (UtilsV1._isETH(address(globalConfig), _token)) {
             require(msg.value == _amount, "The amount is not sent from address.");
         } else {
             //When only tokens received, msg.value must be 0
@@ -33,7 +33,7 @@ library SavingLibV1 {
      * @param _token token address
      */
     function send(GlobalConfigV1 globalConfig, uint256 _amount, address _token) public {
-        if (Utils._isETH(address(globalConfig), _token)) {
+        if (UtilsV1._isETH(address(globalConfig), _token)) {
             msg.sender.transfer(_amount);
         } else {
             IERC20(_token).safeTransfer(msg.sender, _amount);
@@ -46,7 +46,7 @@ library SavingLibV1 {
     // ============================================
     function emergencyWithdraw(GlobalConfigV1 globalConfig, address _token) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
-        if(Utils._isETH(address(globalConfig), _token)) {
+        if(UtilsV1._isETH(address(globalConfig), _token)) {
             // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
             require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
                 globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
