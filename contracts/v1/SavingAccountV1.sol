@@ -16,7 +16,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    GlobalConfig public globalConfig;
+    GlobalConfigV1 public globalConfig;
 
     // Following are the constants, initialized via upgradable proxy contract
     // This is emergency address to allow withdrawal of funds from the contract
@@ -65,7 +65,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
     function initialize(
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses,
-        GlobalConfig _globalConfig
+        GlobalConfigV1 _globalConfig
     )
         public
         initializer
@@ -130,7 +130,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
         globalConfig.bank().borrow(msg.sender, _token, _amount);
 
         // Transfer the token on Ethereum
-        SavingLib.send(globalConfig, _amount, _token);
+        SavingLibV1.send(globalConfig, _amount, _token);
 
         emit Borrow(_token, msg.sender, _amount);
     }
@@ -143,14 +143,14 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
      */
     function repay(address _token, uint256 _amount) public payable onlySupportedToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        SavingLib.receive(globalConfig, _amount, _token);
+        SavingLibV1.receive(globalConfig, _amount, _token);
 
         // Add a new checkpoint on the index curve.
         uint256 amount = globalConfig.bank().repay(msg.sender, _token, _amount);
 
         // Send the remain money back
         if(amount < _amount) {
-            SavingLib.send(globalConfig, _amount.sub(amount), _token);
+            SavingLibV1.send(globalConfig, _amount.sub(amount), _token);
         }
 
         emit Repay(_token, msg.sender, amount);
@@ -163,7 +163,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
      */
     function deposit(address _token, uint256 _amount) public payable onlySupportedToken(_token) onlyEnabledToken(_token) nonReentrant {
         require(_amount != 0, "Amount is zero");
-        SavingLib.receive(globalConfig, _amount, _token);
+        SavingLibV1.receive(globalConfig, _amount, _token);
 
         globalConfig.bank().deposit(msg.sender, _token, _amount);
 
@@ -178,7 +178,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
     function withdraw(address _token, uint256 _amount) public onlySupportedToken(_token) whenNotPaused nonReentrant {
         require(_amount != 0, "Amount is zero");
         uint256 amount = globalConfig.bank().withdraw(msg.sender, _token, _amount);
-        SavingLib.send(globalConfig, amount, _token);
+        SavingLibV1.send(globalConfig, amount, _token);
 
         emit Withdraw(_token, msg.sender, amount);
     }
@@ -200,7 +200,7 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
 
         uint256 actualAmount = globalConfig.bank().withdraw(msg.sender, _token, amount);
         if(actualAmount != 0) {
-            SavingLib.send(globalConfig, actualAmount, _token);
+            SavingLibV1.send(globalConfig, actualAmount, _token);
         }
         emit WithdrawAll(_token, msg.sender, actualAmount);
     }
@@ -333,6 +333,6 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
     function() external payable{}
 
     function emergencyWithdraw(address _token) external onlyEmergencyAddress {
-        SavingLib.emergencyWithdraw(globalConfig, _token);
+        SavingLibV1.emergencyWithdraw(globalConfig, _token);
     }
 }

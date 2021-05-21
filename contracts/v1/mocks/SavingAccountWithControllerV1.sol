@@ -10,9 +10,9 @@ import "../AccountsV1.sol";
 // This file is only for testing purpose only
 contract SavingAccountWithControllerV1 is SavingAccountV1 {
 
-    Accounts.Account public accountVariable;
+    AccountsV1.Account public accountVariable;
     //GlobalConfig public globalConfig;
-    TokenRegistry.TokenInfo symbols;
+    TokenRegistryV1.TokenInfo symbols;
     address comptroller;
 
     constructor() public {
@@ -31,7 +31,7 @@ contract SavingAccountWithControllerV1 is SavingAccountV1 {
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses, 
         //TokenRegistry _tokenRegistry, // can remove
-        GlobalConfig _globalConfig,
+        GlobalConfigV1 _globalConfig,
         address _comptroller
     ) public initializer {
         super.initialize(_tokenAddresses, _cTokenAddresses, _globalConfig); // expected 3 passed 5 args

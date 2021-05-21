@@ -60,7 +60,7 @@ contract TokenRegistryV1 is Ownable {
     /**
      *  initializes the symbols structure
      */
-    function initialize(GlobalConfig _globalConfig) public onlyOwner{
+    function initialize(GlobalConfigV1 _globalConfig) public onlyOwner{
         globalConfig = _globalConfig;
     }
 

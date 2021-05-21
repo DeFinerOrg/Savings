@@ -17,7 +17,7 @@ contract MigrationsV1 {
   }
 
   function upgrade(address new_address) public restricted {
-    Migrations upgraded = Migrations(new_address);
+    MigrationsV1 upgraded = MigrationsV1(new_address);
     upgraded.setCompleted(last_completed_migration);
   }
 }

@@ -25,12 +25,12 @@ contract GlobalConfigV1 is Ownable {
     uint256 public deFinerRate = 10;
     address payable public deFinerCommunityFund = msg.sender;
 
-    Bank public bank;                               // the Bank contract
-    SavingAccount public savingAccount;             // the SavingAccount contract
-    TokenRegistry public tokenInfoRegistry;     // the TokenRegistry contract
-    Accounts public accounts;                       // the Accounts contract
-    Constant public constants;                      // the constants contract
-    ChainLinkAggregator public chainLink;
+    BankV1 public bank;                               // the Bank contract
+    SavingAccountV1 public savingAccount;             // the SavingAccount contract
+    TokenRegistryV1 public tokenInfoRegistry;     // the TokenRegistry contract
+    AccountsV1 public accounts;                       // the Accounts contract
+    ConstantV1 public constants;                      // the constants contract
+    ChainLinkAggregatorV1 public chainLink;
 
     event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
     event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
@@ -52,12 +52,12 @@ contract GlobalConfigV1 is Ownable {
 
 
     function initialize(
-        Bank _bank,
-        SavingAccount _savingAccount,
-        TokenRegistry _tokenInfoRegistry,
-        Accounts _accounts,
-        Constant _constants,
-        ChainLinkAggregator _chainLink
+        BankV1 _bank,
+        SavingAccountV1 _savingAccount,
+        TokenRegistryV1 _tokenInfoRegistry,
+        AccountsV1 _accounts,
+        ConstantV1 _constants,
+        ChainLinkAggregatorV1 _chainLink
     ) public onlyOwner {
         bank = _bank;
         savingAccount = _savingAccount;
@@ -173,31 +173,31 @@ contract GlobalConfigV1 is Ownable {
         emit rateCurveConstantUpdated(_rateCurveConstant);
     }
 
-    function updateBank(Bank _bank) external onlyOwner{
+    function updateBank(BankV1 _bank) external onlyOwner{
         bank = _bank;
 
         emit BankUpdated(address(_bank));
     }
 
-    function updateSavingAccount(SavingAccount _savingAccount) external onlyOwner{
+    function updateSavingAccount(SavingAccountV1 _savingAccount) external onlyOwner{
         savingAccount = _savingAccount;
 
         emit SavingAccountUpdated(address(_savingAccount));
     }
 
-    function updateTokenInfoRegistry(TokenRegistry _tokenInfoRegistry) external onlyOwner{
+    function updateTokenInfoRegistry(TokenRegistryV1 _tokenInfoRegistry) external onlyOwner{
         tokenInfoRegistry = _tokenInfoRegistry;
 
         emit TokenInfoRegistryUpdated(address(_tokenInfoRegistry));
     }
 
-    function updateAccounts(Accounts _accounts) external onlyOwner{
+    function updateAccounts(AccountsV1 _accounts) external onlyOwner{
         accounts = _accounts;
 
         emit AccountsUpdated(address(_accounts));
     }
 
-    function updateConstant(Constant _constants) external onlyOwner{
+    function updateConstant(ConstantV1 _constants) external onlyOwner{
         constants = _constants;
 
         emit ConstantUpdated(address(_constants));
@@ -216,7 +216,7 @@ contract GlobalConfigV1 is Ownable {
         emit DeFinerRateUpdated(_deFinerRate);
     }
 
-    function updateChainLink(ChainLinkAggregator _chainLink) external onlyOwner{
+    function updateChainLink(ChainLinkAggregatorV1 _chainLink) external onlyOwner{
         chainLink = _chainLink;
 
         emit ChainLinkUpdated(address(_chainLink));

@@ -9,7 +9,7 @@ library Utils{
     }
 
     function getDivisor(address globalConfig, address _token) public view returns (uint256) {
-        if(_isETH(globalConfig, _token)) return GlobalConfig(globalConfig).constants().INT_UNIT();
+        if(_isETH(globalConfig, _token)) return GlobalConfigV1(globalConfig).constants().INT_UNIT();
         return 10 ** uint256(GlobalConfigV1(globalConfig).tokenInfoRegistry().getTokenDecimals(_token));
     }
 

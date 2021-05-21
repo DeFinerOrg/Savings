@@ -1,10 +1,10 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
-import { ICToken } from "./compound/ICompound.sol";
-import { ICETH } from "./compound/ICompound.sol";
+import "./config/ConstantV1.sol";
+import "./config/GlobalConfigV1.sol";
+import { ICToken } from "./compound/ICompoundV1.sol";
+import { ICETH } from "./compound/ICompoundV1.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 // import "@nomiclabs/buidler/console.sol";
 
@@ -24,7 +24,7 @@ contract BankV1 is ConstantV1, Initializable{
     mapping(address => uint) public lastCTokenExchangeRate;    // last compound cToken exchange rate
     mapping(address => ThirdPartyPool) compoundPool;    // the compound pool
 
-    GlobalConfig globalConfig;            // global configuration contract address
+    GlobalConfigV1 globalConfig;            // global configuration contract address
 
     modifier onlyInternal() {
         require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.accounts()),
@@ -46,7 +46,7 @@ contract BankV1 is ConstantV1, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfig _globalConfig
+        GlobalConfigV1 _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }

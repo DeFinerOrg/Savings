@@ -5,14 +5,14 @@ import "../registry/TokenRegistryV1.sol";
 
 /**
  */
-contract ChainLinkAggregator {
+contract ChainLinkAggregatorV1 {
 
     TokenRegistryV1 public tokenRegistry;
 
     /**
      * Constructor
      */
-    constructor(TokenRegistry _tokenRegistry) public {
+    constructor(TokenRegistryV1 _tokenRegistry) public {
         require(address(_tokenRegistry) != address(0), "TokenRegistry address is zero");
         tokenRegistry = _tokenRegistry;
     }
