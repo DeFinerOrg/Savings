@@ -26,6 +26,31 @@ contract("SavingAccount() proxy", async (accounts) => {
             // SavingAccount V1
             // ==================
             console.log("------------------ 0 ------------------");
+            await ethers.getContractFactory("UtilsV1");
+            console.log("------------------ 1 ------------------");
+            const UtilsV1 = await ethers.getContractFactory("UtilsV1");
+            console.log("============ 2 ==============");
+
+            // console.log("Utils", Utils.address);
+            const utilsV1 = await UtilsV1.deploy();
+            console.log("utilsV1", utilsV1.address);
+
+            const SavingLibV1 = await ethers.getContractFactory("SavingLibV1", {
+                libraries: {
+                    UtilsV1: utilsV1.address,
+                },
+            });
+            const savingLibV1 = await SavingLibV1.deploy();
+            console.log("savingLibV1", savingLibV1.address);
+
+            const SavingAccountV1 = await ethers.getContractFactory("SavingAccountV1", {
+                libraries: { SavingLibV1: savingLibV1.address, UtilsV1: utilsV1.address },
+            });
+
+            // ==================
+            // SavingAccount V2
+            // ==================
+            console.log("------------------ 0 ------------------");
             await ethers.getContractFactory("Utils");
             console.log("------------------ 1 ------------------");
             const Utils = await ethers.getContractFactory("Utils");
@@ -34,43 +59,18 @@ contract("SavingAccount() proxy", async (accounts) => {
             // console.log("Utils", Utils.address);
             const utils = await Utils.deploy();
             console.log("utils", utils.address);
+            console.log("============ 3 ==============");
 
             const SavingLib = await ethers.getContractFactory("SavingLib", {
                 libraries: {
                     Utils: utils.address,
                 },
             });
+            console.log("============ 4 ==============");
             const savingLib = await SavingLib.deploy();
             console.log("savingLib", savingLib.address);
-
-            const SavingAccountV1 = await ethers.getContractFactory("SavingAccount", {
+            const SavingAccount = await ethers.getContractFactory("SavingAccount", {
                 libraries: { SavingLib: savingLib.address, Utils: utils.address },
-            });
-
-            // ==================
-            // SavingAccount V2
-            // ==================
-            console.log("------------------ 0 ------------------");
-            await ethers.getContractFactory("UtilsV2");
-            console.log("------------------ 1 ------------------");
-            const UtilsV2 = await ethers.getContractFactory("UtilsV2");
-            console.log("============ 2 ==============");
-
-            // console.log("Utils", Utils.address);
-            const utilsV2 = await Utils.deploy();
-            console.log("utilsV2", utilsV2.address);
-            console.log("============ 3 ==============");
-
-            const SavingLibV2 = await ethers.getContractFactory("SavingLibV2", {
-                libraries: {
-                    UtilsV2: utilsV2.address,
-                },
-            });
-            console.log("============ 4 ==============");
-            const savingLibV2 = await SavingLibV2.deploy();
-            console.log("savingLibV2", savingLibV2.address);
-            const SavingAccountV2 = await ethers.getContractFactory("SavingAccountV2", {
-                libraries: { SavingLibV2: savingLibV2.address, UtilsV2: utilsV2.address },
             });
 
             // ======================
@@ -85,7 +85,7 @@ contract("SavingAccount() proxy", async (accounts) => {
             // ======================
             // SavingAccount V2 Proxy
             // ======================
-            const SAV2 = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccountV2, {
+            const SAV = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccount, {
                 unsafeAllow: ["external-library-linking"],
             });
         });
