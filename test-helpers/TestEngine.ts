@@ -7,29 +7,29 @@ import { takeSnapshot, revertToSnapShot } from "./SnapshotUtils";
 import * as t from "../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
 var shell = require("shelljs");
-const MockCToken = artifacts.require("MockCTokenV2");
-const MockERC20 = artifacts.require("MockERC20V2");
-const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregatorV2");
-const SavingAccount: any = artifacts.require("SavingAccountV2");
-const SavingAccountWithController: any = artifacts.require("SavingAccountWithControllerV2");
-const Bank: any = artifacts.require("BankWithControllerV2");
-const Accounts: any = artifacts.require("AccountsWithControllerV2");
-const ChainLinkAggregator = artifacts.require("ChainLinkAggregatorV2");
-const TokenRegistry: any = artifacts.require("TokenRegistryV2");
-const AccountTokenLib = artifacts.require("AccountTokenLibV2");
-const BitmapLib = artifacts.require("BitmapLibV2");
-const Utils: any = artifacts.require("UtilsV2");
-const SavingLib = artifacts.require("SavingLibV2");
+const MockCToken = artifacts.require("MockCToken");
+const MockERC20 = artifacts.require("MockERC20");
+const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
+const SavingAccount: any = artifacts.require("SavingAccount");
+const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
+const Bank: any = artifacts.require("BankWithController");
+const Accounts: any = artifacts.require("AccountsWithController");
+const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
+const TokenRegistry: any = artifacts.require("TokenRegistry");
+const AccountTokenLib = artifacts.require("AccountTokenLib");
+const BitmapLib = artifacts.require("BitmapLib");
+const Utils: any = artifacts.require("Utils");
+const SavingLib = artifacts.require("SavingLib");
 
 var child_process = require("child_process");
-const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfigV2");
-const Constant: t.ConstantContract = artifacts.require("ConstantV2");
+const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
+const Constant: t.ConstantContract = artifacts.require("Constant");
 
 // Contracts for Upgradability
 const ProxyAdmin: t.ProxyAdminContract = artifacts.require("ProxyAdmin");
-const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxyV2");
-const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxyV2");
-const BankProxy: t.BankProxyContract = artifacts.require("BankProxyV2");
+const SavingAccountProxy: t.SavingAccountProxyContract = artifacts.require("SavingAccountProxy");
+const AccountsProxy: t.AccountsProxyContract = artifacts.require("AccountsProxy");
+const BankProxy: t.BankProxyContract = artifacts.require("BankProxy");
 
 var tokenData = require("../test-helpers/tokenData.json");
 
@@ -274,7 +274,7 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorV2Instance = await ChainLinkAggregator
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
             .new
             // this.tokenInfoRegistry.address
             ();
@@ -416,7 +416,7 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorV2Instance = await ChainLinkAggregator
+        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
             .new
             // this.tokenInfoRegistry.address
             ();
