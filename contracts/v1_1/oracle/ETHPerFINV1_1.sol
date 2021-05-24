@@ -7,7 +7,7 @@ interface mockERC20InterfaceFINV1_1{
     function balanceOf(address owner) external view returns (uint);
 }
 
-contract ETHPerFIN {
+contract ETHPerFINV1_1 {
     using SafeMath for uint256;
     
     // Constant public constants;
