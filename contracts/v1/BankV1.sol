@@ -3,8 +3,8 @@ pragma solidity 0.5.14;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./config/ConstantV1.sol";
 import "./config/GlobalConfigV1.sol";
-import { ICToken } from "./compound/ICompoundV1.sol";
-import { ICETH } from "./compound/ICompoundV1.sol";
+import { ICTokenV1 } from "./compound/ICompoundV1.sol";
+import { ICETHV1 } from "./compound/ICompoundV1.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 // import "@nomiclabs/buidler/console.sol";
 
@@ -68,7 +68,7 @@ contract BankV1 is ConstantV1, Initializable{
     function updateTotalCompound(address _token) internal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(cToken != address(0)) {
-            totalCompound[cToken] = ICToken(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
+            totalCompound[cToken] = ICTokenV1(cToken).balanceOfUnderlying(address(globalConfig.savingAccount()));
         }
     }
 
@@ -286,12 +286,12 @@ contract BankV1 is ConstantV1, Initializable{
             }
             else {
                 compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
+                uint cTokenExchangeRate = ICTokenV1(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 // sichaoy: How to deal with the issue capitalRatio is zero if looking forward (An estimation)
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
-                compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
+                compoundPool[_token].borrowRatePerBlock = ICTokenV1(cToken).borrowRatePerBlock();  // initial value
+                compoundPool[_token].depositRatePerBlock = ICTokenV1(cToken).supplyRatePerBlock(); // initial value
                 borrowRateIndex[_token][blockNumber] = UNIT;
                 depositeRateIndex[_token][blockNumber] = UNIT;
                 // Update the last checkpoint
@@ -308,10 +308,10 @@ contract BankV1 is ConstantV1, Initializable{
                 lastCheckpoint[_token] = blockNumber;
             } else {
                 compoundPool[_token].supported = true;
-                uint cTokenExchangeRate = ICToken(cToken).exchangeRateCurrent();
+                uint cTokenExchangeRate = ICTokenV1(cToken).exchangeRateCurrent();
                 // Get the curretn cToken exchange rate in Compound, which is need to calculate DeFiner's rate
                 compoundPool[_token].capitalRatio = getCapitalCompoundRatio(_token);
-                compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();
+                compoundPool[_token].borrowRatePerBlock = ICTokenV1(cToken).borrowRatePerBlock();
                 compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
                     .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);

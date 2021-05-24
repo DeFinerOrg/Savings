@@ -1,6 +1,6 @@
 pragma solidity 0.5.14;
 
-interface ICToken {
+interface ICTokenV1 {
     function supplyRatePerBlock() external view returns (uint);
     function borrowRatePerBlock() external view returns (uint);
     function mint(uint mintAmount) external returns (uint);
@@ -12,11 +12,11 @@ interface ICToken {
     function balanceOfUnderlying(address owner) external returns (uint);
 }
 
-interface ICETH{
+interface ICETHV1{
     function mint() external payable;
 }
 
-interface IController {
+interface IControllerV1 {
     function fastForward(uint blocks) external returns (uint);
     function getBlockNumber() external view returns (uint);
 }

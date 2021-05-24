@@ -4,8 +4,8 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../config/GlobalConfigV1.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "./UtilsV1.sol";
-import { ICToken } from "../compound/ICompoundV1.sol";
-import { ICETH } from "../compound/ICompoundV1.sol";
+import { ICTokenV1 } from "../compound/ICompoundV1.sol";
+import { ICETHV1 } from "../compound/ICompoundV1.sol";
 // import "@nomiclabs/buidler/console.sol";
 
 library SavingLibV1 {
@@ -47,13 +47,13 @@ library SavingLibV1 {
     function emergencyWithdraw(GlobalConfigV1 globalConfig, address _token) public {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if(UtilsV1._isETH(address(globalConfig), _token)) {
-            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
-            require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
+            // uint256 success = ICTokenV1(cToken).redeem(ICTokenV1(cToken).balanceOf(address(this)));
+            require(ICTokenV1(cToken).redeem(ICTokenV1(cToken).balanceOf(address(this))) == 0, "redeem ETH failed");
                 globalConfig.constants().EMERGENCY_ADDR().transfer(address(this).balance);
         } else {
-            // uint256 success = ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this)));
+            // uint256 success = ICTokenV1(cToken).redeem(ICTokenV1(cToken).balanceOf(address(this)));
             if(cToken != address(0)) {
-                require(ICToken(cToken).redeem(ICToken(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
+                require(ICTokenV1(cToken).redeem(ICTokenV1(cToken).balanceOf(address(this))) == 0, "redeem Token failed");
             }
             // uint256 amount = IERC20(_token).balanceOf(address(this));
             require(IERC20(_token).transfer(globalConfig.constants().EMERGENCY_ADDR(), IERC20(_token).balanceOf(address(this))), "transfer failed");

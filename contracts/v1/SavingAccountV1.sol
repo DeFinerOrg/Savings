@@ -8,8 +8,8 @@ import "./lib/UtilsV1.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "./InitializableReentrancyGuardV1.sol";
 import "./InitializablePausableV1.sol";
-import { ICToken } from "./compound/ICompoundV1.sol";
-import { ICETH } from "./compound/ICompoundV1.sol";
+import { ICTokenV1 } from "./compound/ICompoundV1.sol";
+import { ICETHV1 } from "./compound/ICompoundV1.sol";
 // import "@nomiclabs/buidler/console.sol";
 
 contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, ConstantV1, InitializablePausableV1 {
@@ -317,16 +317,16 @@ contract SavingAccountV1 is Initializable, InitializableReentrancyGuardV1, Const
      * @param _amount amount of token
      */
     function fromCompound(address _token, uint _amount) public onlyInternal {
-        require(ICToken(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
+        require(ICTokenV1(globalConfig.tokenInfoRegistry().getCToken(_token)).redeemUnderlying(_amount) == 0, "redeemUnderlying failed");
     }
 
     function toCompound(address _token, uint _amount) public onlyInternal {
         address cToken = globalConfig.tokenInfoRegistry().getCToken(_token);
         if (UtilsV1._isETH(address(globalConfig), _token)) {
-            ICETH(cToken).mint.value(_amount)();
+            ICETHV1(cToken).mint.value(_amount)();
         } else {
-            // uint256 success = ICToken(cToken).mint(_amount);
-            require(ICToken(cToken).mint(_amount) == 0, "mint failed");
+            // uint256 success = ICTokenV1(cToken).mint(_amount);
+            require(ICTokenV1(cToken).mint(_amount) == 0, "mint failed");
         }
     }
 
