@@ -79,15 +79,19 @@ contract Accounts is Constant, Initializable{
      * @param _enable `true` to enable the collateral, `false` to disable
      */
     function setCollateral(uint8 _tokenIndex, bool _enable) public {
-        Account storage account = accounts[msg.sender];
+        address accountAddr = msg.sender;
+        initCollateralFlag(accountAddr);
+        Account storage account = accounts[accountAddr];
 
         if(_enable) {
             account.collateralBitmap = account.collateralBitmap.setBit(_tokenIndex);
             // when set new collateral, no need to evaluate borrow power
         } else {
             account.collateralBitmap = account.collateralBitmap.unsetBit(_tokenIndex);
-            // when unset collateral, evaluate borrow power
-            // TODO Evaluate borrow power
+            // when unset collateral, evaluate borrow power, only when user borrowed already
+            if(account.borrowBitmap > 0) {
+                require(getBorrowETH(accountAddr) <= getBorrowPower(accountAddr), "Insufficient collateral");
+            }
         }
 
         emit CollateralFlagChanged(msg.sender, _tokenIndex, _enable);
@@ -105,66 +109,18 @@ contract Accounts is Constant, Initializable{
         view
         returns (address[] memory tokens, bool[] memory status)
     {
-        Account memory account = accounts[msg.sender];
+        Account memory account = accounts[_account];
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
-        uint256 tokenNum = tokenRegistry.getCoinLength();
-        tokens = new address[](tokenNum);
-        status = new bool[](tokenNum);
-        // TODO we can just return bitmap
+        tokens = tokenRegistry.getTokens();
+        uint256 tokensCount = tokens.length;
+        status = new bool[](tokensCount);
         uint128 collBitmap = account.collateralBitmap;
-        uint128 mask = uint128(1);
-        for(uint i = 0; i < tokenNum; i++) {
-            mask = mask << uint128(i);
+        for(uint i = 0; i < tokensCount; i++) {
+            // Example: 0001 << 1 => 0010 (mask for 2nd position)
+            uint128 mask = uint128(1) << uint128(i);
             bool isEnabled = (collBitmap & mask) > 0;
             if(isEnabled) status[i] = true;
         }
-    }
-
-    function x(address _account) public view returns (bool) {
-        Account storage account = accounts[_account];
-        // if a user have deposits in some tokens and collateral enabled for some
-        // then we need to iterate over his deposits for which collateral is also enabled.
-        // Hence, we can derive this information by perorming AND bitmap operation
-        // hasCollnDepositBitmap = collateralEnabled & hasDeposit
-        // Example:
-        // collateralBitmap         = 0101
-        // depositBitmap            = 0110
-        // ================================== OP AND
-        // hasCollnDepositBitmap    = 0100 (user can only use his 3rd token as borrow power)
-        uint128 hasCollnDepositBitmap = account.collateralBitmap & account.depositBitmap;
-
-        // This loop has max "O(n)" complexity where "n = TokensLength", but the loop
-        // calculates borrow power only for the `hasCollnDepositBitmap` bit, hence the loop
-        // iterates only till the highest bit set. Example 00000100, the loop will iterate
-        // only for 4 times, and only 1 time to calculate borrow the power.
-        // NOTE: When transaction gas-cost goes above the block gas limit, a user can
-        //      disable some of his collaterals so that he can perform the borrow.
-        //      Earlier loop implementation was iterating over all tokens, hence the platform
-        //      were not able to add new tokens
-        for(uint i = 0; i < 128; i++) {
-            // if hasCollnDepositBitmap = 0000 then break the loop
-            if(hasCollnDepositBitmap > 0) {
-                // hasCollnDepositBitmap = 0100
-                // mask                  = 0001
-                // =============================== OP AND
-                // result                = 0000
-                bool isEnabled = (hasCollnDepositBitmap & uint128(1)) > 0;
-                // Is i(th) token enabled?
-                if(isEnabled) {
-                    // continue calculating borrow power for i(th) token
-                }
-
-                // right shift by 1
-                // hasCollnDepositBitmap = 0100
-                // BITWISE RIGHTSHIFT 1 on hasCollnDepositBitmap = 0010
-                hasCollnDepositBitmap = hasCollnDepositBitmap >> 1;
-                // continue loop and repeat the steps until `hasCollnDepositBitmap == 0`
-            } else {
-                break;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -469,6 +425,7 @@ contract Accounts is Constant, Initializable{
     /**
      * Calculate an account's borrow power based on token's LTV
      */
+     /*
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
         uint256 tokenNum = tokenRegistry.getCoinLength();
@@ -482,6 +439,61 @@ contract Accounts is Constant, Initializable{
         }
         return power;
     }
+    */
+
+    function getBorrowPower(address _borrower) public view returns (uint256 power) {
+        Account storage account = accounts[_borrower];
+        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        // if a user have deposits in some tokens and collateral enabled for some
+        // then we need to iterate over his deposits for which collateral is also enabled.
+        // Hence, we can derive this information by perorming AND bitmap operation
+        // hasCollnDepositBitmap = collateralEnabled & hasDeposit
+        // Example:
+        // collateralBitmap         = 0101
+        // depositBitmap            = 0110
+        // ================================== OP AND
+        // hasCollnDepositBitmap    = 0100 (user can only use his 3rd token as borrow power)
+        uint128 hasCollnDepositBitmap = account.collateralBitmap & account.depositBitmap;
+
+        // This loop has max "O(n)" complexity where "n = TokensLength", but the loop
+        // calculates borrow power only for the `hasCollnDepositBitmap` bit, hence the loop
+        // iterates only till the highest bit set. Example 00000100, the loop will iterate
+        // only for 4 times, and only 1 time to calculate borrow the power.
+        // NOTE: When transaction gas-cost goes above the block gas limit, a user can
+        //      disable some of his collaterals so that he can perform the borrow.
+        //      Earlier loop implementation was iterating over all tokens, hence the platform
+        //      were not able to add new tokens
+        for(uint i = 0; i < 128; i++) {
+            // if hasCollnDepositBitmap = 0000 then break the loop
+            if(hasCollnDepositBitmap > 0) {
+                // hasCollnDepositBitmap = 0100
+                // mask                  = 0001
+                // =============================== OP AND
+                // result                = 0000
+                bool isEnabled = (hasCollnDepositBitmap & uint128(1)) > 0;
+                // Is i(th) token enabled?
+                if(isEnabled) {
+                    // continue calculating borrow power for i(th) token
+                    (address token, uint256 divisor, uint256 price, uint256 borrowLTV) = tokenRegistry.getTokenInfoFromIndex(i);
+
+                    uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
+                    power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
+                }
+
+                // right shift by 1
+                // hasCollnDepositBitmap = 0100
+                // BITWISE RIGHTSHIFT 1 on hasCollnDepositBitmap = 0010
+                hasCollnDepositBitmap = hasCollnDepositBitmap >> 1;
+                // continue loop and repeat the steps until `hasCollnDepositBitmap == 0`
+            } else {
+                break;
+            }
+        }
+
+        return power;
+    }
+
+
 
     /**
      * Get current deposit balance of a token
