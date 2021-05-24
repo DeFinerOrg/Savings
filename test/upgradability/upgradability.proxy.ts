@@ -10,10 +10,10 @@ contract("SavingAccount() proxy", async (accounts) => {
     const ADDRESS_0x01: string = "0x0000000000000000000000000000000000000001";
 
     // let Utils: any;
-    let savingAccountV1: t.SavingAccountWithControllerInstance;
-    let savingAccountV2: t.SavingAccountWithControllerV2Instance;
-    let SavingAccountV1: t.SavingAccountWithControllerInstance;
-    let SavingAccountV2: t.SavingAccountWithControllerV2Instance;
+    // let savingAccountV1: t.SavingAccountWithControllerInstance;
+    // let savingAccountV2: t.SavingAccountWithControllerV2Instance;
+    // let SavingAccountV1: t.SavingAccountWithControllerInstance;
+    // let SavingAccountV2: t.SavingAccountWithControllerV2Instance;
 
     before(function () {
         // Things to initialize before all test
@@ -21,7 +21,7 @@ contract("SavingAccount() proxy", async (accounts) => {
     });
 
     describe("Upgradability proxy tests from V1 to V2", async () => {
-        it("SavingAccount V1 to V2", async () => {
+        it("SavingAccount V1 to latest", async () => {
             // ==================
             // SavingAccount V1
             // ==================
@@ -90,13 +90,13 @@ contract("SavingAccount() proxy", async (accounts) => {
             });
         });
 
-        it("Accounts from V1 to V2");
-        it("Bank from V1 to V2");
+        it("Accounts from V1 to latest");
+        it("Bank from V1 to latest");
     });
 
-    describe("upgradeability tests from V2 to V3", async () => {
-        it("SavingAccount from V2 to V3");
-        it("Accounts from V2 to V3");
-        it("Bank from V2 to V3");
+    describe("upgradeability tests from V2 to latest", async () => {
+        it("SavingAccount from V1.1 to latest");
+        it("Accounts from V1.1 to latest");
+        it("Bank from V1.1 to latest");
     });
 });
