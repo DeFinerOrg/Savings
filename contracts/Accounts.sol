@@ -97,7 +97,7 @@ contract Accounts is Constant, Initializable{
         emit CollateralFlagChanged(msg.sender, _tokenIndex, _enable);
     }
 
-    function setCollateral(uint8[] calldata _tokenIndexArr, bool[] calldata _enableArr) external {
+    function setCollaterals(uint8[] calldata _tokenIndexArr, bool[] calldata _enableArr) external {
         require(_tokenIndexArr.length == _enableArr.length, "array length does not match");
         for(uint i = 0; i < _tokenIndexArr.length; i++) {
             setCollateral(_tokenIndexArr[i], _enableArr[i]);

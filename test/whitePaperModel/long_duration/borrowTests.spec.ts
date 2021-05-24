@@ -21,6 +21,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -90,6 +92,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        tokenRegistry = testEngine.tokenInfoRegistry;
+        accountsContract = testEngine.accounts;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -188,6 +192,9 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.setCollateral(daiTokenIndex, true, { from: user2 });
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
