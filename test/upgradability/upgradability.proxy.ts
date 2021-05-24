@@ -90,7 +90,68 @@ contract("SavingAccount() proxy", async (accounts) => {
             });
         });
 
-        it("Accounts from V1 to latest");
+        it("Accounts from V1 to latest", async () => {
+            // ==================
+            // Accounts V1
+            // ==================
+            console.log("------------------ 0 ------------------");
+            await ethers.getContractFactory("AccountTokenLibV1");
+            console.log("------------------ 1 ------------------");
+            const AccountTokenLibV1 = await ethers.getContractFactory("AccountTokenLibV1");
+            console.log("============ 2 ==============");
+
+            // console.log("Utils", Utils.address);
+            const accountTokenLibV1 = await AccountTokenLibV1.deploy();
+            console.log("accountTokenLibV1", accountTokenLibV1.address);
+
+            console.log("------------------ 0 ------------------");
+            await ethers.getContractFactory("UtilsV1");
+            console.log("------------------ 1 ------------------");
+            const UtilsV1 = await ethers.getContractFactory("UtilsV1");
+            console.log("============ 2 ==============");
+
+            // console.log("Utils", Utils.address);
+            const utilsV1 = await UtilsV1.deploy();
+            console.log("utilsV1", utilsV1.address);
+
+            const AccountsV1 = await ethers.getContractFactory("AccountsV1", {
+                libraries: { AccountTokenLibV1: accountTokenLibV1.address, UtilsV1: utilsV1.address },
+            });
+
+            // ==================
+            // Accounts V2
+            // ==================
+            console.log("------------------ 0 ------------------");
+            await ethers.getContractFactory("AccountTokenLib");
+            console.log("------------------ 1 ------------------");
+            const AccountTokenLib = await ethers.getContractFactory("AccountTokenLib");
+            console.log("============ 2 ==============");
+
+            // console.log("Utils", Utils.address);
+            const accountTokenLib = await AccountTokenLibV1.deploy();
+            console.log("accountTokenLib", accountTokenLib.address);
+            console.log("============ 3 ==============");
+        
+            const Accounts = await ethers.getContractFactory("Accounts", {
+                libraries: { AccountTokenLib: accountTokenLib.address },
+            });
+
+            // ======================
+            // Accounts V1 Proxy
+            // ======================
+            const accountsProxy = await upgrades.deployProxy(
+                AccountsV1,
+                [ETH_ADDRESS],
+                { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
+            );
+
+            // ======================
+            // Accounts V2 Proxy
+            // ======================
+            const upgradeAccounts = await upgrades.upgradeProxy(accountsProxy.address, Accounts, {
+                unsafeAllow: ["external-library-linking"],
+            });
+        });
         it("Bank from V1 to latest");
     });
 
