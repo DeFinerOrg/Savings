@@ -8,7 +8,7 @@ import "../BankV1_1.sol";
 import "../AccountsV1_1.sol";
 import "./ConstantV1_1.sol";
 // import "@nomiclabs/buidler/console.sol";
-import "../oracle/ChainLinkAggregator.sol";
+import "../oracle/ChainLinkAggregatorV1_1.sol";
 
 contract GlobalConfigV1_1 is Ownable {
     using SafeMath for uint256;
