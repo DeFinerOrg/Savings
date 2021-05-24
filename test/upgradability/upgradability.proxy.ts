@@ -252,7 +252,7 @@ contract("SavingAccount() proxy", async (accounts) => {
         });
     });
 
-    describe("Upgradability proxy tests from V1 to latest", async () => {
+    describe("Upgradability proxy tests from V1 to v1.1", async () => {
         it("SavingAccount V1 to V1.1", async () => {
             // ==================
             // SavingAccount V1
