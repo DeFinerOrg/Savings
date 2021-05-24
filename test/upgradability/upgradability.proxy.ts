@@ -152,7 +152,34 @@ contract("SavingAccount() proxy", async (accounts) => {
                 unsafeAllow: ["external-library-linking"],
             });
         });
-        it("Bank from V1 to latest");
+        it("Bank from V1 to latest", async () => {
+            // ==================
+            // Bank V1
+            // ==================
+            const BankV1 = await ethers.getContractFactory("BankV1");
+            console.log("Bank deploed", BankV1.address );
+            
+
+            // ==================
+            // Bank V2
+            // ==================
+            const Bank = await ethers.getContractFactory("Bank");
+            console.log("Bank deploed", Bank.address );
+
+            // ======================
+            // Bank V1 Proxy
+            // ======================
+            const bankProxy = await upgrades.deployProxy(
+                BankV1,
+                [ETH_ADDRESS],
+                { initializer: "initialize" }
+            );
+
+            // ======================
+            // Bank latest Proxy
+            // ======================
+            const upgradeAccounts = await upgrades.upgradeProxy(bankProxy.address, Bank);
+        });
     });
 
     describe("upgradeability tests from V2 to latest", async () => {

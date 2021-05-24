@@ -302,12 +302,12 @@ contract Accounts is Constant, Initializable{
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(bank.depositRateIndex(_token, tokenInfo.getLastDepositBlock()) == 0) {
+            if(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()) == 0) {
                 accruedRate = INT_UNIT;
             } else {
-                accruedRate = bank.depositRateIndexNow(_token)
+                accruedRate = bank.depositeRateIndexNow(_token)
                 .mul(INT_UNIT)
-                .div(bank.depositRateIndex(_token, tokenInfo.getLastDepositBlock()));
+                .div(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()));
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -562,7 +562,7 @@ contract Accounts is Constant, Initializable{
                                 .sub(bank.depositFINRateIndex(_token, _lastBlock));
         uint256 getFIN = getDepositBalanceCurrent(_token, _accountAddr)
                         .mul(indexDifference)
-                        .div(bank.depositRateIndex(_token, _currentBlock));
+                        .div(bank.depositeRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
