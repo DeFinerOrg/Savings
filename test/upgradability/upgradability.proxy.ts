@@ -305,6 +305,30 @@ contract("SavingAccount() proxy", async (accounts) => {
             });
         });
 
-        it("Bank from V1.1 to latest");
+        it("Bank from V1.1 to latest", async () => {
+            // ==================
+            // Bank V1.1
+            // ==================
+            const BankV1_1 = await ethers.getContractFactory("BankV1_1");
+            console.log("Bank deploed", BankV1_1.address);
+
+            // ==================
+            // Bank latest
+            // ==================
+            const Bank = await ethers.getContractFactory("Bank");
+            console.log("Bank deploed", Bank.address);
+
+            // ======================
+            // Bank V1.1 Proxy
+            // ======================
+            const bankProxy = await upgrades.deployProxy(BankV1_1, [ETH_ADDRESS], {
+                initializer: "initialize",
+            });
+
+            // ======================
+            // Bank latest Proxy
+            // ======================
+            const upgradeAccounts = await upgrades.upgradeProxy(bankProxy.address, Bank);
+        });
     });
 });
