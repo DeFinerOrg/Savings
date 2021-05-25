@@ -22,6 +22,7 @@ contract InitializablePausableV1_1 {
      */
     event Unpaused(address account);
     
+    // NOTICE: Variable renamed from `globalConfigPausable -> globalConfig` to avoid the error shown by `upgrade.upgradeProxy()` OZ upgrade plugin
     address private globalConfig;
     bool private _paused;
 
