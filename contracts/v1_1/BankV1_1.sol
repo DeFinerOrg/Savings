@@ -14,6 +14,7 @@ contract BankV1_1 is ConstantV1_1, Initializable{
     mapping(address => uint256) public totalReserve;   // amount of tokens in reservation
     mapping(address => uint256) public totalCompound;  // amount of tokens in compound
     // Token => block-num => rate
+    // NOTICE: Variable renamed from `depositeRatIndex -> depositeRateIndex` to avoid the error shown by `upgrade.upgradeProxy()` OZ upgrade plugin
     mapping(address => mapping(uint => uint)) public depositeRateIndex; // the index curve of deposit rate
     // Token => block-num => rate
     mapping(address => mapping(uint => uint)) public borrowRateIndex;   // the index curve of borrow rate
