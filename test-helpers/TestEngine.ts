@@ -300,7 +300,8 @@ export class TestEngine {
             chainLinkOracle.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance =
+            await SavingAccountWithController.new();
         SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
@@ -440,7 +441,8 @@ export class TestEngine {
             chainLinkOracle.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance =
+            await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
             .initialize(

@@ -1,23 +1,23 @@
 pragma solidity 0.5.14;
 
-import "./lib/AccountTokenLib.sol";
-import "./lib/BitmapLib.sol";
-import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
-import "./registry/TokenRegistry.sol";
-import "./Bank.sol";
+import "./lib/AccountTokenLibV1_1.sol";
+import "./lib/BitmapLibV1_1.sol";
+import "./config/ConstantV1_1.sol";
+import "./config/GlobalConfigV1_1.sol";
+import "./registry/TokenRegistryV1_1.sol";
+import "./BankV1_1.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
 
-contract Accounts is Constant, Initializable{
-    using AccountTokenLib for AccountTokenLib.TokenInfo;
-    using BitmapLib for uint128;
+contract AccountsV1_1 is ConstantV1_1, Initializable{
+    using AccountTokenLibV1_1 for AccountTokenLibV1_1.TokenInfo;
+    using BitmapLibV1_1 for uint128;
     using SafeMath for uint256;
     using Math for uint256;
 
     mapping(address => Account) public accounts;
-    GlobalConfig globalConfig;
+    GlobalConfigV1_1 globalConfig;
     mapping(address => uint256) public FINAmount;
 
     modifier onlyAuthorized() {
@@ -29,7 +29,7 @@ contract Accounts is Constant, Initializable{
     struct Account {
         // Note, it's best practice to use functions minusAmount, addAmount, totalAmount
         // to operate tokenInfos instead of changing it directly.
-        mapping(address => AccountTokenLib.TokenInfo) tokenInfos;
+        mapping(address => AccountTokenLibV1_1.TokenInfo) tokenInfos;
         uint128 depositBitmap;
         uint128 borrowBitmap;
     }
@@ -39,7 +39,7 @@ contract Accounts is Constant, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfig _globalConfig
+        GlobalConfigV1_1 _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }
@@ -117,22 +117,22 @@ contract Accounts is Constant, Initializable{
     }
 
     function getDepositPrincipal(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getDepositPrincipal();
     }
 
     function getBorrowPrincipal(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getBorrowPrincipal();
     }
 
     function getLastDepositBlock(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getLastDepositBlock();
     }
 
     function getLastBorrowBlock(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         return tokenInfo.getLastBorrowBlock();
     }
 
@@ -143,7 +143,7 @@ contract Accounts is Constant, Initializable{
      * @dev The deposit interest may not have been updated in AccountTokenLib, so we need to explicited calcuate it.
      */
     function getDepositInterest(address _account, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
         // If the account has never deposited the token, return 0.
         if (tokenInfo.getLastDepositBlock() == 0)
             return 0;
@@ -155,7 +155,7 @@ contract Accounts is Constant, Initializable{
     }
 
     function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // If the account has never borrowed the token, return 0
         if (tokenInfo.getLastBorrowBlock() == 0)
             return 0;
@@ -175,7 +175,7 @@ contract Accounts is Constant, Initializable{
             <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
         );
 
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
 
         if(tokenInfo.getLastBorrowBlock() == 0)
             tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
@@ -218,7 +218,7 @@ contract Accounts is Constant, Initializable{
         // Check if withdraw amount is less than user's balance
         require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
 
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 lastBlock = tokenInfo.getLastDepositBlock();
         uint256 currentBlock = getBlockNumber();
         calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
@@ -254,7 +254,7 @@ contract Accounts is Constant, Initializable{
      * Update token info for deposit
      */
     function deposit(address _accountAddr, address _token, uint256 _amount) public onlyAuthorized {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         if(tokenInfo.getDepositPrincipal() == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             setInDepositBitmap(_accountAddr, tokenIndex);
@@ -274,7 +274,7 @@ contract Accounts is Constant, Initializable{
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint256 amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
         uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
         if(tokenInfo.getLastBorrowBlock() == 0)
@@ -296,8 +296,8 @@ contract Accounts is Constant, Initializable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 depositBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        Bank bank = globalConfig.bank();
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        BankV1_1 bank = globalConfig.bank();
         uint256 accruedRate;
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
@@ -322,8 +322,8 @@ contract Accounts is Constant, Initializable{
         address _token,
         address _accountAddr
     ) public view returns (uint256 borrowBalance) {
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
-        Bank bank = globalConfig.bank();
+        AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        BankV1_1 bank = globalConfig.bank();
         uint256 accruedRate;
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
@@ -343,7 +343,7 @@ contract Accounts is Constant, Initializable{
      * Calculate an account's borrow power based on token's LTV
      */
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
         uint256 tokenNum = tokenRegistry.getCoinLength();
         for(uint256 i = 0; i < tokenNum; i++) {
             if (isUserHasDeposits(_borrower, uint8(i))) {
@@ -363,7 +363,7 @@ contract Accounts is Constant, Initializable{
     function getDepositETH(
         address _accountAddr
     ) public view returns (uint256 depositETH) {
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
         uint256 tokenNum = tokenRegistry.getCoinLength();
         for(uint256 i = 0; i < tokenNum; i++) {
             if(isUserHasDeposits(_accountAddr, uint8(i))) {
@@ -381,7 +381,7 @@ contract Accounts is Constant, Initializable{
     function getBorrowETH(
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
         uint256 tokenNum = tokenRegistry.getCoinLength();
         for(uint256 i = 0; i < tokenNum; i++) {
             if(isUserHasBorrows(_accountAddr, uint8(i))) {
@@ -400,8 +400,8 @@ contract Accounts is Constant, Initializable{
      * @return true if the account is liquidatable
      */
     function isAccountLiquidatable(address _borrower) public returns (bool) {
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
-        Bank bank = globalConfig.bank();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
+        BankV1_1 bank = globalConfig.bank();
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
@@ -463,7 +463,7 @@ contract Accounts is Constant, Initializable{
 
         LiquidationVars memory vars;
 
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
 
         // _borrowedToken balance of the liquidator (deposit balance)
         vars.targetTokenBalance = getDepositBalanceCurrent(_borrowedToken, _liquidator);
@@ -522,13 +522,13 @@ contract Accounts is Constant, Initializable{
      * accurately. So the user can withdraw all available FIN tokens.
      */
     function claim(address _account) public onlyAuthorized returns(uint256){
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
-        Bank bank = globalConfig.bank();
+        TokenRegistryV1_1 tokenRegistry = globalConfig.tokenInfoRegistry();
+        BankV1_1 bank = globalConfig.bank();
         uint256 coinLength = tokenRegistry.getCoinLength();
         for(uint8 i = 0; i < coinLength; i++) {
             if (isUserHasDeposits(_account, i) || isUserHasBorrows(_account, i)) {
                 address token = tokenRegistry.addressFromIndex(i);
-                AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
+                AccountTokenLibV1_1.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
                 uint256 currentBlock = getBlockNumber();
                 bank.updateMining(token);
 
@@ -556,7 +556,7 @@ contract Accounts is Constant, Initializable{
      * Accumulate the amount FIN mined by depositing between _lastBlock and _currentBlock
      */
     function calculateDepositFIN(uint256 _lastBlock, address _token, address _accountAddr, uint256 _currentBlock) internal {
-        Bank bank = globalConfig.bank();
+        BankV1_1 bank = globalConfig.bank();
 
         uint256 indexDifference = bank.depositFINRateIndex(_token, _currentBlock)
                                 .sub(bank.depositFINRateIndex(_token, _lastBlock));
@@ -570,7 +570,7 @@ contract Accounts is Constant, Initializable{
      * Accumulate the amount FIN mined by borrowing between _lastBlock and _currentBlock
      */
     function calculateBorrowFIN(uint256 _lastBlock, address _token, address _accountAddr, uint256 _currentBlock) internal {
-        Bank bank = globalConfig.bank();
+        BankV1_1 bank = globalConfig.bank();
 
         uint256 indexDifference = bank.borrowFINRateIndex(_token, _currentBlock)
                                 .sub(bank.borrowFINRateIndex(_token, _lastBlock));
