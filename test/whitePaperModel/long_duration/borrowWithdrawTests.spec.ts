@@ -204,6 +204,9 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 expect(totalDefinerBalanceChangeUSDC).to.be.bignumber.equal(numOfUSDC);
 
                 // 2. Borrow USDC
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.setCollateral(daiTokenIndex, true, { from: user1 });
                 await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
                 const balSavingAccountDAIAfterBorrow = await erc20DAI.balanceOf(
                     savingAccount.address

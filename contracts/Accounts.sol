@@ -278,8 +278,12 @@ contract Accounts is Constant, Initializable{
         initCollateralFlag(_accountAddr);
         (, uint256 tokenDivisor, uint256 tokenPrice, uint256 borrowLTV) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
 
-        uint256 withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
-        require(getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(withdrawETH), "Insufficient collateral when withdraw.");
+        // if user borrowed before then only check for under liquidation
+        Account memory account = accounts[_accountAddr];
+        if(account.borrowBitmap > 0) {
+            uint256 withdrawETH = _amount.mul(tokenPrice).mul(borrowLTV).div(tokenDivisor).div(100);
+            require(getBorrowETH(_accountAddr) <= getBorrowPower(_accountAddr).sub(withdrawETH), "Insufficient collateral");
+        }
 
         (uint256 amountAfterCommission, ) = _withdraw(_accountAddr, _token, _amount, true);
 
@@ -443,7 +447,7 @@ contract Accounts is Constant, Initializable{
 
     function getBorrowPower(address _borrower) public view returns (uint256 power) {
         Account storage account = accounts[_borrower];
-        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+
         // if a user have deposits in some tokens and collateral enabled for some
         // then we need to iterate over his deposits for which collateral is also enabled.
         // Hence, we can derive this information by perorming AND bitmap operation
@@ -454,6 +458,11 @@ contract Accounts is Constant, Initializable{
         // ================================== OP AND
         // hasCollnDepositBitmap    = 0100 (user can only use his 3rd token as borrow power)
         uint128 hasCollnDepositBitmap = account.collateralBitmap & account.depositBitmap;
+
+        // When no-collateral enabled and no-deposits just return '0' power
+        if(hasCollnDepositBitmap == 0) return power;
+
+        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
 
         // This loop has max "O(n)" complexity where "n = TokensLength", but the loop
         // calculates borrow power only for the `hasCollnDepositBitmap` bit, hence the loop
