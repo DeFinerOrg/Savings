@@ -1,7 +1,9 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 
+let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -23,17 +25,22 @@ contract("GlobalConfig", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("constructor", async () => {

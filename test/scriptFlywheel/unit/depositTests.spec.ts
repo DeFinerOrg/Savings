@@ -1,7 +1,9 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 
+let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -40,15 +42,11 @@ contract("SavingAccount.deposit", async (accounts) => {
     let erc20MKR: t.MockErc20Instance;
     let cETH: t.MockCTokenInstance;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -73,6 +71,15 @@ contract("SavingAccount.deposit", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         //console.log("addressCETH", addressCETH);
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("deposit()", async () => {

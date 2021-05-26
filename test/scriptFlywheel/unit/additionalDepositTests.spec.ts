@@ -3,7 +3,8 @@ import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contract
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -78,15 +79,11 @@ contract("SavingAccount.deposit", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -153,6 +150,15 @@ contract("SavingAccount.deposit", async (accounts) => {
         // await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         // await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         // await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     // extra tests by Yichun

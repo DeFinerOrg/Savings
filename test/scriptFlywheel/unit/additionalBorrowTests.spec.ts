@@ -3,7 +3,8 @@ import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contract
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -23,6 +24,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -75,21 +77,18 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         accountsContract = await testEngine.accounts;
         bank = await testEngine.bank;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -152,6 +151,15 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     // extra tests by Yichun
@@ -479,7 +487,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
                             let borrow = new BN(1);
                             let accWBTCBefore = await erc20WBTC.balanceOf(user2);
-
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
+                            const tusdTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                tusdTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
 
                             const savingsCompoundWBTCAfterBorrow = new BN(
@@ -559,6 +575,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 .mul(new BN(60));
                             let accTUSDBefore = await erc20TUSD.balanceOf(user1);
 
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
+                            const wbtcTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                wbtcTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
                             const savingsCompoundWBTCAfterBorrow = new BN(
                                 await cWBTC.balanceOfUnderlying.call(savingAccount.address)
@@ -643,6 +668,15 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             let user1WBTCBefore = await erc20WBTC.balanceOf(user2);
 
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
+                            const tusdTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                tusdTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
 
                             const savingsCompoundWBTCAfterBorrow = new BN(
@@ -730,6 +764,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let borrow = eighteenPrecision.mul(new BN(10));
                     let accTUSDBeforeFirst = await erc20TUSD.balanceOf(user1);
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
 
                     let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
@@ -831,6 +874,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let borrow = sixPrecision.mul(new BN(10));
                     let accUSDCBeforeFirst = await erc20USDC.balanceOf(user1);
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
 
                     await savAccBalVerify(
@@ -964,6 +1016,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     let borrow = eightPrecision.div(new BN(100));
                     let accWBTCAfterFirstBefore = await erc20WBTC.balanceOf(user1);
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
 
                     await savAccBalVerify(
