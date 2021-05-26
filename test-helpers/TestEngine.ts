@@ -300,8 +300,7 @@ export class TestEngine {
             chainLinkOracle.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance =
-            await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
@@ -321,22 +320,26 @@ export class TestEngine {
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
-        await savingAccountProxy.initialize(
+        await savingAccountProxy.methods["initialize(address,address,bytes)"](
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
 
-        await accountsProxy.initialize(
+        await accountsProxy.methods["initialize(address,address,bytes)"](
             this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        await bankProxy.methods["initialize(address,address,bytes)"](
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }
@@ -441,8 +444,7 @@ export class TestEngine {
             chainLinkOracle.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance =
-            await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
@@ -461,23 +463,27 @@ export class TestEngine {
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
-        await savingAccountProxy.initialize(
+        await savingAccountProxy.methods["initialize(address,address,bytes)"](
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
 
-        await accountsProxy.initialize(
+        await accountsProxy.methods["initialize(address,address,bytes)"](
             this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
+        await bankProxy.methods["initialize(address,address,bytes)"](
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
 
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }
