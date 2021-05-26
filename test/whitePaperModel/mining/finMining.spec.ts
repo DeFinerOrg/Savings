@@ -194,9 +194,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex.toString(), true, {
-                        from: user2,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -324,9 +328,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user2,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -457,9 +465,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user2,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -609,9 +621,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user1,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, ONE_FIFTH_DAI, { from: user1 });
 
                     await savingAccount.fastForward(100000);
@@ -619,9 +635,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user2,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -747,9 +767,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user1,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, ONE_FIFTH_DAI, { from: user1 });
 
                     await savingAccount.fastForward(100000);
@@ -757,9 +781,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
-                    await accountsContract.setCollateral(daiTokenIndex, true, {
-                        from: user2,
-                    });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
