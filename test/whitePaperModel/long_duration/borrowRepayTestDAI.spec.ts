@@ -171,7 +171,11 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
                     const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
-                    await accountsContract.setCollateral(daiTokenIndex, true, { from: user2 });
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
