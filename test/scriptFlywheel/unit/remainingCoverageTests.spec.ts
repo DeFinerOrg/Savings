@@ -154,6 +154,11 @@ contract("RemainingCoverage", async (accounts) => {
                 await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
 
                 // 3. Verify the loan amount
@@ -205,6 +210,11 @@ contract("RemainingCoverage", async (accounts) => {
                 await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
