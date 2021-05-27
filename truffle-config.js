@@ -50,7 +50,10 @@ module.exports = {
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
-            gas: 20000000,
+            allowUnlimitedContractSize: true,
+            gasPrice: 0x01,
+            blockGasLimit: 0x1fffffffffffff,
+            db_path: "./snapshots/scriptFlywheel",
         },
         coverage: {
             host: "127.0.0.1",
