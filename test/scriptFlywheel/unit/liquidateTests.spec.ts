@@ -221,7 +221,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
 
                     // 2. Start borrowing.
-                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
                     const usdcTokenIndex = result[0];
                     await accountsContract.methods["setCollateral(uint8,bool)"](
                         usdcTokenIndex,
@@ -257,6 +257,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user2
                     );
 
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true
+                    );
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
@@ -926,7 +932,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH,
                     });
                     // 2. Start borrowing.
-                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
                     await accountsContract.methods["setCollateral(uint8,bool)"](
                         daiTokenIndex,

@@ -604,10 +604,14 @@ contract Accounts is Constant, Initializable{
         require(isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
 
         // It is required that the liquidator doesn't exceed it's borrow power.
-        require(
-            getBorrowETH(_liquidator) < getBorrowPower(_liquidator),
-            "No extra funds are used for liquidation."
-        );
+        // if liquidator has any borrows, then only check for borrowPower condition
+        Account memory liquidateAcc = accounts[_liquidator];
+        if(liquidateAcc.borrowBitmap > 0) {
+            require(
+                getBorrowETH(_liquidator) < getBorrowPower(_liquidator),
+                "No extra funds are used for liquidation."
+            );
+        }
 
         LiquidationVars memory vars;
 
