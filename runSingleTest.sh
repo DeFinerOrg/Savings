@@ -7,12 +7,11 @@ rm -rf compound-protocol/networks/development.json
 
 echo $file
 
+# default to 'scriptFlywheel'
+model=$scriptFlywheel
+
 if [[ "$file" == *"$whitePaperModel"* ]]; then
     model=$whitePaperModel
-fi
-
-if [[ "$file" == *"$scriptFlywheel"* ]]; then
-    model=$scriptFlywheel
 fi
 
 cp snapshots/config/$model.json compound-protocol/networks/development.json
