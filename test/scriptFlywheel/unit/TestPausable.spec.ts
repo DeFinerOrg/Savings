@@ -34,6 +34,7 @@ contract("InitializablePausable", async (accounts) => {
         // testEngine.deploy("scriptFlywheel.scen");
 
         savingAccount = await testEngine.deploySavingAccount();
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {
