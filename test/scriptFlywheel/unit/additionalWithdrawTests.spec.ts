@@ -19,6 +19,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -64,6 +65,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -738,6 +740,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * Should fail, beacuse user has to repay all the outstandings before withdrawing.
                  */
                 const borrows = new BN(10);
+                const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
 
                 await savAccBalVerify(
@@ -824,6 +831,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     user1
                 );
                 const borrows = new BN(10);
+                const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
 
                 await savAccBalVerify(
