@@ -326,6 +326,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(1001), { from: user2 }),
                         "Lack of liquidity when borrow."
@@ -1063,6 +1070,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
 
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(1001), { from: user1 }),
                         "Lack of liquidity when borrow."
@@ -1887,6 +1901,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressMKR, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfToken, { from: user2 });
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressMKR);
+                    const mkrTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        mkrTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(1001), { from: user1 }),
                         "Lack of liquidity when borrow."
