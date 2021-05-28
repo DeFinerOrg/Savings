@@ -62,6 +62,8 @@ contract("RemainingCoverage", async (accounts) => {
         addressUSDC = tokens[1];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
+
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {

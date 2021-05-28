@@ -32,6 +32,8 @@ contract("GlobalConfig", async (accounts) => {
 
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
+
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {

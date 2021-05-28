@@ -153,6 +153,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
         ZERO = new BN(0);
+
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {

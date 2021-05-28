@@ -151,6 +151,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {
@@ -213,6 +215,11 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
 
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
+                            const wbtcTokenIndex = result[0];
+                            await accountsContract.methods[
+                                "setCollateral(uint8,bool)"
+                            ](wbtcTokenIndex, true, { from: user1 });
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
                                 "Lack of liquidity when borrow."

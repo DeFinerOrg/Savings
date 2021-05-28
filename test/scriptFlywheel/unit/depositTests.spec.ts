@@ -71,6 +71,8 @@ contract("SavingAccount.deposit", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         //console.log("addressCETH", addressCETH);
+
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {
