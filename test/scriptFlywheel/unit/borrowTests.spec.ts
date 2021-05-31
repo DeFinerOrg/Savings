@@ -2543,6 +2543,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user1BalanceBefore = BN(await erc20USDC.balanceOf(user1));
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(10)), {
                         from: user1,
                     });
@@ -2626,6 +2633,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                         .div(await tokenInfoRegistry.priceFromIndex(0));
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
 
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
 
                     await savAccBalVerify(

@@ -1625,7 +1625,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     const withdrawAmount = new BN(20);
                     await expectRevert(
                         savingAccount.withdraw(ETH_ADDRESS, withdrawAmount),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
             });
