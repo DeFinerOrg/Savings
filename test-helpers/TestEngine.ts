@@ -187,12 +187,15 @@ export class TestEngine {
             tokenData.tokens.map(async (token: any) => {
                 let addr;
                 if (network == "development" || "coverage" || !network) {
+                    console.log("11");
+
                     addr = (
                         await MockChainLinkAggregator.new(
                             token.decimals,
                             new BN(token.latestAnswer)
                         )
                     ).address;
+                    console.log("addr", addr);
                 } else if (network == "ropsten") {
                     addr = token.ropsten.aggregatorAddress;
                 } else if (network == "mainnet" || network == "mainnet-fork") {
@@ -225,25 +228,36 @@ export class TestEngine {
         ).address;
         this.mockChainlinkAggregators.push(DeFiner);
 
+        console.log("mockChainlinkAggr");
+
         return this.mockChainlinkAggregators;
     }
 
     public async deploySavingAccount(): Promise<t.SavingAccountWithControllerInstance> {
         this.erc20Tokens = await this.getERC20AddressesFromCompound();
+        console.log("Sa1");
 
         const cTokens: Array<string> = await this.getCompoundAddresses();
+        console.log("Sa1.1");
         const aggregators: Array<string> = await this.deployMockChainLinkAggregators();
+        console.log("Sa2");
 
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
         this.bank = await Bank.new();
+        console.log("Sa3");
 
         await this.bank.initialize(this.globalConfig.address);
+        console.log("Sa4");
 
         const accountTokenLib = await AccountTokenLib.new();
+        console.log("Sa5");
         const bitMapLib = await BitmapLib.new();
+        console.log("Sa6");
         const utils = await Utils.new();
-        Utils.setAsDeployed(utils);
+        console.log("Sa7");
+        // Utils.setAsDeployed(utils);
+        console.log("n-26");
 
         try {
             await SavingLib.link(utils);
@@ -252,10 +266,14 @@ export class TestEngine {
         }
 
         const savingLib = await SavingLib.new();
+        console.log("n-25");
 
         AccountTokenLib.setAsDeployed(accountTokenLib);
+        console.log("n-24");
         BitmapLib.setAsDeployed(bitMapLib);
+        console.log("n-23");
         SavingLib.setAsDeployed(savingLib);
+        console.log("n-22");
 
         try {
             await SavingAccount.link(utils);
@@ -265,30 +283,41 @@ export class TestEngine {
             // await Accounts.link(utils);
             await Accounts.link(accountTokenLib);
             await TokenRegistry.link(utils);
+            console.log("n-21");
         } catch (error) {}
 
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
+        console.log("n-20");
         await this.accounts.initialize(this.globalConfig.address);
+        console.log("n-19");
 
         this.tokenInfoRegistry = await TokenRegistry.new();
+        console.log("n-17");
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
+        console.log("n-17");
 
         const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
             .new
             // this.tokenInfoRegistry.address
             ();
         await chainLinkOracle.initialize(this.globalConfig.address);
+        console.log("n-16");
 
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
+        console.log("n-15");
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
         // ProxyAdmin.setAsDeployed(proxyAdmin);
+        console.log("n-14");
 
         const savingAccountProxy = await SavingAccountProxy.new();
+        console.log("n-13");
         const accountsProxy = await AccountsProxy.new();
+        console.log("n-12");
         const bankProxy = await BankProxy.new();
+        console.log("n-11");
 
         // Global Config initialize
         await this.globalConfig.initialize(
@@ -299,10 +328,12 @@ export class TestEngine {
             this.constant.address,
             chainLinkOracle.address
         );
+        console.log("n-10");
 
         const savingAccount: t.SavingAccountWithControllerInstance =
             await SavingAccountWithController.new();
         SavingAccountWithController.setAsDeployed(savingAccount);
+        console.log("n-9");
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
@@ -312,32 +343,41 @@ export class TestEngine {
                 this.compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
+        console.log("n-8");
 
         const accounts_initialize_data = this.accounts.contract.methods
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
+        console.log("n-7");
 
         const bank_initialize_data = this.bank.contract.methods
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
+        console.log("n-6");
 
         await savingAccountProxy.initialize(
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
+        console.log("n-5");
 
         await accountsProxy.initialize(
             this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
+        console.log("n-4");
 
         await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
+        console.log("n-3");
         const proxy = SavingAccountWithController.at(savingAccountProxy.address);
+        console.log("n-2");
         this.accounts = Accounts.at(accountsProxy.address);
+        console.log("n-1");
         this.bank = Bank.at(bankProxy.address);
 
+        console.log("n");
         return proxy;
     }
 
