@@ -12,7 +12,7 @@
     "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip",
     "coverage": "FILE=scriptFlywheel npm run clean-snapshot && FILE=scriptFlywheel npm run unzip-snapshot && npm run copy-coverage-files && npm run exec-coverage",
     "copy-coverage-files": "cp snapshots/config/scriptFlywheel.json ./compound-protocol/networks/development.json",
-    "exec-coverage": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file 'test/scriptFlywheel/unit/depositTests.spec.ts' --network coverage ",
+    "exec-coverage": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --network coverage ",
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
     "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 20000000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true --mnemonic “begin vessel olive rocket pink distance admit foam lizard type fault enjoy”",
