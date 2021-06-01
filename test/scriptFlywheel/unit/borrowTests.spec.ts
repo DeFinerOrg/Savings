@@ -1886,6 +1886,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await savingAccount.deposit(addressMKR, numOfToken, { from: user1 });
                     await savingAccount.deposit(addressTUSD, numOfToken, { from: user2 });
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressTUSD);
+                    const tusdTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        tusdTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
                         "Insufficient collateral when borrow."
@@ -1910,7 +1917,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(1001), { from: user1 }),
-                        "Lack of liquidity when borrow."
+                        "Insufficient collateral when borrow."
                     );
                 });
             });
