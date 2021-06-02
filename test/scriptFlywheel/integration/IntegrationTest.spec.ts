@@ -1,7 +1,7 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -11,6 +11,7 @@ const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
+let snapshotId: string;
 contract("Integration Tests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
@@ -73,15 +74,11 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function () {
-        this.timeout(0);
+    before(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -125,6 +122,16 @@ contract("Integration Tests", async (accounts) => {
         cBAT = await MockCToken.at(cBAT_addr);
         cZRX = await MockCToken.at(cZRX_addr);
         cETH = await MockCToken.at(cETH_addr);
+        await savingAccount.fastForward(1);
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("Deposit and Withdraw", async () => {

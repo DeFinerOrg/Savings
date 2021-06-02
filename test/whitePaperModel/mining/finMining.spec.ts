@@ -12,7 +12,7 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
@@ -21,6 +21,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -81,21 +83,18 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("whitePaperModel.scen");
-    });
-
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
 
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        tokenRegistry = testEngine.tokenInfoRegistry;
+        accountsContract = testEngine.accounts;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -165,7 +164,9 @@ contract("SavingAccount.borrow", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
+    });
 
+    beforeEach(async () => {
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });

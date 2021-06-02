@@ -21,6 +21,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -90,6 +92,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        tokenRegistry = testEngine.tokenInfoRegistry;
+        accountsContract = testEngine.accounts;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];

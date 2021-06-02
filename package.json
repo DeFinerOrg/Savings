@@ -4,9 +4,9 @@
   "description": "Saving pool contract.",
   "main": "index.js",
   "scripts": {
-    "compile": "truffle compile",
+    "compile": "npx hardhat compile",
     "test": "yarn prepare && npx hardhat test --network development",
-    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
