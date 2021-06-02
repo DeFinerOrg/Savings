@@ -22,7 +22,7 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+// const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
