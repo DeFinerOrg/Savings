@@ -10,13 +10,12 @@
     "prepare": "yarn generate",
 
     "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip",
-    "clean-snapshot-WPM": "rimraf snapshots/whitePaperModel",
-    "coverage-WPM": "FILE=whitePaperModel npm run clean-snapshot-WPM && FILE=whitePaperModel npm run unzip-snapshot && npm run copy-coverage-files-WPM && npm run exec-coverage-WPM",
+    "clean-snapshot": "rimraf snapshots/whitePaperModel && rimraf snapshots/scriptFlywheel",
+    "coverage-WPM": "FILE=whitePaperModel npm run clean-snapshot && FILE=whitePaperModel npm run unzip-snapshot && npm run copy-coverage-files-WPM && npm run exec-coverage-WPM",
     "copy-coverage-files-WPM": "cp snapshots/config/whitePaperModel.json ./compound-protocol/networks/development.json",
     "exec-coverage-WPM": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file 'test/whitePaperModel/**/*.ts'  --network coverage",
 
-    "clean-snapshot-SFW": "rimraf snapshots/scriptFlywheel",
-    "coverage-SFW": "FILE=scriptFlywheel npm run clean-snapshot-SFW && FILE=scriptFlywheel npm run unzip-snapshot && npm run copy-coverage-files-SFW && npm run exec-coverage-SFW",
+    "coverage-SFW": "FILE=scriptFlywheel npm run clean-snapshot && FILE=scriptFlywheel npm run unzip-snapshot && npm run copy-coverage-files-SFW && npm run exec-coverage-SFW",
     "copy-coverage-files-SFW": "cp snapshots/config/scriptFlywheel.json ./compound-protocol/networks/development.json",
     "exec-coverage-SFW": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage  --network coverage",
 
