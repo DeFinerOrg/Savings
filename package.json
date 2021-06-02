@@ -10,14 +10,14 @@
     "prepare": "yarn generate",
 
     "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip",
-    "clean-snapshot": "rimraf snapshots/whitePaperModel && rimraf snapshots/scriptFlywheel",
-    "coverage-WPM": "FILE=whitePaperModel npm run clean-snapshot && FILE=whitePaperModel npm run unzip-snapshot && npm run copy-coverage-files-WPM && npm run exec-coverage-WPM",
-    "copy-coverage-files-WPM": "cp snapshots/config/whitePaperModel.json ./compound-protocol/networks/development.json",
+    "clean-snapshot": "rimraf snapshots/whitePaperModel && rimraf snapshots/scriptFlywheel && rimraf snapshots/coverage",
+    "coverage-WPM": "FILE=coverage npm run clean-snapshot && FILE=coverage npm run unzip-snapshot && npm run copy-coverage-files-WPM && npm run exec-coverage-WPM",
+    "copy-coverage-files-WPM": "cp snapshots/config/coverage/whitePaperModel.json ./compound-protocol/networks/development.json",
     "exec-coverage-WPM": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file 'test/whitePaperModel/**/*.ts'  --network coverage",
 
-    "coverage-SFW": "FILE=scriptFlywheel npm run clean-snapshot && FILE=scriptFlywheel npm run unzip-snapshot && npm run copy-coverage-files-SFW && npm run exec-coverage-SFW",
-    "copy-coverage-files-SFW": "cp snapshots/config/scriptFlywheel.json ./compound-protocol/networks/development.json",
-    "exec-coverage-SFW": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage  --network coverage",
+    "coverage-SFW": "FILE=coverage npm run clean-snapshot && FILE=coverage npm run unzip-snapshot && npm run copy-coverage-files-SFW && npm run exec-coverage-SFW",
+    "copy-coverage-files-SFW": "cp snapshots/config/coverage/scriptFlywheel.json ./compound-protocol/networks/development.json",
+    "exec-coverage-SFW": "node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file 'test/scriptFlywheel/**/*.ts'  --network coverage",
 
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
     "lint": "npx solium -d contracts/",
