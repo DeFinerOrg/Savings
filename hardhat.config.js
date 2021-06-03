@@ -6,8 +6,11 @@ require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
-const fs = require("fs");
-const _mnemonic = fs.readFileSync(".secret").toString().trim();
+let _mnemonic = "";
+try {
+    const fs = require("fs");
+    _mnemonic = fs.readFileSync(".secret").toString().trim();
+} catch (e) {}
 
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
