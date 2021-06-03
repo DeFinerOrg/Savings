@@ -6,6 +6,9 @@ require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
+const fs = require("fs");
+const _mnemonic = fs.readFileSync(".secret").toString().trim();
+
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
 task("balance", "Prints an account's balance")
@@ -42,6 +45,17 @@ module.exports = {
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
+        },
+        testnet: {
+            url: "https://exchaintestrpc.okex.org",
+            gas: 20000000,
+            blockGasLimit: 12000000,
+            accounts: {
+                mnemonic: _mnemonic,
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+            },
         },
     },
     gasReporter: {},
