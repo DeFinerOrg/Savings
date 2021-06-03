@@ -11,10 +11,9 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+// const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("RemainingCoverage", async (accounts) => {
@@ -157,12 +156,10 @@ contract("RemainingCoverage", async (accounts) => {
                 let mockChainlinkAggregatorforUSDCAddress: string =
                     testEngine.mockChainlinkAggregators[1];
 
-                const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
-                    mockChainlinkAggregatorforDAIAddress
-                );
-                const mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance = await MockChainLinkAggregator.at(
-                    mockChainlinkAggregatorforUSDCAddress
-                );
+                const mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance =
+                    await MockChainLinkAggregator.at(mockChainlinkAggregatorforDAIAddress);
+                const mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance =
+                    await MockChainLinkAggregator.at(mockChainlinkAggregatorforUSDCAddress);
 
                 let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
 
