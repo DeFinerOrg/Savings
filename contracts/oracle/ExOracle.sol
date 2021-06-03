@@ -7,6 +7,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
  * @dev Contract represent ExOracle pair for the given tokens.
  * @notice It has functions similar to ChainLinkOracles, so that it can be easily integrated with
  * SavingAccount contracts.
+ * @dev For every token (its oracle), need to deploy this contract instance
  */
 contract ExOracle {
     using SafeMath for uint256;
