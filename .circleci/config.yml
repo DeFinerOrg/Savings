@@ -132,7 +132,7 @@ jobs:
 
       - run: 
           name: Run coverage
-          command: yarn coverage-SFW  #triggers truffle test
+          command: yarn prepare && yarn coverage-SFW  #triggers truffle test
 
 workflows:
     version: 2.1
