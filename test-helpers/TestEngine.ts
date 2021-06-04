@@ -14,7 +14,6 @@ const SavingAccount: any = artifacts.require("SavingAccount");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
 const Bank: any = artifacts.require("BankWithController");
 const Accounts: any = artifacts.require("AccountsWithController");
-const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
 const BitmapLib = artifacts.require("BitmapLib");
@@ -274,12 +273,6 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
-            .new
-            // this.tokenInfoRegistry.address
-            ();
-        await chainLinkOracle.initialize(this.globalConfig.address);
-
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
@@ -296,8 +289,7 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             accountsProxy.address,
-            this.constant.address,
-            chainLinkOracle.address
+            this.constant.address
         );
 
         const savingAccount: t.SavingAccountWithControllerInstance =
@@ -416,13 +408,6 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
-            .new
-            // this.tokenInfoRegistry.address
-            ();
-
-        await chainLinkOracle.initialize(this.globalConfig.address);
-
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
@@ -437,8 +422,7 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             accountsProxy.address,
-            this.constant.address,
-            chainLinkOracle.address
+            this.constant.address
         );
 
         const savingAccount: t.SavingAccountWithControllerInstance =
