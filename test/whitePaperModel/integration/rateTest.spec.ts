@@ -1,6 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -109,6 +111,12 @@ contract("Integration Tests", async (accounts) => {
                 cUSDT = await MockCToken.at(cUSDT_addr);
                 cWBTC = await MockCToken.at(cWBTC_addr);
                 cZRX = await MockCToken.at(cZRX_addr);
+                // Take snapshot of the EVM before each test
+                snapshotId = await takeSnapshot();
+            });
+
+            afterEach(async () => {
+                await revertToSnapShot(snapshotId);
             });
 
             it("Deposit DAI and checkout the output rate", async function () {

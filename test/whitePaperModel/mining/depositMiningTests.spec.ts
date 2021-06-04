@@ -1,6 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;

@@ -1,5 +1,7 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -104,6 +106,12 @@ contract("Integration Tests", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr); */
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("Special test.", async () => {
