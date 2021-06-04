@@ -2,8 +2,6 @@ import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contract
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
-let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -94,13 +92,6 @@ contract("SavingAccount.repay", async (accounts) => {
         cWBTC = await MockCToken.at(cWBTC_addr);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
-
-        // Take snapshot of the EVM before each test
-        snapshotId = await takeSnapshot();
-    });
-
-    afterEach(async () => {
-        await revertToSnapShot(snapshotId);
     });
 
     context("Addtional tests for repay()", async () => {
