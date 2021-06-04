@@ -294,5 +294,33 @@
             "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
+    },
+    "ExOracle": {
+        "testnet": {
+            "exOracleAddress": "0x319b07E94eA8288aC0c15b4A24d26577Bec05366",
+            "dataSource": "0x41f9950D778425D7B47619e0ad92117E1933918F"
+        },
+        "mainnet": {
+            "exOracleAddress": "0x31b820da47b4ebad81f653fdf32952d1bc1bc469",
+            "dataSource": "0x41f9950D778425D7B47619e0ad92117E1933918F"
+        },
+        "ExOracleContracts":[
+            {
+                "pairName": "OKT/ETH",
+                "priceType": "OKT"
+            }, 
+            {
+                "pairName": "OKB/ETH",
+                "priceType": "OKB"
+            },
+            {
+                "pairName": "USDT/ETH",
+                "priceType": "USDT"
+            },
+            {
+                "pairName": "BTC/ETH",
+                "priceType": "BTC"
+            }
+        ]
     }
 }

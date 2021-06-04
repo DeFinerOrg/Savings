@@ -24,10 +24,10 @@ contract ExOracle {
     // Price Type required by ExOracle. Example: "DAI"
     string public priceType;
 
-    uint public constant ONE_ETH = 10 ** 18;
-    // 6 decimals USD rate returned by ExOracle
-    uint public constant USD_RATE_DECIMALS = 10 ** 6;
-    uint public constant ETH_NUMERATOR = ONE_ETH * USD_RATE_DECIMALS;
+    uint256 public constant ONE_ETH = 10 ** 18;
+    // 6 decimals USD rate returned by ExOracle, multiplier, divisor
+    uint256 public constant USD_DECIMALS_MUL_DIV = 10 ** 6;
+    uint256 public constant ETH_NUMERATOR = ONE_ETH * USD_DECIMALS_MUL_DIV;
 
     constructor(
         address _exOracleAddress,
@@ -53,7 +53,7 @@ contract ExOracle {
         uint256 ethPriceInUSD = 0;
         (tokenPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get(priceType, dataSource);
         // price should not be older than 1 hour
-        uint expired = now.sub(1 hours);
+        uint256 expired = now.sub(1 hours);
         require(timestamp > expired, "Token price expired");
 
         // SavingAccounts contract takes prices in ETH
@@ -64,10 +64,10 @@ contract ExOracle {
 
         // 1^(18+6) / 2781624292 = 000359502181109079
         // means $1 = 000359502181109079 ETH
-        uint ethPerUSD = ETH_NUMERATOR.div(ethPriceInUSD);
+        uint256 ethPerUSD = ETH_NUMERATOR.div(ethPriceInUSD);
 
         // 000359502181109079 * 1001150 / (10^6) = 359915608617354
-        uint pricePerTokenInETH = ethPerUSD.mul(tokenPriceInUSD).div(USD_RATE_DECIMALS);
+        uint256 pricePerTokenInETH = ethPerUSD.mul(tokenPriceInUSD).div(USD_DECIMALS_MUL_DIV);
         return int256(pricePerTokenInETH);
     }
 }
