@@ -21,8 +21,11 @@
 require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const fs = require("fs");
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+let _mnemonic = "";
+try {
+    const fs = require("fs");
+    _mnemonic = fs.readFileSync(".secret").toString().trim();
+} catch (e) {}
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -82,7 +85,7 @@ module.exports = {
 
         // NOTICE: OKExChain-testnet
         kovan: {
-            provider: () => new HDWalletProvider(mnemonic, `https://exchaintestrpc.okex.org`),
+            provider: () => new HDWalletProvider(_mnemonic, `https://exchaintestrpc.okex.org`),
             network_id: 65,
             confirmations: 1,
             timeoutBlocks: 200,

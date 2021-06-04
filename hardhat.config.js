@@ -7,9 +7,11 @@ require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
 let _mnemonic = "";
+let MAINNET_PRIVATE_KEY = "";
 try {
     const fs = require("fs");
     _mnemonic = fs.readFileSync(".secret").toString().trim();
+    MAINNET_PRIVATE_KEY = fs.readFileSync(".privateKey").toString().trim();
 } catch (e) {}
 
 // This is a sample Buidler task. To learn how to create your own go to
@@ -59,6 +61,10 @@ module.exports = {
                 initialIndex: 0,
                 count: 20,
             },
+        },
+        mainnet: {
+            url: "https://exchainrpc.okex.org",
+            accounts: [`${MAINNET_PRIVATE_KEY}`],
         },
     },
     gasReporter: {},

@@ -2,11 +2,12 @@ let exOracleAddress;
 let dataSource;
 
 async function main() {
-    await loadExOracleTestnetContracts();
+    // await loadExOracleTestnetContracts();
+    await loadExOracleMainnetContracts();
 
     let exOracle;
-    // exOracle = await deployOracle();
-    exOracle = await readOracle();
+    exOracle = await deployOracle();
+    // exOracle = await readOracle();
 
     console.log("ExOracle deployed to:", exOracle.address);
     console.log("PairName:", await exOracle.pairName());
@@ -19,10 +20,15 @@ async function loadExOracleTestnetContracts() {
     dataSource = "0x41f9950D778425D7B47619e0ad92117E1933918F";
 }
 
+async function loadExOracleMainnetContracts() {
+    exOracleAddress = "0x31b820da47b4ebad81f653fdf32952d1bc1bc469";
+    dataSource = "0x41f9950D778425D7B47619e0ad92117E1933918F";
+}
+
 async function deployOracle() {
     // We get the contract to deploy
     const ExOracle = await ethers.getContractFactory("ExOracle");
-    const exOracle = await ExOracle.deploy(exOracleAddress, dataSource, "DAI/ETH", "DAI");
+    const exOracle = await ExOracle.deploy(exOracleAddress, dataSource, "DAI/OKT", "DAI");
     return exOracle;
 }
 

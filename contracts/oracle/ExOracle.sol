@@ -24,10 +24,10 @@ contract ExOracle {
     // Price Type required by ExOracle. Example: "DAI"
     string public priceType;
 
-    uint256 public constant ONE_ETH = 10 ** 18;
+    uint256 public constant ONE_OKT = 10 ** 18;
     // 6 decimals USD rate returned by ExOracle, multiplier, divisor
     uint256 public constant USD_DECIMALS_MUL_DIV = 10 ** 6;
-    uint256 public constant ETH_NUMERATOR = ONE_ETH * USD_DECIMALS_MUL_DIV;
+    uint256 public constant OKT_NUMERATOR = ONE_OKT * USD_DECIMALS_MUL_DIV;
 
     constructor(
         address _exOracleAddress,
@@ -42,15 +42,17 @@ contract ExOracle {
     }
 
     /**
-     * @dev returns the price of the a given token in ETH
-     * @return a token price in ETH
+     * @dev returns the price of the a given token in OKT
+     * @return a token price in OKT
      */
     function latestAnswer() public view returns (int256) {
+        // #### NOTICE: Eample calculation is in DAI & ETH #####
+        // -----------------------------------------------------
         // Get the price of priceType "DAI"
         // Example DAI price in USD = 1001150 = 1.001150 (6 decimals)
         uint256 timestamp = 0;
         uint256 tokenPriceInUSD = 0;
-        uint256 ethPriceInUSD = 0;
+        uint256 oktPriceInUSD = 0;
         (tokenPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get(priceType, dataSource);
         // price should not be older than 1 hour
         uint256 expired = now.sub(1 hours);
@@ -59,16 +61,16 @@ contract ExOracle {
         // SavingAccounts contract takes prices in ETH
         // ChainLinkOracle "DAI/ETH" rate is = 000359840000000000 in ETH (data from chainlink)
         // 2781.624292 = ETHPriceInUSD
-        (ethPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get("ETH", dataSource);
-        require(timestamp > expired, "ETH price expired");
+        (oktPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get("OKT", dataSource);
+        require(timestamp > expired, "OKT price expired");
 
         // 1^(18+6) / 2781624292 = 000359502181109079
         // means $1 = 000359502181109079 ETH
-        uint256 ethPerUSD = ETH_NUMERATOR.div(ethPriceInUSD);
+        uint256 oktPerUSD = OKT_NUMERATOR.div(oktPriceInUSD);
 
         // 000359502181109079 * 1001150 / (10^6) = 359915608617354
-        uint256 pricePerTokenInETH = ethPerUSD.mul(tokenPriceInUSD).div(USD_DECIMALS_MUL_DIV);
-        return int256(pricePerTokenInETH);
+        uint256 pricePerTokenInOKT = oktPerUSD.mul(tokenPriceInUSD).div(USD_DECIMALS_MUL_DIV);
+        return int256(pricePerTokenInOKT);
     }
 }
 
