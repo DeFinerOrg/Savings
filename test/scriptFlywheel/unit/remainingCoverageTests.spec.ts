@@ -1,6 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contracts/index.d";
 import { TestEngine } from "../../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -63,6 +65,12 @@ contract("RemainingCoverage", async (accounts) => {
         addressUSDC = tokens[1];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("approveAll", async () => {

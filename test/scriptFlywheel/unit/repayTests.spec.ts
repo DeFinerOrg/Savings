@@ -1,6 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -97,6 +99,13 @@ contract("SavingAccount", async (accounts) => {
         cETH = await MockCToken.at(addressCTokenForETH);
 
         numOfToken = new BN(1000);
+
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("repay()", async () => {
@@ -1500,14 +1509,10 @@ contract("SavingAccount", async (accounts) => {
                         (await web3.eth.getBalance(savingAccount.address)).toString()
                     );
 
-                    const user1ETHValueBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
-                    const user1ETHValueBeforeBorrow = await accountsContract.getBorrowBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
+                    const user1ETHValueBeforeDeposit =
+                        await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
+                    const user1ETHValueBeforeBorrow =
+                        await accountsContract.getBorrowBalanceCurrent(ETH_ADDRESS, user1);
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1,
@@ -1525,10 +1530,8 @@ contract("SavingAccount", async (accounts) => {
                         savingAccount
                     );
 
-                    const user1ETHValueAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
+                    const user1ETHValueAfterDeposit =
+                        await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
                     const user1ETHValueAfterBorrow = await accountsContract.getBorrowBalanceCurrent(
                         ETH_ADDRESS,
                         user1

@@ -2,6 +2,8 @@ import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contract
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
+let snapshotId: string;
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -92,6 +94,13 @@ contract("SavingAccount.repay", async (accounts) => {
         cWBTC = await MockCToken.at(cWBTC_addr);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
+
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("Addtional tests for repay()", async () => {
@@ -629,10 +638,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressDAI,
-                        user2
-                    );
+                    const userBalanceAfterFirstRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressDAI, user2);
 
                     const savingAccountCDAITokenAfterFirstRepay = BN(
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -655,10 +662,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressDAI,
-                        user2
-                    );
+                    const userBalanceAfterSecondRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressDAI, user2);
 
                     expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfDAI.div(new BN(2))
@@ -780,10 +785,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         await erc20USDC.balanceOf(savingAccount.address)
                     );
 
-                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressUSDC,
-                        user1
-                    );
+                    const userBalanceAfterFirstRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
 
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
 
@@ -798,10 +801,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressUSDC,
-                        user1
-                    );
+                    const userBalanceAfterSecondRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
 
                     expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfUSDC.div(new BN(2))
