@@ -2,8 +2,8 @@ let exOracleAddress;
 let dataSource;
 
 async function main() {
-    // await loadExOracleTestnetContracts();
-    await loadExOracleMainnetContracts();
+    await loadExOracleTestnetContracts();
+    // await loadExOracleMainnetContracts();
 
     let exOracle;
     exOracle = await deployOracle();

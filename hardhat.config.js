@@ -64,7 +64,8 @@ module.exports = {
         },
         mainnet: {
             url: "https://exchainrpc.okex.org",
-            accounts: [`${MAINNET_PRIVATE_KEY}`],
+            // CI getting failed
+            //accounts: [`${MAINNET_PRIVATE_KEY}`],
         },
     },
     gasReporter: {},

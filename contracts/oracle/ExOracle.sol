@@ -13,7 +13,7 @@ contract ExOracle {
     using SafeMath for uint256;
 
     // ExOracle contract address
-    address public exOracleAddress;
+    IExOraclePriceData public exOracleAddress;
 
     // ExOracle DataSource
     address public dataSource;
@@ -29,13 +29,20 @@ contract ExOracle {
     uint256 public constant USD_DECIMALS_MUL_DIV = 10 ** 6;
     uint256 public constant OKT_NUMERATOR = ONE_OKT * USD_DECIMALS_MUL_DIV;
 
+    /**
+     * @dev Constructor of the contract
+     * @param _exOracleAddress ExOracle contract address
+     * @param _dataSource Datasource address
+     * @param _pairName Price pair name. Example "DAI/ETH". Return DAI price in ETH
+     * @param _priceType Price type to fetch the price for. Example "DAI"
+     */
     constructor(
         address _exOracleAddress,
         address _dataSource,
         string memory _pairName,
         string memory _priceType
     ) public {
-        exOracleAddress = _exOracleAddress;
+        exOracleAddress = IExOraclePriceData(_exOracleAddress);
         pairName = _pairName;
         priceType = _priceType;
         dataSource = _dataSource;
@@ -50,19 +57,14 @@ contract ExOracle {
         // -----------------------------------------------------
         // Get the price of priceType "DAI"
         // Example DAI price in USD = 1001150 = 1.001150 (6 decimals)
-        uint256 timestamp = 0;
         uint256 tokenPriceInUSD = 0;
         uint256 oktPriceInUSD = 0;
-        (tokenPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get(priceType, dataSource);
-        // price should not be older than 1 hour
-        uint256 expired = now.sub(1 hours);
-        require(timestamp > expired, "Token price expired");
+        (tokenPriceInUSD, ) = _getPrice(priceType);
 
         // SavingAccounts contract takes prices in ETH
         // ChainLinkOracle "DAI/ETH" rate is = 000359840000000000 in ETH (data from chainlink)
         // 2781.624292 = ETHPriceInUSD
-        (oktPriceInUSD, timestamp) = IExOraclePriceData(exOracleAddress).get("OKT", dataSource);
-        require(timestamp > expired, "OKT price expired");
+        (oktPriceInUSD, ) = _getPrice("OKT");
 
         // 1^(18+6) / 2781624292 = 000359502181109079
         // means $1 = 000359502181109079 ETH
@@ -71,6 +73,19 @@ contract ExOracle {
         // 000359502181109079 * 1001150 / (10^6) = 359915608617354
         uint256 pricePerTokenInOKT = oktPerUSD.mul(tokenPriceInUSD).div(USD_DECIMALS_MUL_DIV);
         return int256(pricePerTokenInOKT);
+    }
+
+    /**
+     * @dev Get the price in USD (6 decimals) from ExOracle and validate that the price is
+     *      not expired.
+     * @param _priceType The price type
+     * @return returns the price in USD and the timestamp
+     */
+    function _getPrice(string memory _priceType) internal view returns (uint256 priceInUSD, uint256 timestamp) {
+        (priceInUSD, timestamp) = exOracleAddress.get(_priceType, dataSource);
+        // price should not be older than 1 hour
+        uint256 expired = now.sub(1 hours);
+        require(timestamp > expired, "Token price expired");
     }
 }
 
