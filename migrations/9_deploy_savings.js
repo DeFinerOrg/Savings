@@ -28,6 +28,9 @@ const MockERC20 = artifacts.require("MockERC20");
 const MockCToken = artifacts.require("MockCToken");
 const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 
+// ExOracle
+const ExOracle = artifacts.require("ExOracle");
+
 // This is to resolve "Invalid JSON RPC response" error when using expectRevert.
 // Code taken from
 // https://forum.openzeppelin.com/t/error-deploying-simple-erc777-contract-with-truffle-and-ganache/1588/13
@@ -50,6 +53,7 @@ module.exports = async function (deployer, network) {
     const erc20Tokens = await getERC20Tokens();
     console.log("=========================getERC20Tokens============================");
     const chainLinkAggregators = await getChainLinkAggregators();
+    console.log(chainLinkAggregators);
     console.log("=========================getChainLinkAggregators============================");
     const cTokens = await getCTokens(erc20Tokens);
     console.log("=========================getCTokens============================");
@@ -103,6 +107,8 @@ module.exports = async function (deployer, network) {
     const initialize_data = savingAccount.contract.methods
         .initialize(erc20Tokens, cTokens, globalConfig.address)
         .encodeABI();
+    console.log(erc20Tokens);
+    console.log(cTokens);
     console.log("=========================initialize_data============================");
 
     const proxyAdmin = await ProxyAdmin.deployed();
@@ -138,6 +144,7 @@ const initializeTokenInfoRegistry = async (
             const isSupportedOnCompound = token.isSupportedByCompound;
             const cToken = cTokens[i];
             const chainLinkOracle = chainLinkAggregators[i];
+            console.log("adding token", token.symbol);
             await tokenInfoRegistry.addToken(
                 tokenAddr,
                 decimals,
@@ -151,31 +158,13 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    if (network == "ropsten" || network == "ropsten-fork") {
-        await tokenInfoRegistry.addToken(
-            ETH_ADDR,
-            tokenData.ETH.decimals,
-            tokenData.ETH.isFeeEnabled,
-            tokenData.ETH.isSupportedByCompound,
-            tokenData.ETH.ropsten.cTokenAddress,
-            DEAD_ADDR
-        );
-    } else if (network == "kovan" || network == "kovan-fork") {
+    if (network == "kovan" || network == "kovan-fork") {
         await tokenInfoRegistry.addToken(
             ETH_ADDR,
             tokenData.ETH.decimals,
             tokenData.ETH.isFeeEnabled,
             tokenData.ETH.isSupportedByCompound,
             tokenData.ETH.kovan.cTokenAddress,
-            DEAD_ADDR
-        );
-    } else if (network == "rinkeby" || network == "rinkeby-fork") {
-        await tokenInfoRegistry.addToken(
-            ETH_ADDR,
-            tokenData.ETH.decimals,
-            tokenData.ETH.isFeeEnabled,
-            tokenData.ETH.isSupportedByCompound,
-            tokenData.ETH.rinkeby.cTokenAddress,
             DEAD_ADDR
         );
     } else if (network == "mainnet" || network == "mainnet-fork") {
@@ -214,12 +203,8 @@ const getCTokens = async (erc20Tokens) => {
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.cTokenAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
+            if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.cTokenAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.cTokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.cTokenAddress;
             } else {
@@ -248,12 +233,8 @@ const getERC20Tokens = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.tokenAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
+            if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.tokenAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.tokenAddress;
             } else if (network == "mainnet" || network == "mainnet-fork") {
                 addr = token.mainnet.tokenAddress;
             } else {
@@ -272,25 +253,37 @@ const getChainLinkAggregators = async () => {
     // const network = process.env.NETWORK;
     const network = net_work;
 
+    let exOracleAddress;
+    let dataSource;
+
+    if (network == "mainnet" || network == "mainnet-fork") {
+        exOracleAddress = tokenData.ExOracle.mainnet.exOracleAddress;
+        dataSource = tokenData.ExOracle.mainnet.dataSource;
+    } else if (network == "kovan" || network == "kovan-fork") {
+        exOracleAddress = tokenData.ExOracle.testnet.exOracleAddress;
+        dataSource = tokenData.ExOracle.testnet.dataSource;
+    }
+
     await Promise.all(
-        tokenData.tokens.map(async (token) => {
-            let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.aggregatorAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
-                addr = token.kovan.aggregatorAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.aggregatorAddress;
-            } else if (network == "mainnet" || network == "mainnet-fork") {
-                addr = token.mainnet.aggregatorAddress;
-            } else {
-                // network = development || coverage
-                addr = (
-                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
-                ).address;
-            }
-            aggregators.push(addr);
+        tokenData.ExOracle.ExOracleContracts.map(async (exOracle) => {
+            console.log("deploying ExOracle pair", exOracle.pairName);
+            const exOracleImplAddress = (
+                await ExOracle.new(
+                    exOracleAddress,
+                    dataSource,
+                    exOracle.pairName,
+                    exOracle.priceType
+                )
+            ).address;
+            aggregators.push(exOracleImplAddress);
+            console.log(
+                "ExOracle pair:",
+                exOracle.pairName,
+                " deployed with address",
+                exOracleImplAddress
+            );
         })
     );
+
     return aggregators;
 };

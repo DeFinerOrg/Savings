@@ -1,255 +1,67 @@
 {
     "tokens": [
         {
-            "name": "DAI",
-            "symbol": "DAI",
+            "name": "OKB",
+            "symbol": "OKB",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": true,
+            "isSupportedByCompound": false,
             "latestAnswer": "5424285000000000",
             "mainnet": {
-                "tokenAddress": "0x6b175474e89094c44da98b954eedeac495271d0f",
-                "aggregatorAddress": "0x773616E4d11A78F511299002da57A0a94577F1f4",
-                "cTokenAddress": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"
-            },
-            "ropsten": {
-                "tokenAddress": "0xc2118d4d90b274016cb7a54c03ef52e6c537d957",
-                "aggregatorAddress": "0x037E8F2125bF532F3e228991e051c8A7253B642c",
-                "cTokenAddress": "0xdb5ed4605c11822811a39f94314fdb8f0fb59a2c"
+                "tokenAddress": "0xdf54b6c6195ea4d948d03bfd818d365cf175cfc2",
+                "cTokenAddress": "0x8e1e582879cb8bac6283368e8ede458b63f499a5"
             },
             "kovan": {
-                "tokenAddress": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa",
-                "aggregatorAddress": "0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541",
-                "cTokenAddress": "0xf0d0eb522cfa50b716b3b1604c4f0fa6f04376ad"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
-                "aggregatorAddress": "0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0",
-                "cTokenAddress": "0x6d7f0754ffeb405d23c51ce938289d4835be3b14"
+                "tokenAddress": "0xda9d14072ef2262c64240da3a93fea2279253611",
+                "cTokenAddress": "0xe3f93C0fa59f76Ca07DB9508298eF40906D4BCd9"
             }
         },
         {
-            "name": "USD Coin",
-            "symbol": "USDC",
-            "decimals": 6,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "latestAnswer": "5309685000000000",
-            "mainnet": {
-                "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-                "aggregatorAddress": "0x986b5E1e1755e3C2440e960477f25201B0a8bbD4",
-                "cTokenAddress": "0x39aa39c021dfbae8fac545936693ac917d5e7563"
-            },
-            "ropsten": {
-                "tokenAddress": "0x0d9c8723b343a8368bebe0b5e89273ff8d712e3c",
-                "aggregatorAddress": "0xE1480303DDe539E2c241bdC527649F37c9cBef7d",
-                "cTokenAddress": "0x8af93cae804cc220d1a608d4fa54d1b6ca5eb361"
-            },
-            "kovan": {
-                "tokenAddress": "0xb7a4f3e9097c08da09517b5ab877f7a917224ede",
-                "aggregatorAddress": "0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838",
-                "cTokenAddress": "0x4a92e71227d294f041bd82dd8f78591b75140d63"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b",
-                "aggregatorAddress": "0x50390D95efcad051B78498A3D7BB3ff8Cd3dbbd7",
-                "cTokenAddress": "0x5b281a6dda0b271e91ae35de655ad301c976edb1"
-            }
-        },
-        {
-            "name": "Tether",
+            "name": "USDT",
             "symbol": "USDT",
-            "decimals": 6,
-            "isFeeEnabled": true,
-            "isSupportedByCompound": true,
-            "latestAnswer": "5164220000000000",
-            "mainnet": {
-                "tokenAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-                "aggregatorAddress": "0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46",
-                "cTokenAddress": "0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9"
-            },
-            "ropsten": {
-                "tokenAddress": "0x516de3a7a567d81737e3a46ec4ff9cfd1fcb0136",
-                "aggregatorAddress": "0xC08fe0C4D97ccda6B40649c6dA621761b628c288",
-                "cTokenAddress": "0x135669c2dcbd63f639582b313883f101a4497f76"
-            },
-            "kovan": {
-                "tokenAddress": "0x07de306ff27a2b630b1141956844eb1552b956b5",
-                "aggregatorAddress": "0x0bF499444525a23E7Bb61997539725cA2e928138",
-                "cTokenAddress": "0x3f0a0ea2f86bae6362cf9799b523ba06647da018"
-            },
-            "rinkeby": {
-                "tokenAddress": "0xd9ba894e0097f8cc2bbc9d24d308b98e36dc6d02",
-                "aggregatorAddress": "0x50390D95efcad051B78498A3D7BB3ff8Cd3dbbd7",
-                "cTokenAddress": "0x2fb298bdbef468638ad6653ff8376575ea41e768"
-            }
-        },
-        {
-            "name": "TrueUSD",
-            "symbol": "TUSD",
             "decimals": 18,
             "isFeeEnabled": false,
             "isSupportedByCompound": false,
-            "latestAnswer": "5172765000000000",
+            "latestAnswer": "5424285000000000",
             "mainnet": {
-                "tokenAddress": "0x0000000000085d4780B73119b644AE5ecd22b376",
-                "aggregatorAddress": "0x3886BA987236181D98F2401c507Fb8BeA7871dF2",
-                "cTokenAddress": "0x0000000000000000000000000000000000000001"
-            },
-            "ropsten": {
-                "tokenAddress": "0xaC4dd0482225A6F5dFeC32d0A82459E7236c17a9",
-                "aggregatorAddress": "0x523AC85618DF56E940534443125eF16DAf785620",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+                "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
+                "cTokenAddress": "0x849c37a029b38d3826562697ccc40c34477c6293"
             },
             "kovan": {
-                "tokenAddress": "0x7A6E8e83cd3f28872317055688164B3CC0846A58",
-                "aggregatorAddress": "0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x76450840130214842B900c5C1b745b60f1046C8B",
-                "aggregatorAddress": "0x50390D95efcad051B78498A3D7BB3ff8Cd3dbbd7",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+                "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
+                "cTokenAddress": "0xC51B7f17Fe325762878d0De5BB59754a5c3A8c05"
             }
         },
         {
-            "name": "Maker",
-            "symbol": "MKR",
+            "name": "BTCK",
+            "symbol": "BTCK",
             "decimals": 18,
             "isFeeEnabled": false,
             "isSupportedByCompound": false,
-            "latestAnswer": "1716434500000000000",
+            "latestAnswer": "5424285000000000",
             "mainnet": {
-                "tokenAddress": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-                "aggregatorAddress": "0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2",
-                "cTokenAddress": "0x0000000000000000000000000000000000000002"
-            },
-            "ropsten": {
-                "tokenAddress": "0x324f9f8E9e21ce8a25bf7A6d4f90ADa79fA24B18",
-                "aggregatorAddress": "0x811B1f727F8F4aE899774B568d2e72916D91F392",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+                "tokenAddress": "0x54e4622dc504176b3bb432dccaf504569699a7ff",
+                "cTokenAddress": "0x33a32f0ad4aa704e28c93ed8ffa61d50d51622a7"
             },
             "kovan": {
-                "tokenAddress": "0xeD8aff4253e6317D9A7606FF7E3A2C5C5a75ad3a",
-                "aggregatorAddress": "0x0B156192e04bAD92B6C1C13cf8739d14D78D5701",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x74c688fF304F5B134c4b15224D3e600dC68773b3",
-                "aggregatorAddress": "0x50390D95efcad051B78498A3D7BB3ff8Cd3dbbd7",
-                "cTokenAddress": "0x0000000000000000000000000000000000000000"
+                "tokenAddress": "0x09973e7e3914eb5ba69c7c025f30ab9446e3e4e0",
+                "cTokenAddress": "0x7A33C4af2F7d7591FA8bcC3a87e27BbDcAEe793c"
             }
         },
         {
-            "name": "Basic attention token",
-            "symbol": "BAT",
+            "name": "ETHK",
+            "symbol": "ETHK",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "latestAnswer": "918555000000000",
+            "isSupportedByCompound": false,
+            "latestAnswer": "5424285000000000",
             "mainnet": {
-                "tokenAddress": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
-                "aggregatorAddress": "0x0d16d4528239e9ee52fa531af613AcdB23D88c94",
-                "cTokenAddress": "0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e"
-            },
-            "ropsten": {
-                "tokenAddress": "0x443fd8d5766169416ae42b8e050fe9422f628419",
-                "aggregatorAddress": "0xAfd8186C962daf599f171B8600f3e19Af7B52c92",
-                "cTokenAddress": "0x9e95c0b2412ce50c37a121622308e7a6177f819d"
+                "tokenAddress": "0xef71ca2ee68f45b9ad6f72fbdb33d707b872315c",
+                "cTokenAddress": "0x75dcd2536a5f414b8f90bb7f2f3c015a26dc8c79"
             },
             "kovan": {
-                "tokenAddress": "0x482dc9bb08111cb875109b075a40881e48ae02cd",
-                "aggregatorAddress": "0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae",
-                "cTokenAddress": "0x4a77faee9650b09849ff459ea1476eab01606c7a"
-            },
-            "rinkeby": {
-                "tokenAddress": "0xbf7a7169562078c96f0ec1a8afd6ae50f12e5a99",
-                "aggregatorAddress": "0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
-                "cTokenAddress": "0xebf1a11532b93a529b5bc942b4baa98647913002"
-            }
-        },
-        {
-            "name": "0x",
-            "symbol": "ZRX",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "latestAnswer": "953760000000000",
-            "mainnet": {
-                "tokenAddress": "0xe41d2489571d322189246dafa5ebde1f4699f498",
-                "aggregatorAddress": "0x2Da4983a622a8498bb1a21FaE9D8F6C664939962",
-                "cTokenAddress": "0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407"
-            },
-            "ropsten": {
-                "tokenAddress": "0xe4c6182ea459e63b8f1be7c428381994ccc2d49c",
-                "aggregatorAddress": "0x1d0052E4ae5b4AE4563cBAc50Edc3627Ca0460d7",
-                "cTokenAddress": "0x00e02a5200ce3d5b5743f5369deb897946c88121"
-            },
-            "kovan": {
-                "tokenAddress": "0x162c44e53097e7b5aae939b297fffd6bf90d1ee3",
-                "aggregatorAddress": "0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883",
-                "cTokenAddress": "0xaf45ae737514c8427d373d50cd979a242ec59e5a"
-            },
-            "rinkeby": {
-                "tokenAddress": "0xddea378a6ddc8afec82c36e9b0078826bf9e68b6",
-                "aggregatorAddress": "0x4b387f15D803eB6635C37A2B51e0E487c11C3b79",
-                "cTokenAddress": "0x52201ff1720134bbbbb2f6bc97bf3715490ec19b"
-            }
-        },
-        {
-            "name": "Augur",
-            "symbol": "REP",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "latestAnswer": "52943555000000000",
-            "mainnet": {
-                "tokenAddress": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
-                "aggregatorAddress": "0xD4CE430C3b67b3E2F7026D86E7128588629e2455",
-                "cTokenAddress": "0x158079ee67fce2f58472a96584a73c7ab9ac95c1"
-            },
-            "ropsten": {
-                "tokenAddress": "0x6fd34013cdd2905d8d27b0adad5b97b2345cf2b8",
-                "aggregatorAddress": "0xa949eE9bA80c0F381481f2eaB538bC5547a5aC67",
-                "cTokenAddress": "0x8f2c8b147a3d316d2b98f32f3864746f034a55a2"
-            },
-            "kovan": {
-                "tokenAddress": "0x50dd65531676f718b018de3dc48f92b53d756996",
-                "aggregatorAddress": "0x3A7e6117F2979EFf81855de32819FBba48a63e9e",
-                "cTokenAddress": "0xa4ec170599a1cf87240a35b9b1b8ff823f448b57"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x6e894660985207feb7cf89faf048998c71e8ee89",
-                "aggregatorAddress": "0xD8fB78dA76c7c9c8c1889EeA6b53967D87BF0A79",
-                "cTokenAddress": "0xebe09eb3411d18f4ff8d859e096c533cac5c6b60"
-            }
-        },
-        {
-            "name": "WBTC",
-            "symbol": "WBTC",
-            "decimals": 8,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "latestAnswer": "41623010370000000000",
-            "mainnet": {
-                "tokenAddress": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-                "aggregatorAddress": "0xdeb288F737066589598e9214E782fa5A8eD689e8",
-                "cTokenAddress": "0xc11b1268c1a384e55c48c2391d8d480264a3a7f4"
-            },
-            "ropsten": {
-                "tokenAddress": "0xbde8bb00a7ef67007a96945b3a3621177b615c44",
-                "aggregatorAddress": "0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF",
-                "cTokenAddress": "0x58145bc5407d63daf226e4870beeb744c588f149"
-            },
-            "kovan": {
-                "tokenAddress": "0xd3a691c852cdb01e281545a27064741f0b7f6825",
-                "aggregatorAddress": "0x33E5085E92f5b53E9A193E28ad2f76bF210550BB",
-                "cTokenAddress": "0xa1faa15655b0e7b6b6470ed3d096390e6ad93abb"
-            },
-            "rinkeby": {
-                "tokenAddress": "0x577d296678535e4903d59a4c929b718e1d575e0a",
-                "aggregatorAddress": "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD",
-                "cTokenAddress": "0x0014f450b8ae7708593f4a46f8fa6e5d50620f96"
+                "tokenAddress": "0xdf950cecf33e64176ada5dd733e170a56d11478e",
+                "cTokenAddress": "0xbEF88205609a1470bde139bdB036F7A931C56C33"
             }
         }
     ],
@@ -259,16 +71,10 @@
         "isFeeEnabled": false,
         "isSupportedByCompound": true,
         "mainnet": {
-            "cTokenAddress": "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"
-        },
-        "ropsten": {
-            "cTokenAddress": "0xbe839b6d93e3ea47effcca1f27841c917a8794f3"
+            "cTokenAddress": "0x621ce6596e0b9ccf635316bfe7fdbc80c3029bec"
         },
         "kovan": {
-            "cTokenAddress": "0x41b5844f4680a8c38fbb695b7f9cfd1f64474a72"
-        },
-        "rinkeby": {
-            "cTokenAddress": "0xd6801a1dffcd0a410336ef88def4320d6df1883e"
+            "cTokenAddress": "0xB7305381bA2Bfd45dE3Ff8624FE74377B957d62e"
         }
     },
     "LPToken": {
@@ -304,22 +110,22 @@
             "exOracleAddress": "0x31b820da47b4ebad81f653fdf32952d1bc1bc469",
             "dataSource": "0x41f9950D778425D7B47619e0ad92117E1933918F"
         },
-        "ExOracleContracts":[
+        "ExOracleContracts": [
             {
-                "pairName": "OKT/ETH",
-                "priceType": "OKT"
-            }, 
-            {
-                "pairName": "OKB/ETH",
+                "pairName": "OKB/OKT",
                 "priceType": "OKB"
             },
             {
-                "pairName": "USDT/ETH",
+                "pairName": "USDT/OKT",
                 "priceType": "USDT"
             },
             {
-                "pairName": "BTC/ETH",
+                "pairName": "BTC/OKT",
                 "priceType": "BTC"
+            },
+            {
+                "pairName": "ETH/OKT",
+                "priceType": "ETH"
             }
         ]
     }

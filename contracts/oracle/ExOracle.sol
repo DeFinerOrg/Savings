@@ -66,7 +66,7 @@ contract ExOracle {
         // 2781.624292 = ETHPriceInUSD
         (oktPriceInUSD, ) = _getPrice("OKT");
 
-        // 1^(18+6) / 2781624292 = 000359502181109079
+        // 10^(18+6) / 2781624292 = 000359502181109079
         // means $1 = 000359502181109079 ETH
         uint256 oktPerUSD = OKT_NUMERATOR.div(oktPriceInUSD);
 

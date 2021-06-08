@@ -1,5 +1,4 @@
 # .prettierrc
 printWidth: 100
-parser: typescript
 tabWidth: 4
 arrowParens: always
