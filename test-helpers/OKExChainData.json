@@ -1,0 +1,132 @@
+{
+    "tokens": [
+        {
+            "name": "OKB",
+            "symbol": "OKB",
+            "decimals": 18,
+            "isFeeEnabled": false,
+            "isSupportedByCompound": false,
+            "latestAnswer": "5424285000000000",
+            "mainnet": {
+                "tokenAddress": "0xdf54b6c6195ea4d948d03bfd818d365cf175cfc2",
+                "cTokenAddress": "0x8e1e582879cb8bac6283368e8ede458b63f499a5"
+            },
+            "kovan": {
+                "tokenAddress": "0xda9d14072ef2262c64240da3a93fea2279253611",
+                "cTokenAddress": "0xe3f93C0fa59f76Ca07DB9508298eF40906D4BCd9"
+            }
+        },
+        {
+            "name": "USDT",
+            "symbol": "USDT",
+            "decimals": 18,
+            "isFeeEnabled": false,
+            "isSupportedByCompound": false,
+            "latestAnswer": "5424285000000000",
+            "mainnet": {
+                "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
+                "cTokenAddress": "0x849c37a029b38d3826562697ccc40c34477c6293"
+            },
+            "kovan": {
+                "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
+                "cTokenAddress": "0xC51B7f17Fe325762878d0De5BB59754a5c3A8c05"
+            }
+        },
+        {
+            "name": "BTCK",
+            "symbol": "BTCK",
+            "decimals": 18,
+            "isFeeEnabled": false,
+            "isSupportedByCompound": false,
+            "latestAnswer": "5424285000000000",
+            "mainnet": {
+                "tokenAddress": "0x54e4622dc504176b3bb432dccaf504569699a7ff",
+                "cTokenAddress": "0x33a32f0ad4aa704e28c93ed8ffa61d50d51622a7"
+            },
+            "kovan": {
+                "tokenAddress": "0x09973e7e3914eb5ba69c7c025f30ab9446e3e4e0",
+                "cTokenAddress": "0x7A33C4af2F7d7591FA8bcC3a87e27BbDcAEe793c"
+            }
+        },
+        {
+            "name": "ETHK",
+            "symbol": "ETHK",
+            "decimals": 18,
+            "isFeeEnabled": false,
+            "isSupportedByCompound": false,
+            "latestAnswer": "5424285000000000",
+            "mainnet": {
+                "tokenAddress": "0xef71ca2ee68f45b9ad6f72fbdb33d707b872315c",
+                "cTokenAddress": "0x75dcd2536a5f414b8f90bb7f2f3c015a26dc8c79"
+            },
+            "kovan": {
+                "tokenAddress": "0xdf950cecf33e64176ada5dd733e170a56d11478e",
+                "cTokenAddress": "0xbEF88205609a1470bde139bdB036F7A931C56C33"
+            }
+        }
+    ],
+    "ETH": {
+        "decimals": 18,
+        "latestAnswer": "1",
+        "isFeeEnabled": false,
+        "isSupportedByCompound": true,
+        "mainnet": {
+            "cTokenAddress": "0x621ce6596e0b9ccf635316bfe7fdbc80c3029bec"
+        },
+        "kovan": {
+            "cTokenAddress": "0xB7305381bA2Bfd45dE3Ff8624FE74377B957d62e"
+        }
+    },
+    "LPToken": {
+        "symbol": "LPToken",
+        "decimals": 18,
+        "isFeeEnabled": false,
+        "isSupportedByCompound": false,
+        "latestAnswer": "41623010370000000000",
+        "mainnet": {
+            "tokenAddress": "0x486792bcdb13F8aaCf85288D98850FA2804F95c7",
+            "aggregatorAddress": "0x444F88FDd587C1Bd6B50bB8924f964DEC590e403",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        }
+    },
+    "DeFiner": {
+        "symbol": "FIN",
+        "decimals": 18,
+        "isFeeEnabled": false,
+        "isSupportedByCompound": false,
+        "latestAnswer": "41623010370000000000",
+        "mainnet": {
+            "tokenAddress": "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40",
+            "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        }
+    },
+    "ExOracle": {
+        "testnet": {
+            "exOracleAddress": "0x319b07E94eA8288aC0c15b4A24d26577Bec05366",
+            "dataSource": "0x41f9950D778425D7B47619e0ad92117E1933918F"
+        },
+        "mainnet": {
+            "exOracleAddress": "0x31b820da47b4ebad81f653fdf32952d1bc1bc469",
+            "dataSource": "0x41f9950D778425D7B47619e0ad92117E1933918F"
+        },
+        "ExOracleContracts": [
+            {
+                "pairName": "OKB/OKT",
+                "priceType": "OKB"
+            },
+            {
+                "pairName": "USDT/OKT",
+                "priceType": "USDT"
+            },
+            {
+                "pairName": "BTC/OKT",
+                "priceType": "BTC"
+            },
+            {
+                "pairName": "ETH/OKT",
+                "priceType": "ETH"
+            }
+        ]
+    }
+}
