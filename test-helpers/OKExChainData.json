@@ -5,7 +5,7 @@
             "symbol": "OKB",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": false,
+            "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
             "mainnet": {
                 "tokenAddress": "0xdf54b6c6195ea4d948d03bfd818d365cf175cfc2",
@@ -21,7 +21,7 @@
             "symbol": "USDT",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": false,
+            "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
             "mainnet": {
                 "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
@@ -37,7 +37,7 @@
             "symbol": "BTCK",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": false,
+            "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
             "mainnet": {
                 "tokenAddress": "0x54e4622dc504176b3bb432dccaf504569699a7ff",
@@ -53,7 +53,7 @@
             "symbol": "ETHK",
             "decimals": 18,
             "isFeeEnabled": false,
-            "isSupportedByCompound": false,
+            "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
             "mainnet": {
                 "tokenAddress": "0xef71ca2ee68f45b9ad6f72fbdb33d707b872315c",
