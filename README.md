@@ -10,9 +10,10 @@ Clone the repository and follow these steps to compile the contracts and run tes
 
 **1)** Pull the compound-protocol submodule:  
 
-- **`cd Savings && git submodule init && git submodule update`**  
-- **`cd compound-protocol && sudo npm i`**  
-- **`cd scenario && npm i`**
+    git submodule init && git submodule update && 
+    cd compound-protocol && yarn install --lock-file &&
+    cd scenario && npm i &&
+    cd ../.. && npm i
 
 **2)** Install dependencies:
 
