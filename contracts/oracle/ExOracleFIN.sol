@@ -1,15 +1,13 @@
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * @title OKExChain Oracle : ExOracle
- * @dev Contract represent ExOracle pair for the given tokens.
- * @notice It has functions similar to ChainLinkOracles, so that it can be easily integrated with
- * SavingAccount contracts.
- * @dev For every token (its oracle), need to deploy this contract instance
+ * @title FIN Oracle
+ * @dev Contract represent FIN ExOracle pair.
  */
-contract ExOracle {
+contract ExOracle is Ownable {
     using SafeMath for uint256;
 
     // ExOracle contract address
@@ -18,34 +16,47 @@ contract ExOracle {
     // ExOracle DataSource
     address public dataSource;
 
+    // FIN token price in USD, with 6 decimal places
+    uint256 public finPriceInUSD;
+    
+    // FIN token last updated timestamp
+    uint256 public finLastUpdateTimestamp;
+
     // Pair Name: example: "DAI/ETH"
-    string public pairName;
+    string public constant pairName = "FIN/OKT";
 
     // Price Type required by ExOracle. Example: "DAI"
-    string public priceType;
+    string public constant priceType = "FIN";
 
     uint256 public constant ONE_OKT = 10 ** 18;
     // 6 decimals USD rate returned by ExOracle, multiplier, divisor
     uint256 public constant USD_DECIMALS_MUL_DIV = 10 ** 6;
     uint256 public constant OKT_NUMERATOR = ONE_OKT * USD_DECIMALS_MUL_DIV;
 
+    event FINPriceUpdated(uint256 priceInUSD, uint256 timestamp);
+
     /**
      * @dev Constructor of the contract
      * @param _exOracleAddress ExOracle contract address
      * @param _dataSource Datasource address
-     * @param _pairName Price pair name. Example "DAI/ETH". Return DAI price in ETH
-     * @param _priceType Price type to fetch the price for. Example "DAI"
      */
     constructor(
         address _exOracleAddress,
-        address _dataSource,
-        string memory _pairName,
-        string memory _priceType
+        address _dataSource
     ) public {
         exOracleAddress = IExOraclePriceData(_exOracleAddress);
         dataSource = _dataSource;
-        pairName = _pairName;
-        priceType = _priceType;
+    }
+
+    /**
+     * @dev Only owner can set the FIN price in USD
+     * @notice The price is in USD, upto 6 decimal places.
+     * for example to set $1.1, set `_price = 1100000`
+     */
+    function setFINPriceInUSD(uint256 _price) public onlyOwner {
+        finPriceInUSD = _price;
+        finLastUpdateTimestamp = now;
+        emit FINPriceUpdated(finPriceInUSD, finLastUpdateTimestamp);
     }
 
     /**
@@ -53,13 +64,8 @@ contract ExOracle {
      * @return a token price in OKT
      */
     function latestAnswer() public view returns (int256) {
-        // #### NOTICE: Eample calculation is in DAI & ETH #####
-        // -----------------------------------------------------
-        // Get the price of priceType "DAI"
-        // Example DAI price in USD = 1001150 = 1.001150 (6 decimals)
-        uint256 tokenPriceInUSD = 0;
+        uint256 tokenPriceInUSD = finPriceInUSD;
         uint256 oktPriceInUSD = 0;
-        (tokenPriceInUSD, ) = _getPrice(priceType);
 
         // SavingAccounts contract takes prices in ETH
         // ChainLinkOracle "DAI/ETH" rate is = 000359840000000000 in ETH (data from chainlink)
