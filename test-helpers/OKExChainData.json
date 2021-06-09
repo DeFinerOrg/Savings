@@ -94,10 +94,13 @@
         "decimals": 18,
         "isFeeEnabled": false,
         "isSupportedByCompound": false,
-        "latestAnswer": "41623010370000000000",
+        "latestAnswer": "140000",
         "mainnet": {
-            "tokenAddress": "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40",
-            "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
+            "tokenAddress": "0x8d3573f24c0aa3819a2f5b02b2985dd82b487715",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        },
+        "testnet": {
+            "tokenAddress": "0xffb7559a201ee93feaa39355f2416193e15434d1",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
     },

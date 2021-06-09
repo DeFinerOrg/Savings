@@ -30,6 +30,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregator");
 
 // ExOracle
 const ExOracle = artifacts.require("ExOracle");
+const ExOracleFIN = artifacts.require("ExOracleFIN");
 
 // This is to resolve "Invalid JSON RPC response" error when using expectRevert.
 // Code taken from
@@ -120,6 +121,9 @@ module.exports = async function (deployer, network) {
     console.log("=========================accountsProxy.initialize============================");
     await bankProxy.initialize(bank.address, proxyAdmin.address, bank_initialize_data);
     console.log("=========================bankProxy.initialize============================");
+
+    await addAndSetupFINToken(tokenInfoRegistry);
+    console.log("=========================setup FIN Token============================");
 
     console.log("GlobalConfig:", globalConfig.address);
     console.log("Constant:", constant.address);
@@ -253,16 +257,9 @@ const getChainLinkAggregators = async () => {
     // const network = process.env.NETWORK;
     const network = net_work;
 
-    let exOracleAddress;
-    let dataSource;
-
-    if (network == "mainnet" || network == "mainnet-fork") {
-        exOracleAddress = tokenData.ExOracle.mainnet.exOracleAddress;
-        dataSource = tokenData.ExOracle.mainnet.dataSource;
-    } else if (network == "kovan" || network == "kovan-fork") {
-        exOracleAddress = tokenData.ExOracle.testnet.exOracleAddress;
-        dataSource = tokenData.ExOracle.testnet.dataSource;
-    }
+    const exOracleConf = await getExOracleDataSource();
+    let exOracleAddress = exOracleConf[0];
+    let dataSource = exOracleConf[1];
 
     await Promise.all(
         tokenData.ExOracle.ExOracleContracts.map(async (exOracle) => {
@@ -286,4 +283,64 @@ const getChainLinkAggregators = async () => {
     );
 
     return aggregators;
+};
+
+const getExOracleDataSource = async () => {
+    const network = net_work;
+
+    let exOracleAddress;
+    let dataSource;
+
+    if (network == "mainnet" || network == "mainnet-fork") {
+        exOracleAddress = tokenData.ExOracle.mainnet.exOracleAddress;
+        dataSource = tokenData.ExOracle.mainnet.dataSource;
+    } else if (network == "kovan" || network == "kovan-fork") {
+        exOracleAddress = tokenData.ExOracle.testnet.exOracleAddress;
+        dataSource = tokenData.ExOracle.testnet.dataSource;
+    }
+    return [exOracleAddress, dataSource];
+};
+
+const addAndSetupFINToken = async (tokenInfoRegistry) => {
+    const finOracleAddress = await deployFINOracle();
+    await addFINTokenSupport(tokenInfoRegistry, finOracleAddress);
+};
+
+// Deploy custom Oracle for FIN token
+const deployFINOracle = async () => {
+    const exOracleConf = await getExOracleDataSource();
+    let exOracleAddress = exOracleConf[0];
+    let dataSource = exOracleConf[1];
+
+    const exOracleFin = await ExOracleFIN.new(exOracleAddress, dataSource);
+    await exOracleFin.setFINPriceInUSD(tokenData.DeFiner.latestAnswer);
+    console.log("FIN price in USD set in Oracle:", (await exOracleFin.finPriceInUSD()).toString());
+    const finOracleAddress = exOracleFin.address;
+    console.log("ExOracleFIN deployed:", finOracleAddress);
+    return finOracleAddress;
+};
+
+// Add FIN token support
+const addFINTokenSupport = async (tokenInfoRegistry, finOracleAddress) => {
+    const network = net_work;
+
+    let tokenAddr;
+    let cTokenAddr;
+
+    if (network == "mainnet" || network == "mainnet-fork") {
+        tokenAddr = tokenData.DeFiner.mainnet.tokenAddress;
+        cTokenAddr = tokenData.DeFiner.mainnet.cTokenAddress;
+    } else if (network == "kovan" || network == "kovan-fork") {
+        tokenAddr = tokenData.DeFiner.testnet.tokenAddress;
+        cTokenAddr = tokenData.DeFiner.testnet.cTokenAddress;
+    }
+
+    await tokenInfoRegistry.addToken(
+        tokenAddr,
+        tokenData.DeFiner.decimals,
+        tokenData.DeFiner.isFeeEnabled,
+        tokenData.DeFiner.isSupportedByCompound,
+        cTokenAddr,
+        finOracleAddress
+    );
 };

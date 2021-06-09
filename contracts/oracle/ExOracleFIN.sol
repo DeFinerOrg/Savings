@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * @title FIN Oracle
  * @dev Contract represent FIN ExOracle pair.
  */
-contract ExOracle is Ownable {
+contract ExOracleFIN is Ownable {
     using SafeMath for uint256;
 
     // ExOracle contract address
@@ -18,7 +18,7 @@ contract ExOracle is Ownable {
 
     // FIN token price in USD, with 6 decimal places
     uint256 public finPriceInUSD;
-    
+
     // FIN token last updated timestamp
     uint256 public finLastUpdateTimestamp;
 
