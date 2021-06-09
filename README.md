@@ -13,30 +13,16 @@ Clone the repository and follow these steps to compile the contracts and run tes
     git submodule init && git submodule update && 
     cd compound-protocol && yarn install --lock-file &&
     cd scenario && npm i &&
-    cd ../.. && npm i
+    cd ../..
 
 **2)** Install dependencies:
 
-**`cd Savings && yarn`**
+    npm install
 
-**3)** Launch hardhat evm in a new terminal window:
+**3)** Run test scripts:
 
-**`npx hardhat node`**
+    sh runtests.sh
 
-**4)** Run test scripts:
-
-**`yarn test test/**/*.ts`**
-
-To run a specefic test file:  
-**`yarn test test/path/to/test_file_name`**  
-
-**Example:**  
-**`yarn test test/unit/depositTests.spec.ts`**
-
-**4)** If you want to use truffle test suite to run the tests: 
-- Replace **`await testEngine.deploySavingAccount()`** to **`await testEngine.deploySavingAccountTruffle()`** 
-- Replace **`await testEngine.deploy()`** to **`await testEngine.deployTruffle()`** 
-- Then run **`truffle test`**
 
 ## Passing Tests should look like the following:
 
