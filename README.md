@@ -24,17 +24,4 @@ Clone the repository and follow these steps to compile the contracts and run tes
     sh runtests.sh
 
 
-## Passing Tests should look like the following:
-
-```javascript
-
- Contract: ❍ SavingAccount
-    ✓ should update conversion rate successfully. (5203ms)
-    etc..
-
-  Contract: ❍ TestTokenContract
-    ✓ totalAmount should add interest when rate and time are 0. (59ms)
-    etc..
-
-```  
 For more info about the protocol, please refer to our docs here: https://app.gitbook.com/@definer/s/definer/
