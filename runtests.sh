@@ -7,7 +7,7 @@ yarn prepare
 declare -a modelArr=("whitePaperModel" "scriptFlywheel")
 
 for model in "${modelArr[@]}"
-do
+  do
     echo "$model"
     rm -rf compound-protocol/networks/development.json
     cp snapshots/config/$model.json compound-protocol/networks/development.json
@@ -46,7 +46,7 @@ do
       sleep 5s
       echo "Done."
     done
+  done
 done
-
 echo "Failed Status: $failed"
 exit $failed
