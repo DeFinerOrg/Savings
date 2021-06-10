@@ -8,7 +8,7 @@ We recommend using [solc-select](https://github.com/crytic/solc-select) for swit
 
 Clone the repository and follow these steps to compile the contracts and run tests:
 
-**1)** Install dependencies:
+**1)** Install dependencies & set up the project:
 
     npm install
 
