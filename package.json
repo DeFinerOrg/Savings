@@ -7,7 +7,7 @@
     "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
     "compile": "truffle compile",
     "test": "./runtests.sh && yarn prepare && npx hardhat test test/upgradability/upgradability.proxy.ts",
-    "generate": "truffle compile && yarn prepare && typechain --target truffle './build/**/*.json'",
+    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
     "coverage-setup": "node_modules/.bin/testrpc-sc -p 8546 --gasLimit 0x1fffffffffffff --gasPrice 1 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true",
