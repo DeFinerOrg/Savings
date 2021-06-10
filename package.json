@@ -4,6 +4,7 @@
   "description": "Saving pool contract.",
   "main": "index.js",
   "scripts": {
+    "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
     "compile": "truffle compile",
     "test": "yarn prepare && npx hardhat test --network development",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
