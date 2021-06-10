@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
     "compile": "truffle compile",
-    "test": "yarn prepare && npx hardhat test --network development",
+    "test": "yarn prepare && npx hardhat test test/upgradability/upgradability.proxy.ts && ./runtests.sh",
     "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
     "coverage": "yarn prepare && npx solidity-coverage",
