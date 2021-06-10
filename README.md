@@ -8,21 +8,13 @@ We recommend using [solc-select](https://github.com/crytic/solc-select) for swit
 
 Clone the repository and follow these steps to compile the contracts and run tests:
 
-**1)** Pull the compound-protocol submodule:  
-
-    git submodule init && git submodule update && 
-    cd compound-protocol && yarn install --lock-file &&
-    cd scenario && npm i &&
-    cd ../..
-
-**2)** Install dependencies:
+**1)** Install dependencies:
 
     npm install
 
-**3)** Run test scripts:
+**2)** Run test scripts:
 
     sh runtests.sh
-
 
 
 For more info about the protocol, please refer to our docs here: https://app.gitbook.com/@definer/s/definer/
