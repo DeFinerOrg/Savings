@@ -47,6 +47,6 @@ for model in "${modelArr[@]}"
       echo "Done."
     done
   done
-done
+
 echo "Failed Status: $failed"
 exit $failed
