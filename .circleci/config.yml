@@ -21,8 +21,12 @@ jobs:
           sudo chmod +x /usr/local/bin/solc
       - checkout
 
-      - run: git submodule update 
-      
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update 
+
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
