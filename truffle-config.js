@@ -50,14 +50,17 @@ module.exports = {
             host: "127.0.0.1",
             port: 8545,
             network_id: "*",
+            allowUnlimitedContractSize: true,
             gas: 20000000,
         },
         coverage: {
             host: "127.0.0.1",
-            port: 8546,
+            port: 8545,
             network_id: "*",
-            gas: 0xfffffffffff,
-            gasPrice: 1,
+            gas: 0xfffffffffff, // <-- Use this high gas value
+            gasPrice: 1, // <-- Use this low gas price
+            disableConfirmationListener: true,
+            allowUnlimitedContractSize: true,
         },
         mainnet: {
             provider: () =>
