@@ -242,7 +242,7 @@ export class TestEngine {
         const accountTokenLib = await AccountTokenLib.new();
         const bitMapLib = await BitmapLib.new();
         const utils = await Utils.new();
-        Utils.setAsDeployed(utils);
+        // Utils.setAsDeployed(utils);
 
         try {
             await SavingLib.link(utils);
@@ -252,9 +252,9 @@ export class TestEngine {
 
         const savingLib = await SavingLib.new();
 
-        AccountTokenLib.setAsDeployed(accountTokenLib);
-        BitmapLib.setAsDeployed(bitMapLib);
-        SavingLib.setAsDeployed(savingLib);
+        // AccountTokenLib.setAsDeployed(accountTokenLib);
+        // BitmapLib.setAsDeployed(bitMapLib);
+        // SavingLib.setAsDeployed(savingLib);
 
         try {
             await SavingAccount.link(utils);
@@ -267,7 +267,7 @@ export class TestEngine {
         } catch (error) {}
 
         this.accounts = await Accounts.new();
-        Accounts.setAsDeployed(this.accounts);
+        // Accounts.setAsDeployed(this.accounts);
         await this.accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
@@ -294,7 +294,7 @@ export class TestEngine {
 
         const savingAccount: t.SavingAccountWithControllerInstance =
             await SavingAccountWithController.new();
-        SavingAccountWithController.setAsDeployed(savingAccount);
+        // SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
             .initialize(

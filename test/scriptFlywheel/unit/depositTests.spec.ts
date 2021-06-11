@@ -43,12 +43,13 @@ contract("SavingAccount.deposit", async (accounts) => {
     before(function () {
         // Things to initialize before all test
         this.timeout(0);
-        testEngine = new TestEngine();
+        testEngine = new TestEngine();        
         // testEngine.deploy("scriptFlywheel.scen");
     });
 
     beforeEach(async function () {
         this.timeout(0);
+        
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -72,7 +73,7 @@ contract("SavingAccount.deposit", async (accounts) => {
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
-        //console.log("addressCETH", addressCETH);
+        //console.log("addressCETH", addressCETH);        
     });
 
     context("deposit()", async () => {
