@@ -207,6 +207,7 @@ workflows:
     version: 2.1
     build:
         jobs:
-            - tests
             - coverage-SFW
             - coverage-WPM
+            - tests
+
