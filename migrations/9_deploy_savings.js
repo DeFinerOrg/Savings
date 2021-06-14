@@ -67,9 +67,8 @@ module.exports = async function (deployer, network) {
 
     const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
-    await chainLinkOracle.initialize(globalConfig.address);
     console.log(
-        "=========================tokenInfoRegistry.initialize & chainLinkOracle.initialize============================"
+        "========================= tokenInfoRegistry.initialize ============================"
     );
 
     // Deploy Upgradability
@@ -83,8 +82,7 @@ module.exports = async function (deployer, network) {
         savingAccountProxy.address,
         tokenInfoRegistry.address,
         accountsProxy.address,
-        constant.address,
-        chainLinkOracle.address
+        constant.address
     );
     console.log("=========================globalConfig.initialize============================");
 
@@ -122,7 +120,6 @@ module.exports = async function (deployer, network) {
     console.log("Accounts:", accountsProxy.address);
     console.log("Bank:", bankProxy.address);
     console.log("TokenRegistry:", tokenInfoRegistry.address);
-    console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };
 
