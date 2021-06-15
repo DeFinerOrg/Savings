@@ -13,7 +13,6 @@ const Bank = artifacts.require("Bank");
 const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 
-const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry = artifacts.require("TokenRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 const Constant = artifacts.require("Constant");
@@ -44,9 +43,8 @@ const DEAD_ADDR = "0x0000000000000000000000000000000000000001";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 let net_work;
 
-module.exports = async function(deployer, network) {
-
-    console.log("++++++++++++++++"+network+"+++++++++++++++++++");
+module.exports = async function (deployer, network) {
+    console.log("++++++++++++++++" + network + "+++++++++++++++++++");
     net_work = network;
 
     const erc20Tokens = await getERC20Tokens();
@@ -67,15 +65,10 @@ module.exports = async function(deployer, network) {
         chainLinkAggregators
     );
 
-    // Configure ChainLinkAggregator
-    const chainLinkOracle = await deployer.deploy(ChainLinkAggregator);
-    console.log("=========================Deploy chainLinkOracle============================");
-
     const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
-    await chainLinkOracle.initialize(globalConfig.address);
     console.log(
-        "=========================tokenInfoRegistry.initialize & chainLinkOracle.initialize============================"
+        "========================= tokenInfoRegistry.initialize ============================"
     );
 
     // Deploy Upgradability
@@ -89,8 +82,7 @@ module.exports = async function(deployer, network) {
         savingAccountProxy.address,
         tokenInfoRegistry.address,
         accountsProxy.address,
-        constant.address,
-        chainLinkOracle.address
+        constant.address
     );
     console.log("=========================globalConfig.initialize============================");
 
@@ -128,7 +120,6 @@ module.exports = async function(deployer, network) {
     console.log("Accounts:", accountsProxy.address);
     console.log("Bank:", bankProxy.address);
     console.log("TokenRegistry:", tokenInfoRegistry.address);
-    console.log("ChainLinkAggregator:", chainLinkOracle.address);
     console.log("SavingAccount:", savingAccountProxy.address);
 };
 
@@ -161,16 +152,51 @@ const initializeTokenInfoRegistry = async (
 
     // Add ETH
     if (network == "ropsten" || network == "ropsten-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.ropsten.cTokenAddress, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.ropsten.cTokenAddress,
+            DEAD_ADDR
+        );
     } else if (network == "kovan" || network == "kovan-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.kovan.cTokenAddress, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.kovan.cTokenAddress,
+            DEAD_ADDR
+        );
     } else if (network == "rinkeby" || network == "rinkeby-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.rinkeby.cTokenAddress, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.rinkeby.cTokenAddress,
+            DEAD_ADDR
+        );
     } else if (network == "mainnet" || network == "mainnet-fork") {
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, tokenData.ETH.mainnet.cTokenAddress, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.mainnet.cTokenAddress,
+            DEAD_ADDR
+        );
     } else {
         // network = development || coverage
-        await tokenInfoRegistry.addToken(ETH_ADDR, tokenData.ETH.decimals, tokenData.ETH.isFeeEnabled, tokenData.ETH.isSupportedByCompound, ZERO_ADDRESS, DEAD_ADDR);
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            ZERO_ADDRESS,
+            DEAD_ADDR
+        );
     }
     console.log("initializeTokenInfoRegistry: " + "ETH");
 };
@@ -179,7 +205,7 @@ const getCTokens = async (erc20Tokens) => {
     // const network = process.env.NETWORK;
     const network = net_work;
 
-    console.log("*************"+network+"***********");
+    console.log("*************" + network + "***********");
 
     var cTokens = new Array();
 

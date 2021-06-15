@@ -14,7 +14,6 @@ const SavingAccount: any = artifacts.require("SavingAccount");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithController");
 const Bank: any = artifacts.require("BankWithController");
 const Accounts: any = artifacts.require("AccountsWithController");
-const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry: any = artifacts.require("TokenRegistry");
 const AccountTokenLib = artifacts.require("AccountTokenLib");
 const BitmapLib = artifacts.require("BitmapLib");
@@ -243,7 +242,7 @@ export class TestEngine {
         const accountTokenLib = await AccountTokenLib.new();
         const bitMapLib = await BitmapLib.new();
         const utils = await Utils.new();
-        Utils.setAsDeployed(utils);
+        // Utils.setAsDeployed(utils);
 
         try {
             await SavingLib.link(utils);
@@ -253,9 +252,9 @@ export class TestEngine {
 
         const savingLib = await SavingLib.new();
 
-        AccountTokenLib.setAsDeployed(accountTokenLib);
-        BitmapLib.setAsDeployed(bitMapLib);
-        SavingLib.setAsDeployed(savingLib);
+        // AccountTokenLib.setAsDeployed(accountTokenLib);
+        // BitmapLib.setAsDeployed(bitMapLib);
+        // SavingLib.setAsDeployed(savingLib);
 
         try {
             await SavingAccount.link(utils);
@@ -268,17 +267,11 @@ export class TestEngine {
         } catch (error) {}
 
         this.accounts = await Accounts.new();
-        Accounts.setAsDeployed(this.accounts);
+        // Accounts.setAsDeployed(this.accounts);
         await this.accounts.initialize(this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
-
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
-            .new
-            // this.tokenInfoRegistry.address
-            ();
-        await chainLinkOracle.initialize(this.globalConfig.address);
 
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
@@ -296,12 +289,12 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             accountsProxy.address,
-            this.constant.address,
-            chainLinkOracle.address
+            this.constant.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
-        SavingAccountWithController.setAsDeployed(savingAccount);
+        const savingAccount: t.SavingAccountWithControllerInstance =
+            await SavingAccountWithController.new();
+        // SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
@@ -419,13 +412,6 @@ export class TestEngine {
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
 
-        const chainLinkOracle: t.ChainLinkAggregatorInstance = await ChainLinkAggregator
-            .new
-            // this.tokenInfoRegistry.address
-            ();
-
-        await chainLinkOracle.initialize(this.globalConfig.address);
-
         await this.tokenInfoRegistry.initialize(this.globalConfig.address);
 
         // Deploy Upgradability contracts
@@ -440,11 +426,11 @@ export class TestEngine {
             savingAccountProxy.address,
             this.tokenInfoRegistry.address,
             accountsProxy.address,
-            this.constant.address,
-            chainLinkOracle.address
+            this.constant.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance =
+            await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
             .initialize(

@@ -13,7 +13,6 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("GlobalConfig", async (accounts) => {
@@ -144,7 +143,8 @@ contract("GlobalConfig", async (accounts) => {
 
             it("executing updateLiquidationDiscountRatio", async function () {
                 this.timeout(0);
-                const beforeLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
+                const beforeLiquidationDiscountRatio =
+                    await globalConfig.liquidationDiscountRatio();
                 await globalConfig.updateLiquidationThreshold(new BN(10));
                 await globalConfig.updateLiquidationDiscountRatio(new BN(20));
                 const afterLiquidationDiscountRatio = await globalConfig.liquidationDiscountRatio();
