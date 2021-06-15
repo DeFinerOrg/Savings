@@ -1,5 +1,5 @@
 module.exports = {
-    skipFiles: ["contracts/mocks/", "contracts/v1/", "contracts/v1_1/"],
+    skipFiles: ["mocks/", "v1/", "v1_1/"],
 
     providerOptions: {
         db_path: "snapshots/coverage",
