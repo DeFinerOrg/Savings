@@ -3,9 +3,7 @@ import { BigNumber } from "bignumber.js";
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 
-let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -65,11 +63,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
+    });
 
+    beforeEach(async function () {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -114,15 +116,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
         ONE_USDC = sixPrecision;
 
         await savingAccount.fastForward(1000);
-    });
-
-    beforeEach(async () => {
-        // Take snapshot of the EVM before each test
-        snapshotId = await takeSnapshot();
-    });
-
-    afterEach(async () => {
-        await revertToSnapShot(snapshotId);
     });
 
     context("liquidate()", async () => {

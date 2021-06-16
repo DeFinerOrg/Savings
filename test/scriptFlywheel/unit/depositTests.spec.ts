@@ -1,9 +1,7 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 
-let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -51,7 +49,6 @@ contract("SavingAccount.deposit", async (accounts) => {
 
     beforeEach(async function () {
         this.timeout(0);
-
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.

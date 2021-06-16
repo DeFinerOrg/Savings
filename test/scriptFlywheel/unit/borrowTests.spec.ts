@@ -1,8 +1,7 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
-let snapshotId: string;
+
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
@@ -79,12 +78,16 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
 
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
+    });
 
+    beforeEach(async function () {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -153,15 +156,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         numOfToken = new BN(1000);
 
         await savingAccount.fastForward(1);
-    });
-
-    beforeEach(async () => {
-        // Take snapshot of the EVM before each test
-        snapshotId = await takeSnapshot();
-    });
-
-    afterEach(async () => {
-        await revertToSnapShot(snapshotId);
     });
 
     context("borrow()", async () => {

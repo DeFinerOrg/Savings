@@ -3,8 +3,7 @@ import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contract
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
-let snapshotId: string;
+
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -24,7 +23,6 @@ contract("SavingAccount.borrow", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
-    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -77,18 +75,21 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_DAI: any;
     let ONE_USDC: any;
 
-    before(async () => {
+    before(function () {
         // Things to initialize before all test
+        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
+    });
 
+    beforeEach(async function () {
+        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         accountsContract = await testEngine.accounts;
         bank = await testEngine.bank;
-        tokenRegistry = testEngine.tokenInfoRegistry;
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -153,15 +154,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
 
         await savingAccount.fastForward(1);
-    });
-
-    beforeEach(async () => {
-        // Take snapshot of the EVM before each test
-        snapshotId = await takeSnapshot();
-    });
-
-    afterEach(async () => {
-        await revertToSnapShot(snapshotId);
     });
 
     // extra tests by Yichun
