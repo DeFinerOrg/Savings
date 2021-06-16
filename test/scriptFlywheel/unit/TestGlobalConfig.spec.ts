@@ -16,6 +16,8 @@ const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 contract("GlobalConfig", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
+    const addressOne: string = "0x0000000000000000000000000000000000000001";
+    const sixteenPrecision = new BN(10).pow(new BN(16));
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let globalConfig: t.GlobalConfigInstance;
@@ -151,6 +153,94 @@ contract("GlobalConfig", async (accounts) => {
                 const afterLiquidationDiscountRatio = await globalConfig.midReserveRatio();
                 expect(beforeLiquidationDiscountRatio).to.be.bignumber.equal(new BN(15));
                 expect(afterLiquidationDiscountRatio).to.be.bignumber.equal(new BN(20));
+            });
+
+            it("executing updateCompoundSupplyRateWeights", async function () {
+                this.timeout(0);
+                const beforeCompoundSupplyRateWeights =
+                    await globalConfig.compoundSupplyRateWeights();
+                await globalConfig.updateCompoundSupplyRateWeights(new BN(5));
+                const afterCompoundSupplyRateWeights =
+                    await globalConfig.compoundSupplyRateWeights();
+                expect(beforeCompoundSupplyRateWeights).to.be.bignumber.equal(new BN(4));
+                expect(afterCompoundSupplyRateWeights).to.be.bignumber.equal(new BN(5));
+            });
+
+            it("executing updateCompoundBorrowRateWeights", async function () {
+                this.timeout(0);
+                const beforeCompoundBorrowRateWeights =
+                    await globalConfig.compoundBorrowRateWeights();
+                await globalConfig.updateCompoundBorrowRateWeights(new BN(7));
+                const afterCompoundBorrowRateWeights =
+                    await globalConfig.compoundBorrowRateWeights();
+                expect(beforeCompoundBorrowRateWeights).to.be.bignumber.equal(new BN(6));
+                expect(afterCompoundBorrowRateWeights).to.be.bignumber.equal(new BN(7));
+            });
+
+            it("executing updaterateCurveSlope", async function () {
+                this.timeout(0);
+                const beforeRateCurveSlope = await globalConfig.rateCurveSlope();
+                await globalConfig.updaterateCurveSlope(new BN(14).mul(sixteenPrecision));
+                const afterRateCurveSlope = await globalConfig.rateCurveSlope();
+                expect(beforeRateCurveSlope).to.be.bignumber.equal(
+                    new BN(15).mul(sixteenPrecision)
+                );
+                expect(afterRateCurveSlope).to.be.bignumber.equal(new BN(14).mul(sixteenPrecision));
+            });
+
+            it("executing updaterateCurveConstant", async function () {
+                this.timeout(0);
+                const beforeRateCurveConstant = await globalConfig.rateCurveConstant();
+                await globalConfig.updaterateCurveConstant(new BN(5).mul(sixteenPrecision));
+                const afterRateCurveConstant = await globalConfig.rateCurveConstant();
+                expect(beforeRateCurveConstant).to.be.bignumber.equal(
+                    new BN(3).mul(sixteenPrecision)
+                );
+                expect(afterRateCurveConstant).to.be.bignumber.equal(
+                    new BN(5).mul(sixteenPrecision)
+                );
+            });
+
+            it("executing updateBank", async function () {
+                this.timeout(0);
+                await globalConfig.updateBank(addressOne);
+                const afterBank = await globalConfig.bank();
+                expect(afterBank).to.be.bignumber.equal(addressOne);
+            });
+
+            it("executing updateSavingAccount", async function () {
+                this.timeout(0);
+                await globalConfig.updateSavingAccount(addressOne);
+                const afterSavingAccount = await globalConfig.savingAccount();
+                expect(afterSavingAccount).to.be.bignumber.equal(addressOne);
+            });
+
+            it("executing updateTokenInfoRegistry", async function () {
+                this.timeout(0);
+                await globalConfig.updateTokenInfoRegistry(addressOne);
+                const afterTokenInfoRegistry = await globalConfig.tokenInfoRegistry();
+                expect(afterTokenInfoRegistry).to.be.bignumber.equal(addressOne);
+            });
+
+            it("executing updateAccounts", async function () {
+                this.timeout(0);
+                await globalConfig.updateAccounts(addressOne);
+                const afterAccounts = await globalConfig.accounts();
+                expect(afterAccounts).to.be.bignumber.equal(addressOne);
+            });
+
+            it("executing updateConstant", async function () {
+                this.timeout(0);
+                await globalConfig.updateConstant(addressOne);
+                const afterConstant = await globalConfig.constants();
+                expect(afterConstant).to.be.bignumber.equal(addressOne);
+            });
+
+            it("executing updatedeFinerCommunityFund", async function () {
+                this.timeout(0);
+                await globalConfig.updatedeFinerCommunityFund(addressOne);
+                const afterDeFinerCommunityFund = await globalConfig.deFinerCommunityFund();
+                expect(afterDeFinerCommunityFund).to.be.bignumber.equal(addressOne);
             });
         });
     });
