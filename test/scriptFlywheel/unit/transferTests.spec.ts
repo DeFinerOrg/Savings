@@ -1,4 +1,3 @@
-import { MaxReserveRatioUpdated } from "./../../../types/GlobalConfig.d";
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";

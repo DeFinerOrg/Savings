@@ -12,9 +12,8 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -23,6 +22,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -90,6 +90,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
         accountsContract = await testEngine.accounts;
         bank = await testEngine.bank;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -209,9 +210,11 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
                             const wbtcTokenIndex = result[0];
-                            await accountsContract.methods[
-                                "setCollateral(uint8,bool)"
-                            ](wbtcTokenIndex, true, { from: user1 });
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                wbtcTokenIndex,
+                                true,
+                                { from: user1 }
+                            );
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
                                 "Lack of liquidity when borrow."
