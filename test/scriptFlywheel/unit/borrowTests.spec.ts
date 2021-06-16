@@ -2,9 +2,8 @@ import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
 
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -1911,7 +1910,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(1001), { from: user1 }),
-                        "Insufficient collateral when borrow."
+                        "Lack of liquidity when borrow."
                     );
                 });
             });
