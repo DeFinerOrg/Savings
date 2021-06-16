@@ -97,6 +97,7 @@ contract("SavingAccount", async (accounts) => {
         cETH = await MockCToken.at(addressCTokenForETH);
 
         numOfToken = new BN(1000);
+        await savingAccount.fastForward(1);
     });
 
     context("repay()", async () => {
@@ -1500,14 +1501,10 @@ contract("SavingAccount", async (accounts) => {
                         (await web3.eth.getBalance(savingAccount.address)).toString()
                     );
 
-                    const user1ETHValueBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
-                    const user1ETHValueBeforeBorrow = await accountsContract.getBorrowBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
+                    const user1ETHValueBeforeDeposit =
+                        await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
+                    const user1ETHValueBeforeBorrow =
+                        await accountsContract.getBorrowBalanceCurrent(ETH_ADDRESS, user1);
                     // 3. Start repayment.
                     await savingAccount.repay(ETH_ADDRESS, ETHNumOfToken.div(new BN(10)), {
                         from: user1,
@@ -1525,10 +1522,8 @@ contract("SavingAccount", async (accounts) => {
                         savingAccount
                     );
 
-                    const user1ETHValueAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                        ETH_ADDRESS,
-                        user1
-                    );
+                    const user1ETHValueAfterDeposit =
+                        await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
                     const user1ETHValueAfterBorrow = await accountsContract.getBorrowBalanceCurrent(
                         ETH_ADDRESS,
                         user1

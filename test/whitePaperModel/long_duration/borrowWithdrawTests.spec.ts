@@ -1,9 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -154,6 +153,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
         ZERO = new BN(0);
+        await savingAccount.fastForward(1);
     });
 
     context("Deposit, Borrow and Withdraw", async () => {
@@ -162,14 +162,10 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 const numOfDAI = TWO_DAIS;
                 const numOfUSDC = ONE_USDC;
                 const borrowAmount = numOfUSDC.div(new BN(10));
-                const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
-                    erc20DAI.address,
-                    user1
-                );
-                const totalDefinerBalanceBeforeDepositUSDC = await accountsContract.getDepositBalanceCurrent(
-                    erc20USDC.address,
-                    user2
-                );
+                const totalDefinerBalanceBeforeDepositDAI =
+                    await accountsContract.getDepositBalanceCurrent(erc20DAI.address, user1);
+                const totalDefinerBalanceBeforeDepositUSDC =
+                    await accountsContract.getDepositBalanceCurrent(erc20USDC.address, user2);
 
                 await erc20DAI.transfer(user1, numOfDAI);
                 await erc20USDC.transfer(user2, numOfUSDC);
@@ -185,19 +181,15 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                     savingAccount.address
                 );
                 // Validate the total balance on DeFiner after deposit
-                const totalDefinerBalanceAfterDepositDAI = await accountsContract.getDepositBalanceCurrent(
-                    erc20DAI.address,
-                    user1
-                );
+                const totalDefinerBalanceAfterDepositDAI =
+                    await accountsContract.getDepositBalanceCurrent(erc20DAI.address, user1);
                 const totalDefinerBalanceChangeDAI = new BN(totalDefinerBalanceAfterDepositDAI).sub(
                     new BN(totalDefinerBalanceBeforeDepositDAI)
                 );
                 expect(totalDefinerBalanceChangeDAI).to.be.bignumber.equal(ONE_DAI);
 
-                const totalDefinerBalanceAfterDepositUSDC = await accountsContract.getDepositBalanceCurrent(
-                    erc20USDC.address,
-                    user2
-                );
+                const totalDefinerBalanceAfterDepositUSDC =
+                    await accountsContract.getDepositBalanceCurrent(erc20USDC.address, user2);
                 const totalDefinerBalanceChangeUSDC = new BN(
                     totalDefinerBalanceAfterDepositUSDC
                 ).sub(new BN(totalDefinerBalanceBeforeDepositUSDC));
@@ -222,10 +214,8 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
                 const user1BalanceAfterBorrow = await erc20USDC.balanceOf(user1);
                 expect(user1BalanceAfterBorrow).to.be.bignumber.equal(borrowAmount);
 
-                const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
-                    erc20USDC.address,
-                    user1
-                );
+                const totalDefinerBalanceAfterBorrowUSDCUser1 =
+                    await accountsContract.getBorrowBalanceCurrent(erc20USDC.address, user1);
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
 
                 // Total remaining DAI after borrow
