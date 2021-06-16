@@ -2,8 +2,9 @@ import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 var chai = require("chai");
 var expect = chai.expect;
 let snapshotId: string;
@@ -167,7 +168,6 @@ contract("SavingAccount.borrow", async (accounts) => {
 
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
-        await savingAccount.fastForward(1);
     });
 
     afterEach(async () => {
@@ -285,8 +285,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -410,8 +411,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -564,8 +566,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const totalBorrowInterest = BN(user1BorrowInterest)
                         .add(user2BorrowInterest)
                         .add(user3BorrowInterest);
-                    const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -691,8 +694,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -847,8 +851,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const totalBorrowInterest = BN(user1BorrowInterest)
                         .add(user2BorrowInterest)
                         .add(user3BorrowInterest);
-                    const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
+                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
+                        compoundPrincipal
+                    );
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
