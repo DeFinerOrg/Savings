@@ -47,6 +47,21 @@ contract("TokenRegstry", async (accounts) => {
         await savingAccount.fastForward(10);
     });
 
+    context("should fail", async () => {
+        it("When executing updateBorrowLTV, new LTV is greater than 100", async function () {
+            this.timeout(0);
+            await expectRevert(
+                tokenInfoRegistry.updateBorrowLTV(addressDAI, new BN(110)),
+                "Borrow LTV must be less than Scale"
+            );
+        });
+
+        it("When enabling a token which is already enabled", async function () {
+            this.timeout(0);
+            await expectRevert(tokenInfoRegistry.enableToken(addressDAI), "Token already enabled");
+        });
+    });
+
     context("should succeed", async () => {
         it("When executing updateBorrowLTV", async function () {
             this.timeout(0);
@@ -55,6 +70,34 @@ contract("TokenRegstry", async (accounts) => {
             const afterBorrowLTV = await tokenInfoRegistry.getBorrowLTV(addressDAI);
             expect(prevBorrowLTV).to.be.bignumber.equal(new BN(60));
             expect(afterBorrowLTV).to.be.bignumber.equal(new BN(70));
+        });
+
+        it("When executing updateTokenTransferFeeFlag", async function () {
+            this.timeout(0);
+            const prevTransferFeeFlag = await tokenInfoRegistry.isTransferFeeEnabled(addressDAI);
+            await tokenInfoRegistry.updateTokenTransferFeeFlag(addressDAI, true);
+            const afterTransferFeeFlag = await tokenInfoRegistry.isTransferFeeEnabled(addressDAI);
+            expect(prevTransferFeeFlag).to.equal(false);
+            expect(afterTransferFeeFlag).to.equal(true);
+        });
+
+        it("When executing enableToken", async function () {
+            this.timeout(0);
+            await tokenInfoRegistry.disableToken(addressDAI);
+            const prevEnableTokenFlag = await tokenInfoRegistry.isTokenEnabled(addressDAI);
+            await tokenInfoRegistry.enableToken(addressDAI);
+            const afterEnableTokenFlag = await tokenInfoRegistry.isTokenEnabled(addressDAI);
+            expect(prevEnableTokenFlag).to.equal(false);
+            expect(afterEnableTokenFlag).to.equal(true);
+        });
+
+        it("When executing updateChainLinkAggregator", async function () {
+            this.timeout(0);
+            await tokenInfoRegistry.updateChainLinkAggregator(addressDAI, addressOne);
+            const afterChainLinkAggregator = await tokenInfoRegistry.getChainLinkAggregator(
+                addressDAI
+            );
+            expect(afterChainLinkAggregator).to.be.bignumber.equal(addressOne);
         });
     });
 });
