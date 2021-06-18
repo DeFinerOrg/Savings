@@ -99,5 +99,12 @@ contract("TokenRegstry", async (accounts) => {
             );
             expect(afterChainLinkAggregator).to.be.bignumber.equal(addressOne);
         });
+
+        it("When executing updateCToken", async function () {
+            this.timeout(0);
+            await tokenInfoRegistry.updateCToken(addressDAI, addressOne);
+            const afterCToken = await tokenInfoRegistry.getCToken(addressDAI);
+            expect(afterCToken).to.be.bignumber.equal(addressOne);
+        });
     });
 });
