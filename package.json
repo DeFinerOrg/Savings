@@ -86,6 +86,7 @@
     "shelljs": "^0.8.4",
     "solidity-parser-antlr": "^0.4.11",
     "solium": "^1.2.5",
+    "truffle-contract-size": "^2.0.1",
     "web3-eth-contract": "^1.2.11"
   }
 }
