@@ -1,21 +1,27 @@
 import * as t from "../../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../../test-helpers/TestEngine";
 
+const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
     artifacts.require("MockChainLinkAggregator");
 
+var chai = require("chai");
+var expect = chai.expect;
+
 const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
+const ZERO = new BN(0);
+const ENABLED = true;
+const DISABLED = false;
+
+let testEngine: TestEngine;
+let savingAccount: t.SavingAccountWithControllerInstance;
+let accountsContract: t.AccountsInstance;
+let tokenInfoRegistry: t.TokenRegistryInstance;
+let bank: t.BankInstance;
 
 contract("Collateral Feature Tests", async (accounts) => {
-    let testEngine: TestEngine;
-    let savingAccount: t.SavingAccountWithControllerInstance;
-
-    let tokenInfoRegistry: t.TokenRegistryInstance;
-    let accountsContract: t.AccountsInstance;
-    let bank: t.BankInstance;
-
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -31,6 +37,14 @@ contract("Collateral Feature Tests", async (accounts) => {
     let addressMKR: any;
     let addressWBTC: any;
 
+    let tokenIndexDAI: BN;
+    let tokenIndexUSDC: BN;
+    let tokenIndexUSDT: BN;
+    let tokenIndexTUSD: BN;
+    let tokenIndexMKR: BN;
+    let tokenIndexWBTC: BN;
+    let tokenIndexETH: BN;
+
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforUSDTAddress: any;
@@ -38,6 +52,7 @@ contract("Collateral Feature Tests", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
+
     let cDAI_addr: any;
     let cUSDC_addr: any;
     let cUSDT_addr: any;
@@ -138,6 +153,15 @@ contract("Collateral Feature Tests", async (accounts) => {
             mockChainlinkAggregatorforWBTCAddress
         );
 
+        // load tokenIndex
+        tokenIndexDAI = await tokenInfoRegistry.getTokenIndex(addressDAI);
+        tokenIndexUSDC = await tokenInfoRegistry.getTokenIndex(addressUSDC);
+        tokenIndexUSDT = await tokenInfoRegistry.getTokenIndex(addressUSDT);
+        tokenIndexTUSD = await tokenInfoRegistry.getTokenIndex(addressTUSD);
+        tokenIndexMKR = await tokenInfoRegistry.getTokenIndex(addressMKR);
+        tokenIndexWBTC = await tokenInfoRegistry.getTokenIndex(addressWBTC);
+        tokenIndexETH = await tokenInfoRegistry.getTokenIndex(ETH_ADDRESS);
+
         await savingAccount.fastForward(1);
     });
 
@@ -146,14 +170,15 @@ contract("Collateral Feature Tests", async (accounts) => {
 
         describe("Enable Collateral", async () => {
             it("should enable collateral for a single token", async () => {
-                const collStatus = await accountsContract.getCollateralStatus(user1);
-                await expectAllDisabled(collStatus);
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
 
-                await accountsContract.accounts(user1);
-
-                await accountsContract.methods["setCollateral(uint8,bool)"](addressDAI, true, {
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndexUSDT, true, {
                     from: user1,
                 });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, addressUSDT, ENABLED);
             });
 
             it("should enable collateral for very first token");
@@ -213,7 +238,9 @@ contract("Collateral Feature Tests", async (accounts) => {
     });
 });
 
-async function expectAllDisabled(collStatus: [string[], boolean[]]) {
+async function expectAllCollStatusDisabledForUser(user: string) {
+    // method-1: getCollateralStatus()
+    const collStatus = await accountsContract.getCollateralStatus(user);
     const tokens = collStatus[0];
     const status = collStatus[1];
 
@@ -223,4 +250,57 @@ async function expectAllDisabled(collStatus: [string[], boolean[]]) {
     for (let i = 0; i < tokens.length; i++) {
         expect(status[i] == false, "status is enabled");
     }
+
+    // method-2: direct status check
+    await expectCollateralBitmap(user, ZERO);
+}
+
+async function expectDepositBitmap(user: string, expectedVal: BN) {
+    const accountData = await accountsContract.accounts(user);
+    const depositBitmap = accountData[0];
+    expect(depositBitmap).to.be.bignumber.equal(expectedVal);
+}
+
+async function expectBorrowBitmap(user: string, expectedVal: BN) {
+    const accountData = await accountsContract.accounts(user);
+    const borrowBitmap = accountData[1];
+    expect(borrowBitmap).to.be.bignumber.equal(expectedVal);
+}
+
+async function expectCollateralBitmap(user: string, expectedVal: BN) {
+    const accountData = await accountsContract.accounts(user);
+    const collateralBitmap = accountData[2];
+    expect(collateralBitmap).to.be.bignumber.equal(expectedVal);
+}
+
+async function expectCollInitForUser(user: string, expectedVal: boolean) {
+    const accountData = await accountsContract.accounts(user);
+    const isCollInit = accountData[3];
+    expect(isCollInit).to.be.equal(expectedVal);
+}
+
+async function expectTokenStatusForDepositBitmap(
+    user: string,
+    token: string,
+    expectedVal: boolean
+) {
+    const tokenIndex = await tokenInfoRegistry.getTokenIndex(token);
+    const depositFlag = await accountsContract.isUserHasDeposits(user, tokenIndex);
+    expect(depositFlag).to.be.equal(expectedVal);
+}
+
+async function expectTokenStatusForBorrowBitmap(user: string, token: string, expectedVal: boolean) {
+    const tokenIndex = await tokenInfoRegistry.getTokenIndex(token);
+    const borrowFlag = await accountsContract.isUserHasBorrows(user, tokenIndex);
+    expect(borrowFlag).to.be.equal(expectedVal);
+}
+
+async function expectTokenStatusForCollateralBitmap(
+    user: string,
+    token: string,
+    expectedVal: boolean
+) {
+    const tokenIndex = await tokenInfoRegistry.getTokenIndex(token);
+    const collFlag = await accountsContract.isUserHasCollateral(user, tokenIndex);
+    expect(collFlag).to.be.equal(expectedVal);
 }

@@ -156,6 +156,17 @@ contract Accounts is Constant, Initializable{
     }
 
     /**
+     * Check if the user has collateral flag set
+     * @param _account address of the user
+     * @param _index index of the token
+     * @return true if the user has collateral flag set for the given index
+     */
+    function isUserHasCollateral(address _account, uint8 _index) public view returns(bool) {
+        Account storage account = accounts[_account];
+        return account.collateralBitmap.isBitSet(_index);
+    }
+
+    /**
      * Set the deposit bitmap for a token.
      * @param _account address of the user
      * @param _index index of the token
