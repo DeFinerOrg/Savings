@@ -261,26 +261,18 @@ const getChainLinkAggregators = async () => {
     let exOracleAddress = exOracleConf[0];
     let dataSource = exOracleConf[1];
 
-    await Promise.all(
-        tokenData.ExOracle.ExOracleContracts.map(async (exOracle) => {
-            console.log("deploying ExOracle pair", exOracle.pairName);
-            const exOracleImplAddress = (
-                await ExOracle.new(
-                    exOracleAddress,
-                    dataSource,
-                    exOracle.pairName,
-                    exOracle.priceType
-                )
-            ).address;
-            aggregators.push(exOracleImplAddress);
-            console.log(
-                "ExOracle pair:",
-                exOracle.pairName,
-                " deployed with address",
-                exOracleImplAddress
-            );
-        })
-    );
+    // For loop ensures that the deployment order is maintained.
+    // we need to maintain the deployed addresses in order in the `aggregators` array
+    const pairs = tokenData.ExOracle.ExOracleContracts;
+    for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i];
+        console.log("deploying ExOracle pair", pair.pairName);
+        const exOracleImplAddress = (
+            await ExOracle.new(exOracleAddress, dataSource, pair.pairName, pair.priceType)
+        ).address;
+        aggregators.push(exOracleImplAddress);
+        console.log("ExOracle pair:", pair.pairName, " deployed with address", exOracleImplAddress);
+    }
 
     return aggregators;
 };
