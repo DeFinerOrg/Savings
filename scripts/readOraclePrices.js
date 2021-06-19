@@ -45,7 +45,7 @@ async function main() {
         .mul(oktPriceBN)
         .div(ONE_OKT)
         .div(USD_ORACLE_DECIMAL);
-    console.log("ETH ", price.toString(), "OKT", " = $", priceInUSD.toString());
+    console.log("OKT ", price.toString(), "OKT", " = $", priceInUSD.toString());
 }
 
 main()
