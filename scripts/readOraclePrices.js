@@ -5,7 +5,7 @@ const { BN } = require("@openzeppelin/test-helpers/src/setup");
 const ONE_OKT = new BN(10).pow(new BN(18));
 const USD_ORACLE_DECIMAL = new BN(10).pow(new BN(6));
 
-const ETH_ADDRESS = "0x000000000000000000000000000000000000000E";
+const OKT_ADDRESS = "0x000000000000000000000000000000000000000E";
 
 // TESTNET addresses
 const TESTNET_ExOracleAddress = "0x319b07E94eA8288aC0c15b4A24d26577Bec05366";
@@ -40,12 +40,21 @@ async function main() {
         console.log(token.symbol, " ", price.toString(), "OKT", " = $", priceInUSD.toString());
     }
 
-    const price = await tokenReg.priceFromAddress(ETH_ADDRESS);
-    const priceInUSD = new BN(price.toString())
+    // OKT
+    const oktPriceInOKT = await tokenReg.priceFromAddress(OKT_ADDRESS);
+    const ethPriceInUSD = new BN(oktPriceInOKT.toString())
         .mul(oktPriceBN)
         .div(ONE_OKT)
         .div(USD_ORACLE_DECIMAL);
-    console.log("OKT ", price.toString(), "OKT", " = $", priceInUSD.toString());
+    console.log("OKT ", oktPriceInOKT.toString(), "OKT", " = $", ethPriceInUSD.toString());
+
+    // FIN
+    const finPriceInOKT = await tokenReg.priceFromAddress(tokenData.DeFiner.testnet.tokenAddress);
+    const finPriceInUSD = new BN(finPriceInOKT.toString())
+        .mul(oktPriceBN)
+        .div(ONE_OKT)
+        .div(USD_ORACLE_DECIMAL);
+    console.log("FIN ", finPriceInOKT.toString(), "OKT", " = $", finPriceInUSD.toString());
 }
 
 main()
