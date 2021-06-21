@@ -16,6 +16,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+    // FIN Token Address
+    // TODO - change in mainnet
+    address public constant FINToken = "0xffb7559a201ee93feaa39355f2416193e15434d1";
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -225,7 +228,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      */
     function claim() public nonReentrant {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+        IERC20(FINToken).safeTransfer(msg.sender, FINAmount);
 
         emit Claim(msg.sender, FINAmount);
     }
