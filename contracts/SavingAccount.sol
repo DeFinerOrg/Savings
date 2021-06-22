@@ -17,8 +17,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     GlobalConfig public globalConfig;
     // FIN Token Address
-    // TODO - change in mainnet
-    address public constant FINToken = 0xFfb7559a201ee93feaa39355f2416193E15434d1;
+    address public constant FINToken = 0x8D3573f24c0aa3819A2f5b02b2985dD82B487715;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);

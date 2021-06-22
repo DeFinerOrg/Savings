@@ -22,9 +22,11 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 let _mnemonic = "";
+let _privateKey = "";
 try {
     const fs = require("fs");
     _mnemonic = fs.readFileSync(".secret").toString().trim();
+    _privateKey = fs.readFileSync(".privateKey").toString().trim();
 } catch (e) {}
 
 module.exports = {
@@ -64,11 +66,11 @@ module.exports = {
         },
         // NOTICE: OKExChain-mainnet
         mainnet: {
-            provider: () => new HDWalletProvider(mnemonic, `https://exchainrpc.okex.org`),
+            provider: () => new HDWalletProvider(_privateKey, `https://exchainrpc.okex.org`),
             network_id: 66,
             confirmations: 1,
             timeoutBlocks: 200,
-            skipDryRun: true,
+            skipDryRun: false,
         },
 
         // rinkeby: {
