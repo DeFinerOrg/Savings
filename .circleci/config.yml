@@ -134,7 +134,7 @@ jobs:
 
       - run: 
           name: Run coverage
-          command: yarn prepare && yarn coverage-SFW  #triggers truffle test
+          command: yarn prepare && yarn coverage-SFW && cat coverage/lcov.info | node_modules/.bin/coveralls #coverage for scriptFlywheel
 
   coverage-WPM:
     docker:
@@ -201,7 +201,7 @@ jobs:
 
       - run: 
           name: Run coverage
-          command: yarn prepare && yarn coverage-WPM  #triggers truffle test
+          command: yarn prepare && yarn coverage-WPM  #coverage for whitePaperModel
 
 workflows:
     version: 2.1
