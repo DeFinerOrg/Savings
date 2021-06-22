@@ -66,11 +66,19 @@ module.exports = {
         },
         // NOTICE: OKExChain-mainnet
         mainnet: {
-            provider: () => new HDWalletProvider(_privateKey, `https://exchainrpc.okex.org`),
+            provider: () =>
+                new HDWalletProvider({
+                    privateKeys: [_privateKey],
+                    providerOrUrl: `https://exchainrpc.okex.org`,
+                    pollingInterval: 1000,
+                }),
             network_id: 66,
-            confirmations: 1,
+            confirmations: 0,
             timeoutBlocks: 200,
-            skipDryRun: false,
+            deploymentPollingInterval: 100,
+            websockets: true,
+            skipDryRun: true,
+            disableConfirmationListener: true,
         },
 
         // rinkeby: {

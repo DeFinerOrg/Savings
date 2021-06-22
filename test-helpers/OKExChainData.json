@@ -24,7 +24,7 @@
             "isSupportedByCompound": true,
             "latestAnswer": "5424285000000000",
             "mainnet": {
-                "tokenAddress": "0xe579156f9decc4134b5e3a30a24ac46bb8b01281",
+                "tokenAddress": "0x382bb369d343125bfb2117af9c149795c6c65c50",
                 "cTokenAddress": "0x849c37a029b38d3826562697ccc40c34477c6293"
             },
             "kovan": {
