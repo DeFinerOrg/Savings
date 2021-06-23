@@ -136,8 +136,10 @@ jobs:
 
       - run: 
           name: Run coverage
-          command: yarn prepare && yarn coverage-SFW && cat coverage/lcov.info | coveralls #coverage for scriptFlywheel
-      - coveralls/upload
+          command: yarn prepare && yarn coverage-SFW #&& cat coverage/lcov.info | coveralls #coverage for scriptFlywheel
+      - coveralls/upload:
+          parallel: true
+          flag_name: coverage-SFW
 
   coverage-WPM:
     docker:
