@@ -1,6 +1,6 @@
 version: 2.1
-# orbs:
-#   coveralls: coveralls/coveralls@1.0.6
+orbs:
+  coveralls: coveralls/coveralls@1.0.6
 jobs:
   tests:
     docker:
@@ -137,7 +137,7 @@ jobs:
       - run: 
           name: Run coverage
           command: yarn prepare && yarn coverage-SFW && cat coverage/lcov.info | coveralls #coverage for scriptFlywheel
-      # - coveralls/upload
+      - coveralls/upload
 
   coverage-WPM:
     docker:
