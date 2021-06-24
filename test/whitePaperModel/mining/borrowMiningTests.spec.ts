@@ -107,10 +107,7 @@ contract("borrowMiningTests", async (accounts) => {
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
 
-        console.log("FINbefore", (await savingAccount.FIN_ADDR).toString());
-
-        savingAccount.setFINAddress(addressFIN);
-        console.log("FINAfter", savingAccount.FIN_ADDR);
+        await savingAccount.setFINAddress(addressFIN);
 
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
