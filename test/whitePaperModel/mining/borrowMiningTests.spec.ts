@@ -107,6 +107,11 @@ contract("borrowMiningTests", async (accounts) => {
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
 
+        console.log("FINbefore", (await savingAccount.FIN_ADDR).toString());
+
+        savingAccount.setFINAddress(addressFIN);
+        console.log("FINAfter", savingAccount.FIN_ADDR);
+
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });
@@ -241,15 +246,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
@@ -408,15 +410,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalDepositInterest", totalDepositInterest.toString());
                             console.log("totalBorrowInterest", totalBorrowInterest.toString());
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
@@ -558,15 +557,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalDepositInterest", totalDepositInterest.toString());
                             console.log("totalBorrowInterest", totalBorrowInterest.toString());
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
