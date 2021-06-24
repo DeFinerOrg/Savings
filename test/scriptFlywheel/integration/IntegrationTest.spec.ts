@@ -162,10 +162,11 @@ contract("Integration Tests", async (accounts) => {
                             from: user1,
                         });
 
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            user1
-                        );
+                        const totalDefinerBalanceBeforeDeposit =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                user1
+                            );
 
                         await savingAccount.deposit(erc20contr.address, numOfToken, {
                             from: user1,
@@ -174,10 +175,11 @@ contract("Integration Tests", async (accounts) => {
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
 
                         // Validate the total balance on DeFiner after deposit
-                        const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            user1
-                        );
+                        const totalDefinerBalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                user1
+                            );
 
                         const totalDefinerBalanceChange = new BN(
                             totalDefinerBalanceAfterDeposit
@@ -239,10 +241,11 @@ contract("Integration Tests", async (accounts) => {
                         expect(ZERO).to.be.bignumber.equal(balCTokens);
 
                         // Verify DeFiner balance
-                        const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            user1
-                        );
+                        const totalDefinerBalancAfterWithdraw =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                user1
+                            );
                         expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
                     }
                 }
@@ -268,10 +271,11 @@ contract("Integration Tests", async (accounts) => {
                         //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                         await erc20contr.approve(savingAccount.address, numOfToken);
                         //await erc20contr.approve(savingAccount.address, numOfToken);
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
+                        const totalDefinerBalanceBeforeDeposit =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
                         const balCTokensBefore = new BN(
                             await cTokenTemp.balanceOfUnderlying.call(savingAccount.address)
@@ -316,10 +320,11 @@ contract("Integration Tests", async (accounts) => {
                         expect(ZERO).to.be.bignumber.equal(balSavingAccount);
 
                         // Verify DeFiner balance
-                        const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
+                        const totalDefinerBalancAfterWithdraw =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
                         expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
                     }
                 }
@@ -396,10 +401,11 @@ contract("Integration Tests", async (accounts) => {
                             expect(ZERO).to.be.bignumber.equal(balSavingAccount);
 
                             // Verify DeFiner balance
-                            const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                                erc20contr.address,
-                                owner
-                            );
+                            const totalDefinerBalancAfterWithdraw =
+                                await accountsContract.getDepositBalanceCurrent(
+                                    erc20contr.address,
+                                    owner
+                                );
                             expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
 
                             // Verify Compound balance
@@ -436,10 +442,11 @@ contract("Integration Tests", async (accounts) => {
                         //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                         await erc20contr.approve(savingAccount.address, numOfToken);
                         //await erc20contr.approve(savingAccount.address, numOfToken);
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
+                        const totalDefinerBalanceBeforeDeposit =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
                         const balCTokensBefore = new BN(
                             await cTokenTemp.balanceOfUnderlying.call(savingAccount.address)
@@ -485,10 +492,11 @@ contract("Integration Tests", async (accounts) => {
                             expect(ZERO).to.be.bignumber.equal(balSavingAccount);
 
                             // Verify DeFiner balance
-                            const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                                erc20contr.address,
-                                owner
-                            );
+                            const totalDefinerBalancAfterWithdraw =
+                                await accountsContract.getDepositBalanceCurrent(
+                                    erc20contr.address,
+                                    owner
+                                );
                             expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
                         }
                     }
@@ -515,10 +523,11 @@ contract("Integration Tests", async (accounts) => {
                         //await erc20contr.transfer(accounts[userDeposit], numOfToken);
                         await erc20contr.approve(savingAccount.address, numOfToken);
                         //await erc20contr.approve(savingAccount.address, numOfToken);
-                        const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
+                        const totalDefinerBalanceBeforeDeposit =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
 
                         const balCTokenContractInit = await erc20contr.balanceOf(addressCTokenTemp);
                         const balCTokensBefore = new BN(
@@ -572,10 +581,11 @@ contract("Integration Tests", async (accounts) => {
                         expect(ZERO).to.be.bignumber.equal(balSavingAccount);
 
                         // Verify DeFiner balance
-                        const totalDefinerBalancAfterWithdraw = await accountsContract.getDepositBalanceCurrent(
-                            erc20contr.address,
-                            owner
-                        );
+                        const totalDefinerBalancAfterWithdraw =
+                            await accountsContract.getDepositBalanceCurrent(
+                                erc20contr.address,
+                                owner
+                            );
                         expect(ZERO).to.be.bignumber.equal(totalDefinerBalancAfterWithdraw);
 
                         // Verify CToken balance
@@ -957,14 +967,10 @@ contract("Integration Tests", async (accounts) => {
                 // 1. Initiate deposit
                 const numOfDAI = eighteenPrecision.mul(new BN(1000));
                 const numOfUSDC = sixPrecision.mul(new BN(1000));
-                const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
-                    addressDAI,
-                    user1
-                );
-                const totalDefinerBalanceBeforeDepositUSDC = await accountsContract.getDepositBalanceCurrent(
-                    addressUSDC,
-                    user2
-                );
+                const totalDefinerBalanceBeforeDepositDAI =
+                    await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                const totalDefinerBalanceBeforeDepositUSDC =
+                    await accountsContract.getDepositBalanceCurrent(addressUSDC, user2);
                 const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
                 const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
                 const balSavingAccountUserBefore = await erc20DAI.balanceOf(savingAccount.address);
@@ -1046,16 +1052,12 @@ contract("Integration Tests", async (accounts) => {
                 );
                 expect(user1BalanceChange).to.be.bignumber.equal(borrowAmount);
 
-                const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
-                    addressUSDC,
-                    user1
-                );
+                const totalDefinerBalanceAfterBorrowUSDCUser1 =
+                    await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(borrowAmount);
 
-                const totalDefinerBalanceBeforeDepositUSDC2 = await accountsContract.getDepositBalanceCurrent(
-                    addressUSDC,
-                    user1
-                );
+                const totalDefinerBalanceBeforeDepositUSDC2 =
+                    await accountsContract.getDepositBalanceCurrent(addressUSDC, user1);
                 const balCUSDCContractBeforeDposit = await erc20USDC.balanceOf(cUSDC_addr);
                 console.log(
                     "balCUSDCContractBeforeDposit",
@@ -1092,14 +1094,10 @@ contract("Integration Tests", async (accounts) => {
                 const numOfToken = new BN(2000);
                 const depositTokens = new BN(1000);
                 const borrowTokens = new BN(600);
-                const totalDefinerBalanceBeforeDepositDAI = await accountsContract.getDepositBalanceCurrent(
-                    addressDAI,
-                    user1
-                );
-                const totalDefinerBalanceBeforeDepositUSDC = await accountsContract.getDepositBalanceCurrent(
-                    addressUSDC,
-                    user2
-                );
+                const totalDefinerBalanceBeforeDepositDAI =
+                    await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                const totalDefinerBalanceBeforeDepositUSDC =
+                    await accountsContract.getDepositBalanceCurrent(addressUSDC, user2);
                 const balCDAIContractInit = await erc20DAI.balanceOf(cDAI_addr);
                 const balCUSDCContractInit = await erc20USDC.balanceOf(cUSDC_addr);
                 const balSavingAccountUserBefore = await erc20DAI.balanceOf(savingAccount.address);
@@ -1177,10 +1175,8 @@ contract("Integration Tests", async (accounts) => {
                     new BN(user2Balance).sub(new BN(user2BalanceBeforeBorrow))
                 ).to.be.bignumber.equal(borrowTokens);
 
-                const totalDefinerBalanceAfterBorrowUSDCUser2 = await accountsContract.getBorrowBalanceCurrent(
-                    addressDAI,
-                    user2
-                );
+                const totalDefinerBalanceAfterBorrowUSDCUser2 =
+                    await accountsContract.getBorrowBalanceCurrent(addressDAI, user2);
                 expect(totalDefinerBalanceAfterBorrowUSDCUser2).to.be.bignumber.equal(borrowTokens);
 
                 const balCUSDCContractAfterBorrow = await erc20USDC.balanceOf(cUSDC_addr);
@@ -1281,10 +1277,8 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 const user1BalanceBeforeRepay = await erc20USDC.balanceOf(user1);
-                const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
-                    addressUSDC,
-                    user1
-                );
+                const totalDefinerBalanceAfterBorrowUSDCUser1 =
+                    await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(new BN(100));
                 expect(
                     new BN(user1BalanceBeforeRepay).sub(new BN(user1BalanceBeforeBorrow))
@@ -1401,10 +1395,8 @@ contract("Integration Tests", async (accounts) => {
                     savingAccount
                 );
 
-                const totalDefinerBalanceAfterBorrowUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
-                    addressUSDC,
-                    user1
-                );
+                const totalDefinerBalanceAfterBorrowUSDCUser1 =
+                    await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
                 expect(totalDefinerBalanceAfterBorrowUSDCUser1).to.be.bignumber.equal(new BN(100));
 
                 const balSavingAccountUserBefore2 = await erc20DAI.balanceOf(savingAccount.address);
@@ -1476,10 +1468,8 @@ contract("Integration Tests", async (accounts) => {
                     new BN(user1BalanceBeforeRepay).sub(new BN(user1BalanceAfter))
                 ).to.be.bignumber.equal(new BN(200));
 
-                const totalDefinerBalanceAfterRepayUSDCUser1 = await accountsContract.getBorrowBalanceCurrent(
-                    addressUSDC,
-                    user1
-                );
+                const totalDefinerBalanceAfterRepayUSDCUser1 =
+                    await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
                 expect(totalDefinerBalanceAfterRepayUSDCUser1).to.be.bignumber.equal(ZERO);
             });
         });
@@ -1595,10 +1585,8 @@ contract("Integration Tests", async (accounts) => {
                     savingAccount
                 );
 
-                const totalDefinerBalanceAfterWithdrawDAIUser1 = await accountsContract.getDepositBalanceCurrent(
-                    addressDAI,
-                    user1
-                );
+                const totalDefinerBalanceAfterWithdrawDAIUser1 =
+                    await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
                 expect(totalDefinerBalanceAfterWithdrawDAIUser1).to.be.bignumber.equal(
                     collateralLocked
                 );
@@ -1750,10 +1738,8 @@ contract("Integration Tests", async (accounts) => {
                 const totalAmountLeft = new BN(ETHbalanceBeforeBorrow).sub(
                     new BN(totalLockedAmount)
                 );
-                const ETHbalanceBeforeWithdrawContr = await accountsContract.getDepositBalanceCurrent(
-                    ETH_ADDRESS,
-                    user1
-                );
+                const ETHbalanceBeforeWithdrawContr =
+                    await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
                 let ETHbalanceBeforeWithdraw = await web3.eth.getBalance(savingAccount.address);
                 const balCTokensBeforeWithdraw = new BN(
                     await cETH.balanceOfUnderlying.call(savingAccount.address)
@@ -1776,10 +1762,8 @@ contract("Integration Tests", async (accounts) => {
                     savingAccount
                 );
 
-                const ETHbalanceAfterWithdrawContr = await accountsContract.getDepositBalanceCurrent(
-                    ETH_ADDRESS,
-                    user1
-                );
+                const ETHbalanceAfterWithdrawContr =
+                    await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user1);
                 let accountBalanceDiff = new BN(ETHbalanceBeforeWithdrawContr).sub(
                     new BN(ETHbalanceAfterWithdrawContr)
                 );
