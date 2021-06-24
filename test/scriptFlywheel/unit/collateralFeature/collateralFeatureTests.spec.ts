@@ -1,7 +1,9 @@
 import * as t from "../../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../../../test-helpers/SnapshotUtils";
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
+
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
@@ -9,6 +11,8 @@ const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
 
 var chai = require("chai");
 var expect = chai.expect;
+
+let snapshotId: string;
 
 const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
 const ZERO = new BN(0);
@@ -80,14 +84,9 @@ contract("Collateral Feature Tests", async (accounts) => {
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
 
-    before(function () {
-        // Things to initialize before all test
-        this.timeout(0);
-
+    before(async () => {
         testEngine = new TestEngine();
-    });
 
-    beforeEach(async () => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = testEngine.tokenInfoRegistry;
         accountsContract = testEngine.accounts;
@@ -165,10 +164,19 @@ contract("Collateral Feature Tests", async (accounts) => {
         await savingAccount.fastForward(1);
     });
 
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
+    });
+
     describe("setCollateral()", async () => {
         it("should fail when token is not present");
 
-        describe("Enable Collateral", async () => {
+        describe("setCollateral() - Enable Collateral", async () => {
             it("should enable collateral for a single token", async () => {
                 await expectAllCollStatusDisabledForUser(user1);
                 await expectCollInitForUser(user1, false);
@@ -179,40 +187,275 @@ contract("Collateral Feature Tests", async (accounts) => {
 
                 await expectCollInitForUser(user1, true);
                 await expectTokenStatusForCollateralBitmap(user1, addressUSDT, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, addressUSDT);
             });
 
-            it("should enable collateral for very first token");
+            it("should enable collateral for very first token", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
 
-            it("should enable collateral for very last token");
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndexDAI, true, {
+                    from: user1,
+                });
 
-            it("should enable collateral for all tokens");
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, addressDAI, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, addressDAI);
+            });
+
+            it("should enable collateral for very last token", async () => {
+                const tokensLength = await tokenInfoRegistry.getCoinLength();
+                const lastTokenIndex = tokensLength.sub(new BN(1));
+                const tokenInfo = await tokenInfoRegistry.getTokenInfoFromIndex(lastTokenIndex);
+                const tokenAddr = tokenInfo[0];
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                await accountsContract.methods["setCollateral(uint8,bool)"](lastTokenIndex, true, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddr, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, tokenAddr);
+            });
+
+            it("should enable collateral for all tokens", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                const tokens = await tokenInfoRegistry.getTokens();
+
+                for (let i = 0; i < tokens.length; i++) {
+                    await accountsContract.methods["setCollateral(uint8,bool)"](i, true, {
+                        from: user1,
+                    });
+                }
+
+                await expectCollInitForUser(user1, true);
+                for (let i = 0; i < tokens.length; i++) {
+                    await expectTokenStatusForCollateralBitmap(user1, tokens[i], ENABLED);
+                }
+            });
         });
 
-        describe("Disable Collateral", async () => {
-            it("should disable collateral for a single token");
+        describe("setCollateral() - Disable Collateral", async () => {
+            it("should disable collateral for a single token", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
 
-            it("should disable collateral for very first token");
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndexUSDT, true, {
+                    from: user1,
+                });
 
-            it("should disable collateral for very last token");
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, addressUSDT, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, addressUSDT);
 
-            it("should disable collateral for all tokens");
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndexUSDT, false, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, addressUSDT, DISABLED);
+            });
+
+            it("should disable collateral for very first token", async () => {
+                const tokenAddress = addressDAI;
+                const tokenIndex = tokenIndexDAI;
+
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndex, true, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddress, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, tokenAddress);
+
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndex, false, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddress, DISABLED);
+            });
+
+            it("should disable collateral for very last token", async () => {
+                const tokensLength = await tokenInfoRegistry.getCoinLength();
+                const lastTokenIndex = tokensLength.sub(new BN(1));
+                const tokenInfo = await tokenInfoRegistry.getTokenInfoFromIndex(lastTokenIndex);
+                const lastTokenAddr = tokenInfo[0];
+
+                const tokenAddress = lastTokenAddr;
+                const tokenIndex = lastTokenIndex;
+
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndex, true, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddress, ENABLED);
+                await expectCollateralDisabledForAllExceptOne(user1, tokenAddress);
+
+                await accountsContract.methods["setCollateral(uint8,bool)"](tokenIndex, false, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddress, DISABLED);
+            });
+
+            it("should disable collateral for all tokens", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                const tokens = await tokenInfoRegistry.getTokens();
+
+                // ENABLE
+                for (let i = 0; i < tokens.length; i++) {
+                    await accountsContract.methods["setCollateral(uint8,bool)"](i, true, {
+                        from: user1,
+                    });
+                }
+                await expectCollInitForUser(user1, true);
+                for (let i = 0; i < tokens.length; i++) {
+                    await expectTokenStatusForCollateralBitmap(user1, tokens[i], ENABLED);
+                }
+
+                // DISALBE
+                for (let i = 0; i < tokens.length; i++) {
+                    await accountsContract.methods["setCollateral(uint8,bool)"](i, false, {
+                        from: user1,
+                    });
+                }
+                await expectCollInitForUser(user1, true);
+                for (let i = 0; i < tokens.length; i++) {
+                    await expectTokenStatusForCollateralBitmap(user1, tokens[i], DISABLED);
+                }
+            });
         });
     });
 
     describe("setCollateral([],[])", async () => {
         it("should fail when token is not present");
 
-        describe("Enable Collateral on multiple tokens", async () => {
-            it("should enable collateral for a single token");
+        describe("setCollateral([],[]) - Enable Collateral on multiple tokens", async () => {
+            it("should enable collateral for a single token", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
 
-            it("should enable collateral for all tokens");
+                const tokenIndex = tokenIndexETH;
+                const tokenAddr = ETH_ADDRESS;
+                await accountsContract.methods["setCollateral(uint8[],bool[])"](
+                    [tokenIndex],
+                    [true],
+                    { from: user1 }
+                );
 
-            it("should enable collateral for random tokens");
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddr, ENABLED);
+            });
 
-            it("should enable to collateral for first and the last one");
+            it("should enable collateral for all tokens", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                const indexArr = new Array<BN>();
+                const statusArr = new Array<boolean>();
+                const tokens = await tokenInfoRegistry.getTokens();
+
+                for (let i = 0; i < tokens.length; i++) {
+                    indexArr.push(new BN(i));
+                    statusArr.push(true);
+                }
+
+                await accountsContract.methods["setCollateral(uint8[],bool[])"](
+                    indexArr,
+                    statusArr,
+                    { from: user1 }
+                );
+
+                await expectCollInitForUser(user1, true);
+                for (let i = 0; i < tokens.length; i++) {
+                    await expectTokenStatusForCollateralBitmap(user1, tokens[i], ENABLED);
+                }
+            });
+
+            it("should enable collateral for random tokens", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                const tokens = await tokenInfoRegistry.getTokens();
+
+                const tokenIndex1 = tokenIndexETH;
+                const tokenAddr1 = ETH_ADDRESS;
+
+                const tokenIndex2 = tokenIndexDAI;
+                const tokenAddr2 = addressDAI;
+
+                const tokenIndex3 = tokenIndexMKR;
+                const tokenAddr3 = addressMKR;
+
+                const tokenIndexArr = [tokenIndex1, tokenIndex2, tokenIndex3];
+                const tokenStatusArr = [true, true, true];
+                await accountsContract.methods["setCollateral(uint8[],bool[])"](
+                    tokenIndexArr,
+                    tokenStatusArr,
+                    { from: user1 }
+                );
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddr1, ENABLED);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddr2, ENABLED);
+                await expectTokenStatusForCollateralBitmap(user1, tokenAddr3, ENABLED);
+
+                // rest all tokens disabled
+                for (let i = 0; i < tokens.length; i++) {
+                    const tokenInfo = await tokenInfoRegistry.getTokenInfoFromIndex(i);
+                    const tokenAddr = tokenInfo[0];
+                    if (
+                        i == tokenIndex1.toNumber() ||
+                        i == tokenIndex2.toNumber() ||
+                        i == tokenIndex3.toNumber()
+                    ) {
+                        await expectTokenStatusForCollateralBitmap(user1, tokenAddr, ENABLED);
+                    } else {
+                        await expectTokenStatusForCollateralBitmap(user1, tokenAddr, DISABLED);
+                    }
+                }
+            });
+
+            it("should enable collateral for first and the last one", async () => {
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectCollInitForUser(user1, false);
+
+                const tokensLength = await tokenInfoRegistry.getCoinLength();
+                const lastTokenIndex = tokensLength.sub(new BN(1));
+                const tokenInfo = await tokenInfoRegistry.getTokenInfoFromIndex(lastTokenIndex);
+                const lastTokenAddr = tokenInfo[0];
+
+                const firstTokenIndex = new BN(0); // DAI
+                const firstTokenAddr = addressDAI;
+
+                await accountsContract.methods["setCollateral(uint8[],bool[])"](
+                    [firstTokenIndex, lastTokenIndex],
+                    [true, true],
+                    { from: user1 }
+                );
+
+                await expectCollInitForUser(user1, true);
+                await expectTokenStatusForCollateralBitmap(user1, firstTokenAddr, ENABLED);
+                await expectTokenStatusForCollateralBitmap(user1, lastTokenAddr, ENABLED);
+            });
         });
 
-        describe("Disable Collateral on multiple tokens", async () => {
+        describe("setCollateral([],[]) - Disable Collateral on multiple tokens", async () => {
             it("should disable collateral for a single token");
 
             it("should disable collateral for all tokens");
@@ -222,7 +465,7 @@ contract("Collateral Feature Tests", async (accounts) => {
             it("should disable to collateral for first and the last one");
         });
 
-        describe("Enable/Disable on multiple tokens", async () => {
+        describe("setCollateral([],[]) - Enable/Disable on multiple tokens", async () => {
             it("should disable some and enable some tokens");
         });
     });
@@ -303,4 +546,21 @@ async function expectTokenStatusForCollateralBitmap(
     const tokenIndex = await tokenInfoRegistry.getTokenIndex(token);
     const collFlag = await accountsContract.isUserHasCollateral(user, tokenIndex);
     expect(collFlag).to.be.equal(expectedVal);
+}
+
+async function expectCollateralDisabledForAllExceptOne(user: string, token: string) {
+    const enabledTokenIndex = await tokenInfoRegistry.getTokenIndex(token);
+
+    const tokensCount = await tokenInfoRegistry.getCoinLength();
+    for (let i = 0; i < tokensCount.toNumber(); i++) {
+        const collFlag = await accountsContract.isUserHasCollateral(user, i);
+
+        if (i == enabledTokenIndex.toNumber()) {
+            // this exception index should be enabled
+            expect(collFlag).to.be.equal(ENABLED);
+        } else {
+            // rest all should be disabled
+            expect(collFlag).to.be.equal(DISABLED);
+        }
+    }
 }
