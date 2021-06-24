@@ -12,9 +12,8 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 
 contract("SavingAccount.overLeveraged", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
