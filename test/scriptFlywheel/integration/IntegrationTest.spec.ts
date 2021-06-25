@@ -74,7 +74,14 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(async () => {
+    before(function () {
+        this.timeout(0);
+        // Things to initialize before all test
+        testEngine = new TestEngine();
+        // testEngine.deploy("scriptFlywheel.scen");
+    });
+
+    beforeEach(async () => {
         // Things to initialize before all test
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
