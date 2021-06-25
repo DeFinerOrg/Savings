@@ -36,6 +36,7 @@ const addressZero: string = "0x0000000000000000000000000000000000000000";
 const ETH_ADDR: string = "0x000000000000000000000000000000000000000E";
 
 export class TestEngineV1_1 {
+    public savingAccount!: t.SavingAccountWithControllerInstance;
     public erc20Tokens: Array<string> = new Array();
     public cTokens: Array<string> = new Array();
     public mockChainlinkAggregators: Array<string> = new Array();
@@ -201,7 +202,10 @@ export class TestEngineV1_1 {
 
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
-        await this.accounts.methods["initialize(address)"](this.globalConfig.address);
+        await this.accounts.methods["initialize(address,address)"](
+            this.globalConfig.address,
+            compoundTokens.Contracts.Comptroller
+        );
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
@@ -267,9 +271,10 @@ export class TestEngineV1_1 {
         );
 
         await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.savingAccount = proxy;
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }
@@ -408,9 +413,9 @@ export class TestEngineV1_1 {
 
         await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
 
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }

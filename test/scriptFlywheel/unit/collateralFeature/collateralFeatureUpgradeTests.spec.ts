@@ -184,11 +184,13 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         // ensure that the version 'v1.1' contracts are deployed
         expect(await savingAccount.version()).to.be.equal("v1.1");
         expect(await accountsContract.version()).to.be.equal("v1.1");
-        // expect(await bank.version()).to.be.equal("v1.1");
+        expect(await bank.version()).to.be.equal("v1.1");
 
-        await upgradeFrom_v1_1_to_v1_2(testEngine.proxyAdmin.address, savingAccount.address);
+        await upgradeFrom_v1_1_to_v1_2(testEngine);
 
         expect(await savingAccount.version()).to.be.equal("v1.2");
+        expect(await accountsContract.version()).to.be.equal("v1.2");
+        expect(await bank.version()).to.be.equal("v1.2");
     });
 
     it("should default to disable all for new user", async () => {
