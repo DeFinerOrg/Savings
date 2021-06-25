@@ -75,7 +75,6 @@ contract("SavingAccount.COMP", async (accounts) => {
         // Use CERC20, import from Compound
         cDAI = await MockCToken.at(addressCTokenForDAI);
         cUSDC = await MockCToken.at(addressCTokenForUSDC);
-
         await savingAccount.fastForward(1);
     });
 

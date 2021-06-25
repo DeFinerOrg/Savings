@@ -104,6 +104,7 @@ contract("Integration Tests", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr); */
+        await savingAccount.fastForward(1);
     });
 
     beforeEach(async () => {

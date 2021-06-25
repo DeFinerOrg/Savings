@@ -49,6 +49,10 @@ contract("SavingAccount.deposit", async (accounts) => {
 
     beforeEach(async function () {
         this.timeout(0);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         // 1. initialization.
@@ -73,6 +77,10 @@ contract("SavingAccount.deposit", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         //console.log("addressCETH", addressCETH);
+<<<<<<< HEAD
+=======
+        await savingAccount.fastForward(1);
+>>>>>>> origin/master
     });
 
     context("deposit()", async () => {

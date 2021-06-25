@@ -153,7 +153,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
         numOfToken = new BN(1000);
-
         await savingAccount.fastForward(1);
     });
 

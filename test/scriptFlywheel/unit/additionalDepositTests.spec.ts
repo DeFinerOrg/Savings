@@ -12,9 +12,8 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 
 contract("SavingAccount.deposit", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -153,7 +152,6 @@ contract("SavingAccount.deposit", async (accounts) => {
         // await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         // await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         // await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
-
         await savingAccount.fastForward(1);
     });
 

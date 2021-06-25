@@ -153,7 +153,6 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
-
         await savingAccount.fastForward(1);
     });
 

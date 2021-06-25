@@ -33,7 +33,6 @@ contract("GlobalConfig", async (accounts) => {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         globalConfig = await testEngine.globalConfig;
-
         await savingAccount.fastForward(1);
     });
 

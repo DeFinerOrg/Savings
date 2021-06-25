@@ -9,7 +9,7 @@ usePlugin("buidler-gas-reporter");
 // https://buidler.dev/guides/create-task.html
 task("balance", "Prints an account's balance")
     .addParam("account", "The account's address")
-    .setAction(async taskArgs => {
+    .setAction(async (taskArgs) => {
         const account = web3.utils.toChecksumAddress(taskArgs.account);
         const balance = await web3.eth.getBalance(account);
 
@@ -35,28 +35,26 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-
         },
         buidlerevm: {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
-        }
+        },
     },
-    gasReporter: {
-    },
+    gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
     solc: {
         version: "0.5.14",
         optimizer: {
             enabled: true,
-            runs: 200
-        }
+            runs: 200,
+        },
     },
 
     typechain: {
         outDir: "./types",
-        target: "truffle-v5"
-    }
+        target: "truffle-v5",
+    },
 };
