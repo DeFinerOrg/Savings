@@ -7,10 +7,7 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
-
+     
     working_directory: ~/repo
 
     steps:
@@ -46,8 +43,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # - run: cd compound-protocol && yarn install --lock-file
-      # - run: cd compound-protocol/scenario && npm i
       - run: npm i
 
       - save_cache:
@@ -76,9 +71,6 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
 
     working_directory: ~/repo
 
@@ -113,8 +105,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # - run: cd compound-protocol && yarn install --lock-file
-      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
@@ -143,9 +133,6 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
 
     working_directory: ~/repo
 
@@ -180,8 +167,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # - run: cd compound-protocol && yarn install --lock-file
-      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
@@ -210,9 +195,6 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
 
     working_directory: ~/repo
 
@@ -247,8 +229,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # - run: cd compound-protocol && yarn install --lock-file
-      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
