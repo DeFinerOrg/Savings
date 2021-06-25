@@ -113,8 +113,8 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
+      # - run: cd compound-protocol && yarn install --lock-file
+      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
@@ -180,8 +180,8 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
+      # - run: cd compound-protocol && yarn install --lock-file
+      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
@@ -247,8 +247,8 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
+      # - run: cd compound-protocol && yarn install --lock-file
+      # - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
