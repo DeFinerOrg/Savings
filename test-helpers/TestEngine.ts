@@ -46,6 +46,7 @@ export class TestEngine {
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
+    public proxyAdmin!: t.ProxyAdminInstance;
     public compoundTokens: any = require("../compound-protocol/networks/development.json");
 
     public erc20TokensFromCompound: Array<string> = new Array();
@@ -277,6 +278,7 @@ export class TestEngine {
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
+        this.proxyAdmin = proxyAdmin;
         // ProxyAdmin.setAsDeployed(proxyAdmin);
 
         const savingAccountProxy = await SavingAccountProxy.new();

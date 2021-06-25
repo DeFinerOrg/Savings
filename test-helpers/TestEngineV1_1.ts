@@ -42,9 +42,9 @@ export class TestEngineV1_1 {
     public tokenInfoRegistry!: t.TokenRegistryInstance;
     public globalConfig!: t.GlobalConfigInstance;
     public constant!: t.ConstantInstance;
-    public bank!: t.BankInstance;
-    public accounts!: t.AccountsInstance;
-
+    public bank!: t.BankWithControllerInstance;
+    public accounts!: t.AccountsWithControllerInstance;
+    public proxyAdmin!: t.ProxyAdminInstance;
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
@@ -170,7 +170,7 @@ export class TestEngineV1_1 {
         this.constant = await Constant.new();
         this.bank = await Bank.new();
 
-        await this.bank.initialize(this.globalConfig.address);
+        await this.bank.methods["initialize(address)"](this.globalConfig.address);
 
         const accountTokenLib = await AccountTokenLib.new();
         const bitMapLib = await BitmapLib.new();
@@ -201,7 +201,7 @@ export class TestEngineV1_1 {
 
         this.accounts = await Accounts.new();
         Accounts.setAsDeployed(this.accounts);
-        await this.accounts.initialize(this.globalConfig.address);
+        await this.accounts.methods["initialize(address)"](this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);
@@ -216,6 +216,7 @@ export class TestEngineV1_1 {
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
+        this.proxyAdmin = proxyAdmin;
         // ProxyAdmin.setAsDeployed(proxyAdmin);
 
         const savingAccountProxy = await SavingAccountProxy.new();
@@ -340,10 +341,10 @@ export class TestEngineV1_1 {
         this.globalConfig = await GlobalConfig.new();
         this.constant = await Constant.new();
         this.bank = await Bank.new();
-        await this.bank.initialize(this.globalConfig.address);
+        await this.bank.methods["initialize(address)"](this.globalConfig.address);
 
         this.accounts = await Accounts.new();
-        await this.accounts.initialize(this.globalConfig.address);
+        await this.accounts.methods["initialize(address)"](this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
         await this.initializeTokenInfoRegistry(cTokens, aggregators);

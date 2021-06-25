@@ -19,6 +19,10 @@ contract SavingAccountWithController is SavingAccount {
         // THIS IS AN UPGRADABLE CONTRACT
     }
 
+    function version() public pure returns(string memory) {
+        return "v1.2";
+    }
+
     /**
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
