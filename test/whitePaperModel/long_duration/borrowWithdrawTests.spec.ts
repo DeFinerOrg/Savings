@@ -153,6 +153,7 @@ contract("SavingAccount.borrowWithdrawTests", async (accounts) => {
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
         ZERO = new BN(0);
+        await savingAccount.fastForward(1);
     });
 
     context("Deposit, Borrow and Withdraw", async () => {

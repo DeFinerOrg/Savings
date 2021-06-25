@@ -35,5 +35,6 @@ contract("SavingAccount", async (accounts) => {
     beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
+        await savingAccount.fastForward(1);
     });
 });

@@ -92,6 +92,7 @@ contract("SavingAccount.repay", async (accounts) => {
         cWBTC = await MockCToken.at(cWBTC_addr);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
+        await savingAccount.fastForward(1);
     });
 
     context("Addtional tests for repay()", async () => {

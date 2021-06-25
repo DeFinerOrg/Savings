@@ -148,6 +148,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         HALF_DAI = ONE_DAI.div(new BN(2));
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
+        await savingAccount.fastForward(1);
     });
 
     context("borrow()", async () => {
