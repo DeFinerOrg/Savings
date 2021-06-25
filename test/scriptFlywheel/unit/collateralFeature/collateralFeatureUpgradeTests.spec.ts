@@ -21,7 +21,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         });
 
         describe("has deposits", async () => {
-            describe("should enable collateral for all his deposit tokens");
+            it("should enable collateral for all his deposit tokens");
         });
 
         describe("has borrows", async () => {
