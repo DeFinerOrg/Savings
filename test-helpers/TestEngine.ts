@@ -51,6 +51,15 @@ export class TestEngine {
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
 
+    public async setModel(script: String) {
+        const currentPath = process.cwd();
+        const compound = `${currentPath}/compound-protocol`;
+        const modelPath = `${currentPath}/snapshots/config/coverage/${script}`;
+        const command = `cp ${modelPath} ${compound}/networks/development.json`;
+        shell.exec(command);
+        console.log("modelPath", modelPath);
+    }
+
     public async deploy(script: String) {
         let jsonFileExists = true;
 
