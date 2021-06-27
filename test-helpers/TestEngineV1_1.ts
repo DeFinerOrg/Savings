@@ -10,7 +10,7 @@ const MockChainLinkAggregator = artifacts.require("MockChainLinkAggregatorV1_1")
 const SavingAccount: any = artifacts.require("SavingAccountV1_1");
 const SavingAccountWithController: any = artifacts.require("SavingAccountWithControllerV1_1");
 const Bank: any = artifacts.require("BankWithControllerV1_1");
-const Accounts: any = artifacts.require("AccountsWithControllerV1_1");
+const AccountsWithController: any = artifacts.require("AccountsWithControllerV1_1");
 const ChainLinkAggregator = artifacts.require("ChainLinkAggregatorV1_1");
 const TokenRegistry: any = artifacts.require("TokenRegistryV1_1");
 const AccountTokenLib = artifacts.require("AccountTokenLibV1_1");
@@ -196,12 +196,12 @@ export class TestEngineV1_1 {
             await SavingAccountWithController.link(utils);
             await SavingAccountWithController.link(savingLib);
             // await Accounts.link(utils);
-            await Accounts.link(accountTokenLib);
+            await AccountsWithController.link(accountTokenLib);
             await TokenRegistry.link(utils);
         } catch (error) {}
 
-        this.accounts = await Accounts.new();
-        Accounts.setAsDeployed(this.accounts);
+        this.accounts = await AccountsWithController.new();
+        AccountsWithController.setAsDeployed(this.accounts);
         await this.accounts.methods["initialize(address,address)"](
             this.globalConfig.address,
             compoundTokens.Contracts.Comptroller
@@ -273,7 +273,7 @@ export class TestEngineV1_1 {
         await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
         const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
         this.savingAccount = proxy;
-        this.accounts = await Accounts.at(accountsProxy.address);
+        this.accounts = await AccountsWithController.at(accountsProxy.address);
         this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
@@ -348,7 +348,7 @@ export class TestEngineV1_1 {
         this.bank = await Bank.new();
         await this.bank.methods["initialize(address)"](this.globalConfig.address);
 
-        this.accounts = await Accounts.new();
+        this.accounts = await AccountsWithController.new();
         await this.accounts.methods["initialize(address)"](this.globalConfig.address);
 
         this.tokenInfoRegistry = await TokenRegistry.new();
@@ -414,7 +414,7 @@ export class TestEngineV1_1 {
         await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
 
         const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = await Accounts.at(accountsProxy.address);
+        this.accounts = await AccountsWithController.at(accountsProxy.address);
         this.bank = await Bank.at(bankProxy.address);
 
         return proxy;

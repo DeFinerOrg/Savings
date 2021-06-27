@@ -8,6 +8,8 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccountWithController: t.SavingAccountWithControllerContract = artifacts.require(
     "SavingAccountWithController"
 );
+const Accounts: t.AccountsContract = artifacts.require("Accounts");
+
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
@@ -26,6 +28,7 @@ const DISABLED = false;
 let testEngine: TestEngineV1_1;
 let savingAccount: t.SavingAccountWithControllerInstance;
 let accountsContract: t.AccountsWithControllerInstance;
+let accountsV1_2: t.AccountsInstance;
 let tokenInfoRegistry: t.TokenRegistryInstance;
 let bank: t.BankWithControllerInstance;
 
@@ -97,6 +100,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = testEngine.tokenInfoRegistry;
         accountsContract = testEngine.accounts;
+        accountsV1_2 = await Accounts.at(accountsContract.address);
         bank = testEngine.bank;
 
         // 1. initialization.
@@ -174,6 +178,8 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
     beforeEach(async () => {
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
+        // rest the variable
+        accountsContract = testEngine.accounts;
     });
 
     afterEach(async () => {
@@ -182,15 +188,11 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
 
     it("should deploy version 1.1 contracts", async () => {
         // ensure that the version 'v1.1' contracts are deployed
-        expect(await savingAccount.version()).to.be.equal("v1.1");
-        expect(await accountsContract.version()).to.be.equal("v1.1");
-        expect(await bank.version()).to.be.equal("v1.1");
+        await ensureDeployedContractOfVersion("v1.1");
 
-        await upgradeFrom_v1_1_to_v1_2(testEngine);
+        await upgradeContracts();
 
-        expect(await savingAccount.version()).to.be.equal("v1.2");
-        expect(await accountsContract.version()).to.be.equal("v1.2");
-        expect(await bank.version()).to.be.equal("v1.2");
+        await ensureDeployedContractOfVersion("v1.2");
     });
 
     it("should default to disable all for new user", async () => {
@@ -217,7 +219,52 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         });
 
         describe("has deposits", async () => {
-            it("should enable collateral for all his deposit tokens");
+            it("should enable collateral for single deposit token", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+
+                const user = user1;
+                const depositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount,
+                    from: user,
+                });
+
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectAllCollStatusDisabledForUser(user);
+
+                // init collateral status
+                await accountsV1_2.initCollateralFlag(user);
+                await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
+            });
+
+            it("should enable collateral for multiple  deposit token", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+
+                const user = user1;
+                const ethDepositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, ethDepositAmount, {
+                    value: ethDepositAmount,
+                    from: user,
+                });
+
+                const tusdDepositAmount = new BN(100);
+                await erc20TUSD.transfer(user, tusdDepositAmount, { from: owner });
+                await erc20TUSD.approve(savingAccount.address, tusdDepositAmount, { from: user });
+                await savingAccount.deposit(addressTUSD, tusdDepositAmount, { from: user });
+
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectAllCollStatusDisabledForUser(user);
+
+                // init collateral status
+                await accountsV1_2.initCollateralFlag(user);
+                await expectCollateralEnabledFor(user, [ETH_ADDRESS, addressTUSD]);
+            });
         });
 
         describe("has borrows", async () => {
@@ -225,3 +272,55 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         });
     });
 });
+
+async function ensureDeployedContractOfVersion(version: string) {
+    expect(await savingAccount.version()).to.be.equal(version);
+    expect(await accountsContract.version()).to.be.equal(version);
+    expect(await bank.version()).to.be.equal(version);
+}
+
+async function upgradeContracts() {
+    await ensureDeployedContractOfVersion("v1.1");
+    await upgradeFrom_v1_1_to_v1_2(testEngine);
+    await ensureDeployedContractOfVersion("v1.2");
+}
+
+async function expectAllCollStatusDisabledForUser(user: string) {
+    // method-1: getCollateralStatus()
+    const collStatus = await accountsV1_2.getCollateralStatus(user);
+    const tokens = collStatus[0];
+    const status = collStatus[1];
+
+    expect(tokens.length > 0, "no tokens");
+    expect(tokens.length == status.length, "length mismatch");
+
+    for (let i = 0; i < tokens.length; i++) {
+        expect(status[i] == false, "status is enabled");
+    }
+
+    // method-2: direct status check
+    await expectCollateralBitmap(user, ZERO);
+}
+
+async function expectCollateralBitmap(user: string, expectedVal: BN) {
+    const accountData = await accountsV1_2.accounts(user);
+    const collateralBitmap = accountData[2];
+    expect(collateralBitmap).to.be.bignumber.equal(expectedVal);
+}
+
+async function expectCollateralEnabledFor(user: string, tokens: string[]) {
+    const tokensCount = await tokenInfoRegistry.getCoinLength();
+    for (let i = 0; i < tokensCount.toNumber(); i++) {
+        const collFlag = await accountsV1_2.isUserHasCollateral(user, i);
+        const tokenInfo = await tokenInfoRegistry.getTokenInfoFromIndex(i);
+        const tokenAddr = tokenInfo[0];
+
+        if (tokens.includes(tokenAddr)) {
+            // this exception index should be enabled
+            expect(collFlag).to.be.equal(ENABLED);
+        } else {
+            // rest all should be disabled
+            expect(collFlag).to.be.equal(DISABLED);
+        }
+    }
+}
