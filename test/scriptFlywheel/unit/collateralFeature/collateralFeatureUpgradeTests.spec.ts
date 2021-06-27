@@ -189,6 +189,10 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
     it("should deploy version 1.1 contracts", async () => {
         // ensure that the version 'v1.1' contracts are deployed
         await ensureDeployedContractOfVersion("v1.1");
+    });
+
+    it("should upgrade contracts from v1.1 to v1.2", async () => {
+        await ensureDeployedContractOfVersion("v1.1");
 
         await upgradeContracts();
 
@@ -196,7 +200,32 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
     });
 
     it("should default to disable all for new user", async () => {
-        // TODO
+        await ensureDeployedContractOfVersion("v1.1");
+
+        // user1 does not have any position on v1.1
+        const user = user1;
+        await upgradeContracts();
+
+        await ensureDeployedContractOfVersion("v1.2");
+
+        // user1 creates his position on v1.2
+        await expectCollInitForUser(user, DISABLED);
+        await expectAllCollStatusDisabledForUser(user);
+
+        const depositAmount = new BN(100);
+        await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+            value: depositAmount,
+            from: user,
+        });
+
+        await expectCollInitForUser(user, ENABLED);
+        await expectAllCollStatusDisabledForUser(user);
+
+        // user can now enable collateral as well
+        await accountsV1_2.methods["setCollateral(uint8,bool)"](tokenIndexETH, true, {
+            from: user,
+        });
+        await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
     });
 
     describe("when an existing user", async () => {
@@ -213,9 +242,54 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         });
 
         describe("calls init collateral", async () => {
-            it("user can init collateral status for his own account");
+            it("user can init collateral status for his own account", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
 
-            it("no change should be done upon second time call to init collateral");
+                const user = user1;
+                const depositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount,
+                    from: user,
+                });
+
+                // Upgrade
+                await upgradeContracts();
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user, DISABLED);
+                await expectAllCollStatusDisabledForUser(user);
+
+                // init collateral
+                await accountsV1_2.initCollateralFlag(user);
+                await expectCollInitForUser(user, ENABLED);
+                await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
+            });
+
+            it("no change should be done upon second time call to init collateral", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+
+                const user = user1;
+                const depositAmount = new BN(100);
+                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                    value: depositAmount,
+                    from: user,
+                });
+
+                // Upgrade
+                await upgradeContracts();
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user, DISABLED);
+                await expectAllCollStatusDisabledForUser(user);
+
+                // init collateral - 1st time
+                await accountsV1_2.initCollateralFlag(user);
+                await expectCollInitForUser(user, ENABLED);
+                await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
+
+                // init collateral - 2st time
+                await accountsV1_2.initCollateralFlag(user);
+                await expectCollInitForUser(user, ENABLED);
+                await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
+            });
         });
 
         describe("has deposits", async () => {
@@ -233,10 +307,12 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 await upgradeContracts();
 
                 await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
                 // init collateral status
                 await accountsV1_2.initCollateralFlag(user);
+                await expectCollInitForUser(user, ENABLED);
                 await expectCollateralEnabledFor(user, [ETH_ADDRESS]);
             });
 
@@ -259,10 +335,12 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 await upgradeContracts();
 
                 await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
                 // init collateral status
                 await accountsV1_2.initCollateralFlag(user);
+                await expectCollInitForUser(user, ENABLED);
                 await expectCollateralEnabledFor(user, [ETH_ADDRESS, addressTUSD]);
             });
         });
@@ -323,4 +401,10 @@ async function expectCollateralEnabledFor(user: string, tokens: string[]) {
             expect(collFlag).to.be.equal(DISABLED);
         }
     }
+}
+
+async function expectCollInitForUser(user: string, expectedVal: boolean) {
+    const accountData = await accountsV1_2.accounts(user);
+    const isCollInit = accountData[3];
+    expect(isCollInit).to.be.equal(expectedVal);
 }
