@@ -531,15 +531,23 @@ contract Accounts is Constant, Initializable{
         address _accountAddr
     ) public view returns (uint256 depositETH) {
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
-        uint256 tokenNum = tokenRegistry.getCoinLength();
-        for(uint256 i = 0; i < tokenNum; i++) {
-            if(isUserHasDeposits(_accountAddr, uint8(i))) {
-                (address token, uint256 divisor, uint256 price, ) = tokenRegistry.getTokenInfoFromIndex(i);
+        Account memory account = accounts[_accountAddr];
+        uint128 hasDeposits = account.depositBitmap;
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasDeposits > 0) {
+                bool isEnabled = (hasDeposits & uint128(1)) > 0;
+                if(isEnabled) {
+                    (address token, uint256 divisor, uint256 price, ) = tokenRegistry.getTokenInfoFromIndex(i);
 
-                uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _accountAddr);
-                depositETH = depositETH.add(depositBalanceCurrent.mul(price).div(divisor));
+                    uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _accountAddr);
+                    depositETH = depositETH.add(depositBalanceCurrent.mul(price).div(divisor));
+                }
+                hasDeposits = hasDeposits >> 1;
+            } else {
+                break;
             }
         }
+
         return depositETH;
     }
     /**
@@ -549,15 +557,23 @@ contract Accounts is Constant, Initializable{
         address _accountAddr
     ) public view returns (uint256 borrowETH) {
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
-        uint256 tokenNum = tokenRegistry.getCoinLength();
-        for(uint256 i = 0; i < tokenNum; i++) {
-            if(isUserHasBorrows(_accountAddr, uint8(i))) {
-                (address token, uint256 divisor, uint256 price, ) = tokenRegistry.getTokenInfoFromIndex(i);
+        Account memory account = accounts[_accountAddr];
+        uint128 hasBorrows = account.borrowBitmap;
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasBorrows > 0) {
+                bool isEnabled = (hasBorrows & uint128(1)) > 0;
+                if(isEnabled) {
+                    (address token, uint256 divisor, uint256 price, ) = tokenRegistry.getTokenInfoFromIndex(i);
 
-                uint256 borrowBalanceCurrent = getBorrowBalanceCurrent(token, _accountAddr);
-                borrowETH = borrowETH.add(borrowBalanceCurrent.mul(price).div(divisor));
+                    uint256 borrowBalanceCurrent = getBorrowBalanceCurrent(token, _accountAddr);
+                    borrowETH = borrowETH.add(borrowBalanceCurrent.mul(price).div(divisor));
+                }
+                hasBorrows = hasBorrows >> 1;
+            } else {
+                break;
             }
         }
+
         return borrowETH;
     }
 
@@ -572,11 +588,18 @@ contract Accounts is Constant, Initializable{
 
         // Add new rate check points for all the collateral tokens from borrower in order to
         // have accurate calculation of liquidation oppotunites.
-        uint256 tokenNum = tokenRegistry.getCoinLength();
-        for(uint8 i = 0; i < tokenNum; i++) {
-            if (isUserHasDeposits(_borrower, i) || isUserHasBorrows(_borrower, i)) {
-                address token = tokenRegistry.addressFromIndex(i);
-                bank.newRateIndexCheckpoint(token);
+        Account memory account = accounts[_borrower];
+        uint128 hasBorrowsOrDeposits = account.borrowBitmap | account.depositBitmap;
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasBorrowsOrDeposits > 0) {
+                bool isEnabled = (hasBorrowsOrDeposits & uint128(1)) > 0;
+                if(isEnabled) {
+                    address token = tokenRegistry.addressFromIndex(i);
+                    bank.newRateIndexCheckpoint(token);
+                }
+                hasBorrowsOrDeposits = hasBorrowsOrDeposits >> 1;
+            } else {
+                break;
             }
         }
 
@@ -588,7 +611,9 @@ contract Accounts is Constant, Initializable{
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
-        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) && totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
+        return
+            totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) &&
+            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
     }
 
     struct LiquidationVars {
@@ -691,35 +716,45 @@ contract Accounts is Constant, Initializable{
 
     /**
      * An account claim all mined FIN token.
-     * @dev If the FIN mining index point doesn't exist, we have to calculate the FIN amount 
+     * @dev If the FIN mining index point doesn't exist, we have to calculate the FIN amount
      * accurately. So the user can withdraw all available FIN tokens.
      */
     function claim(address _account) public onlyAuthorized returns(uint256){
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
         Bank bank = globalConfig.bank();
-        uint256 coinLength = tokenRegistry.getCoinLength();
-        for(uint8 i = 0; i < coinLength; i++) {
-            if (isUserHasDeposits(_account, i) || isUserHasBorrows(_account, i)) {
-                address token = tokenRegistry.addressFromIndex(i);
-                AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
-                uint256 currentBlock = getBlockNumber();
-                bank.updateMining(token);
 
-                if (isUserHasDeposits(_account, i)) {
-                    bank.updateDepositFINIndex(token);
-                    uint256 accruedRate = bank.getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
-                    calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
-                    tokenInfo.deposit(0, accruedRate, currentBlock);
-                }
+        Account memory account = accounts[_account];
+        uint128 hasDepositOrBorrow = account.depositBitmap | account.borrowBitmap;
 
-                if (isUserHasBorrows(_account, i)) {
-                    bank.updateBorrowFINIndex(token);
-                    uint256 accruedRate = bank.getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
-                    calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
-                    tokenInfo.borrow(0, accruedRate, currentBlock);
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasDepositOrBorrow > 0) {
+                bool isEnabled = (hasDepositOrBorrow & uint128(1)) > 0;
+                if(isEnabled) {
+                    address token = tokenRegistry.addressFromIndex(i);
+                    AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
+                    uint256 currentBlock = getBlockNumber();
+                    bank.updateMining(token);
+
+                    if (isUserHasDeposits(_account, i)) {
+                        bank.updateDepositFINIndex(token);
+                        uint256 accruedRate = bank.getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
+                        calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
+                        tokenInfo.deposit(0, accruedRate, currentBlock);
+                    }
+
+                    if (isUserHasBorrows(_account, i)) {
+                        bank.updateBorrowFINIndex(token);
+                        uint256 accruedRate = bank.getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
+                        calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
+                        tokenInfo.borrow(0, accruedRate, currentBlock);
+                    }
                 }
+                hasDepositOrBorrow = hasDepositOrBorrow >> 1;
+            } else {
+                break;
             }
         }
+
         uint256 _FINAmount = FINAmount[_account];
         FINAmount[_account] = 0;
         return _FINAmount;
