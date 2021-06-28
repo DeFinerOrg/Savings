@@ -1,18 +1,18 @@
 pragma solidity 0.5.14;
 
-import "../Accounts.sol";
-import { IController } from "../compound/ICompound.sol";
+import "../AccountsV1_1.sol";
+import { IControllerV1_1 } from "../compound/ICompoundV1_1.sol";
 
-contract AccountsWithController is Accounts {
+contract AccountsWithControllerV1_1 is AccountsV1_1 {
 
     address comptroller;
 
     function version() public pure returns(string memory) {
-        return "v1.2";
+        return "v1.1";
     }
 
     function initialize(
-        GlobalConfig _globalConfig,
+        GlobalConfigV1_1 _globalConfig,
         address _comptroller
     ) public initializer {
         super.initialize(_globalConfig); // expected 3 passed 5 args
@@ -20,6 +20,6 @@ contract AccountsWithController is Accounts {
     }
 
     function getBlockNumber() private view returns (uint) {
-        return IController(comptroller).getBlockNumber();
+        return IControllerV1_1(comptroller).getBlockNumber();
     }
 }

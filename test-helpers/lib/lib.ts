@@ -8,7 +8,7 @@ var tokenData = require("../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
 

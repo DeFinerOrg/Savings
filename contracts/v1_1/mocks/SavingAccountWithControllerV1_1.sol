@@ -1,16 +1,16 @@
 pragma solidity 0.5.14;
 
-import "../SavingAccount.sol";
-import { IController } from "../compound/ICompound.sol";
-import "../Accounts.sol";
+import "../SavingAccountV1_1.sol";
+import { IControllerV1_1 } from "../compound/ICompoundV1_1.sol";
+import "../AccountsV1_1.sol";
 //import { TokenRegistry } from "../registry/TokenRegistry.sol";
 //import { Bank } from "../Bank.sol";
 //import "../config/GlobalConfig.sol";
 
 // This file is only for testing purpose only
-contract SavingAccountWithController is SavingAccount {
+contract SavingAccountWithControllerV1_1 is SavingAccountV1_1 {
 
-    Accounts.Account public accountVariable;
+    AccountsV1_1.Account public accountVariable;
     //GlobalConfig public globalConfig;
     address comptroller;
 
@@ -20,7 +20,7 @@ contract SavingAccountWithController is SavingAccount {
     }
 
     function version() public pure returns(string memory) {
-        return "v1.2";
+        return "v1.1";
     }
 
     /**
@@ -34,7 +34,7 @@ contract SavingAccountWithController is SavingAccount {
         address[] memory _tokenAddresses,
         address[] memory _cTokenAddresses, 
         //TokenRegistry _tokenRegistry, // can remove
-        GlobalConfig _globalConfig,
+        GlobalConfigV1_1 _globalConfig,
         address _comptroller
     ) public initializer {
         comptroller = _comptroller;
@@ -46,14 +46,14 @@ contract SavingAccountWithController is SavingAccount {
      * @param blocks number of blocks to be forwarded
      */
     function fastForward(uint blocks) public returns (uint) {
-        return IController(comptroller).fastForward(blocks);
+        return IControllerV1_1(comptroller).fastForward(blocks);
     }
 
     /**
      * Get the block number from comound
      */
     function getBlockNumber() internal view returns (uint) {
-        return IController(comptroller).getBlockNumber();
+        return IControllerV1_1(comptroller).getBlockNumber();
     }
 
     function newRateIndexCheckpoint(address _token) public {
@@ -108,8 +108,5 @@ contract SavingAccountWithController is SavingAccount {
 
     function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return globalConfig.bank().getTokenState(_token);
-    }
-    function setFINAddress(address _FINAddress) public {
-        FIN_ADDR = _FINAddress;
     }
 }

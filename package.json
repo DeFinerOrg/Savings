@@ -7,7 +7,7 @@
     "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
     "compile": "truffle compile",
     "test": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts",
-    "generate": "truffle compile && typechain --target truffle './build/**/*.json'",
+    "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
     "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip",
     "clean-snapshot": "rimraf snapshots/whitePaperModel && rimraf snapshots/scriptFlywheel && rimraf snapshots/coverage",
@@ -21,7 +21,7 @@
     "lint": "npx solium -d contracts/",
     "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 20000000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true --mnemonic “begin vessel olive rocket pink distance admit foam lizard type fault enjoy”",
     "buidler-evm": "npx buidler node",
-    "contract-size": "truffle run contract-size --contracts SavingAccount Accounts Bank InitializablePausable Constant GlobalConfig AccountTokenLib BitmapLib SavingLib Utils ETHPerFIN ETHPerLPToken TokenRegistry AccountsProxy BankProxy SavingAccountProxy"
+    "contract-size": "truffle compile && truffle run contract-size --contracts SavingAccount Accounts Bank InitializablePausable Constant GlobalConfig AccountTokenLib BitmapLib SavingLib Utils ETHPerFIN ETHPerLPToken TokenRegistry AccountsProxy BankProxy SavingAccountProxy"
   },
   "repository": {
     "type": "git",

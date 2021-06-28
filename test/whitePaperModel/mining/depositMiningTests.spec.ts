@@ -10,7 +10,7 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 
 contract("depositMiningTests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -57,15 +57,11 @@ contract("depositMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("whitePaperModel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
 
@@ -112,8 +108,10 @@ contract("depositMiningTests", async (accounts) => {
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
 
-        savingAccount.setFINAddress(addressFIN);
+        await savingAccount.setFINAddress(addressFIN);
+    });
 
+    beforeEach(async function () {
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });
