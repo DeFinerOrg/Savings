@@ -211,6 +211,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         (await web3.eth.getBalance(savingAccount.address)).toString()
                     );
 
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     await savAccBalVerify(
                         2,
@@ -250,7 +257,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdrawAll(addressDAI, { from: user1 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(DAIprice);
@@ -320,6 +327,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenBeforeBorrow = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     await savAccBalVerify(
                         2,
@@ -347,7 +361,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdrawAll(addressUSDC, { from: user2 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
@@ -435,6 +449,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenBeforeBorrow = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     let user2bal = await erc20DAI.balanceOf(user2);
 
@@ -487,6 +508,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .mul(new BN(59))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt2, { from: user2 });
 
                     await savAccBalVerify(
@@ -518,7 +546,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 5. withdraw without repaying
                     await expectRevert(
                         savingAccount.withdrawAll(addressUSDC, { from: user2 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
@@ -620,6 +648,14 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountETHTokenBeforeFirstBorrow = new BN(
                         await web3.eth.getBalance(savingAccount.address)
                     );
+
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     await savAccBalVerify(
                         2,
@@ -675,6 +711,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(1)))
                         .div(eighteenPrecision);
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                    const ethTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        ethTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmt2, { from: user1 });
 
                     await savAccBalVerify(
@@ -709,7 +752,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 5. withdraw without repaying
                     await expectRevert(
                         savingAccount.withdrawAll(addressDAI, { from: user1 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                     await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
                 });
@@ -793,6 +836,14 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenAfterFirstBorrow = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
+
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressMKR);
+                    const mkrTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        mkrTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     await savAccBalVerify(
                         2,
@@ -828,6 +879,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(3)));
 
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressTUSD, borrowAmt2, {
                         from: user2,
                     });
@@ -856,7 +914,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 5. withdraw without repaying
                     await expectRevert(
                         savingAccount.withdrawAll(addressMKR, { from: user2 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                     await mockChainlinkAggregatorforMKR.updateAnswer(originPrice);
                 });
@@ -943,6 +1001,14 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenBeforeBorrow = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
+
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressWBTC);
+                    const wbtcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        wbtcTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user1 });
                     await savAccBalVerify(
                         2,
@@ -992,6 +1058,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .mul(new BN(59))
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt2, { from: user1 });
 
                     await savAccBalVerify(
@@ -1029,7 +1102,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 5. withdraw without repaying
                     await expectRevert(
                         savingAccount.withdrawAll(addressWBTC, { from: user1 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                     await mockChainlinkAggregatorforWBTC.updateAnswer(originPrice);
                 });
@@ -1152,6 +1225,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     const savingAccountDAITokenBeforeBorrow = BN(
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     let user2bal = await erc20DAI.balanceOf(user2);
 
@@ -1205,6 +1285,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(2)))
                         .div(eighteenPrecision);
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressUSDT, borrowAmt2, { from: user2 });
 
                     await savAccBalVerify(
@@ -1254,6 +1341,13 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                         .div(new BN(100))
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)))
                         .div(sixPrecision);
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDT);
+                    const usdtTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdtTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt3, { from: user2 });
                     await savAccBalVerify(
                         2,
@@ -1284,7 +1378,7 @@ contract("SavingAccount.overLeveraged", async (accounts) => {
                     // 5. withdraw without repaying
                     await expectRevert(
                         savingAccount.withdrawAll(addressUSDC, { from: user2 }),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });

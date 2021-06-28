@@ -1,6 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 
+let snapshotId: string;
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -16,6 +18,7 @@ contract("Integration Tests", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -60,19 +63,16 @@ contract("Integration Tests", async (accounts) => {
     let addressCTokenTemp: any;
     let erc20contr: t.MockErc20Instance;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("scriptFlywheel.scen");
         // testEngine.deploy("whitePaperModel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
+        tokenRegistry = testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         addressDAI = tokens[0];
@@ -105,6 +105,15 @@ contract("Integration Tests", async (accounts) => {
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr); */
         await savingAccount.fastForward(1);
+    });
+
+    beforeEach(async () => {
+        // Take snapshot of the EVM before each test
+        snapshotId = await takeSnapshot();
+    });
+
+    afterEach(async () => {
+        await revertToSnapShot(snapshotId);
     });
 
     context("Special test.", async () => {
@@ -144,6 +153,11 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user2Deposit: " + user2Deposit.toString());
 
                 // user1 borrow 20BAT
+                const result = await tokenRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                const ethTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](ethTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressBAT, borrowAmount, { from: user1 });
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(
@@ -215,6 +229,11 @@ contract("Integration Tests", async (accounts) => {
                 console.log("user2Deposit: " + user2Deposit.toString());
 
                 // user1 borrow 20BAT
+                const result = await tokenRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                const ethTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](ethTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressBAT, borrowAmount, { from: user1 });
                 console.log("user1 borrow 20BAT");
                 const user1Borrow1 = await accountsContract.getBorrowBalanceCurrent(

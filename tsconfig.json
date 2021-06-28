@@ -17,12 +17,9 @@
     "sourceMap": true,
     "typeRoots": [
       "./node_modules/@types",
-      "./types"
+      "./types/truffle-contracts/"
     ],
-    "types": [
-      "node",
-      "truffle-contracts"
-    ]
+    "types": ["node", "truffle-typings"],
   },
   "include": [
     "**/*.ts",
