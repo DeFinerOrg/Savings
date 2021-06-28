@@ -97,6 +97,7 @@ contract("SavingAccount", async (accounts) => {
         cETH = await MockCToken.at(addressCTokenForETH);
 
         numOfToken = new BN(1000);
+        await savingAccount.fastForward(1);
     });
 
     context("repay()", async () => {

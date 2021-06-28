@@ -109,6 +109,7 @@ contract("Integration Tests", async (accounts) => {
                 cUSDT = await MockCToken.at(cUSDT_addr);
                 cWBTC = await MockCToken.at(cWBTC_addr);
                 cZRX = await MockCToken.at(cZRX_addr);
+                await savingAccount.fastForward(1);
             });
 
             it("Deposit DAI and checkout the output rate", async function () {
