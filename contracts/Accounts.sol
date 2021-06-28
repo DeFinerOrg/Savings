@@ -22,8 +22,7 @@ contract Accounts is Constant, Initializable{
     mapping(address => uint256) public FINAmount;
 
     modifier onlyAuthorized() {
-        require(msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
-            "Only authorized to call from DeFiner internal contracts.");
+        _isAuthorized();
         _;
     }
 
@@ -38,6 +37,13 @@ contract Accounts is Constant, Initializable{
     }
 
     event CollateralFlagChanged(address indexed _account, uint8 _index, bool _enabled);
+
+    function _isAuthorized() internal view {
+        require(
+            msg.sender == address(globalConfig.savingAccount()) || msg.sender == address(globalConfig.bank()),
+            "not authorized"
+        );
+    }
 
     /**
      * Initialize the Accounts
@@ -312,8 +318,9 @@ contract Accounts is Constant, Initializable{
     }
 
     function _withdraw(address _accountAddr, address _token, uint256 _amount, bool _isCommission) internal returns (uint256, uint256) {
+        uint256 calcAmount = _amount;
         // Check if withdraw amount is less than user's balance
-        require(_amount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        require(calcAmount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 lastBlock = tokenInfo.getLastDepositBlock();
@@ -323,11 +330,11 @@ contract Accounts is Constant, Initializable{
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
 
         if (tokenInfo.getLastDepositBlock() == 0)
-            tokenInfo.withdraw(_amount, INT_UNIT, getBlockNumber());
+            tokenInfo.withdraw(calcAmount, INT_UNIT, getBlockNumber());
         else {
             // As the last deposit block exists, the block is also a check point on index curve.
             uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-            tokenInfo.withdraw(_amount, accruedRate, getBlockNumber());
+            tokenInfo.withdraw(calcAmount, accruedRate, getBlockNumber());
         }
 
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
@@ -339,12 +346,12 @@ contract Accounts is Constant, Initializable{
         uint256 commission = 0;
         if (_isCommission && _accountAddr != globalConfig.deFinerCommunityFund()) {
             // DeFiner takes 10% commission on the interest a user earn
-            commission = _amount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
+            commission = calcAmount.sub(principalBeforeWithdraw.sub(principalAfterWithdraw)).mul(globalConfig.deFinerRate()).div(100);
             deposit(globalConfig.deFinerCommunityFund(), _token, commission);
-            _amount = _amount.sub(commission);
+            calcAmount = calcAmount.sub(commission);
         }
 
-        return (_amount, commission);
+        return (calcAmount, commission);
     }
 
     /**
@@ -372,7 +379,7 @@ contract Accounts is Constant, Initializable{
         // Update tokenInfo
         uint256 amountOwedWithInterest = getBorrowBalanceCurrent(_token, _accountAddr);
         uint256 amount = _amount > amountOwedWithInterest ? amountOwedWithInterest : _amount;
-        uint256 remain =  _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
+        uint256 remain = _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
         require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
@@ -725,10 +732,10 @@ contract Accounts is Constant, Initializable{
         Bank bank = globalConfig.bank();
 
         uint256 indexDifference = bank.depositFINRateIndex(_token, _currentBlock)
-                                .sub(bank.depositFINRateIndex(_token, _lastBlock));
+            .sub(bank.depositFINRateIndex(_token, _lastBlock));
         uint256 getFIN = getDepositBalanceCurrent(_token, _accountAddr)
-                        .mul(indexDifference)
-                        .div(bank.depositeRateIndex(_token, _currentBlock));
+            .mul(indexDifference)
+            .div(bank.depositeRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 
@@ -739,10 +746,10 @@ contract Accounts is Constant, Initializable{
         Bank bank = globalConfig.bank();
 
         uint256 indexDifference = bank.borrowFINRateIndex(_token, _currentBlock)
-                                .sub(bank.borrowFINRateIndex(_token, _lastBlock));
+            .sub(bank.borrowFINRateIndex(_token, _lastBlock));
         uint256 getFIN = getBorrowBalanceCurrent(_token, _accountAddr)
-                        .mul(indexDifference)
-                        .div(bank.borrowRateIndex(_token, _currentBlock));
+            .mul(indexDifference)
+            .div(bank.borrowRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
 }
