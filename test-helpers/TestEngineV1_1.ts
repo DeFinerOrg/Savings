@@ -176,7 +176,7 @@ export class TestEngineV1_1 {
         const accountTokenLib = await AccountTokenLib.new();
         const bitMapLib = await BitmapLib.new();
         const utils = await Utils.new();
-        Utils.setAsDeployed(utils);
+        // Utils.setAsDeployed(utils);
 
         try {
             await SavingLib.link(utils);
@@ -186,9 +186,9 @@ export class TestEngineV1_1 {
 
         const savingLib = await SavingLib.new();
 
-        AccountTokenLib.setAsDeployed(accountTokenLib);
-        BitmapLib.setAsDeployed(bitMapLib);
-        SavingLib.setAsDeployed(savingLib);
+        // AccountTokenLib.setAsDeployed(accountTokenLib);
+        // BitmapLib.setAsDeployed(bitMapLib);
+        // SavingLib.setAsDeployed(savingLib);
 
         try {
             await SavingAccount.link(utils);
@@ -201,7 +201,7 @@ export class TestEngineV1_1 {
         } catch (error) {}
 
         this.accounts = await AccountsWithController.new();
-        AccountsWithController.setAsDeployed(this.accounts);
+        // AccountsWithController.setAsDeployed(this.accounts);
         await this.accounts.methods["initialize(address,address)"](
             this.globalConfig.address,
             compoundTokens.Contracts.Comptroller
@@ -239,7 +239,7 @@ export class TestEngineV1_1 {
 
         const savingAccount: t.SavingAccountWithControllerInstance =
             await SavingAccountWithController.new();
-        SavingAccountWithController.setAsDeployed(savingAccount);
+        // SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
