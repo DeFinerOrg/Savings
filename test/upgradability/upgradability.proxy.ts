@@ -138,68 +138,6 @@ contract("SavingAccount() proxy", async (accounts) => {
             // ======================
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
         });
-
-        it("SavingAccount - initFINAddress(): V1 to latest", async () => {
-            // ==================
-            // SavingAccount V1
-            // ==================
-            const UtilsV1 = await ethers.getContractFactory("UtilsV1");
-
-            // console.log("Utils", Utils.address);
-            const utilsV1 = await UtilsV1.deploy();
-
-            const SavingLibV1 = await ethers.getContractFactory("SavingLibV1", {
-                libraries: {
-                    UtilsV1: utilsV1.address,
-                },
-            });
-            const savingLibV1 = await SavingLibV1.deploy();
-
-            const SavingAccountV1 = await ethers.getContractFactory("SavingAccountV1", {
-                libraries: { SavingLibV1: savingLibV1.address, UtilsV1: utilsV1.address },
-            });
-
-            // ====================
-            // SavingAccount latest
-            // ====================
-            const Utils = await ethers.getContractFactory("Utils");
-            const utils = await Utils.deploy();
-
-            const SavingLib = await ethers.getContractFactory("SavingLib", {
-                libraries: {
-                    Utils: utils.address,
-                },
-            });
-            const savingLib = await SavingLib.deploy();
-
-            const SavingAccount = await ethers.getContractFactory("SavingAccount", {
-                libraries: { SavingLib: savingLib.address, Utils: utils.address },
-            });
-
-            // ======================
-            // SavingAccount V1 Proxy
-            // ======================
-            const savingAccountProxy = await upgrades.deployProxy(
-                SavingAccountV1,
-                [[], [], DUMMY],
-                { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
-            );
-
-            // ==========================
-            // SavingAccount latest Proxy
-            // ==========================
-            SAV = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccount, {
-                unsafeAllow: ["external-library-linking"],
-            });
-
-            // verify FIN address after upgrade
-            const FINAddress = SAV.FIN_ADDR();
-            expect(FINAddress).to.be.equal(FINAddress);
-
-            // call initFINAddress() again
-            // await SAV.initFINAddress();
-            await expectRevert.unspecified(SAV.initFINAddress());
-        });
     });
 
     describe("upgradeability tests from V1.1 to latest", async () => {
@@ -318,7 +256,7 @@ contract("SavingAccount() proxy", async (accounts) => {
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
         });
 
-        it("SavingAccount from V1.1 to latest", async () => {
+        it("SavingAccount - initFINAddress(): from V1.1 to latest", async () => {
             // ==================
             // SavingAccount V1.1
             // ==================
@@ -369,12 +307,13 @@ contract("SavingAccount() proxy", async (accounts) => {
                 unsafeAllow: ["external-library-linking"],
             });
 
-            // verify FIN address after upgrade
+            // call initFINAddress() & verify FIN address after upgrade
+            await SAV.initFINAddress();
             const FINAddress = SAV.FIN_ADDR();
             expect(FINAddress).to.be.equal(FINAddress);
 
             // call initFINAddress() again
-            await expectRevert.unspecified(SAV.initFINAddress());
+            await expectRevert(SAV.initFINAddress(), "Already init");
         });
     });
 
