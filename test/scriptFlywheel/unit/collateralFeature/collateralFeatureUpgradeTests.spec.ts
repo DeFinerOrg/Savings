@@ -28,6 +28,8 @@ const ONE_ETH = new BN(10).pow(new BN(18));
 const ONE_DAI = new BN(10).pow(new BN(18));
 const ONE_USDC = new BN(10).pow(new BN(6));
 const ONE_WBTC = new BN(10).pow(new BN(8));
+const sixPrecision = new BN(10).pow(new BN(6));
+const eighteenPrecision = new BN(10).pow(new BN(18));
 
 let testEngine: TestEngineV1_1;
 let savingAccount: t.SavingAccountWithControllerInstance;
@@ -332,9 +334,164 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
             });
 
-            it("should initialize collateral status when existing user repay");
+            it("should initialize collateral status when existing user repay", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
 
-            it("should initialize collateral status when existing user liquidate");
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                const isUserHasBorrowedETH = await accountsContract.isUserHasBorrows(
+                    user1,
+                    tokenIndexETH
+                );
+                expect(isUserHasBorrowedETH).to.be.equal(true);
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                // repay
+                await savingAccount.repay(ETH_ADDRESS, new BN(1), { from: user1 });
+
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
+            });
+
+            it("should initialize collateral status when existing user liquidate", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20USDC.transfer(user2, ONE_USDC);
+
+                const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
+                    .mul(new BN(60))
+                    .div(new BN(100))
+                    .mul(ONE_DAI)
+                    .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+
+                // 2. Start borrowing.
+                let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                // 3. Change the price.
+                let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                // update price of DAI to 70% of it's value
+                let updatedPrice = BN(USDCprice).mul(new BN(7)).div(new BN(10));
+
+                await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+                // 4. Start liquidation.
+                const liquidateBefore = await accountsContract.isAccountLiquidatable.call(user2);
+
+                const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
+                    addressUSDC,
+                    owner
+                );
+                const ownerDAIBefore = await accountsContract.getDepositBalanceCurrent(
+                    addressDAI,
+                    owner
+                );
+                const user2USDCBefore = await accountsContract.getDepositBalanceCurrent(
+                    addressUSDC,
+                    user2
+                );
+                const user2DAIBefore = await accountsContract.getBorrowBalanceCurrent(
+                    addressDAI,
+                    user2
+                );
+
+                result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+
+                // upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectCollInitForUser(user2, DISABLED);
+                await expectCollInitForUser(owner, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+                await expectAllCollStatusDisabledForUser(user2);
+                await expectAllCollStatusDisabledForUser(owner);
+
+                //await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true);
+                await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
+                await expectCollInitForUser(user2, ENABLED);
+                await expectCollInitForUser(owner, ENABLED);
+
+                await expectCollateralEnabledFor(user2, [addressUSDC]);
+                await expectCollateralEnabledFor(owner, [addressDAI]);
+
+                const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
+                    addressUSDC,
+                    owner
+                );
+                const ownerDAIAfter = await accountsContract.getDepositBalanceCurrent(
+                    addressDAI,
+                    owner
+                );
+                const user2USDCAfter = await accountsContract.getDepositBalanceCurrent(
+                    addressUSDC,
+                    user2
+                );
+                const user2DAIAfter = await accountsContract.getBorrowBalanceCurrent(
+                    addressDAI,
+                    user2
+                );
+
+                expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
+                    BN(user2USDCBefore)
+                );
+                expect(BN(user2DAIBefore).sub(BN(user2DAIAfter))).to.be.bignumber.equal(
+                    BN(ownerDAIBefore).sub(ownerDAIAfter)
+                );
+
+                const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
+                const daiDiff = BN(ownerDAIBefore).sub(ownerDAIAfter);
+
+                const usdcEarned = BN(daiDiff)
+                    .mul(BN(daiPrice))
+                    .div(BN(usdcPrice))
+                    .mul(new BN(100))
+                    .div(new BN(95))
+                    .mul(sixPrecision)
+                    .div(eighteenPrecision);
+
+                expect(BN(usdcEarned)).to.be.bignumber.equal(ownerUSDCAfter);
+
+                const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
+                expect(liquidateBefore).to.equal(true);
+                expect(liquidateAfter).to.equal(true);
+
+                await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
+            });
 
             it("should initialize collateral status when existing user calls setCollateral", async () => {
                 await ensureDeployedContractOfVersion("v1.1");
