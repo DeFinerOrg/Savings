@@ -80,7 +80,6 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
         }
     }
-    // set if address is zero
 
     /**
      * Approve transfer of all available tokens
