@@ -309,8 +309,8 @@ contract("SavingAccount() proxy", async (accounts) => {
 
             // call initFINAddress() & verify FIN address after upgrade
             await SAV.initFINAddress();
-            const FINAddress = SAV.FIN_ADDR();
-            expect(FINAddress).to.be.equal(FINAddress);
+            const FINAddrAfter = await SAV.FIN_ADDR();
+            expect(FINAddrAfter).to.be.equal(FINAddress);
 
             // call initFINAddress() again
             await expectRevert(SAV.initFINAddress(), "Already init");
