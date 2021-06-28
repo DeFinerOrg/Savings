@@ -613,6 +613,8 @@ contract Accounts is Constant, Initializable{
             uint256
         )
     {
+        initCollateralFlag(_liquidator);
+        initCollateralFlag(_borrower);
         require(isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
 
         // It is required that the liquidator doesn't exceed it's borrow power.

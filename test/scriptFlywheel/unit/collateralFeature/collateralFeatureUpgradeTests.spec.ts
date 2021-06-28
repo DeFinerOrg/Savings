@@ -24,6 +24,10 @@ const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
 const ZERO = new BN(0);
 const ENABLED = true;
 const DISABLED = false;
+const ONE_ETH = new BN(10).pow(new BN(18));
+const ONE_DAI = new BN(10).pow(new BN(18));
+const ONE_USDC = new BN(10).pow(new BN(6));
+const ONE_WBTC = new BN(10).pow(new BN(8));
 
 let testEngine: TestEngineV1_1;
 let savingAccount: t.SavingAccountWithControllerInstance;
@@ -91,7 +95,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
 
-    before(async () => {
+    beforeEach(async () => {
         // ==============================
         // This deployes V1.1 Contracts
         // ==============================
@@ -175,17 +179,6 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         await savingAccount.fastForward(1);
     });
 
-    beforeEach(async () => {
-        // Take snapshot of the EVM before each test
-        snapshotId = await takeSnapshot();
-        // rest the variable
-        accountsContract = testEngine.accounts;
-    });
-
-    afterEach(async () => {
-        await revertToSnapShot(snapshotId);
-    });
-
     it("should deploy version 1.1 contracts", async () => {
         // ensure that the version 'v1.1' contracts are deployed
         await ensureDeployedContractOfVersion("v1.1");
@@ -230,15 +223,153 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
 
     describe("when an existing user", async () => {
         describe("calls a functions", async () => {
-            it("should initialize collateral status when existing user borrow");
+            it("should initialize collateral status when existing user borrow", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
 
-            it("should initialize collateral status when existing user withdraw");
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
 
-            it("should initialize collateral status when existing user deposit");
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                // user1 borrow small amount, this should also initCollateral internally
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                const isUserHasBorrowedETH = await accountsContract.isUserHasBorrows(
+                    user1,
+                    tokenIndexETH
+                );
+                expect(isUserHasBorrowedETH).to.be.equal(true);
+
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
+            });
+
+            it("should initialize collateral status when existing user withdraw", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
+
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                await savingAccount.withdraw(addressDAI, ONE_DAI, { from: user1 });
+
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
+            });
+
+            it("should initialize collateral status when existing user deposit", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
+
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                await erc20WBTC.transfer(user1, ONE_WBTC);
+                await erc20WBTC.approve(savingAccount.address, ONE_WBTC, { from: user1 });
+                await savingAccount.deposit(addressWBTC, ONE_WBTC, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
+            });
 
             it("should initialize collateral status when existing user repay");
 
-            it("should initialize collateral status when existing user calls setCollateral");
+            it("should initialize collateral status when existing user liquidate");
+
+            it("should initialize collateral status when existing user calls setCollateral", async () => {
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
+
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                await accountsV1_2.methods["setCollateral(uint8,bool)"](tokenIndexTUSD, true, {
+                    from: user1,
+                });
+
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI, addressTUSD]);
+            });
         });
 
         describe("calls init collateral", async () => {
@@ -346,7 +477,47 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         });
 
         describe("has borrows", async () => {
-            it("should enable collateral for all his deposit tokens");
+            it("should enable collateral for all his deposit tokens", async () => {
+                setTimeout(() => 0, 0);
+                await ensureDeployedContractOfVersion("v1.1");
+                // user2 provide liquidity
+                await savingAccount.deposit(ETH_ADDRESS, ONE_ETH, {
+                    from: user2,
+                    value: ONE_ETH,
+                });
+
+                // user1 deposit
+                await erc20DAI.transfer(user1, ONE_DAI);
+                await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+
+                await erc20USDC.transfer(user1, ONE_USDC);
+                await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user1 });
+                await savingAccount.deposit(addressUSDC, ONE_USDC, {
+                    from: user1,
+                });
+
+                // user1 borrow small amount
+                await savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user1 });
+                const isUserHasBorrowedETH = await accountsContract.isUserHasBorrows(
+                    user1,
+                    tokenIndexETH
+                );
+                expect(isUserHasBorrowedETH).to.be.equal(true);
+
+                // upgrade contracts to 1.2
+                // Upgrade
+                await upgradeContracts();
+
+                await ensureDeployedContractOfVersion("v1.2");
+                await expectCollInitForUser(user1, DISABLED);
+                await expectAllCollStatusDisabledForUser(user1);
+
+                // init collateral
+                await accountsV1_2.initCollateralFlag(user1);
+                await expectCollInitForUser(user1, ENABLED);
+                await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
+            });
         });
     });
 });
