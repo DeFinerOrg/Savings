@@ -369,7 +369,10 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 await expectAllCollStatusDisabledForUser(user1);
 
                 // repay
-                await savingAccount.repay(ETH_ADDRESS, new BN(1), { from: user1 });
+                await savingAccount.repay(ETH_ADDRESS, new BN(1), {
+                    from: user1,
+                    value: new BN(1),
+                });
 
                 await expectCollInitForUser(user1, ENABLED);
                 await expectCollateralEnabledFor(user1, [addressUSDC, addressDAI]);
