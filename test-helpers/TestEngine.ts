@@ -57,6 +57,8 @@ export class TestEngine {
         const compound = `${currentPath}/compound-protocol`;
         const modelPath = `${currentPath}/snapshots/config/coverage/${script}`;
         const command = `cp ${modelPath} ${compound}/networks/development.json`;
+        const delModel = `rm -rf ${compound}/networks/development.json`;
+        shell.exec(delModel);
         shell.exec(command);
         console.log("modelPath", modelPath);
     }
