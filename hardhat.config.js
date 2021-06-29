@@ -56,7 +56,7 @@ module.exports = {
     },
 
     typechain: {
-        outDir: "./types",
+        outDir: "./types/truffle-contracts",
         target: "truffle-v5",
     },
 };

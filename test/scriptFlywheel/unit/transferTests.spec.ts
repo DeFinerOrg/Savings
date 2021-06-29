@@ -9,7 +9,7 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 
 contract("SavingAccount.transfer", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -80,6 +80,7 @@ contract("SavingAccount.transfer", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         numOfToken = new BN(1000);
+        await savingAccount.fastForward(1);
     });
 
     // Funtion to verify Compound balance in tests
@@ -185,7 +186,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
                             from: user2,
                         }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
 
@@ -251,6 +252,13 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Borrow USDC
                     const user2USDCBalanceBefore = await erc20USDC.balanceOf(user2);
 
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmount, { from: user2 });
 
                     // Amount that is locked as collateral
@@ -291,7 +299,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                                 from: user2,
                             }
                         ),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                 });
             });
@@ -584,7 +592,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                             from: user2,
                         }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
 
@@ -666,6 +674,13 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const user2BalanceDAIBeforeBorrow = await erc20DAI.balanceOf(user2);
 
                     // User 2 borrowed DAI
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                    const ethTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        ethTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, DAIBorrowAmount, { from: user2 });
 
                     // Verify the loan amount.

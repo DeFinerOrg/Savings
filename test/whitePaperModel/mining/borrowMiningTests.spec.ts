@@ -10,13 +10,14 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 
 contract("borrowMiningTests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -55,17 +56,14 @@ contract("borrowMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("whitePaperModel.scen");
-    });
 
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -106,7 +104,9 @@ contract("borrowMiningTests", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+    });
 
+    beforeEach(async () => {
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });
@@ -152,7 +152,24 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, new BN(1000), { from: user1 });
+
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, new BN(1000), { from: user2 });
                             const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -241,15 +258,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
@@ -314,6 +328,15 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(
                                 addressDAI,
                                 new BN(1000).mul(eightPrecision),
@@ -325,6 +348,13 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             // user 1 borrows after some blocks
                             await savingAccount.fastForward(10000);
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(
                                 addressDAI,
                                 new BN(1000).mul(eightPrecision),
@@ -408,15 +438,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalDepositInterest", totalDepositInterest.toString());
                             console.log("totalBorrowInterest", totalBorrowInterest.toString());
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
@@ -474,7 +501,24 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             console.log("cDAIBeforeFastForward", cDAIBeforeFastForward.toString());
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
+
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
                             const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -558,15 +602,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log(user2BorrowInterest.toString());
                             // Verify the interest
                             // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                            const totalDepositInterest = BN(user1DepositInterest).add(
-                                user2DepositInterest
-                            );
-                            const totalBorrowInterest = BN(user1BorrowInterest).add(
-                                user2BorrowInterest
-                            );
-                            const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                                compoundPrincipal
-                            );
+                            const totalDepositInterest =
+                                BN(user1DepositInterest).add(user2DepositInterest);
+                            const totalBorrowInterest =
+                                BN(user1BorrowInterest).add(user2BorrowInterest);
+                            const totalCompoundInterest =
+                                BN(compoundAfterFastForward).sub(compoundPrincipal);
                             console.log("totalDepositInterest", totalDepositInterest.toString());
                             console.log("totalBorrowInterest", totalBorrowInterest.toString());
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
@@ -617,6 +658,15 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
                             const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -624,6 +674,13 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             // user 1 borrows after some blocks
                             await savingAccount.fastForward(10000);
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
                             // Deposit an extra token to create a new rate check point
                             await savingAccount.fastForward(1000);
@@ -689,6 +746,15 @@ contract("borrowMiningTests", async (accounts) => {
                             });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressDAI, borrowAmount, {
                                 from: user2,
                             });
@@ -756,6 +822,17 @@ contract("borrowMiningTests", async (accounts) => {
                             await savingAccount.deposit(addressUSDC, new BN(5000), { from: user2 });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
+                            let result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            result = await tokenRegistry.getTokenInfoFromAddress(addressUSDC);
+                            const usdcTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8[],bool[])"](
+                                [daiTokenIndex, usdcTokenIndex],
+                                [true, true],
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressUSDC, new BN(10), { from: user2 });
                             const user2BalanceAfter = BN(await erc20USDC.balanceOf(user2));
                             expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -824,6 +901,15 @@ contract("borrowMiningTests", async (accounts) => {
                             });
                             // 2. Start borrowing.
                             const user2BalanceBefore = BN(await erc20USDC.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
                             await savingAccount.borrow(addressUSDC, new BN(10).mul(sixPrecision), {
                                 from: user2,
                             });
@@ -891,6 +977,15 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // 2. Start borrowing.
                             const user1BalanceBefore = BN(await erc20MKR.balanceOf(user1));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressMKR, new BN(10), { from: user1 });
 
                             // 3. Verify the loan amount.
@@ -958,6 +1053,15 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // 2. Start borrowing.
                             const user1BalanceBefore = BN(await erc20MKR.balanceOf(user1));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
                             await savingAccount.borrow(addressMKR, borrowAmt, { from: user1 });
 
                             // 3. Verify the loan amount.

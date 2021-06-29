@@ -7,9 +7,8 @@ import { savAccBalVerify } from "../../../test-helpers/lib/lib";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
@@ -172,6 +171,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .div(await tokenInfoRegistry.priceFromIndex(0));
 
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Change the price.
                     let updatedPrice = new BN(1);
@@ -207,7 +213,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
 
                     // 2. Start borrowing.
-
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
                     let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -237,6 +249,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user2
                     );
 
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true
+                    );
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
@@ -305,6 +323,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -416,6 +441,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
@@ -524,6 +556,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC.div(new BN(100)));
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -619,6 +658,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     const ctokenBal = await cUSDC.balanceOfUnderlying.call(savingAccount.address);
                     // console.log(ctokenBal.toString());
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -728,6 +774,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH,
                     });
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
 
                     await expectRevert(
@@ -751,6 +804,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH,
                     });
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let updatedPrice = new BN(1);
@@ -787,6 +847,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH.div(new BN(100)),
                     });
                     // 2. Start borrowing.
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -857,6 +924,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         value: ONE_ETH,
                     });
                     // 2. Start borrowing.
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user1 }
+                    );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
                     // 3. Change the price.
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();

@@ -1,9 +1,8 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 var tokenData = require("../../../test-helpers/tokenData.json");
 
 var chai = require("chai");
@@ -21,6 +20,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -90,6 +91,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        tokenRegistry = testEngine.tokenInfoRegistry;
+        accountsContract = testEngine.accounts;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -149,6 +152,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         HALF_DAI = ONE_DAI.div(new BN(2));
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
+        await savingAccount.fastForward(1);
     });
 
     context("borrow()", async () => {
@@ -188,6 +192,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -295,9 +306,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.

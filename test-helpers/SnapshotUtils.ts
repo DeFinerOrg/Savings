@@ -5,7 +5,7 @@ export async function takeSnapshot(): Promise<string> {
         jsonrpc: "2.0",
         method: "evm_snapshot",
         params: [],
-        id: new Date().getTime()
+        id: new Date().getTime(),
     });
 
     return resp.result;
@@ -18,7 +18,7 @@ export async function revertToSnapShot(snapshotId: string) {
         jsonrpc: "2.0",
         method: "evm_revert",
         params: [snapshotId],
-        id: new Date().getTime()
+        id: new Date().getTime(),
     });
 }
 

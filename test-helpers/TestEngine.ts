@@ -46,6 +46,7 @@ export class TestEngine {
     public constant!: t.ConstantInstance;
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
+    public proxyAdmin!: t.ProxyAdminInstance;
     public compoundTokens: any = require("../compound-protocol/networks/development.json");
 
     public erc20TokensFromCompound: Array<string> = new Array();
@@ -286,6 +287,7 @@ export class TestEngine {
 
         // Deploy Upgradability contracts
         const proxyAdmin = await ProxyAdmin.new();
+        this.proxyAdmin = proxyAdmin;
         // ProxyAdmin.setAsDeployed(proxyAdmin);
 
         const savingAccountProxy = await SavingAccountProxy.new();
@@ -322,22 +324,26 @@ export class TestEngine {
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
-        await savingAccountProxy.initialize(
+        await savingAccountProxy.methods["initialize(address,address,bytes)"](
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
 
-        await accountsProxy.initialize(
+        await accountsProxy.methods["initialize(address,address,bytes)"](
             this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        await bankProxy.methods["initialize(address,address,bytes)"](
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }
@@ -454,23 +460,27 @@ export class TestEngine {
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
             .encodeABI();
 
-        await savingAccountProxy.initialize(
+        await savingAccountProxy.methods["initialize(address,address,bytes)"](
             savingAccount.address,
             proxyAdmin.address,
             initialize_data
         );
 
-        await accountsProxy.initialize(
+        await accountsProxy.methods["initialize(address,address,bytes)"](
             this.accounts.address,
             proxyAdmin.address,
             accounts_initialize_data
         );
 
-        await bankProxy.initialize(this.bank.address, proxyAdmin.address, bank_initialize_data);
+        await bankProxy.methods["initialize(address,address,bytes)"](
+            this.bank.address,
+            proxyAdmin.address,
+            bank_initialize_data
+        );
 
-        const proxy = SavingAccountWithController.at(savingAccountProxy.address);
-        this.accounts = Accounts.at(accountsProxy.address);
-        this.bank = Bank.at(bankProxy.address);
+        const proxy = await SavingAccountWithController.at(savingAccountProxy.address);
+        this.accounts = await Accounts.at(accountsProxy.address);
+        this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
     }
