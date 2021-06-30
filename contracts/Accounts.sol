@@ -732,26 +732,22 @@ contract Accounts is Constant, Initializable{
 
         for(uint8 i = 0; i < 128; i++) {
             if(hasDepositOrBorrow > 0) {
-                bool isEnabled = (hasDepositOrBorrow & uint128(1)) > 0;
-                if(isEnabled) {
+                if((hasDepositOrBorrow & uint128(1)) > 0) {
                     address token = tokenRegistry.addressFromIndex(i);
                     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
                     bank.updateMining(token);
-
                     if (depositBitmap.isBitSet(i)) {
                         bank.updateDepositFINIndex(token);
                         uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
-                        uint256 accruedRate = bank.getDepositAccruedRate(token, lastDepositBlock);
                         calculateDepositFIN(lastDepositBlock, token, _account, currentBlock);
-                        tokenInfo.deposit(0, accruedRate, currentBlock);
+                        tokenInfo.deposit(0, bank.getDepositAccruedRate(token, lastDepositBlock), currentBlock);
                     }
 
                     if (borrowBitmap.isBitSet(i)) {
                         bank.updateBorrowFINIndex(token);
                         uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
-                        uint256 accruedRate = bank.getBorrowAccruedRate(token, lastBorrowBlock);
                         calculateBorrowFIN(lastBorrowBlock, token, _account, currentBlock);
-                        tokenInfo.borrow(0, accruedRate, currentBlock);
+                        tokenInfo.borrow(0, bank.getBorrowAccruedRate(token, lastBorrowBlock), currentBlock);
                     }
                 }
                 hasDepositOrBorrow = hasDepositOrBorrow >> 1;
