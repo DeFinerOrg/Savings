@@ -74,6 +74,7 @@
     "@babel/core": "^7.12.3",
     "@truffle/hdwallet-provider": "^1.0.42",
     "@types/shelljs": "^0.8.8",
+    "cbor": "^5.2.0",
     "hardhat-gas-reporter": "^1.0.0-beta.0",
     "shelljs": "^0.8.4",
     "solidity-parser-antlr": "^0.4.11",
