@@ -47,7 +47,7 @@ export class TestEngine {
     public bank!: t.BankInstance;
     public accounts!: t.AccountsInstance;
     public proxyAdmin!: t.ProxyAdminInstance;
-    public compoundTokens: any = require("../compound-protocol/networks/development.json");
+    public compoundTokens: any;
 
     public erc20TokensFromCompound: Array<string> = new Array();
     public cTokensCompound: Array<string> = new Array();
@@ -60,6 +60,7 @@ export class TestEngine {
         const delModel = `rm -rf ${compound}/networks/development.json`;
         shell.exec(delModel);
         shell.exec(command);
+        this.compoundTokens = require("../compound-protocol/networks/development.json");
         console.log("modelPath", modelPath);
     }
 
