@@ -55,14 +55,26 @@ export class TestEngine {
     constructor(script: String) {
         const currentPath = process.cwd();
         const compound = `${currentPath}/compound-protocol`;
-        const modelPath = `${currentPath}/snapshots/config/coverage/${script}`;
-        const command = `cp ${modelPath} ${compound}/networks/development.json`;
-        const delModel = `rm -rf ${compound}/networks/development.json`;
-        shell.exec(delModel);
-        shell.exec(command);
-        this.compoundTokens = require("../compound-protocol/networks/development.json");
-        console.log("modelPath", modelPath);
-        console.log("DAI", this.compoundTokens.Contracts.DAI);
+
+        if (script == "scriptFlywheel.json") {
+            const modelPath = `${currentPath}/snapshots/config/coverage/${script}`;
+            const command = `cp ${modelPath} ${compound}/networks/development.json`;
+            const delModel = `rm -rf ${compound}/networks/development.json`;
+            shell.exec(delModel);
+            shell.exec(command);
+            this.compoundTokens = require("../compound-protocol/networks/development.json");
+            console.log("modelPath", modelPath);
+            console.log("DAI", this.compoundTokens.Contracts.DAI);
+        } else if (script == "whitePaperModel.json") {
+            const modelPath = `${currentPath}/snapshots/config/coverage/${script}`;
+            const command = `cp ${modelPath} ${compound}/networks/${script}`;
+            const delModel = `rm -rf ${compound}/networks/${script}`;
+            shell.exec(delModel);
+            shell.exec(command);
+            this.compoundTokens = require("../compound-protocol/networks/whitePaperModel.json");
+            console.log("modelPath", modelPath);
+            console.log("DAI", this.compoundTokens.Contracts.DAI);
+        }
     }
 
     public async setModel(script: String) {

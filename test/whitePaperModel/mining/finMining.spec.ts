@@ -84,7 +84,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     before(async () => {
         // Things to initialize before all test
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("whitePaperModel.json");
         // testEngine.deploy("whitePaperModel.scen");
         savingAccount = await testEngine.deploySavingAccount();
 

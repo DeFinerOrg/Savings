@@ -78,7 +78,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     before(function () {
         this.timeout(0);
         // Things to initialize before all test
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("whitePaperModel.json");
         // testEngine.deploy("whitePaperModel.scen");
     });
 

@@ -57,11 +57,11 @@ contract("depositMiningTests", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(async () =>{
+    before(async () => {
         // Things to initialize before all test
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("whitePaperModel.json");
         // testEngine.deploy("whitePaperModel.scen");
-    
+
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
 

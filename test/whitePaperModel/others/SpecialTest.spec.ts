@@ -65,7 +65,7 @@ contract("Integration Tests", async (accounts) => {
 
     before(async () => {
         // Things to initialize before all test
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("whitePaperModel.json");
         // testEngine.deploy("scriptFlywheel.scen");
         // testEngine.deploy("whitePaperModel.scen");
 

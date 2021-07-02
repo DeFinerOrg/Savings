@@ -85,7 +85,7 @@ contract("Collateral Feature Tests", async (accounts) => {
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
 
     before(async () => {
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("scriptFlywheel.json");
 
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = testEngine.tokenInfoRegistry;
