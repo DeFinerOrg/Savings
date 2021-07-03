@@ -17,6 +17,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+    address public FIN_ADDR;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -71,6 +72,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
+        }
+    }
+
+    function initFINAddress() public {
+        if (FIN_ADDR == address(0x0)){
+            FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
+        } else {
+            revert("Already init");
         }
     }
 
@@ -226,7 +235,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      */
     function claim() public nonReentrant {
         uint256 FINAmount = getClaimAmount();
-        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, FINAmount);
 
         emit Claim(msg.sender, FINAmount);
     }

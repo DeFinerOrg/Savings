@@ -104,6 +104,8 @@ contract("borrowMiningTests", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+
+        await savingAccount.setFINAddress(addressFIN);
     });
 
     beforeEach(async () => {
