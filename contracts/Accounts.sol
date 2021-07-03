@@ -723,30 +723,31 @@ contract Accounts is Constant, Initializable{
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
         Bank bank = globalConfig.bank();
 
+        uint256 currentBlock = getBlockNumber();
+
         Account memory account = accounts[_account];
-        uint128 hasDepositOrBorrow = account.depositBitmap | account.borrowBitmap;
+        uint128 depositBitmap = account.depositBitmap;
+        uint128 borrowBitmap = account.borrowBitmap;
+        uint128 hasDepositOrBorrow = depositBitmap | borrowBitmap;
 
         for(uint8 i = 0; i < 128; i++) {
             if(hasDepositOrBorrow > 0) {
-                bool isEnabled = (hasDepositOrBorrow & uint128(1)) > 0;
-                if(isEnabled) {
+                if((hasDepositOrBorrow & uint128(1)) > 0) {
                     address token = tokenRegistry.addressFromIndex(i);
                     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
-                    uint256 currentBlock = getBlockNumber();
                     bank.updateMining(token);
-
-                    if (isUserHasDeposits(_account, i)) {
+                    if (depositBitmap.isBitSet(i)) {
                         bank.updateDepositFINIndex(token);
-                        uint256 accruedRate = bank.getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
-                        calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
-                        tokenInfo.deposit(0, accruedRate, currentBlock);
+                        uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+                        calculateDepositFIN(lastDepositBlock, token, _account, currentBlock);
+                        tokenInfo.deposit(0, bank.getDepositAccruedRate(token, lastDepositBlock), currentBlock);
                     }
 
-                    if (isUserHasBorrows(_account, i)) {
+                    if (borrowBitmap.isBitSet(i)) {
                         bank.updateBorrowFINIndex(token);
-                        uint256 accruedRate = bank.getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
-                        calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
-                        tokenInfo.borrow(0, accruedRate, currentBlock);
+                        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+                        calculateBorrowFIN(lastBorrowBlock, token, _account, currentBlock);
+                        tokenInfo.borrow(0, bank.getBorrowAccruedRate(token, lastBorrowBlock), currentBlock);
                     }
                 }
                 hasDepositOrBorrow = hasDepositOrBorrow >> 1;
