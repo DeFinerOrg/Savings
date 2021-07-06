@@ -309,7 +309,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                     // FIN balance before claim
-                    const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                    const claimableAmountUser1 = await savingAccount.claim.call({
                         from: user1,
                     });
 
@@ -317,7 +317,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFIN = await erc20FIN.balanceOf(user1);
                     const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                    // Claimed FIN amount should equal `getClaimAmount()`
+                    // Claimed FIN amount should equal `claim()`
                     expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("50000000239635890844809"));
                 });
@@ -454,7 +454,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                     // FIN balance before claim
-                    const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                    const claimableAmountUser1 = await savingAccount.claim.call({
                         from: user1,
                     });
 
@@ -463,7 +463,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("150000001088430855561536"));
                     const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                    // Claimed FIN amount should equal `getClaimAmount()`
+                    // Claimed FIN amount should equal `claim()`
                     expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
@@ -628,7 +628,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                     // FIN balance before claim
-                    const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                    const claimableAmountUser1 = await savingAccount.claim.call({
                         from: user1,
                     });
 
@@ -637,7 +637,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("183333351461896584727671")); // 1.8333335036068736e-12
                     const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                    // Claimed FIN amount should equal `getClaimAmount()`
+                    // Claimed FIN amount should equal `claim()`
                     expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
@@ -782,7 +782,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                     // FIN balance before claim
-                    const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                    const claimableAmountUser1 = await savingAccount.claim.call({
                         from: user1,
                     });
 
@@ -791,7 +791,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("278571581765745567836486"));
                     const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                    // Claimed FIN amount should equal `getClaimAmount()`
+                    // Claimed FIN amount should equal `claim()`
                     expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
@@ -965,7 +965,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                     // FIN balance before claim
-                    const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                    const claimableAmountUser1 = await savingAccount.claim.call({
                         from: user1,
                     });
 
@@ -974,7 +974,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("340476516325314737083808")); // 7.85729643603791*0.2 + 1.8333341356503024
                     const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                    // Claimed FIN amount should equal `getClaimAmount()`
+                    // Claimed FIN amount should equal `claim()`
                     expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
             });

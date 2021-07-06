@@ -195,17 +195,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -281,17 +280,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -395,17 +393,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -503,17 +500,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -619,17 +615,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -728,17 +723,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -838,17 +832,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -941,17 +934,16 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1039,10 +1031,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1050,7 +1041,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1139,10 +1130,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1150,7 +1140,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1236,10 +1226,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1247,7 +1236,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1334,10 +1323,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1345,7 +1333,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1431,10 +1419,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1442,7 +1429,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1534,10 +1521,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1545,7 +1531,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1693,10 +1679,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1704,7 +1689,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
@@ -1839,10 +1824,9 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.getClaimAmount.call({
-                                        from: user1,
-                                    });
+                                const claimableAmountUser1 = await savingAccount.claim.call({
+                                    from: user1,
+                                });
 
                                 await savingAccount.claim({ from: user1 });
 
@@ -1850,7 +1834,7 @@ contract("depositMiningTests", async (accounts) => {
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
 
-                                // Claimed FIN amount should equal `getClaimAmount()`
+                                // Claimed FIN amount should equal `claim()`
                                 expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                     BN(balFINUser1Diff)
                                 );
