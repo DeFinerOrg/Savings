@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
@@ -16,6 +17,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+    address public FIN_ADDR;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -76,6 +78,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
+        }
+    }
+
+    function initFINAddress() public {
+        if (FIN_ADDR == address(0x0)){
+            FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
+        } else {
+            revert("Already init");
         }
     }
 
@@ -230,8 +240,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
      * An account claim all mined FIN token
      */
     function claim() public nonReentrant {
-        uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+        uint256 FINAmount = getClaimAmount();
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, FINAmount);
 
         emit Claim(msg.sender, FINAmount);
     }
@@ -244,5 +254,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
 
         emit WithdrawCOMP(_beneficiary, compBalance);
+    }
+    
+    /** @dev Get the number of FIN token a user can claim
+     * @return The number of FIN tokens
+     */
+    function getClaimAmount() public returns (uint256) {
+        return globalConfig.accounts().claim(msg.sender);
     }
 }

@@ -19,6 +19,10 @@ contract SavingAccountWithController is SavingAccount {
         // THIS IS AN UPGRADABLE CONTRACT
     }
 
+    function version() public pure returns(string memory) {
+        return "v1.2";
+    }
+
     /**
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
@@ -104,5 +108,8 @@ contract SavingAccountWithController is SavingAccount {
 
     function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return globalConfig.bank().getTokenState(_token);
+    }
+    function setFINAddress(address _FINAddress) public {
+        FIN_ADDR = _FINAddress;
     }
 }

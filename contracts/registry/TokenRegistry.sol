@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
+import "@chainlink/contracts/src/v0.5/dev/AggregatorInterface.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../config/GlobalConfig.sol";
@@ -286,18 +288,21 @@ contract TokenRegistry is Ownable, Constant {
         if(Utils._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
-        return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
+        return uint256(AggregatorInterface(tokenInfo[tokenAddress].chainLinkOracle).latestAnswer());
     }
 
     function priceFromAddress(address tokenAddress) public view returns(uint256) {
         if(Utils._isETH(address(globalConfig), tokenAddress)) {
             return 1e18;
         }
-        return uint256(globalConfig.chainLink().getLatestAnswer(tokenAddress));
+        return uint256(AggregatorInterface(tokenInfo[tokenAddress].chainLinkOracle).latestAnswer());
     }
 
      function _priceFromAddress(address _token) internal view returns (uint) {
-        return _token != ETH_ADDR ? uint256(globalConfig.chainLink().getLatestAnswer(_token)) : INT_UNIT;
+        return 
+            _token != ETH_ADDR 
+            ? uint256(AggregatorInterface(tokenInfo[_token].chainLinkOracle).latestAnswer())
+            : INT_UNIT;
     }
 
     function _tokenDivisor(address _token) internal view returns (uint) {

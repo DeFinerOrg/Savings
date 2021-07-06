@@ -14,7 +14,6 @@ const SavingAccount = artifacts.require("SavingAccount");
 const SavingAccountWithController = artifacts.require("SavingAccountWithController");
 const AccountsWithController = artifacts.require("AccountsWithController");
 
-const ChainLinkAggregator = artifacts.require("ChainLinkAggregator");
 const TokenRegistry = artifacts.require("TokenRegistry");
 const GlobalConfig = artifacts.require("GlobalConfig");
 const Constant = artifacts.require("Constant");
