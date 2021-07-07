@@ -957,15 +957,15 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.claimBorrowFIN.call(
+                            const claimableAmountUser1 = await savingAccount.claim.call({
+                                from: user1,
+                            });
+                            const claimableAmountUser2 = await savingAccount.claimBorrowFIN.call(
                                 addressDAI,
                                 {
-                                    from: user1,
+                                    from: user2,
                                 }
                             );
-                            const claimableAmountUser2 = await savingAccount.claim.call({
-                                from: user2,
-                            });
 
                             await savingAccount.claimBorrowFIN(addressDAI, { from: user2 });
                             await savingAccount.claim({ from: user1 });
@@ -977,7 +977,7 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252500000258173303248999")
+                                new BN("101000000000000000000000")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50500000258173303210200")
@@ -1055,13 +1055,13 @@ contract("borrowMiningTests", async (accounts) => {
                             });
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.claimBorrowFIN(
+                            const claimableAmountUser1 = await savingAccount.claimBorrowFIN.call(
                                 addressDAI,
                                 {
                                     from: user1,
                                 }
                             );
-                            const claimableAmountUser2 = await savingAccount.claimBorrowFIN(
+                            const claimableAmountUser2 = await savingAccount.claimBorrowFIN.call(
                                 addressDAI,
                                 {
                                     from: user2,
@@ -1078,15 +1078,19 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("116000013845483105597000")
+                                new BN("60500013635560403246500")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("105999986574362299011575")
                             );
                             // Claimed FIN amount should equal `claim()`
+                            console.log("claimableAmountUser1", claimableAmountUser1.toString());
+
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
+                            console.log("11");
+
                             expect(BN(claimableAmountUser2)).to.be.bignumber.equal(
                                 BN(balFINUser2Diff)
                             );
