@@ -1842,6 +1842,205 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("202000000678307669513994")
                                 );
                             });
+                            it("claim FIN on depositted DAI using the `claimDepositFIN` function", async function () {
+                                this.timeout(0);
+                                await erc20FIN.transfer(
+                                    savingAccount.address,
+                                    ONE_FIN.mul(new BN(1000000))
+                                );
+                                await savingAccount.fastForward(100000);
+                                // 1. Approve 1000 tokens
+                                const numOfToken = new BN(10000);
+                                await erc20DAI.transfer(user1, numOfToken);
+                                await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                    from: user1,
+                                });
+                                const totalDefinerBalanceBeforeDeposit =
+                                    await accountsContract.getDepositBalanceCurrent(
+                                        erc20DAI.address,
+                                        user1
+                                    );
+                                const balCTokenContractBefore = await erc20DAI.balanceOf(cDAI_addr);
+                                const balCTokensBefore = await cDAI.balanceOf(
+                                    savingAccount.address
+                                );
+                                // 2. Deposit Token to SavingContract
+                                await savingAccount.deposit(erc20DAI.address, new BN(5000), {
+                                    from: user1,
+                                });
+                                // 3. Validate that the tokens are deposited to SavingAccount
+                                const expectedTokensAtSavingAccountContract = new BN(5000)
+                                    .mul(new BN(15))
+                                    .div(new BN(100));
+                                const balSavingAccount = await erc20DAI.balanceOf(
+                                    savingAccount.address
+                                );
+                                expect(expectedTokensAtSavingAccountContract).to.be.bignumber.equal(
+                                    balSavingAccount
+                                );
+                                const totalDefinerBalanceAfterDeposit =
+                                    await accountsContract.getDepositBalanceCurrent(
+                                        erc20DAI.address,
+                                        user1
+                                    );
+                                const totalDefinerBalanceChange = new BN(
+                                    totalDefinerBalanceAfterDeposit
+                                ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                                expect(totalDefinerBalanceChange).to.be.bignumber.equal(
+                                    new BN(5000)
+                                );
+                                const expectedTokensAtCTokenContract = new BN(5000)
+                                    .mul(new BN(85))
+                                    .div(new BN(100));
+                                const balCTokenContract = await erc20DAI.balanceOf(cDAI_addr);
+                                expect(
+                                    new BN(balCTokenContractBefore).add(
+                                        new BN(expectedTokensAtCTokenContract)
+                                    )
+                                ).to.be.bignumber.equal(balCTokenContract);
+                                const expectedCTokensAtSavingAccount = new BN(5000)
+                                    .mul(new BN(85))
+                                    .div(new BN(100));
+                                const balCTokens = await cDAI.balanceOf(savingAccount.address);
+                                // expect(
+                                //     expectedCTokensAtSavingAccount.sub(new BN(balCTokensBefore))
+                                // ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+                                expect(
+                                    new BN(4249).sub(new BN(balCTokensBefore))
+                                ).to.be.bignumber.equal(new BN(balCTokens).div(new BN(10)));
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.fastForward(1000);
+                                await savingAccount.deposit(erc20DAI.address, new BN(1000), {
+                                    from: user1,
+                                });
+                                // 4. Claim the minted tokens
+                                // fastforward
+                                const block = new BN(await time.latestBlock());
+                                console.log("block", block.toString());
+                                const balFIN1 = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN1", balFIN1.toString());
+                                await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                    from: user1,
+                                });
+                                await savingAccount.fastForward(100000);
+                                const block2 = await time.latestBlock();
+                                console.log("block2", block2.toString());
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.deposit(erc20DAI.address, new BN(1000), {
+                                    from: user1,
+                                });
+
+                                const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                                // FIN balance before claim
+                                const claimableAmountUser1 =
+                                    await savingAccount.claimDepositFIN.call(addressDAI, {
+                                        from: user1,
+                                    });
+
+                                await savingAccount.claimDepositFIN(addressDAI, { from: user1 });
+                                const balFIN = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN", balFIN.toString());
+                                const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                                // Claimed FIN amount should equal `claim()`
+                                expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
+                                    BN(balFINUser1Diff)
+                                );
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("101016641704110500915293")
+                                );
+
+                                await savingAccount.claimDepositFIN(addressDAI, { from: user1 });
+                                const balFIN2 = await erc20FIN.balanceOf(user1);
+                                expect(BN(balFIN2)).to.be.bignumber.equal(BN(balFIN));
+                            });
+                            it("claim FIN on depositted ETH using the `claimDepositFIN` function", async function () {
+                                await erc20FIN.transfer(
+                                    savingAccount.address,
+                                    ONE_FIN.mul(new BN(1000000))
+                                );
+                                await savingAccount.fastForward(100000);
+                                const depositAmount = web3.utils.toWei("1000", "ether");
+                                const ETHbalanceBeforeDeposit = await web3.eth.getBalance(
+                                    savingAccount.address
+                                );
+                                const totalDefinerBalanceBeforeDeposit =
+                                    await accountsContract.getDepositBalanceCurrent(
+                                        ETH_ADDRESS,
+                                        user1
+                                    );
+                                await savingAccount.deposit(ETH_ADDRESS, depositAmount, {
+                                    value: depositAmount,
+                                    from: user1,
+                                });
+                                const ETHbalanceAfterDeposit = await web3.eth.getBalance(
+                                    savingAccount.address
+                                );
+                                const userBalanceDiff = new BN(ETHbalanceAfterDeposit).sub(
+                                    new BN(ETHbalanceBeforeDeposit)
+                                );
+                                const expectedTokensAtSavingAccountContract = new BN(depositAmount)
+                                    .mul(new BN(15))
+                                    .div(new BN(100));
+                                // validate savingAccount ETH balance
+                                expect(userBalanceDiff).to.be.bignumber.equal(
+                                    expectedTokensAtSavingAccountContract
+                                );
+                                // Validate the total balance on DeFiner
+                                const totalDefinerBalanceAfterDeposit =
+                                    await accountsContract.getDepositBalanceCurrent(
+                                        ETH_ADDRESS,
+                                        user1
+                                    );
+                                const totalDefinerBalanceChange = new BN(
+                                    totalDefinerBalanceAfterDeposit
+                                ).sub(new BN(totalDefinerBalanceBeforeDeposit));
+                                expect(totalDefinerBalanceChange).to.be.bignumber.equal(
+                                    depositAmount
+                                );
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.fastForward(1000);
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
+                                    value: new BN(1000),
+                                    from: user1,
+                                });
+                                // 4. Claim the minted tokens
+                                // fastforward
+                                const balFIN1 = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN1", balFIN1.toString());
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(10), {
+                                    value: new BN(10),
+                                    from: user1,
+                                });
+                                await savingAccount.fastForward(100000);
+                                // Deposit an extra token to create a new rate check point
+                                await savingAccount.deposit(ETH_ADDRESS, new BN(1000), {
+                                    value: new BN(1000),
+                                    from: user1,
+                                });
+
+                                const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                                // FIN balance before claim
+                                const claimableAmountUser1 =
+                                    await savingAccount.claimDepositFIN.call(ETH_ADDRESS, {
+                                        from: user1,
+                                    });
+
+                                await savingAccount.claimDepositFIN(ETH_ADDRESS, { from: user1 });
+                                const balFIN = await erc20FIN.balanceOf(user1);
+                                console.log("balFIN", balFIN.toString());
+                                const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                                // Claimed FIN amount should equal `claim()`
+                                expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
+                                    BN(balFINUser1Diff)
+                                );
+                                expect(new BN(balFIN)).to.be.bignumber.equal(
+                                    new BN("100999999999999999999999")
+                                );
+                            });
 
                             it("when small amount of multiple different tokens are deposited");
 
