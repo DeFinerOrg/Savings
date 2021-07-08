@@ -309,12 +309,12 @@ contract("SavingAccount() proxy", async (accounts) => {
             });
 
             // call initFINAddress() & verify FIN address after upgrade
-            await SAV.initFINAddress();
+            await SAV.initFINnCOMPAddresses();
             const FINAddrAfter = await SAV.FIN_ADDR();
             expect(FINAddrAfter).to.be.equal(FINAddress);
 
             // call initFINAddress() again
-            await expectRevert(SAV.initFINAddress(), "Already init");
+            await expectRevert(SAV.initFINnCOMPAddresses(), "Already init");
         });
 
         it("SavingAccount - initCOMPAddress(): from V1.1 to latest", async () => {
@@ -369,12 +369,12 @@ contract("SavingAccount() proxy", async (accounts) => {
             });
 
             // call initCOMPAddress() & verify COMP address after upgrade
-            await SAV.initCOMPAddress();
+            await SAV.initFINnCOMPAddresses();
             const COMPAddrAfter = await SAV.COMP_ADDR();
             expect(COMPAddrAfter).to.be.equal(COMPAddress);
 
             // call initCOMPAddress() again
-            await expectRevert(SAV.initCOMPAddress(), "COMP already init");
+            await expectRevert(SAV.initFINnCOMPAddresses(), "Already init");
         });
     });
 

@@ -307,10 +307,8 @@ export class TestEngine {
             )
             .encodeABI();
 
-        // set FINAddress variable to mainnet address in SavingAccount
-        await savingAccount.initFINAddress();
-        // set COMPAddress variable to mainnet address in SavingAccount
-        await savingAccount.initCOMPAddress();
+        // set FINAddress & COMPAddress variable to mainnet address in SavingAccount
+        await savingAccount.initFINnCOMPAddresses();
 
         const accounts_initialize_data = this.accounts.contract.methods
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)

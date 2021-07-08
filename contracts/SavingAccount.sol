@@ -82,19 +82,12 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         }
     }
 
-    function initFINAddress() public {
-        if (FIN_ADDR == address(0x0)){
+    function initFINnCOMPAddresses() public {
+        if (FIN_ADDR == address(0x0) && COMP_ADDR == address(0x0)){
             FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
-        } else {
-            revert("Already init");
-        }
-    }
-
-    function initCOMPAddress() public {
-        if (COMP_ADDR == address(0x0)){
             COMP_ADDR = address(0xc00e94Cb662C3520282E6f5717214004A7f26888);
         } else {
-            revert("COMP already init");
+            revert("Already init");
         }
     }
 
