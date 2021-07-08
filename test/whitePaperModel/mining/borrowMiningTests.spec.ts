@@ -280,10 +280,10 @@ contract("borrowMiningTests", async (accounts) => {
                             // );
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -298,7 +298,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("101000050005000500050004")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             const FINAmountClaimedUser1 = BN(balFINAfterUser1).sub(BN(balFINUser1));
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(FINAmountClaimedUser1)
@@ -474,10 +474,10 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7540));
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -496,7 +496,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINUser1Diff)).to.be.bignumber.equal(
                                 new BN("105999985119111412910479")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -661,10 +661,10 @@ contract("borrowMiningTests", async (accounts) => {
                             );
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -684,7 +684,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("101000000209711302542600")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -757,10 +757,10 @@ contract("borrowMiningTests", async (accounts) => {
                             });
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -779,7 +779,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("105999986574362299011575")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -857,10 +857,10 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -879,10 +879,218 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50500000258173303210200")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
+                            expect(BN(claimableAmountUser2)).to.be.bignumber.equal(
+                                BN(balFINUser2Diff)
+                            );
+                        });
+                        it("Deposit DAI, USDC and borrow large amount of DAI (using claimBorrowFIN)", async function () {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfDAI = eighteenPrecision.mul(new BN(1000));
+                            const numOfUSDC = sixPrecision.mul(new BN(1000));
+                            const depositAmountDAI = new BN(500).mul(eighteenPrecision);
+                            const depositAmountUSDC = new BN(500).mul(sixPrecision);
+                            const borrowAmount = new BN(10).mul(eighteenPrecision);
+                            await erc20DAI.transfer(user1, numOfDAI);
+                            await erc20DAI.transfer(user2, numOfDAI);
+                            await erc20USDC.transfer(user2, numOfUSDC);
+                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
+                                from: user1,
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfDAI, {
+                                from: user2,
+                            });
+                            await erc20USDC.approve(savingAccount.address, numOfUSDC, {
+                                from: user2,
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
+                                from: user1,
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmountDAI, {
+                                from: user2,
+                            });
+                            await savingAccount.deposit(addressUSDC, depositAmountUSDC, {
+                                from: user2,
+                            });
+                            // 2. Start borrowing.
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
+                            await savingAccount.borrow(addressDAI, borrowAmount, {
+                                from: user2,
+                            });
+                            // 3. Verify the loan amount.
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                borrowAmount
+                            );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user2);
+                            console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+                            const balFINUser1 = await erc20FIN.balanceOf(user1);
+                            const balFINUser2 = await erc20FIN.balanceOf(user2);
+
+                            // FIN balance before claim
+                            const claimableAmountUser1 = await savingAccount.claim.call({
+                                from: user1,
+                            });
+                            const claimableAmountUser2 = await savingAccount.claimBorrowFIN.call(
+                                addressDAI,
+                                {
+                                    from: user2,
+                                }
+                            );
+
+                            await savingAccount.claimBorrowFIN(addressDAI, { from: user2 });
+                            await savingAccount.claim({ from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
+                            const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("101000000000000000000000")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("50500000258173303210200")
+                            );
+                            // Claimed FIN amount should equal `claim()`
+                            expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
+                                BN(balFINUser1Diff)
+                            );
+                            expect(BN(claimableAmountUser2)).to.be.bignumber.equal(
+                                BN(balFINUser2Diff)
+                            );
+                        });
+                        it("Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks (using claimBorrowFIN)", async function () {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfToken = new BN(1000).mul(ONE_DAI);
+                            const depositAmount = new BN(500).mul(ONE_DAI);
+                            const borrowAmount = new BN(100).mul(ONE_DAI);
+                            // 1.1 Transfer DAI to user1 & user2.
+                            await erc20DAI.transfer(user1, numOfToken);
+                            await erc20DAI.transfer(user2, numOfToken);
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user1,
+                            });
+                            await erc20DAI.approve(savingAccount.address, numOfToken, {
+                                from: user2,
+                            });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user1 });
+                            await savingAccount.deposit(addressDAI, depositAmount, { from: user2 });
+                            // 2. Start borrowing.
+                            const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                            const daiTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user2 });
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                borrowAmount
+                            );
+                            // user 1 borrows after some blocks
+                            await savingAccount.fastForward(10000);
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                daiTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await savingAccount.borrow(addressDAI, borrowAmount, { from: user1 });
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFINUser2 = await erc20FIN.balanceOf(user2);
+                            console.log("balFINUser2", balFINUser2.toString());
+                            const balFINUser1 = await erc20FIN.balanceOf(user1);
+                            console.log("balFINUser1", balFINUser1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20DAI.address, new BN(10), {
+                                from: user1,
+                            });
+
+                            // FIN balance before claim
+                            const claimableAmountUser1 = await savingAccount.claimBorrowFIN.call(
+                                addressDAI,
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const claimableAmountUser2 = await savingAccount.claimBorrowFIN.call(
+                                addressDAI,
+                                {
+                                    from: user2,
+                                }
+                            );
+
+                            await savingAccount.claimBorrowFIN(addressDAI, { from: user2 });
+                            await savingAccount.claimBorrowFIN(addressDAI, { from: user1 });
+                            const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
+                            const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
+                            const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
+                            console.log("balFINAfterUser2", balFINAfterUser2.toString());
+                            console.log("balFINAfterUser1", balFINAfterUser1.toString());
+
+                            expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
+                                new BN("60500013635560403246500")
+                            );
+                            expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
+                                new BN("105999986574362299011575")
+                            );
+                            // Claimed FIN amount should equal `claim()`
+                            console.log("claimableAmountUser1", claimableAmountUser1.toString());
+
+                            expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
+                                BN(balFINUser1Diff)
+                            );
+                            console.log("11");
+
                             expect(BN(claimableAmountUser2)).to.be.bignumber.equal(
                                 BN(balFINUser2Diff)
                             );
@@ -955,10 +1163,10 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -977,7 +1185,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50500000000000000000000")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -1053,10 +1261,10 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -1075,7 +1283,7 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("50499999495000540349421")
                             );
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -1148,10 +1356,10 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -1165,7 +1373,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
                             const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
 
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
@@ -1244,10 +1452,10 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser2 = await erc20FIN.balanceOf(user2);
 
                             // FIN balance before claim
-                            const claimableAmountUser1 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser1 = await savingAccount.claim.call({
                                 from: user1,
                             });
-                            const claimableAmountUser2 = await savingAccount.getClaimAmount.call({
+                            const claimableAmountUser2 = await savingAccount.claim.call({
                                 from: user2,
                             });
 
@@ -1261,7 +1469,7 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
                             const balFINUser2Diff = BN(balFINAfterUser2).sub(BN(balFINUser2));
 
-                            // Claimed FIN amount should equal `getClaimAmount()`
+                            // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
                                 BN(balFINUser1Diff)
                             );
