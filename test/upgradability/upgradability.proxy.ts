@@ -10,6 +10,7 @@ contract("SavingAccount() proxy", async (accounts) => {
 
     const DUMMY: string = "0x0000000000000000000000000000000000000010";
     const FINAddress = "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40";
+    const COMPAddress = "0xc00e94Cb662C3520282E6f5717214004A7f26888";
     // let SavingAccount: t.SavingAccountWithControllerInstance;
 
     before(function () {
@@ -314,6 +315,66 @@ contract("SavingAccount() proxy", async (accounts) => {
 
             // call initFINAddress() again
             await expectRevert(SAV.initFINAddress(), "Already init");
+        });
+
+        it("SavingAccount - initCOMPAddress(): from V1.1 to latest", async () => {
+            // ==================
+            // SavingAccount V1.1
+            // ==================
+            const UtilsV1_1 = await ethers.getContractFactory("UtilsV1_1");
+            const utilsV1_1 = await UtilsV1_1.deploy();
+
+            const SavingLibV1_1 = await ethers.getContractFactory("SavingLibV1_1", {
+                libraries: {
+                    UtilsV1_1: utilsV1_1.address,
+                },
+            });
+            const savingLibV1_1 = await SavingLibV1_1.deploy();
+
+            const SavingAccountV1_1 = await ethers.getContractFactory("SavingAccountV1_1", {
+                libraries: { SavingLibV1_1: savingLibV1_1.address, UtilsV1_1: utilsV1_1.address },
+            });
+
+            // ====================
+            // SavingAccount latest
+            // ====================
+            const Utils = await ethers.getContractFactory("Utils");
+            const utils = await Utils.deploy();
+
+            const SavingLib = await ethers.getContractFactory("SavingLib", {
+                libraries: {
+                    Utils: utils.address,
+                },
+            });
+            const savingLib = await SavingLib.deploy();
+
+            const SavingAccount = await ethers.getContractFactory("SavingAccount", {
+                libraries: { SavingLib: savingLib.address, Utils: utils.address },
+            });
+
+            // ========================
+            // SavingAccount V1.1 Proxy
+            // ========================
+            const savingAccountProxy = await upgrades.deployProxy(
+                SavingAccountV1_1,
+                [[], [], DUMMY],
+                { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
+            );
+
+            // ==========================
+            // SavingAccount latest Proxy
+            // ==========================
+            const SAV = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccount, {
+                unsafeAllow: ["external-library-linking"],
+            });
+
+            // call initCOMPAddress() & verify COMP address after upgrade
+            await SAV.initCOMPAddress();
+            const COMPAddrAfter = await SAV.COMP_ADDR();
+            expect(COMPAddrAfter).to.be.equal(COMPAddress);
+
+            // call initCOMPAddress() again
+            await expectRevert(SAV.initCOMPAddress(), "COMP already init");
         });
     });
 

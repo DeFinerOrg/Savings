@@ -18,6 +18,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     GlobalConfig public globalConfig;
     address public FIN_ADDR;
+    address public COMP_ADDR;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -86,6 +87,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
         } else {
             revert("Already init");
+        }
+    }
+
+    function initCOMPAddress() public {
+        if (COMP_ADDR == address(0x0)){
+            COMP_ADDR = address(0xc00e94Cb662C3520282E6f5717214004A7f26888);
+        } else {
+            revert("COMP already init");
         }
     }
 
