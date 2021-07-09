@@ -678,9 +678,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
                         );
                     });
 
-                    it("Withdraw accrued COMP tokens", async function () {
+                    it("Withdraw COMP tokens", async function () {
                         this.timeout(0);
-
                         // Deploy mock ERC20 token for testing
                         const name = "Test Token";
                         const symbol = "TTKN";
@@ -699,48 +698,9 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             savingAccount.address,
                             initialSupply.mul(eighteenPrecision)
                         );
-
                         const savingAccountBalTTKN = new BN(
                             await erc20TTKN.balanceOf(savingAccount.address)
                         );
-                        const depositAmount = new BN(1000);
-                        await erc20DAI.approve(savingAccount.address, new BN(1500));
-
-                        let userBalanceBeforeWithdrawTTKN = await erc20TTKN.balanceOf(owner);
-                        let accountBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(
-                            savingAccount.address
-                        );
-                        const balSavingAccountUserBefore = await erc20DAI.balanceOf(
-                            savingAccount.address
-                        );
-                        const balCTokensBefore = new BN(
-                            await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                        );
-
-                        // deposit tokens
-                        await savingAccount.deposit(erc20DAI.address, depositAmount);
-
-                        const savingAccountCDAITokenAfterDeposit = BN(
-                            await cDAI.balanceOfUnderlying.call(savingAccount.address)
-                        );
-                        const savingAccountDAITokenAfterDeposit = BN(
-                            await erc20DAI.balanceOf(savingAccount.address)
-                        );
-
-                        await savAccBalVerify(
-                            0,
-                            depositAmount,
-                            erc20DAI.address,
-                            cDAI,
-                            balCTokensBefore,
-                            BN(balSavingAccountUserBefore),
-                            bank,
-                            savingAccount
-                        );
-
-                        await savingAccount.fastForward(10000);
-                        // deposit for rate checkpoint
-                        await savingAccount.deposit(erc20DAI.address, new BN(10));
 
                         // Withdrawing all TTKN from SavingAccount
                         await savingAccount.setCOMPAddress(erc20TTKN.address);
