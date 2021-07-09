@@ -241,11 +241,25 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     /**
      * An account claim all mined FIN token
      */
-    function claim() public nonReentrant {
-        uint256 FINAmount = getClaimAmount();
-        IERC20(FIN_ADDR).safeTransfer(msg.sender, FINAmount);
+    function claim() public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
 
-        emit Claim(msg.sender, FINAmount);
+    function claimDepositFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimDepositFIN(msg.sender, _token);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    function claimBorrowFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimBorrowFIN(msg.sender, _token);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
     }
 
     /**
@@ -256,12 +270,5 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
 
         emit WithdrawCOMP(_beneficiary, compBalance);
-    }
-    
-    /** @dev Get the number of FIN token a user can claim
-     * @return The number of FIN tokens
-     */
-    function getClaimAmount() public returns (uint256) {
-        return globalConfig.accounts().claim(msg.sender);
     }
 }
