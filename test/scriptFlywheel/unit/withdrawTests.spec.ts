@@ -106,8 +106,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
-        erc20WBTC = await ERC20.at(addressWBTC);
 
+        erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20USDT = await ERC20.at(addressUSDT);
@@ -675,6 +675,81 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             savingAccountDAITokenAfterDeposit,
                             bank,
                             savingAccount
+                        );
+                    });
+
+                    it("Withdraw accrued COMP tokens", async function () {
+                        this.timeout(0);
+
+                        // Deploy mock ERC20 token for testing
+                        const name = "Test Token";
+                        const symbol = "TTKN";
+                        const decimals = new BN(18);
+                        const initialSupply = new BN(10000);
+
+                        const erc20TTKN: t.MockErc20Instance = await ERC20.new(
+                            name,
+                            symbol,
+                            decimals,
+                            initialSupply
+                        );
+
+                        // Transfer mock tokens to SavingAccount
+                        await erc20TTKN.transfer(
+                            savingAccount.address,
+                            initialSupply.mul(eighteenPrecision)
+                        );
+
+                        const savingAccountBalTTKN = new BN(
+                            await erc20TTKN.balanceOf(savingAccount.address)
+                        );
+                        const depositAmount = new BN(1000);
+                        await erc20DAI.approve(savingAccount.address, new BN(1500));
+
+                        let userBalanceBeforeWithdrawTTKN = await erc20TTKN.balanceOf(owner);
+                        let accountBalanceBeforeWithdrawDAI = await erc20DAI.balanceOf(
+                            savingAccount.address
+                        );
+                        const balSavingAccountUserBefore = await erc20DAI.balanceOf(
+                            savingAccount.address
+                        );
+                        const balCTokensBefore = new BN(
+                            await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                        );
+
+                        // deposit tokens
+                        await savingAccount.deposit(erc20DAI.address, depositAmount);
+
+                        const savingAccountCDAITokenAfterDeposit = BN(
+                            await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                        );
+                        const savingAccountDAITokenAfterDeposit = BN(
+                            await erc20DAI.balanceOf(savingAccount.address)
+                        );
+
+                        await savAccBalVerify(
+                            0,
+                            depositAmount,
+                            erc20DAI.address,
+                            cDAI,
+                            balCTokensBefore,
+                            BN(balSavingAccountUserBefore),
+                            bank,
+                            savingAccount
+                        );
+
+                        await savingAccount.fastForward(10000);
+                        // deposit for rate checkpoint
+                        await savingAccount.deposit(erc20DAI.address, new BN(10));
+
+                        // Withdrawing all TTKN from SavingAccount
+                        await savingAccount.setCOMPAddress(erc20TTKN.address);
+                        await savingAccount.withdrawCOMP(owner);
+                        let userBalanceAfterWithdrawTTKN = await erc20TTKN.balanceOf(owner);
+
+                        // Verify user balance
+                        expect(userBalanceAfterWithdrawTTKN).to.be.bignumber.equal(
+                            savingAccountBalTTKN
                         );
                     });
                 });
