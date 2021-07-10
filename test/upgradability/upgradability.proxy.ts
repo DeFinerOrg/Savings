@@ -10,6 +10,7 @@ contract("SavingAccount() proxy", async (accounts) => {
 
     const DUMMY: string = "0x0000000000000000000000000000000000000010";
     const FINAddress = "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40";
+    const COMPAddress = "0xc00e94Cb662C3520282E6f5717214004A7f26888";
     // let SavingAccount: t.SavingAccountWithControllerInstance;
 
     before(function () {
@@ -256,7 +257,7 @@ contract("SavingAccount() proxy", async (accounts) => {
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
         });
 
-        it("SavingAccount - initFINAddress(): from V1.1 to latest", async () => {
+        it("SavingAccount - initFINnCOMPAddresses(): from V1.1 to latest", async () => {
             // ==================
             // SavingAccount V1.1
             // ==================
@@ -307,13 +308,15 @@ contract("SavingAccount() proxy", async (accounts) => {
                 unsafeAllow: ["external-library-linking"],
             });
 
-            // call initFINAddress() & verify FIN address after upgrade
-            await SAV.initFINAddress();
+            // call initFINnCOMPAddresses() & verify FIN & COMP addresses after upgrade
+            await SAV.initFINnCOMPAddresses();
             const FINAddrAfter = await SAV.FIN_ADDR();
+            const COMPAddrAfter = await SAV.COMP_ADDR();
             expect(FINAddrAfter).to.be.equal(FINAddress);
+            expect(COMPAddrAfter).to.be.equal(COMPAddress);
 
             // call initFINAddress() again
-            await expectRevert(SAV.initFINAddress(), "Already init");
+            await expectRevert(SAV.initFINnCOMPAddresses(), "Already init");
         });
     });
 
