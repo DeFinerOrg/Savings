@@ -331,16 +331,16 @@ contract Accounts is Constant, Initializable{
 
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
 
-        if (tokenInfo.getLastDepositBlock() == 0)
-            tokenInfo.withdraw(calcAmount, INT_UNIT, getBlockNumber());
+        if (lastBlock == 0)
+            tokenInfo.withdraw(calcAmount, INT_UNIT, currentBlock);
         else {
             // As the last deposit block exists, the block is also a check point on index curve.
-            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-            tokenInfo.withdraw(calcAmount, accruedRate, getBlockNumber());
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
+            tokenInfo.withdraw(calcAmount, accruedRate, currentBlock);
         }
 
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
-        if(tokenInfo.getDepositPrincipal() == 0) {
+        if(principalAfterWithdraw == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
