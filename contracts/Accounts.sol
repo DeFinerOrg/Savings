@@ -274,14 +274,16 @@ contract Accounts is Constant, Initializable{
         );
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint256 blockNumber = getBlockNumber();
+        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
 
-        if(tokenInfo.getLastBorrowBlock() == 0)
-            tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
+        if(lastBorrowBlock == 0)
+            tokenInfo.borrow(_amount, INT_UNIT, blockNumber);
         else {
-            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
-            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            calculateBorrowFIN(lastBorrowBlock, _token, _accountAddr, blockNumber);
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBorrowBlock);
             // Update the token principla and interest
-            tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+            tokenInfo.borrow(_amount, accruedRate, blockNumber);
         }
 
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
