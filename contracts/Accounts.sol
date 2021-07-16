@@ -407,15 +407,16 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         Bank bank = globalConfig.bank();
         uint256 accruedRate;
+        uint256 depositRateIndex = bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()) == 0) {
+            if(depositRateIndex == 0) {
                 accruedRate = INT_UNIT;
             } else {
                 accruedRate = bank.depositeRateIndexNow(_token)
                 .mul(INT_UNIT)
-                .div(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()));
+                .div(depositRateIndex);
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -433,15 +434,16 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         Bank bank = globalConfig.bank();
         uint256 accruedRate;
+        uint256 borrowRateIndex = bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock());
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
         } else {
-            if(bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()) == 0) {
+            if(borrowRateIndex == 0) {
                 accruedRate = INT_UNIT;
             } else {
                 accruedRate = bank.borrowRateIndexNow(_token)
                 .mul(INT_UNIT)
-                .div(bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()));
+                .div(borrowRateIndex);
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
