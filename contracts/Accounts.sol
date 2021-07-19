@@ -387,16 +387,18 @@ contract Accounts is Constant, Initializable{
         uint256 remain = _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
-        require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
-        if(tokenInfo.getLastBorrowBlock() == 0)
+        uint256 borrowPrincipal = tokenInfo.getBorrowPrincipal();
+        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+        require(borrowPrincipal > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
+        if(lastBorrowBlock == 0)
             tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
         else {
-            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
-            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            calculateBorrowFIN(lastBorrowBlock, _token, _accountAddr, getBlockNumber());
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBorrowBlock);
             tokenInfo.repay(amount, accruedRate, getBlockNumber());
         }
 
-        if(tokenInfo.getBorrowPrincipal() == 0) {
+        if(borrowPrincipal == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
         }
