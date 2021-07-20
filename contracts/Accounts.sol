@@ -271,8 +271,8 @@ contract Accounts is Constant, Initializable{
         require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
         (uint8 tokenIndex, uint256 tokenDivisor, uint256 tokenPrice,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
         require(
-            getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor))
-            <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
+            getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor)) <=
+            getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
         );
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -328,17 +328,17 @@ contract Accounts is Constant, Initializable{
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 lastBlock = tokenInfo.getLastDepositBlock();
-        uint256 currentBlock = getBlockNumber();
-        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
+        uint256 blockNumber = getBlockNumber();
+        calculateDepositFIN(lastBlock, _token, _accountAddr, blockNumber);
 
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
 
         if (lastBlock == 0)
-            tokenInfo.withdraw(calcAmount, INT_UNIT, currentBlock);
+            tokenInfo.withdraw(calcAmount, INT_UNIT, blockNumber);
         else {
             // As the last deposit block exists, the block is also a check point on index curve.
             uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
-            tokenInfo.withdraw(calcAmount, accruedRate, currentBlock);
+            tokenInfo.withdraw(calcAmount, accruedRate, blockNumber);
         }
 
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
@@ -369,13 +369,14 @@ contract Accounts is Constant, Initializable{
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
 
+        uint256 blockNumber = getBlockNumber();
         uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
         if(lastDepositBlock == 0)
-            tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
+            tokenInfo.deposit(_amount, INT_UNIT, blockNumber);
         else {
-            calculateDepositFIN(lastDepositBlock, _token, _accountAddr, getBlockNumber());
+            calculateDepositFIN(lastDepositBlock, _token, _accountAddr, blockNumber);
             uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
-            tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+            tokenInfo.deposit(_amount, accruedRate, blockNumber);
         }
     }
 
@@ -389,7 +390,7 @@ contract Accounts is Constant, Initializable{
         // Sanity check
         uint256 borrowPrincipal = tokenInfo.getBorrowPrincipal();
         uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
-        require(borrowPrincipal > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
+        require(borrowPrincipal > 0, "BorrowPrincipal not gt 0");
         if(lastBorrowBlock == 0)
             tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
         else {
@@ -686,25 +687,54 @@ contract Accounts is Constant, Initializable{
         // _collateralToken balance of the borrower (deposit balance)
         vars.liquidateTokenBalance = getDepositBalanceCurrent(_collateralToken, _borrower);
 
-        uint256 divisor;
-        (,divisor, vars.targetTokenPrice, vars.borrowTokenLTV) = tokenRegistry.getTokenInfoFromAddress(_borrowedToken);
+        uint256 targetTokenDivisor;
+        (
+            ,
+            targetTokenDivisor,
+            vars.targetTokenPrice,
+            vars.borrowTokenLTV
+        ) = tokenRegistry.getTokenInfoFromAddress(_borrowedToken);
 
         uint256 liquidateTokendivisor;
-        (,liquidateTokendivisor,vars.liquidateTokenPrice,) = tokenRegistry.getTokenInfoFromAddress(_collateralToken);
+        (
+            ,
+            liquidateTokendivisor,
+            vars.liquidateTokenPrice
+            ,
+        ) = tokenRegistry.getTokenInfoFromAddress(_collateralToken);
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
         vars.totalBorrow = getBorrowETH(_borrower);
         vars.borrowPower = getBorrowPower(_borrower);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower)
+            .mul(100)
+            .div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
 
-        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(
+            vars.liquidateTokenBalance
+            .mul(vars.liquidateTokenPrice)
+            .div(liquidateTokendivisor)
+        );
 
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).mul(100).div(divisor).div(vars.liquidationDiscountRatio));
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(
+            borrowedTokenAmountForLiquidation
+            .mul(vars.targetTokenPrice)
+            .mul(100)
+            .div(targetTokenDivisor)
+            .div(vars.liquidationDiscountRatio)
+        );
 
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
-        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
-        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio)
+            .mul(targetTokenDivisor)
+            .div(100)
+            .div(vars.targetTokenPrice);
+        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor)
+            .mul(100)
+            .mul(vars.targetTokenPrice);
+        vars.payAmount = vars.payAmount.div(targetTokenDivisor)
+            .div(vars.liquidationDiscountRatio)
+            .div(vars.liquidateTokenPrice);
 
         deposit(_liquidator, _collateralToken, vars.payAmount);
         withdraw_liquidate(_liquidator, _borrowedToken, vars.repayAmount);
