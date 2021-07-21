@@ -788,6 +788,95 @@ contract("SavingAccount.borrow", async (accounts) => {
                             // 5. BorrowPower should not be affected
                             expect(BN(userBorrowPower2)).to.be.bignumber.equal(BN(userBorrowPower));
                         });
+
+                        it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
+                            this.timeout(0);
+                            await savingAccount.deposit(
+                                ETH_ADDRESS,
+                                eighteenPrecision.mul(new BN(100)),
+                                {
+                                    from: owner,
+                                    value: eighteenPrecision.mul(new BN(100)),
+                                }
+                            );
+                            // 1. Transfer tokens to users
+                            await erc20USDT.transfer(user1, sixPrecision.mul(new BN(200)));
+                            await erc20DAI.transfer(user1, ONE_DAI.mul(new BN(200)));
+                            await erc20LP.transfer(user1, eighteenPrecision.mul(new BN(200)));
+
+                            await erc20USDT.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await erc20DAI.approve(
+                                savingAccount.address,
+                                ONE_DAI.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await erc20LP.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+
+                            // Set BorrowLTV of LP token to 0
+                            await testEngine.tokenInfoRegistry.updateBorrowLTV(
+                                addressLP,
+                                new BN(0)
+                            );
+
+                            // 2. User1 deposits 100 USDT
+                            await savingAccount.deposit(
+                                addressUSDT,
+                                sixPrecision.mul(new BN(100)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const user1BorrowPower = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower", user1BorrowPower.toString());
+
+                            // 3. user 1 borrows ETH at 60% LTV
+                            const limitAmount = sixPrecision
+                                .mul(new BN(100))
+                                .mul(await tokenInfoRegistry.priceFromIndex(2))
+                                .mul(new BN(60))
+                                .div(new BN(100))
+                                .div(await tokenInfoRegistry.priceFromIndex(9));
+                            await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
+
+                            const user1BorrowPower2 = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower2", user1BorrowPower2.toString());
+
+                            // 4. Decrease collateral price
+                            let originPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                            let updatedPrice = BN(originPrice).mul(new BN(20)).div(new BN(100));
+
+                            await mockChainlinkAggregatorforMKR.updateAnswer(updatedPrice);
+
+                            const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                                user1
+                            );
+                            console.log("liquidateBefore", liquidateBefore);
+
+                            // 4. user1 deposits 100 LPTokens
+                            await savingAccount.deposit(
+                                addressLP,
+                                eighteenPrecision.mul(new BN(100)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const user1BorrowPower3 = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower3", user1BorrowPower3.toString());
+                        });
                     });
                 }
             );
