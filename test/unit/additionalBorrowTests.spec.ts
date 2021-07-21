@@ -21,6 +21,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
+    let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
 
@@ -40,6 +41,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let addressTUSD: any;
     let addressMKR: any;
     let addressWBTC: any;
+    let addressLP: any;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforUSDTAddress: any;
@@ -63,6 +65,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let erc20TUSD: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
     let erc20WBTC: t.MockErc20Instance;
+    let erc20LP: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -85,6 +88,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
+        tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -97,6 +101,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
+        addressLP = tokens[10];
 
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
@@ -112,6 +117,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
+        erc20LP = await ERC20.at(addressLP);
 
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
@@ -666,6 +672,121 @@ contract("SavingAccount.borrow", async (accounts) => {
                             expect(
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
+                        });
+                        it("when borrow amount of token is equal to ILTV of his collateral value (LP Token)", async function () {
+                            this.timeout(0);
+                            await erc20DAI.transfer(user1, eighteenPrecision);
+                            await erc20LP.transfer(user2, eighteenPrecision);
+                            await erc20DAI.approve(savingAccount.address, eighteenPrecision, {
+                                from: user1,
+                            });
+                            await erc20LP.approve(savingAccount.address, eighteenPrecision, {
+                                from: user2,
+                            });
+                            await erc20LP.approve(savingAccount.address, eighteenPrecision, {
+                                from: user1,
+                            });
+
+                            // Set BorrowLTV of LP token to 0
+                            await testEngine.tokenInfoRegistry.updateBorrowLTV(
+                                addressLP,
+                                new BN(0)
+                            );
+                            let updatedLPTokenLTV = await testEngine.tokenInfoRegistry.getBorrowLTV(
+                                addressLP
+                            );
+                            console.log("updatedLPTokenLTV", updatedLPTokenLTV.toString());
+
+                            const user2LPValue = await erc20LP.balanceOf(user2);
+                            console.log("user2LPValue", user2LPValue.toString());
+
+                            const savingAccountCDAITokenBeforeDeposit = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const savingAccountDAITokenBeforeDeposit = BN(
+                                await erc20DAI.balanceOf(savingAccount.address)
+                            );
+                            const savingAccountLPTokenBeforeDeposit = BN(
+                                await erc20LP.balanceOf(savingAccount.address)
+                            );
+
+                            await savingAccount.deposit(addressDAI, eighteenPrecision, {
+                                from: user1,
+                            });
+                            await savingAccount.deposit(addressLP, eighteenPrecision, {
+                                from: user2,
+                            });
+
+                            const userBorrowVal = await accountsContract.getBorrowETH(user1);
+                            const getDeposits = await accountsContract.getDepositETH(user1);
+                            const userBorrowPower = await accountsContract.getBorrowPower(user1);
+                            let UB = new BN(userBorrowVal).mul(new BN(100));
+                            let UD = new BN(getDeposits).mul(new BN(95));
+                            console.log("userBorrowVal", userBorrowVal.toString());
+                            console.log("userBorrowPower", userBorrowPower.toString());
+                            console.log("UD", UD.toString());
+                            console.log("UB", UB.toString());
+
+                            await savAccBalVerify(
+                                0,
+                                eighteenPrecision,
+                                addressDAI,
+                                cDAI,
+                                savingAccountCDAITokenBeforeDeposit,
+                                savingAccountDAITokenBeforeDeposit,
+                                bank,
+                                savingAccount
+                            );
+
+                            const savingAccountCDAITokenAfterDeposit = BN(
+                                await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                            );
+                            const savingAccountDAITokenAfterDeposit = BN(
+                                await erc20DAI.balanceOf(savingAccount.address)
+                            );
+
+                            // 2. Start borrowing.
+                            const limitAmount = eighteenPrecision
+                                .mul(await tokenInfoRegistry.priceFromIndex(0))
+                                .mul(new BN(60))
+                                .div(new BN(100))
+                                .div(await tokenInfoRegistry.priceFromIndex(10));
+
+                            const user2BalanceBefore = BN(await erc20LP.balanceOf(user1));
+                            await savingAccount.borrow(addressLP, limitAmount, { from: user1 });
+
+                            // await savAccBalVerify(
+                            //     2,
+                            //     limitAmount,
+                            //     addressDAI,
+                            //     cDAI,
+                            //     savingAccountCDAITokenAfterDeposit,
+                            //     savingAccountDAITokenAfterDeposit,
+                            //     bank,
+                            //     savingAccount
+                            // );
+
+                            // 3. Verify the loan amount.
+                            const user2BalanceAfter = BN(await erc20LP.balanceOf(user1));
+                            expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                                limitAmount
+                            );
+
+                            // 4. Deposit borrowed LP Tokens
+                            await savingAccount.deposit(addressLP, limitAmount, { from: user1 });
+
+                            const userBorrowVal2 = await accountsContract.getBorrowETH(user1);
+                            const getDeposits2 = await accountsContract.getDepositETH(user1);
+                            const userBorrowPower2 = await accountsContract.getBorrowPower(user1);
+                            let UB2 = new BN(userBorrowVal2).mul(new BN(100));
+                            let UD2 = new BN(getDeposits2).mul(new BN(95));
+                            console.log("userBorrowVal2", userBorrowVal2.toString());
+                            console.log("userBorrowPower2", userBorrowPower2.toString());
+                            console.log("UD2", UD2.toString());
+                            console.log("UB2", UB2.toString());
+
+                            // 5. BorrowPower should not be affected
+                            expect(BN(userBorrowPower2)).to.be.bignumber.equal(BN(userBorrowPower));
                         });
                     });
                 }
