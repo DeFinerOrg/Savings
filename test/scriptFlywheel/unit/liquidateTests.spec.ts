@@ -7,8 +7,9 @@ import { savAccBalVerify } from "../../../test-helpers/lib/lib";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
@@ -946,6 +947,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         from: user2,
                         value: ONE_ETH,
                     });
+                    let user2ETHBalAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
+                    console.log("user2ETHBalAfterDeposit", user2ETHBalAfterDeposit.toString());
+
                     // 2. Start borrowing.
                     const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
@@ -967,15 +974,37 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     const userBorrowPower = await accountsContract.getBorrowPower(user1);
                     let UB = new BN(userBorrowVal).mul(new BN(100));
                     let UD = new BN(getDeposits).mul(new BN(95));
+                    let LTV = BN(userBorrowVal).div(BN(getDeposits)).mul(new BN(100));
                     console.log("userBorrowVal", userBorrowVal.toString());
                     console.log("userBorrowPower", userBorrowPower.toString());
                     console.log("UD", UD.toString());
                     console.log("UB", UB.toString());
+                    console.log("LTV", LTV.toString());
 
+                    expect(BN(LTV)).to.be.bignumber.greaterThan(new BN(95));
                     expect(UB).to.be.bignumber.greaterThan(UD);
 
-                    await savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI);
-                    await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
+                    let user2DAIBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    console.log(
+                        "user2DAIBalBeforeLiquidate",
+                        user2DAIBalBeforeLiquidate.toString()
+                    );
+
+                    await savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI, { from: owner });
+                    let user2DAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+
+                    let user2ETHBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
+                    console.log("user2ETHBalAfterLiquidate", user2ETHBalAfterLiquidate.toString());
+                    console.log("user2DAIBalAfterLiquidate", user2DAIBalAfterLiquidate.toString());
                 });
             });
         });
