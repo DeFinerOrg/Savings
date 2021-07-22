@@ -12,9 +12,8 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -49,6 +48,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
+    let mockChainlinkAggregatorforFIN_LPAddress: any;
     let cDAI_addr: any;
     let cUSDC_addr: any;
     let cUSDT_addr: any;
@@ -74,6 +74,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforFIN_LP: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_USDC: any;
@@ -110,6 +111,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
+        mockChainlinkAggregatorforFIN_LPAddress = mockChainlinkAggregators[10];
 
         erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
@@ -147,6 +149,9 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
         );
+        mockChainlinkAggregatorforFIN_LP = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforFIN_LPAddress
+        );
         mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforWBTCAddress
         );
@@ -158,6 +163,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+        await mockChainlinkAggregatorforFIN_LP.updateAnswer(DAIprice);
         await savingAccount.fastForward(1);
     });
 
@@ -715,10 +721,12 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             // set oracle prices
                             const ETH_USD_RATE = new BN(2000);
-                            const ONE_USD_IN_ETH = ONE_ETH.div(ETH_USD_RATE);
+                            let ONE_USD_IN_ETH = ONE_ETH.div(ETH_USD_RATE);
                             await mockChainlinkAggregatorforETH.updateAnswer(ONE_ETH); // remain constant
                             await mockChainlinkAggregatorforDAI.updateAnswer(ONE_USD_IN_ETH);
                             await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH);
+                            // assuming that the FIN_LP price is 1 USD
+                            await mockChainlinkAggregatorforFIN_LP.updateAnswer(ONE_USD_IN_ETH);
 
                             // get oracle prices
                             const ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
@@ -834,8 +842,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 availForBorrowInUSD.toString()
                             );
 
-                            const collAmtInETH = await accountsContract.getDepositETH(user1);
-                            const collateralAmtInUSD = collAmtInETH.mul(ETH_USD_RATE).div(ONE_ETH);
+                            let collAmtInETH = await accountsContract.getDepositETH(user1);
+                            let collateralAmtInUSD = collAmtInETH.mul(ETH_USD_RATE).div(ONE_ETH);
                             console.log(
                                 "user collateral amount in USD:",
                                 collateralAmtInUSD.toString()
@@ -850,24 +858,27 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 borrowedAmtInUSD.toString()
                             );
 
-                            const collateralRatio = borrowedAmtInUSD
+                            let collateralRatio = borrowedAmtInUSD
                                 .mul(new BN(100))
                                 .div(collateralAmtInUSD);
                             console.log("collateral ratio in % :", collateralRatio.toString());
 
                             // TODO further
                             // 4. increase ETH price
-                            let Updated_price = ONE_ETH.mul(new BN(15)).div(new BN(10));
-                            await mockChainlinkAggregatorforETH.updateAnswer(Updated_price);
+                            const newETH_USD_RATE = new BN(3000);
+                            ONE_USD_IN_ETH = ONE_ETH.div(newETH_USD_RATE);
+                            //await mockChainlinkAggregatorforETH.updateAnswer(ONE_ETH); // remain constant
+                            await mockChainlinkAggregatorforDAI.updateAnswer(ONE_USD_IN_ETH);
+                            await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH);
+                            await mockChainlinkAggregatorforFIN_LP.updateAnswer(ONE_USD_IN_ETH);
 
-                            const UPD_ETH_USD_RATE = new BN(3000);
-                            const UPD_ONE_USD_IN_ETH = Updated_price.div(UPD_ETH_USD_RATE);
-                            await mockChainlinkAggregatorforETH.updateAnswer(Updated_price); // remain constant
+                            console.log("PRICE UPDATED");
 
                             // get oracle prices
                             const UPD_ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
                             const UPD_daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                            const UPD_usdtPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                            const UPD_usdtPrice =
+                                await mockChainlinkAggregatorforUSDT.latestAnswer();
                             console.log("ETH price in ETH", UPD_ethPrice.toString());
                             console.log("DAI price in ETH", UPD_daiPrice.toString());
                             console.log("USDT price in ETH", UPD_usdtPrice.toString());
@@ -875,29 +886,37 @@ contract("SavingAccount.borrow", async (accounts) => {
                             const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
                             console.log("borrowedAmtInETH2", borrowedAmtInETH2.toString());
                             const borrowedAmtInUSD2 = borrowedAmtInETH2
-                                .mul(UPD_ETH_USD_RATE)
-                                .div(Updated_price);
-
+                                .mul(newETH_USD_RATE)
+                                .div(ONE_ETH);
                             console.log(
                                 "user borrowed amount in USD:",
                                 borrowedAmtInUSD2.toString()
                             );
-
-                            const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
-                                user1
+                            collAmtInETH = await accountsContract.getDepositETH(user1);
+                            collateralAmtInUSD = collAmtInETH.mul(newETH_USD_RATE).div(ONE_ETH);
+                            console.log(
+                                "user collateral amount in USD:",
+                                collateralAmtInUSD.toString()
                             );
-                            console.log("liquidateBefore", liquidateBefore);
+                            collateralRatio = borrowedAmtInUSD2
+                                .mul(new BN(100))
+                                .div(collateralAmtInUSD);
+                            console.log("collateral ratio in % :", collateralRatio.toString());
 
-                            // // 4. user1 deposits 100 LPTokens
-                            // await savingAccount.deposit(
-                            //     addressLP,
-                            //     eighteenPrecision.mul(new BN(100)),
-                            //     {
-                            //         from: user1,
-                            //     }
-                            // );
-                            // const user1BorrowPower3 = await accountsContract.getBorrowPower(user1);
-                            // console.log("user1BorrowPower3", user1BorrowPower3.toString());
+                            let isAccountLiquidatable =
+                                await accountsContract.isAccountLiquidatable.call(user1);
+                            console.log("isAccountLiquidatable", isAccountLiquidatable);
+                            expect(isAccountLiquidatable).to.be.equal(true);
+
+                            // 4. user1 deposits 100 LPTokens
+                            await savingAccount.deposit(addressLP, ONE_FIN_LP.mul(new BN(100)), {
+                                from: user1,
+                            });
+
+                            isAccountLiquidatable =
+                                await accountsContract.isAccountLiquidatable.call(user1);
+                            console.log("isAccountLiquidatable", isAccountLiquidatable);
+                            expect(isAccountLiquidatable).to.be.equal(true);
                         });
                     });
                 }
