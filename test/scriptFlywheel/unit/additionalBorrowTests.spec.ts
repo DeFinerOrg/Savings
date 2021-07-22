@@ -12,8 +12,9 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -40,6 +41,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let addressTUSD: any;
     let addressMKR: any;
     let addressWBTC: any;
+    let addressLP: any;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforUSDTAddress: any;
@@ -63,6 +65,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let erc20TUSD: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
     let erc20WBTC: t.MockErc20Instance;
+    let erc20LP: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -98,6 +101,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
+        addressLP = tokens[10];
 
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
@@ -105,7 +109,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
 
         erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
@@ -113,6 +117,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
+        erc20LP = await ERC20.at(addressLP);
 
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
@@ -209,11 +214,9 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
                             const wbtcTokenIndex = result[0];
-                            await accountsContract.methods["setCollateral(uint8,bool)"](
-                                wbtcTokenIndex,
-                                true,
-                                { from: user1 }
-                            );
+                            await accountsContract.methods[
+                                "setCollateral(uint8,bool)"
+                            ](wbtcTokenIndex, true, { from: user1 });
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
                                 "Lack of liquidity when borrow."
@@ -701,6 +704,105 @@ contract("SavingAccount.borrow", async (accounts) => {
                             expect(
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
+                        });
+
+                        it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
+                            this.timeout(0);
+                            await savingAccount.deposit(
+                                ETH_ADDRESS,
+                                eighteenPrecision.mul(new BN(100)),
+                                {
+                                    from: owner,
+                                    value: eighteenPrecision.mul(new BN(100)),
+                                }
+                            );
+                            // 1. Transfer tokens to users
+                            await erc20USDT.transfer(user1, sixPrecision.mul(new BN(200)));
+                            await erc20DAI.transfer(user1, ONE_DAI.mul(new BN(200)));
+                            await erc20LP.transfer(user1, eighteenPrecision.mul(new BN(200)));
+
+                            await erc20USDT.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await erc20DAI.approve(
+                                savingAccount.address,
+                                ONE_DAI.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await erc20LP.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(200)),
+                                {
+                                    from: user1,
+                                }
+                            );
+
+                            // Set BorrowLTV of LP token to 0
+                            await testEngine.tokenInfoRegistry.updateBorrowLTV(
+                                addressLP,
+                                new BN(0)
+                            );
+
+                            // 2. User1 deposits 100 USDT
+                            await savingAccount.deposit(
+                                addressUSDT,
+                                sixPrecision.mul(new BN(100)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const user1BorrowPower = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower", user1BorrowPower.toString());
+
+                            // 3. user 1 borrows ETH at 60% LTV
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDT);
+                            const USDTTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                USDTTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
+
+                            const limitAmount = sixPrecision
+                                .mul(new BN(100))
+                                .mul(await testEngine.tokenInfoRegistry.priceFromIndex(9))
+                                .mul(new BN(60))
+                                .div(new BN(100))
+                                .div(await testEngine.tokenInfoRegistry.priceFromIndex(2));
+                            await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
+
+                            const user1BorrowPower2 = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower2", user1BorrowPower2.toString());
+
+                            // 4. Decrease collateral price
+                            let originPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                            let updatedPrice = BN(originPrice).mul(new BN(150)).div(new BN(100));
+
+                            await mockChainlinkAggregatorforETH.updateAnswer(updatedPrice);
+
+                            const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                                user1
+                            );
+                            console.log("liquidateBefore", liquidateBefore);
+
+                            // 4. user1 deposits 100 LPTokens
+                            await savingAccount.deposit(
+                                addressLP,
+                                eighteenPrecision.mul(new BN(100)),
+                                {
+                                    from: user1,
+                                }
+                            );
+                            const user1BorrowPower3 = await accountsContract.getBorrowPower(user1);
+                            console.log("user1BorrowPower3", user1BorrowPower3.toString());
                         });
                     });
                 }
