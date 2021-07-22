@@ -846,20 +846,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                             // 3. user 1 borrows ETH at 60% LTV
                             const limitAmount = sixPrecision
                                 .mul(new BN(100))
-                                .mul(await tokenInfoRegistry.priceFromIndex(2))
+                                .mul(await tokenInfoRegistry.priceFromIndex(9))
                                 .mul(new BN(60))
                                 .div(new BN(100))
-                                .div(await tokenInfoRegistry.priceFromIndex(9));
+                                .div(await tokenInfoRegistry.priceFromIndex(2));
                             await savingAccount.borrow(ETH_ADDRESS, limitAmount, { from: user1 });
 
                             const user1BorrowPower2 = await accountsContract.getBorrowPower(user1);
                             console.log("user1BorrowPower2", user1BorrowPower2.toString());
 
                             // 4. Decrease collateral price
-                            let originPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
-                            let updatedPrice = BN(originPrice).mul(new BN(20)).div(new BN(100));
+                            let originPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                            let updatedPrice = BN(originPrice).mul(new BN(150)).div(new BN(100));
 
-                            await mockChainlinkAggregatorforMKR.updateAnswer(updatedPrice);
+                            await mockChainlinkAggregatorforETH.updateAnswer(updatedPrice);
 
                             const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                                 user1
