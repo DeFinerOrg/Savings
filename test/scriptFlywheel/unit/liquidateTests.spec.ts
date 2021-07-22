@@ -962,28 +962,34 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         { from: user1 }
                     );
                     await savingAccount.borrow(ETH_ADDRESS, borrowAmt, { from: user1 });
+
                     // 3. Change the price.
-                    let updatedPrice = new BN(1);
-                    let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    // update price of DAI to 70% of it's value
+                    let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
                     // Check that borrow LTV > 95%
-                    const userBorrowVal = await accountsContract.getBorrowETH(user1);
+                    const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user1);
                     const getDeposits = await accountsContract.getDepositETH(user1);
                     const userBorrowPower = await accountsContract.getBorrowPower(user1);
-                    let UB = new BN(userBorrowVal).mul(new BN(100));
+                    let UB = new BN(userBorrowValAfterBorrow).mul(new BN(100));
                     let UD = new BN(getDeposits).mul(new BN(95));
-                    let LTV = BN(userBorrowVal).div(BN(getDeposits)).mul(new BN(100));
-                    console.log("userBorrowVal", userBorrowVal.toString());
+                    let LTV = BN(userBorrowValAfterBorrow).div(BN(getDeposits)).mul(new BN(100));
+                    console.log("userBorrowValAfterBorrow", userBorrowValAfterBorrow.toString());
                     console.log("userBorrowPower", userBorrowPower.toString());
                     console.log("UD", UD.toString());
                     console.log("UB", UB.toString());
                     console.log("LTV", LTV.toString());
 
+                    const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
+
+                    expect(liquidateAfter).to.equal(true);
                     expect(BN(LTV)).to.be.bignumber.greaterThan(new BN(95));
                     expect(UB).to.be.bignumber.greaterThan(UD);
 
+                    // user2's balance before liquidation
                     let user2DAIBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
                         user2
@@ -993,18 +999,26 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user2DAIBalBeforeLiquidate.toString()
                     );
 
+                    // user2 liquidates the user
                     await savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI, { from: owner });
                     let user2DAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
                         addressDAI,
-                        user2
+                        owner
                     );
-
                     let user2ETHBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
                         ETH_ADDRESS,
                         user2
                     );
-                    console.log("user2ETHBalAfterLiquidate", user2ETHBalAfterLiquidate.toString());
-                    console.log("user2DAIBalAfterLiquidate", user2DAIBalAfterLiquidate.toString());
+
+                    const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user1);
+                    console.log("userBorrowVal2", userBorrowValAfterLiquidate.toString());
+
+                    expect(BN(userBorrowValAfterLiquidate)).to.be.bignumber.lessThan(
+                        BN(userBorrowValAfterBorrow)
+                    );
+                    expect(BN(user2DAIBalBeforeLiquidate).add(ONE_DAI)).to.be.bignumber.equal(
+                        BN(user2DAIBalAfterLiquidate)
+                    );
                 });
             });
         });
