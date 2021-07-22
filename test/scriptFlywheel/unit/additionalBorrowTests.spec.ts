@@ -12,8 +12,9 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 
 contract("SavingAccount.borrow", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -774,7 +775,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 new BN(0)
                             );
 
-                            // TODO ensure that borrowLTV is 0
+                            // ensure that borrowLTV is 0
+                            let LPBorrowLTV = await testEngine.tokenInfoRegistry.getBorrowLTV(
+                                addressLP
+                            );
+                            expect(BN(LPBorrowLTV)).to.be.bignumber.equal(new BN(0));
 
                             // 2. User1 deposits 100 USDT
                             const collateralAmount = ONE_USDT.mul(new BN(100));
@@ -839,6 +844,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             const borrowedAmtInUSD = borrowedAmtInETH
                                 .mul(ETH_USD_RATE)
                                 .div(ONE_ETH);
+                            console.log("borrowedAmtInETH", borrowedAmtInETH.toString());
                             console.log(
                                 "user borrowed amount in USD:",
                                 borrowedAmtInUSD.toString()
@@ -851,10 +857,36 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                             // TODO further
                             // 4. increase ETH price
+                            let Updated_price = ONE_ETH.mul(new BN(15)).div(new BN(10));
+                            await mockChainlinkAggregatorforETH.updateAnswer(Updated_price);
 
-                            // const liquidateBefore =
-                            //     await accountsContract.isAccountLiquidatable.call(user1);
-                            // console.log("liquidateBefore", liquidateBefore);
+                            const UPD_ETH_USD_RATE = new BN(3000);
+                            const UPD_ONE_USD_IN_ETH = Updated_price.div(UPD_ETH_USD_RATE);
+                            await mockChainlinkAggregatorforETH.updateAnswer(Updated_price); // remain constant
+
+                            // get oracle prices
+                            const UPD_ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                            const UPD_daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                            const UPD_usdtPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                            console.log("ETH price in ETH", UPD_ethPrice.toString());
+                            console.log("DAI price in ETH", UPD_daiPrice.toString());
+                            console.log("USDT price in ETH", UPD_usdtPrice.toString());
+
+                            const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
+                            console.log("borrowedAmtInETH2", borrowedAmtInETH2.toString());
+                            const borrowedAmtInUSD2 = borrowedAmtInETH2
+                                .mul(UPD_ETH_USD_RATE)
+                                .div(Updated_price);
+
+                            console.log(
+                                "user borrowed amount in USD:",
+                                borrowedAmtInUSD2.toString()
+                            );
+
+                            const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                                user1
+                            );
+                            console.log("liquidateBefore", liquidateBefore);
 
                             // // 4. user1 deposits 100 LPTokens
                             // await savingAccount.deposit(
