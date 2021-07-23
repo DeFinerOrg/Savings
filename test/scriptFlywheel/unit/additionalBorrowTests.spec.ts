@@ -173,546 +173,546 @@ contract("SavingAccount.borrow", async (accounts) => {
             context(
                 "Use compound supported and unsupported tokens together (WBTC, TUSD)",
                 async () => {
-                    // context("Should fail", async () => {
-                    //     it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
-                    //         this.timeout(0);
-                    //         /*
-                    //          * Step 1. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: deposits 1 WBTC
-                    //          * Account2: deposits 100 TUSD
-                    //          */
-                    //         await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1000)));
-                    //         await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
+                    context("Should fail", async () => {
+                        it("Deposits WBTC, borrows TUSD and the collateral is not enough", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 1 WBTC
+                             * Account2: deposits 100 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1000)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
-                    //         await erc20WBTC.approve(
-                    //             savingAccount.address,
-                    //             eightPrecision.mul(new BN(1000)),
-                    //             { from: user1 }
-                    //         );
-                    //         await erc20TUSD.approve(
-                    //             savingAccount.address,
-                    //             eighteenPrecision.mul(new BN(100)),
-                    //             { from: user2 }
-                    //         );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(1000)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                    //         await savingAccount.fastForward(1000);
+                            await savingAccount.fastForward(1000);
 
-                    //         await savingAccount.deposit(
-                    //             addressWBTC,
-                    //             eightPrecision.mul(new BN(1000)),
-                    //             { from: user1 }
-                    //         );
-                    //         await savingAccount.deposit(
-                    //             addressTUSD,
-                    //             eighteenPrecision.mul(new BN(100)),
-                    //             { from: user2 }
-                    //         );
-                    //         /*
-                    //          * Step 2. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: Borrows more TUSD than its borrowing power, should fail
-                    //          * To verify:
-                    //          * 1. Fail at borrowing
-                    //          */
-                    //         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                    //         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(1000)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: Borrows more TUSD than its borrowing power, should fail
+                             * To verify:
+                             * 1. Fail at borrowing
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
 
-                    //         let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
+                            let borrow = eighteenPrecision.mul(WBTCPrice).div(TUSDPrice);
 
-                    //         const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
-                    //         const wbtcTokenIndex = result[0];
-                    //         await accountsContract.methods["setCollateral(uint8,bool)"](
-                    //             wbtcTokenIndex,
-                    //             true,
-                    //             { from: user1 }
-                    //         );
-                    //         await expectRevert(
-                    //             savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                    //             "Lack of liquidity when borrow."
-                    //         );
-                    //     });
-                    //     it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
-                    //         this.timeout(0);
-                    //         /*
-                    //          * Step 1. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: deposits 100 WBTC
-                    //          * Account2: deposits 1 TUSD
-                    //          */
-                    //         await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
-                    //         await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
+                            const wbtcTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                wbtcTokenIndex,
+                                true,
+                                { from: user1 }
+                            );
+                            await expectRevert(
+                                savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
+                                "Lack of liquidity when borrow."
+                            );
+                        });
+                        it("Deposits TUSD, borrows WBTC and the collateral is not enough", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 100 WBTC
+                             * Account2: deposits 1 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
 
-                    //         await erc20WBTC.approve(
-                    //             savingAccount.address,
-                    //             eightPrecision.mul(new BN(100)),
-                    //             { from: user1 }
-                    //         );
-                    //         await erc20TUSD.approve(
-                    //             savingAccount.address,
-                    //             eighteenPrecision.mul(new BN(1)),
-                    //             { from: user2 }
-                    //         );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
 
-                    //         await savingAccount.deposit(
-                    //             addressWBTC,
-                    //             eightPrecision.mul(new BN(100)),
-                    //             { from: user1 }
-                    //         );
-                    //         await savingAccount.deposit(
-                    //             addressTUSD,
-                    //             eighteenPrecision.mul(new BN(1)),
-                    //             { from: user2 }
-                    //         );
-                    //         /*
-                    //          * Step 2. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account11 Borrows more WBTC than its borrowing power, should fail
-                    //          * To verify:
-                    //          * 1. Fail at borrowing
-                    //          */
-                    //         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                    //         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                    //         let borrow = eightPrecision.mul(TUSDPrice).div(WBTCPrice);
-                    //         await expectRevert(
-                    //             savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
-                    //             "Insufficient collateral when borrow."
-                    //         );
-                    //     });
-                    //     it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
-                    //         this.timeout(0);
-                    //         /*
-                    //          * Step 1. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: deposits 1 WBTC
-                    //          * Account2: deposits 100 TUSD
-                    //          */
-                    //         await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
-                    //         await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account11 Borrows more WBTC than its borrowing power, should fail
+                             * To verify:
+                             * 1. Fail at borrowing
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            let borrow = eightPrecision.mul(TUSDPrice).div(WBTCPrice);
+                            await expectRevert(
+                                savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
+                                "Insufficient collateral when borrow."
+                            );
+                        });
+                        it("Deposits WBTC, borrows TUSD and the amount is zero", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 1 WBTC
+                             * Account2: deposits 100 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
-                    //         await erc20WBTC.approve(
-                    //             savingAccount.address,
-                    //             eightPrecision.mul(new BN(1)),
-                    //             { from: user1 }
-                    //         );
-                    //         await erc20TUSD.approve(
-                    //             savingAccount.address,
-                    //             eighteenPrecision.mul(new BN(100)),
-                    //             { from: user2 }
-                    //         );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                    //         await savingAccount.deposit(
-                    //             addressWBTC,
-                    //             eightPrecision.mul(new BN(1)),
-                    //             { from: user1 }
-                    //         );
-                    //         await savingAccount.deposit(
-                    //             addressTUSD,
-                    //             eighteenPrecision.mul(new BN(100)),
-                    //             { from: user2 }
-                    //         );
-                    //         /*
-                    //          * Step 2. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: Borrows 0 TUSD
-                    //          * To verify:
-                    //          * 1. Fail at borrowing
-                    //          */
-                    //         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                    //         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                    //         let borrow = new BN(0);
-                    //         await expectRevert(
-                    //             savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                    //             "Borrow zero amount of token is not allowed."
-                    //         );
-                    //     });
-                    //     it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
-                    //         this.timeout(0);
-                    //         /*
-                    //          * Step 1. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account1: deposits 100 WBTC
-                    //          * Account2: deposits 1 TUSD
-                    //          */
-                    //         await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
-                    //         await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: Borrows 0 TUSD
+                             * To verify:
+                             * 1. Fail at borrowing
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            let borrow = new BN(0);
+                            await expectRevert(
+                                savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
+                                "Borrow zero amount of token is not allowed."
+                            );
+                        });
+                        it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 100 WBTC
+                             * Account2: deposits 1 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
 
-                    //         await erc20WBTC.approve(
-                    //             savingAccount.address,
-                    //             eightPrecision.mul(new BN(100)),
-                    //             { from: user1 }
-                    //         );
-                    //         await erc20TUSD.approve(
-                    //             savingAccount.address,
-                    //             eighteenPrecision.mul(new BN(1)),
-                    //             { from: user2 }
-                    //         );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
 
-                    //         await savingAccount.deposit(
-                    //             addressWBTC,
-                    //             eightPrecision.mul(new BN(100)),
-                    //             { from: user1 }
-                    //         );
-                    //         await savingAccount.deposit(
-                    //             addressTUSD,
-                    //             eighteenPrecision.mul(new BN(1)),
-                    //             { from: user2 }
-                    //         );
-                    //         /*
-                    //          * Step 2. Assign tokens to each user and deposit them to DeFiner
-                    //          * Account11 Borrows 0 WBTC
-                    //          * To verify:
-                    //          * 1. Fail at borrowing
-                    //          */
-                    //         let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                    //         let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                    //         let borrow = new BN(0);
-                    //         await expectRevert(
-                    //             savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
-                    //             "Borrow zero amount of token is not allowed."
-                    //         );
-                    //     });
-                    // });
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account11 Borrows 0 WBTC
+                             * To verify:
+                             * 1. Fail at borrowing
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            let borrow = new BN(0);
+                            await expectRevert(
+                                savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
+                                "Borrow zero amount of token is not allowed."
+                            );
+                        });
+                    });
                     context("Should succeeed", async () => {
-                        // it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
-                        //     this.timeout(0);
-                        //     /*
-                        //      * Step 1. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: deposits 1 WBTC
-                        //      * Account2: deposits 100 TUSD
-                        //      */
-                        //     await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
-                        //     await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
+                        it("Deposits WBTC, borrows a small amount of TUSD ", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 1 WBTC
+                             * Account2: deposits 100 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
-                        //     await erc20WBTC.approve(
-                        //         savingAccount.address,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
-                        //     await erc20TUSD.approve(
-                        //         savingAccount.address,
-                        //         eighteenPrecision.mul(new BN(100)),
-                        //         { from: user2 }
-                        //     );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCBeforeDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCBeforeDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressWBTC,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressTUSD,
-                        //         eighteenPrecision.mul(new BN(100)),
-                        //         { from: user2 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCAfterDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     /*
-                        //      * Step 2. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: Borrows 10 TUSD
-                        //      * To verify:
-                        //      * 1. Account1 increases 10 TUSD
-                        //      * 2. After deposit, 85% WBTC from savings goes to Compound
-                        //      * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
-                        //      */
-                        //     let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                        //     let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                        //     let borrow = new BN(10);
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: Borrows 10 TUSD
+                             * To verify:
+                             * 1. Account1 increases 10 TUSD
+                             * 2. After deposit, 85% WBTC from savings goes to Compound
+                             * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            let borrow = new BN(10);
 
-                        //     const user1TUSDBefore = await erc20TUSD.balanceOf(user1);
+                            const user1TUSDBefore = await erc20TUSD.balanceOf(user1);
 
-                        //     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
+                            await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
 
-                        //     const savingsCompoundWBTCAfterBorrow = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterBorrow = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     const user1TUSDAfter = await erc20TUSD.balanceOf(user1);
+                            const user1TUSDAfter = await erc20TUSD.balanceOf(user1);
 
-                        //     expect(
-                        //         BN(user1TUSDAfter).sub(BN(user1TUSDBefore))
-                        //     ).to.be.bignumber.equals(borrow);
+                            expect(
+                                BN(user1TUSDAfter).sub(BN(user1TUSDBefore))
+                            ).to.be.bignumber.equals(borrow);
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterDeposit.sub(
-                        //             savingsCompoundWBTCBeforeDeposit
-                        //         )
-                        //     ).to.be.bignumber.equals(
-                        //         eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
-                        //     );
+                            expect(
+                                savingsCompoundWBTCAfterDeposit.sub(
+                                    savingsCompoundWBTCBeforeDeposit
+                                )
+                            ).to.be.bignumber.equals(
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
-                        //     ).to.be.bignumber.equals(new BN(0));
-                        // });
+                            expect(
+                                savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
+                            ).to.be.bignumber.equals(new BN(0));
+                        });
 
-                        // it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
-                        //     this.timeout(0);
-                        //     /*
-                        //      * Step 1. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: deposits 1 WBTC
-                        //      * Account2: deposits 100 TUSD
-                        //      */
-                        //     await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
-                        //     await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
+                        it("Deposits TUSD, borrows a small amount of WBTC ", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 1 WBTC
+                             * Account2: deposits 100 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
-                        //     await erc20WBTC.approve(
-                        //         savingAccount.address,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
-                        //     await erc20TUSD.approve(
-                        //         savingAccount.address,
-                        //         eighteenPrecision.mul(new BN(100)),
-                        //         { from: user2 }
-                        //     );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCBeforeDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCBeforeDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressWBTC,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
-                        //     await savingAccount.deposit(
-                        //         addressTUSD,
-                        //         eighteenPrecision.mul(new BN(100)),
-                        //         { from: user2 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(100)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCAfterDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     /*
-                        //      * Step 2. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account2: Borrows 1 WBTC
-                        //      * To verify:
-                        //      * 1. Account2 increases 1 WBTC
-                        //      * 2. After deposit, 85% WBTC from savings goes to Compound
-                        //      * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
-                        //      */
-                        //     let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                        //     let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
-                        //     let borrow = new BN(1);
-                        //     let accWBTCBefore = await erc20WBTC.balanceOf(user2);
-                        //     const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
-                        //     const tusdTokenIndex = result[0];
-                        //     await accountsContract.methods["setCollateral(uint8,bool)"](
-                        //         tusdTokenIndex,
-                        //         true,
-                        //         {
-                        //             from: user2,
-                        //         }
-                        //     );
-                        //     await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account2: Borrows 1 WBTC
+                             * To verify:
+                             * 1. Account2 increases 1 WBTC
+                             * 2. After deposit, 85% WBTC from savings goes to Compound
+                             * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            let borrow = new BN(1);
+                            let accWBTCBefore = await erc20WBTC.balanceOf(user2);
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
+                            const tusdTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                tusdTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
+                            await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
 
-                        //     const savingsCompoundWBTCAfterBorrow = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterBorrow = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     let accWBTCAfter = await erc20WBTC.balanceOf(user2);
-                        //     expect(BN(accWBTCAfter).sub(BN(accWBTCBefore))).to.be.bignumber.equals(
-                        //         borrow
-                        //     );
+                            let accWBTCAfter = await erc20WBTC.balanceOf(user2);
+                            expect(BN(accWBTCAfter).sub(BN(accWBTCBefore))).to.be.bignumber.equals(
+                                borrow
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterDeposit.sub(
-                        //             savingsCompoundWBTCBeforeDeposit
-                        //         )
-                        //     ).to.be.bignumber.equals(
-                        //         eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
-                        //     );
+                            expect(
+                                savingsCompoundWBTCAfterDeposit.sub(
+                                    savingsCompoundWBTCBeforeDeposit
+                                )
+                            ).to.be.bignumber.equals(
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
-                        //     ).to.be.bignumber.equals(new BN(0));
-                        // });
-                        // it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
-                        //     this.timeout(0);
-                        //     /*
-                        //      * Step 1. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: deposits 1 WBTC
-                        //      * Account2: deposits 100 TUSD
-                        //      */
-                        //     await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
-                        //     await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(10000)));
+                            expect(
+                                savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
+                            ).to.be.bignumber.equals(new BN(0));
+                        });
+                        it("Deposits WBTC, borrows the same amount of borrowing power ", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 1 WBTC
+                             * Account2: deposits 100 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(1)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(10000)));
 
-                        //     await erc20WBTC.approve(
-                        //         savingAccount.address,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
-                        //     await erc20TUSD.approve(
-                        //         savingAccount.address,
-                        //         eighteenPrecision.mul(new BN(10000)),
-                        //         { from: user2 }
-                        //     );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(10000)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCBeforeDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCBeforeDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressWBTC,
-                        //         eightPrecision.mul(new BN(1)),
-                        //         { from: user1 }
-                        //     );
-                        //     await savingAccount.deposit(
-                        //         addressTUSD,
-                        //         eighteenPrecision.mul(new BN(10000)),
-                        //         { from: user2 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(1)),
+                                { from: user1 }
+                            );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(10000)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCAfterDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     /*
-                        //      * Step 2. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: Borrows the same as the borrowing power
-                        //      * To verify:
-                        //      * 1. Account1 increases the same amount of borrow power of TUSD
-                        //      */
-                        //     let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                        //     let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: Borrows the same as the borrowing power
+                             * To verify:
+                             * 1. Account1 increases the same amount of borrow power of TUSD
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
 
-                        //     let borrow = eighteenPrecision
-                        //         .mul(TUSDPrice)
-                        //         .div(WBTCPrice)
-                        //         .div(new BN(100))
-                        //         .mul(new BN(60));
-                        //     let accTUSDBefore = await erc20TUSD.balanceOf(user1);
+                            let borrow = eighteenPrecision
+                                .mul(TUSDPrice)
+                                .div(WBTCPrice)
+                                .div(new BN(100))
+                                .mul(new BN(60));
+                            let accTUSDBefore = await erc20TUSD.balanceOf(user1);
 
-                        //     const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
-                        //     const wbtcTokenIndex = result[0];
-                        //     await accountsContract.methods["setCollateral(uint8,bool)"](
-                        //         wbtcTokenIndex,
-                        //         true,
-                        //         {
-                        //             from: user1,
-                        //         }
-                        //     );
-                        //     await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
-                        //     const savingsCompoundWBTCAfterBorrow = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressWBTC);
+                            const wbtcTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                wbtcTokenIndex,
+                                true,
+                                {
+                                    from: user1,
+                                }
+                            );
+                            await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
+                            const savingsCompoundWBTCAfterBorrow = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     let accTUSDAfter = await erc20TUSD.balanceOf(user1);
+                            let accTUSDAfter = await erc20TUSD.balanceOf(user1);
 
-                        //     expect(BN(accTUSDAfter).sub(accTUSDBefore)).to.be.bignumber.equals(
-                        //         borrow
-                        //     );
+                            expect(BN(accTUSDAfter).sub(accTUSDBefore)).to.be.bignumber.equals(
+                                borrow
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterDeposit.sub(
-                        //             savingsCompoundWBTCBeforeDeposit
-                        //         )
-                        //     ).to.be.bignumber.equals(
-                        //         eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
-                        //     );
+                            expect(
+                                savingsCompoundWBTCAfterDeposit.sub(
+                                    savingsCompoundWBTCBeforeDeposit
+                                )
+                            ).to.be.bignumber.equals(
+                                eightPrecision.mul(new BN(1)).mul(new BN(85)).div(new BN(100))
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
-                        //     ).to.be.bignumber.equals(new BN(0));
-                        // });
-                        // it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
-                        //     this.timeout(0);
-                        //     /*
-                        //      * Step 1. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account1: deposits 100 WBTC
-                        //      * Account2: deposits 1 TUSD
-                        //      */
-                        //     await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
-                        //     await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
+                            expect(
+                                savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
+                            ).to.be.bignumber.equals(new BN(0));
+                        });
+                        it("Deposits TUSD, borrows the same amount of borrowing power", async function () {
+                            this.timeout(0);
+                            /*
+                             * Step 1. Assign tokens to each user and deposit them to DeFiner
+                             * Account1: deposits 100 WBTC
+                             * Account2: deposits 1 TUSD
+                             */
+                            await erc20WBTC.transfer(user1, eightPrecision.mul(new BN(100)));
+                            await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(1)));
 
-                        //     await erc20WBTC.approve(
-                        //         savingAccount.address,
-                        //         eightPrecision.mul(new BN(100)),
-                        //         { from: user1 }
-                        //     );
+                            await erc20WBTC.approve(
+                                savingAccount.address,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
 
-                        //     await erc20TUSD.approve(
-                        //         savingAccount.address,
-                        //         eighteenPrecision.mul(new BN(1)),
-                        //         { from: user2 }
-                        //     );
+                            await erc20TUSD.approve(
+                                savingAccount.address,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCBeforeDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCBeforeDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressWBTC,
-                        //         eightPrecision.mul(new BN(100)),
-                        //         { from: user1 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressWBTC,
+                                eightPrecision.mul(new BN(100)),
+                                { from: user1 }
+                            );
 
-                        //     await savingAccount.deposit(
-                        //         addressTUSD,
-                        //         eighteenPrecision.mul(new BN(1)),
-                        //         { from: user2 }
-                        //     );
+                            await savingAccount.deposit(
+                                addressTUSD,
+                                eighteenPrecision.mul(new BN(1)),
+                                { from: user2 }
+                            );
 
-                        //     const savingsCompoundWBTCAfterDeposit = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterDeposit = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     /*
-                        //      * Step 2. Assign tokens to each user and deposit them to DeFiner
-                        //      * Account2:Borrows the same as the borrowing power
-                        //      * To verify:
-                        //      * 1. Account1 increases the same amount of borrow power of TUSD
-                        //      * 2. After deposit, 85% WBTC from savings goes to Compound
-                        //      * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
-                        //      */
-                        //     let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
-                        //     let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                            /*
+                             * Step 2. Assign tokens to each user and deposit them to DeFiner
+                             * Account2:Borrows the same as the borrowing power
+                             * To verify:
+                             * 1. Account1 increases the same amount of borrow power of TUSD
+                             * 2. After deposit, 85% WBTC from savings goes to Compound
+                             * 3. After borrowing, the amount of WBTC that savings deposits to Compound doesn't change
+                             */
+                            let WBTCPrice = await mockChainlinkAggregatorforWBTC.latestAnswer();
+                            let TUSDPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
 
-                        //     let borrow = eightPrecision
-                        //         .mul(TUSDPrice)
-                        //         .div(WBTCPrice)
-                        //         .div(new BN(100))
-                        //         .mul(new BN(60));
+                            let borrow = eightPrecision
+                                .mul(TUSDPrice)
+                                .div(WBTCPrice)
+                                .div(new BN(100))
+                                .mul(new BN(60));
 
-                        //     let user1WBTCBefore = await erc20WBTC.balanceOf(user2);
+                            let user1WBTCBefore = await erc20WBTC.balanceOf(user2);
 
-                        //     const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
-                        //     const tusdTokenIndex = result[0];
-                        //     await accountsContract.methods["setCollateral(uint8,bool)"](
-                        //         tusdTokenIndex,
-                        //         true,
-                        //         {
-                        //             from: user2,
-                        //         }
-                        //     );
-                        //     await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressTUSD);
+                            const tusdTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                tusdTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
+                            await savingAccount.borrow(addressWBTC, borrow, { from: user2 });
 
-                        //     const savingsCompoundWBTCAfterBorrow = new BN(
-                        //         await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-                        //     );
+                            const savingsCompoundWBTCAfterBorrow = new BN(
+                                await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                            );
 
-                        //     let user1WBTCAfter = await erc20WBTC.balanceOf(user2);
+                            let user1WBTCAfter = await erc20WBTC.balanceOf(user2);
 
-                        //     expect(
-                        //         BN(user1WBTCAfter).sub(BN(user1WBTCBefore))
-                        //     ).to.be.bignumber.equals(borrow);
+                            expect(
+                                BN(user1WBTCAfter).sub(BN(user1WBTCBefore))
+                            ).to.be.bignumber.equals(borrow);
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterDeposit.sub(
-                        //             savingsCompoundWBTCBeforeDeposit
-                        //         )
-                        //     ).to.be.bignumber.equals(
-                        //         eightPrecision.mul(new BN(100)).mul(new BN(85)).div(new BN(100))
-                        //     );
+                            expect(
+                                savingsCompoundWBTCAfterDeposit.sub(
+                                    savingsCompoundWBTCBeforeDeposit
+                                )
+                            ).to.be.bignumber.equals(
+                                eightPrecision.mul(new BN(100)).mul(new BN(85)).div(new BN(100))
+                            );
 
-                        //     expect(
-                        //         savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
-                        //     ).to.be.bignumber.equals(new BN(0));
-                        // });
+                            expect(
+                                savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
+                            ).to.be.bignumber.equals(new BN(0));
+                        });
 
                         it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
                             this.timeout(0);
@@ -932,379 +932,379 @@ contract("SavingAccount.borrow", async (accounts) => {
             );
         });
 
-        // context("Call multiple times", async () => {
-        //     context("Should succeed", async () => {
-        //         it("Uses 18 decimals, TUSD", async function () {
-        //             this.timeout(0);
-        //             /*
-        //              * Step 1
-        //              * Account 1: Deposits 100 whole DAI tokens
-        //              * Account 2: Depoists 100 whole TUSD tokens
-        //              */
-        //             await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(100)));
-        //             await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
+        context("Call multiple times", async () => {
+            context("Should succeed", async () => {
+                it("Uses 18 decimals, TUSD", async function () {
+                    this.timeout(0);
+                    /*
+                     * Step 1
+                     * Account 1: Deposits 100 whole DAI tokens
+                     * Account 2: Depoists 100 whole TUSD tokens
+                     */
+                    await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(100)));
+                    await erc20TUSD.transfer(user2, eighteenPrecision.mul(new BN(100)));
 
-        //             await erc20DAI.approve(
-        //                 savingAccount.address,
-        //                 eighteenPrecision.mul(new BN(100)),
-        //                 { from: user1 }
-        //             );
-        //             await erc20TUSD.approve(
-        //                 savingAccount.address,
-        //                 eighteenPrecision.mul(new BN(100)),
-        //                 { from: user2 }
-        //             );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(100)),
+                        { from: user1 }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(100)),
+                        { from: user2 }
+                    );
 
-        //             const savingsCompoundDAIBeforeDeposit = new BN(
-        //                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundDAIBeforeDeposit = new BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsDAIBeforeDeposit = new BN(
-        //                 await erc20DAI.balanceOf(savingAccount.address)
-        //             );
+                    const savingsDAIBeforeDeposit = new BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
-        //             await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-        //                 from: user1,
-        //             });
-        //             await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
-        //                 from: user2,
-        //             });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressTUSD, eighteenPrecision.mul(new BN(100)), {
+                        from: user2,
+                    });
 
-        //             await savAccBalVerify(
-        //                 0,
-        //                 eighteenPrecision.mul(new BN(100)),
-        //                 erc20DAI.address,
-        //                 cDAI,
-        //                 savingsCompoundDAIBeforeDeposit,
-        //                 savingsDAIBeforeDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
-        //             /*
-        //              * Step 2
-        //              * Account 1: Borrows 10 whole TUSD twice
-        //              * To verify:
-        //              * 1. Account 1's TUSD balance should be 10 after the first borrow
-        //              * 2. Account 1's TUSD balance should be 20 after the second borrow
-        //              */
-        //             let borrow = eighteenPrecision.mul(new BN(10));
-        //             let accTUSDBeforeFirst = await erc20TUSD.balanceOf(user1);
+                    await savAccBalVerify(
+                        0,
+                        eighteenPrecision.mul(new BN(100)),
+                        erc20DAI.address,
+                        cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
+                    /*
+                     * Step 2
+                     * Account 1: Borrows 10 whole TUSD twice
+                     * To verify:
+                     * 1. Account 1's TUSD balance should be 10 after the first borrow
+                     * 2. Account 1's TUSD balance should be 20 after the second borrow
+                     */
+                    let borrow = eighteenPrecision.mul(new BN(10));
+                    let accTUSDBeforeFirst = await erc20TUSD.balanceOf(user1);
 
-        //             const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
-        //             const daiTokenIndex = result[0];
-        //             await accountsContract.methods["setCollateral(uint8,bool)"](
-        //                 daiTokenIndex,
-        //                 true,
-        //                 {
-        //                     from: user1,
-        //                 }
-        //             );
-        //             await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
+                    await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
 
-        //             let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
+                    let accTUSDAfterFirst = await erc20TUSD.balanceOf(user1);
 
-        //             await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
+                    await savingAccount.borrow(addressTUSD, borrow, { from: user1 });
 
-        //             let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
+                    let accTUSDAfterSecond = await erc20TUSD.balanceOf(user1);
 
-        //             // Verify 1.
-        //             expect(
-        //                 BN(accTUSDAfterFirst).sub(BN(accTUSDBeforeFirst))
-        //             ).to.be.bignumber.equals(borrow);
+                    // Verify 1.
+                    expect(
+                        BN(accTUSDAfterFirst).sub(BN(accTUSDBeforeFirst))
+                    ).to.be.bignumber.equals(borrow);
 
-        //             // Verify 2.
-        //             expect(
-        //                 BN(accTUSDAfterSecond).sub(BN(accTUSDBeforeFirst))
-        //             ).to.be.bignumber.equals(borrow.mul(new BN(2)));
-        //         });
+                    // Verify 2.
+                    expect(
+                        BN(accTUSDAfterSecond).sub(BN(accTUSDBeforeFirst))
+                    ).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                });
 
-        //         it("Uses 6 decimals, USDC", async function () {
-        //             this.timeout(0);
-        //             /*
-        //              * Step 1
-        //              * Account 1: Deposits 100 whole DAI tokens
-        //              * Account 2: Depoists 100 whole USDC tokens
-        //              */
-        //             await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(100)));
-        //             await erc20USDC.transfer(user2, sixPrecision.mul(new BN(100)));
+                it("Uses 6 decimals, USDC", async function () {
+                    this.timeout(0);
+                    /*
+                     * Step 1
+                     * Account 1: Deposits 100 whole DAI tokens
+                     * Account 2: Depoists 100 whole USDC tokens
+                     */
+                    await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(100)));
+                    await erc20USDC.transfer(user2, sixPrecision.mul(new BN(100)));
 
-        //             await erc20DAI.approve(
-        //                 savingAccount.address,
-        //                 eighteenPrecision.mul(new BN(100)),
-        //                 { from: user1 }
-        //             );
-        //             await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(100)), {
-        //                 from: user2,
-        //             });
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(100)),
+                        { from: user1 }
+                    );
+                    await erc20USDC.approve(savingAccount.address, sixPrecision.mul(new BN(100)), {
+                        from: user2,
+                    });
 
-        //             const savingsCompoundDAIBeforeDeposit = new BN(
-        //                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundDAIBeforeDeposit = new BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsDAIBeforeDeposit = new BN(
-        //                 await erc20DAI.balanceOf(savingAccount.address)
-        //             );
+                    const savingsDAIBeforeDeposit = new BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
-        //             const savingsCompoundUSDCBeforeDeposit = new BN(
-        //                 await cUSDC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundUSDCBeforeDeposit = new BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsUSDCBeforeDeposit = new BN(
-        //                 await erc20USDC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsUSDCBeforeDeposit = new BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
-        //             await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
-        //                 from: user1,
-        //             });
-        //             await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(100)), {
-        //                 from: user2,
-        //             });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(100)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDC, sixPrecision.mul(new BN(100)), {
+                        from: user2,
+                    });
 
-        //             await savAccBalVerify(
-        //                 0,
-        //                 eighteenPrecision.mul(new BN(100)),
-        //                 erc20DAI.address,
-        //                 cDAI,
-        //                 savingsCompoundDAIBeforeDeposit,
-        //                 savingsDAIBeforeDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        0,
+                        eighteenPrecision.mul(new BN(100)),
+                        erc20DAI.address,
+                        cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             await savAccBalVerify(
-        //                 0,
-        //                 sixPrecision.mul(new BN(100)),
-        //                 erc20USDC.address,
-        //                 cUSDC,
-        //                 savingsCompoundUSDCBeforeDeposit,
-        //                 savingsUSDCBeforeDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        0,
+                        sixPrecision.mul(new BN(100)),
+                        erc20USDC.address,
+                        cUSDC,
+                        savingsCompoundUSDCBeforeDeposit,
+                        savingsUSDCBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             const savingsCompoundUSDCAfterDeposit = new BN(
-        //                 await cUSDC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundUSDCAfterDeposit = new BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsUSDCAfterDeposit = new BN(
-        //                 await erc20USDC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsUSDCAfterDeposit = new BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
-        //             /*
-        //              * Step 2
-        //              * Account 1: Borrows 10 whole USDC twice
-        //              * To verify:
-        //              * 1. Account 1's USDC balance should be 10 after the first borrow
-        //              * 2. Account 1's USDC balance should be 20 after the second borrow
-        //              */
-        //             let borrow = sixPrecision.mul(new BN(10));
-        //             let accUSDCBeforeFirst = await erc20USDC.balanceOf(user1);
+                    /*
+                     * Step 2
+                     * Account 1: Borrows 10 whole USDC twice
+                     * To verify:
+                     * 1. Account 1's USDC balance should be 10 after the first borrow
+                     * 2. Account 1's USDC balance should be 20 after the second borrow
+                     */
+                    let borrow = sixPrecision.mul(new BN(10));
+                    let accUSDCBeforeFirst = await erc20USDC.balanceOf(user1);
 
-        //             const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
-        //             const daiTokenIndex = result[0];
-        //             await accountsContract.methods["setCollateral(uint8,bool)"](
-        //                 daiTokenIndex,
-        //                 true,
-        //                 {
-        //                     from: user1,
-        //                 }
-        //             );
-        //             await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
+                    await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
 
-        //             await savAccBalVerify(
-        //                 2,
-        //                 borrow,
-        //                 erc20USDC.address,
-        //                 cUSDC,
-        //                 savingsCompoundUSDCAfterDeposit,
-        //                 savingsUSDCAfterDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        2,
+                        borrow,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingsCompoundUSDCAfterDeposit,
+                        savingsUSDCAfterDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             const savingsCompoundUSDCAfterFirstBorrow = new BN(
-        //                 await cUSDC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundUSDCAfterFirstBorrow = new BN(
+                        await cUSDC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsUSDCAfterFirstBorrow = new BN(
-        //                 await erc20USDC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsUSDCAfterFirstBorrow = new BN(
+                        await erc20USDC.balanceOf(savingAccount.address)
+                    );
 
-        //             let accUSDCAfterFirst = await erc20USDC.balanceOf(user1);
+                    let accUSDCAfterFirst = await erc20USDC.balanceOf(user1);
 
-        //             await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
+                    await savingAccount.borrow(addressUSDC, borrow, { from: user1 });
 
-        //             let accUSDCAfterSecond = await erc20USDC.balanceOf(user1);
+                    let accUSDCAfterSecond = await erc20USDC.balanceOf(user1);
 
-        //             await savAccBalVerify(
-        //                 2,
-        //                 borrow,
-        //                 erc20USDC.address,
-        //                 cUSDC,
-        //                 savingsCompoundUSDCAfterFirstBorrow,
-        //                 savingsUSDCAfterFirstBorrow,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        2,
+                        borrow,
+                        erc20USDC.address,
+                        cUSDC,
+                        savingsCompoundUSDCAfterFirstBorrow,
+                        savingsUSDCAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
 
-        //             // Verify 1.
-        //             expect(
-        //                 BN(accUSDCAfterFirst).sub(BN(accUSDCBeforeFirst))
-        //             ).to.be.bignumber.equals(borrow);
+                    // Verify 1.
+                    expect(
+                        BN(accUSDCAfterFirst).sub(BN(accUSDCBeforeFirst))
+                    ).to.be.bignumber.equals(borrow);
 
-        //             // Verify 2.
-        //             expect(
-        //                 BN(accUSDCAfterSecond).sub(BN(accUSDCBeforeFirst))
-        //             ).to.be.bignumber.equals(borrow.mul(new BN(2)));
-        //         });
+                    // Verify 2.
+                    expect(
+                        BN(accUSDCAfterSecond).sub(BN(accUSDCBeforeFirst))
+                    ).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                });
 
-        //         it("Uses 8 decimals, WBTC", async function () {
-        //             this.timeout(0);
-        //             /*
-        //              * Step 1
-        //              * Account 1: Deposits 1000 whole DAI tokens
-        //              * Account 2: Depoists 1000 whole WBTC tokens
-        //              */
-        //             await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1000)));
-        //             await erc20WBTC.transfer(user2, eightPrecision.mul(new BN(1000)));
+                it("Uses 8 decimals, WBTC", async function () {
+                    this.timeout(0);
+                    /*
+                     * Step 1
+                     * Account 1: Deposits 1000 whole DAI tokens
+                     * Account 2: Depoists 1000 whole WBTC tokens
+                     */
+                    await erc20DAI.transfer(user1, eighteenPrecision.mul(new BN(1000)));
+                    await erc20WBTC.transfer(user2, eightPrecision.mul(new BN(1000)));
 
-        //             await erc20DAI.approve(
-        //                 savingAccount.address,
-        //                 eighteenPrecision.mul(new BN(1000)),
-        //                 { from: user1 }
-        //             );
-        //             await erc20WBTC.approve(
-        //                 savingAccount.address,
-        //                 eightPrecision.mul(new BN(1000)),
-        //                 { from: user2 }
-        //             );
+                    await erc20DAI.approve(
+                        savingAccount.address,
+                        eighteenPrecision.mul(new BN(1000)),
+                        { from: user1 }
+                    );
+                    await erc20WBTC.approve(
+                        savingAccount.address,
+                        eightPrecision.mul(new BN(1000)),
+                        { from: user2 }
+                    );
 
-        //             const savingsCompoundDAIBeforeDeposit = new BN(
-        //                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundDAIBeforeDeposit = new BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsDAIBeforeDeposit = new BN(
-        //                 await erc20DAI.balanceOf(savingAccount.address)
-        //             );
+                    const savingsDAIBeforeDeposit = new BN(
+                        await erc20DAI.balanceOf(savingAccount.address)
+                    );
 
-        //             const savingsCompoundWBTCBeforeDeposit = new BN(
-        //                 await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundWBTCBeforeDeposit = new BN(
+                        await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsWBTCBeforeDeposit = new BN(
-        //                 await erc20WBTC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsWBTCBeforeDeposit = new BN(
+                        await erc20WBTC.balanceOf(savingAccount.address)
+                    );
 
-        //             await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1000)), {
-        //                 from: user1,
-        //             });
-        //             await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1000)), {
-        //                 from: user2,
-        //             });
+                    await savingAccount.deposit(addressDAI, eighteenPrecision.mul(new BN(1000)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressWBTC, eightPrecision.mul(new BN(1000)), {
+                        from: user2,
+                    });
 
-        //             await savAccBalVerify(
-        //                 0,
-        //                 eighteenPrecision.mul(new BN(1000)),
-        //                 erc20DAI.address,
-        //                 cDAI,
-        //                 savingsCompoundDAIBeforeDeposit,
-        //                 savingsDAIBeforeDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        0,
+                        eighteenPrecision.mul(new BN(1000)),
+                        erc20DAI.address,
+                        cDAI,
+                        savingsCompoundDAIBeforeDeposit,
+                        savingsDAIBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             await savAccBalVerify(
-        //                 0,
-        //                 eightPrecision.mul(new BN(1000)),
-        //                 erc20WBTC.address,
-        //                 cWBTC,
-        //                 savingsCompoundWBTCBeforeDeposit,
-        //                 savingsWBTCBeforeDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        0,
+                        eightPrecision.mul(new BN(1000)),
+                        erc20WBTC.address,
+                        cWBTC,
+                        savingsCompoundWBTCBeforeDeposit,
+                        savingsWBTCBeforeDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             const savingsCompoundWBTCAfterDeposit = new BN(
-        //                 await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundWBTCAfterDeposit = new BN(
+                        await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsWBTCAfterDeposit = new BN(
-        //                 await erc20WBTC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsWBTCAfterDeposit = new BN(
+                        await erc20WBTC.balanceOf(savingAccount.address)
+                    );
 
-        //             /*
-        //              * Step 2
-        //              * Account 1: Borrows 0.01 whole WBTC twice
-        //              * To verify:
-        //              * 1. Account 1's WBTC balance should be 10 after the first borrow
-        //              * 2. Account 1's WBTC balance should be 20 after the second borrow
-        //              */
-        //             let borrow = eightPrecision.div(new BN(100));
-        //             let accWBTCAfterFirstBefore = await erc20WBTC.balanceOf(user1);
+                    /*
+                     * Step 2
+                     * Account 1: Borrows 0.01 whole WBTC twice
+                     * To verify:
+                     * 1. Account 1's WBTC balance should be 10 after the first borrow
+                     * 2. Account 1's WBTC balance should be 20 after the second borrow
+                     */
+                    let borrow = eightPrecision.div(new BN(100));
+                    let accWBTCAfterFirstBefore = await erc20WBTC.balanceOf(user1);
 
-        //             const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
-        //             const daiTokenIndex = result[0];
-        //             await accountsContract.methods["setCollateral(uint8,bool)"](
-        //                 daiTokenIndex,
-        //                 true,
-        //                 {
-        //                     from: user1,
-        //                 }
-        //             );
-        //             await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
+                    await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
 
-        //             await savAccBalVerify(
-        //                 2,
-        //                 borrow,
-        //                 erc20WBTC.address,
-        //                 cWBTC,
-        //                 savingsCompoundWBTCAfterDeposit,
-        //                 savingsWBTCAfterDeposit,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        2,
+                        borrow,
+                        erc20WBTC.address,
+                        cWBTC,
+                        savingsCompoundWBTCAfterDeposit,
+                        savingsWBTCAfterDeposit,
+                        bank,
+                        savingAccount
+                    );
 
-        //             const savingsCompoundWBTCAfterFirstBorrow = new BN(
-        //                 await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundWBTCAfterFirstBorrow = new BN(
+                        await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             const savingsWBTCAfterFirstBorrow = new BN(
-        //                 await erc20WBTC.balanceOf(savingAccount.address)
-        //             );
+                    const savingsWBTCAfterFirstBorrow = new BN(
+                        await erc20WBTC.balanceOf(savingAccount.address)
+                    );
 
-        //             let accWBTCAfterFirst = await erc20WBTC.balanceOf(user1);
-        //             await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
+                    let accWBTCAfterFirst = await erc20WBTC.balanceOf(user1);
+                    await savingAccount.borrow(addressWBTC, borrow, { from: user1 });
 
-        //             const savingsCompoundDAIAfterSecondBorrow = new BN(
-        //                 await cDAI.balanceOfUnderlying.call(savingAccount.address)
-        //             );
-        //             const savingsCompoundWBTCAfterSecondBorrow = new BN(
-        //                 await cWBTC.balanceOfUnderlying.call(savingAccount.address)
-        //             );
+                    const savingsCompoundDAIAfterSecondBorrow = new BN(
+                        await cDAI.balanceOfUnderlying.call(savingAccount.address)
+                    );
+                    const savingsCompoundWBTCAfterSecondBorrow = new BN(
+                        await cWBTC.balanceOfUnderlying.call(savingAccount.address)
+                    );
 
-        //             let accWBTCAfterSecond = await erc20WBTC.balanceOf(user1);
+                    let accWBTCAfterSecond = await erc20WBTC.balanceOf(user1);
 
-        //             await savAccBalVerify(
-        //                 2,
-        //                 borrow,
-        //                 erc20WBTC.address,
-        //                 cWBTC,
-        //                 savingsCompoundWBTCAfterFirstBorrow,
-        //                 savingsWBTCAfterFirstBorrow,
-        //                 bank,
-        //                 savingAccount
-        //             );
+                    await savAccBalVerify(
+                        2,
+                        borrow,
+                        erc20WBTC.address,
+                        cWBTC,
+                        savingsCompoundWBTCAfterFirstBorrow,
+                        savingsWBTCAfterFirstBorrow,
+                        bank,
+                        savingAccount
+                    );
 
-        //             // Verify 1.
-        //             expect(
-        //                 BN(accWBTCAfterFirst).sub(BN(accWBTCAfterFirstBefore))
-        //             ).to.be.bignumber.equals(borrow);
-        //             // Verify 2.
-        //             expect(
-        //                 BN(accWBTCAfterSecond).sub(BN(accWBTCAfterFirstBefore))
-        //             ).to.be.bignumber.equals(borrow.mul(new BN(2)));
-        //         });
-        //     });
-        // });
+                    // Verify 1.
+                    expect(
+                        BN(accWBTCAfterFirst).sub(BN(accWBTCAfterFirstBefore))
+                    ).to.be.bignumber.equals(borrow);
+                    // Verify 2.
+                    expect(
+                        BN(accWBTCAfterSecond).sub(BN(accWBTCAfterFirstBefore))
+                    ).to.be.bignumber.equals(borrow.mul(new BN(2)));
+                });
+            });
+        });
     });
 });
