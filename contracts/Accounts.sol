@@ -614,16 +614,13 @@ contract Accounts is Constant, Initializable{
         }
 
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
-        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
-        uint256 totalBorrow = getBorrowETH(_borrower).mul(100);
+        uint256 totalBorrow = getBorrowETH(_borrower);
         uint256 totalCollateral = getDepositETH(_borrower);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
-        return
-            totalBorrow > totalCollateral.mul(liquidationThreshold) &&
-            totalBorrow <= totalCollateral.mul(liquidationDiscountRatio);
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
     }
 
     struct LiquidationVars {
