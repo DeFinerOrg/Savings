@@ -716,6 +716,12 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                         it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
                             this.timeout(0);
+                            // get initial oracle prices
+                            const ethPriceInit = await mockChainlinkAggregatorforETH.latestAnswer();
+                            const daiPriceInit = await mockChainlinkAggregatorforDAI.latestAnswer();
+                            const usdtPriceInit =
+                                await mockChainlinkAggregatorforUSDT.latestAnswer();
+
                             const ZERO = new BN(0);
                             const ONE_USD = new BN(1);
                             const ONE_ETH = eighteenPrecision;
@@ -926,6 +932,11 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 await accountsContract.isAccountLiquidatable.call(user1);
                             console.log("isAccountLiquidatable", isAccountLiquidatable);
                             expect(isAccountLiquidatable).to.be.equal(true);
+
+                            // revert back to original prices
+                            await mockChainlinkAggregatorforETH.updateAnswer(ethPriceInit);
+                            await mockChainlinkAggregatorforDAI.updateAnswer(daiPriceInit);
+                            await mockChainlinkAggregatorforUSDT.updateAnswer(usdtPriceInit);
                         });
                     });
                 }
