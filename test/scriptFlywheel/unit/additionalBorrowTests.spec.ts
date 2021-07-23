@@ -715,6 +715,9 @@ contract("SavingAccount.borrow", async (accounts) => {
                         // });
 
                         it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
+                            this.timeout(0);
+                            const ZERO = new BN(0);
+                            const ONE_USD = new BN(1);
                             const ONE_ETH = eighteenPrecision;
                             const ONE_USDT = sixPrecision;
                             const ONE_FIN_LP = eighteenPrecision;
@@ -732,21 +735,16 @@ contract("SavingAccount.borrow", async (accounts) => {
                             const ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
                             const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                             const usdtPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
-                            console.log("ETH price in ETH", ethPrice.toString());
-                            console.log("DAI price in ETH", daiPrice.toString());
-                            console.log("USDT price in ETH", usdtPrice.toString());
 
-                            console.log("ETH price in USD", ETH_USD_RATE.toString());
-                            console.log(
-                                "DAI price in USD",
-                                daiPrice.mul(ETH_USD_RATE).div(ONE_ETH).toString()
-                            );
-                            console.log(
-                                "USDT price in USD",
-                                usdtPrice.mul(ETH_USD_RATE).div(ONE_ETH).toString()
-                            );
-
-                            this.timeout(0);
+                            const ethPriceInUSD = ethPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("ETH price in USD", ethPriceInUSD.toString());
+                            expect(ethPriceInUSD).to.be.bignumber.equal(ETH_USD_RATE);
+                            const daiPriceInUSD = daiPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("DAI price in USD", daiPriceInUSD.toString());
+                            expect(daiPriceInUSD).to.be.bignumber.equal(ONE_USD);
+                            const usdtPriceInUSD = usdtPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("USDT price in USD", usdtPriceInUSD.toString());
+                            expect(usdtPriceInUSD).to.be.bignumber.equal(ONE_USD);
 
                             // owner - deposit 100 ETH
                             await savingAccount.deposit(ETH_ADDRESS, ONE_ETH.mul(new BN(100)), {
@@ -767,9 +765,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             await erc20DAI.approve(
                                 savingAccount.address,
                                 ONE_DAI.mul(new BN(200)),
-                                {
-                                    from: user1,
-                                }
+                                { from: user1 }
                             );
                             await erc20LP.approve(
                                 savingAccount.address,
@@ -778,16 +774,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                             );
 
                             // Set BorrowLTV of FIN-LP token to 0
-                            await testEngine.tokenInfoRegistry.updateBorrowLTV(
-                                addressLP,
-                                new BN(0)
-                            );
+                            await testEngine.tokenInfoRegistry.updateBorrowLTV(addressLP, ZERO);
 
                             // ensure that borrowLTV is 0
-                            let LPBorrowLTV = await testEngine.tokenInfoRegistry.getBorrowLTV(
+                            const finlpBorrowLTV = await testEngine.tokenInfoRegistry.getBorrowLTV(
                                 addressLP
                             );
-                            expect(BN(LPBorrowLTV)).to.be.bignumber.equal(new BN(0));
+                            expect(finlpBorrowLTV).to.be.bignumber.equal(ZERO);
 
                             // 2. User1 deposits 100 USDT
                             const collateralAmount = ONE_USDT.mul(new BN(100));
@@ -809,16 +802,19 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrowPowerInUSD = user1BorrowPower.mul(ETH_USD_RATE).div(ONE_ETH);
                             console.log("user1BorrowPower in ETH", user1BorrowPower.toString());
                             console.log("user1BorrowPower in USD", borrowPowerInUSD.toString());
+                            expect(borrowPowerInUSD).to.be.bignumber.equal(new BN(60)); // $60
                             let currentBorrowedETH = await accountsContract.getBorrowETH(user1);
                             let currentBorrowedUSD = currentBorrowedETH
                                 .mul(ETH_USD_RATE)
                                 .div(ONE_ETH);
                             console.log("current borrowed in USD:", currentBorrowedUSD.toString());
+                            expect(currentBorrowedUSD).to.be.bignumber.equal(ZERO);
                             let availForBorrowInUSD = borrowPowerInUSD.sub(currentBorrowedUSD);
                             console.log(
                                 "available for borrow in USD:",
                                 availForBorrowInUSD.toString()
                             );
+                            expect(availForBorrowInUSD).to.be.bignumber.equal(new BN(60)); // $60
 
                             // =========
                             // 3. user 1 borrows ETH with all borrowPower
@@ -833,14 +829,17 @@ contract("SavingAccount.borrow", async (accounts) => {
                             borrowPowerInUSD = user1BorrowPower.mul(ETH_USD_RATE).div(ONE_ETH);
                             console.log("user1BorrowPower in ETH", user1BorrowPower.toString());
                             console.log("user1BorrowPower in USD", borrowPowerInUSD.toString());
+                            expect(borrowPowerInUSD).to.be.bignumber.equal(new BN(60)); // $60
                             currentBorrowedETH = await accountsContract.getBorrowETH(user1);
                             currentBorrowedUSD = currentBorrowedETH.mul(ETH_USD_RATE).div(ONE_ETH);
                             console.log("current borrowed in USD:", currentBorrowedUSD.toString());
+                            expect(currentBorrowedUSD).to.be.bignumber.equal(new BN(60)); // $60
                             availForBorrowInUSD = borrowPowerInUSD.sub(currentBorrowedUSD);
                             console.log(
                                 "available for borrow in USD:",
                                 availForBorrowInUSD.toString()
                             );
+                            expect(availForBorrowInUSD).to.be.bignumber.equal(ZERO); // $0
 
                             let collAmtInETH = await accountsContract.getDepositETH(user1);
                             let collateralAmtInUSD = collAmtInETH.mul(ETH_USD_RATE).div(ONE_ETH);
@@ -848,6 +847,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "user collateral amount in USD:",
                                 collateralAmtInUSD.toString()
                             );
+                            expect(collateralAmtInUSD).to.be.bignumber.equal(new BN(100)); // $100
                             const borrowedAmtInETH = await accountsContract.getBorrowETH(user1);
                             const borrowedAmtInUSD = borrowedAmtInETH
                                 .mul(ETH_USD_RATE)
@@ -857,11 +857,13 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "user borrowed amount in USD:",
                                 borrowedAmtInUSD.toString()
                             );
+                            expect(borrowedAmtInUSD).to.be.bignumber.equal(new BN(60)); // $60
 
                             let collateralRatio = borrowedAmtInUSD
                                 .mul(new BN(100))
                                 .div(collateralAmtInUSD);
                             console.log("collateral ratio in % :", collateralRatio.toString());
+                            expect(collateralRatio).to.be.bignumber.equal(new BN(60)); // 60%
 
                             // TODO further
                             // 4. increase ETH price
@@ -892,16 +894,23 @@ contract("SavingAccount.borrow", async (accounts) => {
                                 "user borrowed amount in USD:",
                                 borrowedAmtInUSD2.toString()
                             );
+                            // ETH price increased from $2000 to $3000 (which is 1.5 times)
+                            // so user borrowed $60 earlier, after price increase
+                            // $60 * 1.5 = $90
+                            expect(borrowedAmtInUSD2).to.be.bignumber.equal(new BN(90)); // $90
                             collAmtInETH = await accountsContract.getDepositETH(user1);
                             collateralAmtInUSD = collAmtInETH.mul(newETH_USD_RATE).div(ONE_ETH);
                             console.log(
                                 "user collateral amount in USD:",
                                 collateralAmtInUSD.toString()
                             );
+                            // rounding error $100 ~= $99
+                            expect(collateralAmtInUSD).to.be.bignumber.equal(new BN(99));
                             collateralRatio = borrowedAmtInUSD2
                                 .mul(new BN(100))
                                 .div(collateralAmtInUSD);
                             console.log("collateral ratio in % :", collateralRatio.toString());
+                            expect(collateralRatio).to.be.bignumber.equal(new BN(90)); // 90%
 
                             let isAccountLiquidatable =
                                 await accountsContract.isAccountLiquidatable.call(user1);

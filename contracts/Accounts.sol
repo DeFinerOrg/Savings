@@ -514,8 +514,11 @@ contract Accounts is Constant, Initializable{
                     // continue calculating borrow power for i(th) token
                     (address token, uint256 divisor, uint256 price, uint256 borrowLTV) = tokenRegistry.getTokenInfoFromIndex(i);
 
-                    uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
-                    power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
+                    // avoid some gas consumption when borrowLTV == 0
+                    if(borrowLTV != 0) {
+                        uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
+                        power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
+                    }
                 }
 
                 // right shift by 1
@@ -531,7 +534,31 @@ contract Accounts is Constant, Initializable{
         return power;
     }
 
+    function getCollateralETH(address _account) public view returns (uint256 collETH) {
+        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        Account memory account = accounts[_account];
+        uint128 hasDeposits = account.depositBitmap;
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasDeposits > 0) {
+                bool isEnabled = (hasDeposits & uint128(1)) > 0;
+                if(isEnabled) {
+                    (address token,
+                    uint256 divisor,
+                    uint256 price,
+                    uint256 borrowLTV) = tokenRegistry.getTokenInfoFromIndex(i);
+                    if(borrowLTV != 0) {
+                        uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _account);
+                        collETH = collETH.add(depositBalanceCurrent.mul(price).div(divisor));
+                    }
+                }
+                hasDeposits = hasDeposits >> 1;
+            } else {
+                break;
+            }
+        }
 
+        return collETH;
+    }
 
     /**
      * Get current deposit balance of a token
@@ -617,7 +644,7 @@ contract Accounts is Constant, Initializable{
         uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         uint256 totalBorrow = getBorrowETH(_borrower).mul(100);
-        uint256 totalCollateral = getDepositETH(_borrower);
+        uint256 totalCollateral = getCollateralETH(_borrower);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
