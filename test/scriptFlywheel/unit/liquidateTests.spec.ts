@@ -157,6 +157,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 it("when collateral is not sufficient to be liquidated", async function () {
                     this.timeout(0);
+                    const originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     // 2. Approve 1000 tokens
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
@@ -181,12 +182,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
                     // 3. Change the price.
                     let updatedPrice = new BN(1);
-                    const originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
 
                     await expectRevert(
                         savingAccount.liquidate(user2, addressUSDC, addressDAI),
-                        "The borrower is not liquidatable."
+                        "The account amount must be greater than zero."
                     );
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
