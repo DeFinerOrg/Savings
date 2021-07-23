@@ -154,6 +154,42 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "The borrower is not liquidatable."
                     );
                 });
+
+                it("when collateral is not sufficient to be liquidated", async function () {
+                    this.timeout(0);
+                    // 2. Approve 1000 tokens
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20USDC.transfer(user2, ONE_USDC);
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+
+                    // 2. Start borrowing.
+                    const limitAmount = ONE_USDC.mul(await tokenInfoRegistry.priceFromIndex(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .div(await tokenInfoRegistry.priceFromIndex(0));
+
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
+                    await savingAccount.borrow(addressDAI, limitAmount, { from: user2 });
+                    // 3. Change the price.
+                    let updatedPrice = new BN(1);
+                    const originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+
+                    await expectRevert(
+                        savingAccount.liquidate(user2, addressUSDC, addressDAI),
+                        "The borrower is not liquidatable."
+                    );
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
+                });
             });
 
             context("should succeed", async () => {
