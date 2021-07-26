@@ -314,6 +314,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI.mul(new BN(2)));
+                    let USDCPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    console.log("USDCPrice", USDCPrice.toString());
 
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
                         .mul(new BN(60))
@@ -337,38 +339,46 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("user 2 BP Before Borrow:", user2BorrowPowerInit.toString());
                     console.log("userBorrowVal", userBorrowVal.toString());
                     console.log("user2Deposits", user2Deposits.toString());
+                    console.log("================ user 2 borrows DAI ================");
 
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
 
+                    const user2DepositsAfterBorrow = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user2);
                     let user2BorrowPowerAfterBorrow = await accountsContract.getBorrowPower(user2);
-                    let LTV = BN(userBorrowValAfterBorrow).mul(new BN(100)).div(BN(user2Deposits));
+                    let LTV = BN(userBorrowValAfterBorrow)
+                        .mul(new BN(100))
+                        .div(BN(user2DepositsAfterBorrow));
                     console.log("user 2 BP After Borrow:", user2BorrowPowerAfterBorrow.toString());
                     console.log("userBorrowValAfterBorrow", userBorrowValAfterBorrow.toString());
-                    console.log("user2Deposits", user2Deposits.toString());
                     console.log("LTV", LTV.toString());
 
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     // update price of DAI to 70% of it's value
-                    let updatedPrice = BN(originPrice).mul(new BN(7)).div(new BN(10));
+                    let updatedPrice = BN(originPrice).mul(new BN(70)).div(new BN(100));
 
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+                    console.log("================== price updated ====================");
 
-                    const userBorrowValAfterBorrow2 = await accountsContract.getBorrowETH(user2);
+                    const user2DepositsAfterPiceDrop = await accountsContract.getDepositETH(user2);
+                    const userBorrowValAfterPriceDrop = await accountsContract.getBorrowETH(user2);
                     let user2BorrowPowerAfterBorrow2 = await accountsContract.getBorrowPower(user2);
-                    let LTV2 = BN(userBorrowValAfterBorrow2)
+                    let LTV2 = BN(userBorrowValAfterPriceDrop)
                         .mul(new BN(100))
-                        .div(BN(user2Deposits));
+                        .div(BN(user2DepositsAfterPiceDrop));
                     console.log(
                         "user 2 BP After price inc:",
                         user2BorrowPowerAfterBorrow2.toString()
                     );
                     console.log(
-                        "user Borrow Val After price inc:",
-                        userBorrowValAfterBorrow2.toString()
+                        "user Borrow Val After price drop:",
+                        userBorrowValAfterPriceDrop.toString()
                     );
-                    console.log("user2Deposits", user2Deposits.toString());
+                    console.log(
+                        "user2DepositsAfterPiceDrop",
+                        user2DepositsAfterPiceDrop.toString()
+                    );
                     console.log("LTV2", LTV2.toString());
 
                     // 4. Start liquidation.
@@ -394,6 +404,29 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
 
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+                    console.log("====================== User2 Liquidated =======================");
+
+                    const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user2);
+                    const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user2);
+                    let user2BorrowPowerAfterLiquidate = await accountsContract.getBorrowPower(
+                        user2
+                    );
+                    let LTV3 = BN(userBorrowValAfterLiquidate)
+                        .mul(new BN(100))
+                        .div(BN(user2DepositsAfterLiquidate));
+                    console.log(
+                        "user 2 BP After price inc:",
+                        user2BorrowPowerAfterLiquidate.toString()
+                    );
+                    console.log(
+                        "user Borrow Val After price drop:",
+                        userBorrowValAfterLiquidate.toString()
+                    );
+                    console.log(
+                        "user2DepositsAfterLiquidate",
+                        user2DepositsAfterLiquidate.toString()
+                    );
+                    console.log("LTV3", LTV3.toString());
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
