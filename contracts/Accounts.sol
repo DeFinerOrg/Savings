@@ -668,9 +668,9 @@ contract Accounts is Constant, Initializable{
 
     function liquidate(
         address _liquidator,
-        address _borrower, //user 2
-        address _borrowedToken, //DAI
-        address _collateralToken //USDC
+        address _borrower,
+        address _borrowedToken,
+        address _collateralToken
     )
         external
         onlyAuthorized
