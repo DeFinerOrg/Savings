@@ -644,9 +644,9 @@ contract Accounts is Constant, Initializable{
 
     function liquidate(
         address _liquidator,
-        address _borrower,
-        address _borrowedToken,
-        address _collateralToken
+        address _borrower, //user 2
+        address _borrowedToken, //DAI
+        address _collateralToken //USDC
     )
         external
         onlyAuthorized
@@ -696,11 +696,12 @@ contract Accounts is Constant, Initializable{
         ) = tokenRegistry.getTokenInfoFromAddress(_borrowedToken);
 
         uint256 liquidateTokendivisor;
+        uint256 collateralLTV;
         (
             ,
             liquidateTokendivisor,
-            vars.liquidateTokenPrice
-            ,
+            vars.liquidateTokenPrice,
+            collateralLTV
         ) = tokenRegistry.getTokenInfoFromAddress(_collateralToken);
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
@@ -709,7 +710,7 @@ contract Accounts is Constant, Initializable{
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower)
             .mul(100)
-            .div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+            .div(vars.liquidationDiscountRatio.sub(collateralLTV));
 
         uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(
             vars.liquidateTokenBalance
