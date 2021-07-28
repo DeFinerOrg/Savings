@@ -743,6 +743,24 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100));
                     // console.log(usdcDiff.toString());
                     // console.log(liquidatedDebt.toString());
+
+                    let user2DAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    let ownerDAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        owner
+                    );
+
+                    // liquidator's depositted tokens should decrease
+                    expect(BN(ownerUSDCAfter)).to.be.bignumber.lessThan(BN(ownerUSDCBefore));
+                    // borrower's collateral should reduce
+                    expect(BN(user1DAIAfter)).to.be.bignumber.lessThan(BN(user1DAIBefore));
+                    // liquidator gets the collateral tokens
+                    expect(BN(ownerDAIAfter)).to.be.bignumber.greaterThan(BN(ownerDAIBefore));
+                    console.log("ownerDAIAfter", ownerDAIAfter.toString());
+
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
                     expect(liquidateBefore).to.equal(true);
@@ -803,12 +821,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     const user2DepositsAfterBorrow = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user2);
                     let user2BorrowPowerAfterBorrow = await accountsContract.getBorrowPower(user2);
-                    let LTV = BN(userBorrowValAfterBorrow)
+                    let userLTVBeforeBorrow = BN(userBorrowValAfterBorrow)
                         .mul(new BN(100))
                         .div(BN(user2DepositsAfterBorrow));
                     console.log("user 2 BP After Borrow:", user2BorrowPowerAfterBorrow.toString());
                     console.log("userBorrowValAfterBorrow", userBorrowValAfterBorrow.toString());
-                    console.log("LTV", LTV.toString());
+                    console.log("userLTVBeforeBorrow", userLTVBeforeBorrow.toString());
 
                     // 3. Change the price.
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -869,7 +887,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let user2BorrowPowerAfterLiquidate = await accountsContract.getBorrowPower(
                         user2
                     );
-                    let LTV3 = BN(userBorrowValAfterLiquidate)
+                    let userLTVAfterLiquidate = BN(userBorrowValAfterLiquidate)
                         .mul(new BN(100))
                         .div(BN(user2DepositsAfterLiquidate));
                     console.log(
@@ -884,7 +902,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "user2DepositsAfterLiquidate",
                         user2DepositsAfterLiquidate.toString()
                     );
-                    console.log("LTV3", LTV3.toString());
+                    console.log("userLTVAfterLiquidate", userLTVAfterLiquidate.toString());
+
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.equal(
+                        BN(userLTVBeforeBorrow)
+                    );
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
@@ -939,6 +961,26 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(eighteenPrecision);
 
                     expect(BN(usdcEarned)).to.be.bignumber.equal(ownerUSDCAfter);
+
+                    let user2DAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    let ownerDAIBalAfterLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        owner
+                    );
+
+                    console.log("userBorrowVal2", userBorrowValAfterLiquidate.toString());
+
+                    // liquidator's depositted tokens should decrease
+                    expect(BN(ownerDAIBalAfterLiquidate)).to.be.bignumber.lessThan(
+                        BN(ownerDAIBefore)
+                    );
+                    // borrower's collateral should reduce
+                    expect(BN(user2USDCAfter)).to.be.bignumber.lessThan(BN(user2USDCBefore));
+                    // liquidator gets the collateral tokens
+                    expect(BN(ownerUSDCAfter)).to.be.bignumber.greaterThan(BN(ownerUSDCBefore));
 
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
