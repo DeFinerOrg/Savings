@@ -197,17 +197,21 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     this.timeout(0);
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
+
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_DAI)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
                     await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+
                     // 2. Start borrowing.
                     let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
                     const usdcTokenIndex = result[0];
@@ -221,11 +225,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     // update price of DAI to 70% of it's value
                     let updatedPrice = BN(USDCprice).mul(new BN(7)).div(new BN(10));
+
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user2
                     );
+
                     const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -242,6 +248,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
                     const daiTokenIndex = result[0];
                     await accountsContract.methods["setCollateral(uint8,bool)"](
@@ -249,6 +256,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         true
                     );
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -265,15 +273,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
                     );
                     expect(BN(user2DAIBefore).sub(BN(user2DAIAfter))).to.be.bignumber.equal(
                         BN(ownerDAIBefore).sub(ownerDAIAfter)
                     );
+
                     const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
                     const daiDiff = BN(ownerDAIBefore).sub(ownerDAIAfter);
+
                     const usdcEarned = BN(daiDiff)
                         .mul(BN(daiPrice))
                         .div(BN(usdcPrice))
@@ -281,12 +293,16 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(95))
                         .mul(sixPrecision)
                         .div(eighteenPrecision);
+
                     expect(BN(usdcEarned)).to.be.bignumber.equal(ownerUSDCAfter);
+
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
+
                     await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
                 });
+
                 it("When user tries to liquidate fully - 1", async function () {
                     this.timeout(0);
                     // 2. Approve 1000 tokens
@@ -305,6 +321,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .mul(ONE_DAI)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
                     // 2. Start borrowing.
                     const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
@@ -360,6 +377,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user2
                     );
+
                     const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -376,6 +394,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
                     console.log("====================== User2 Liquidated =======================");
                     const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user2);
@@ -415,15 +434,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
                     );
                     expect(BN(user2DAIBefore).sub(BN(user2DAIAfter))).to.be.bignumber.equal(
                         BN(ownerDAIBefore).sub(ownerDAIAfter)
                     );
+
                     const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
                     const daiDiff = BN(ownerDAIBefore).sub(ownerDAIAfter);
+
                     const liquidatedDebt = borrowAmt
                         .sub(
                             ONE_USDC.mul(eighteenPrecision)
@@ -437,6 +460,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(100))
                         .div(new BN(35))
                         .div(new BN(100));
+
                     const usdcEarned = BN(daiDiff)
                         .mul(BN(daiPrice))
                         .div(BN(usdcPrice))
@@ -444,12 +468,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(95))
                         .mul(sixPrecision)
                         .div(eighteenPrecision);
+
                     expect(BN(usdcEarned)).to.be.bignumber.equal(ownerUSDCAfter);
+
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
+
                 it("When user tries to liquidate fully - 2", async function () {
                     this.timeout(0);
                     // 2. Approve 1000 tokens
@@ -461,11 +488,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
                     await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI);
+
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
                         .mul(new BN(60))
                         .div(new BN(100))
                         .mul(ONE_DAI)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
                     const accountUSDC = await erc20USDC.balanceOf(savingAccount.address);
                     // 2. Start borrowing.
                     const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
@@ -480,11 +509,14 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let originPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                     // update price of DAI to 70% of it's value
                     let updatedPrice = BN(originPrice).mul(new BN(7)).div(new BN(10));
+
                     await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+
                     // 4. Start liquidation.
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user2
                     );
+
                     const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -501,7 +533,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -518,15 +552,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
                     );
                     expect(BN(user2DAIBefore).sub(BN(user2DAIAfter))).to.be.bignumber.equal(
                         BN(ownerDAIBefore).sub(ownerDAIAfter)
                     );
+
                     const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
                     const daiDiff = BN(ownerDAIBefore).sub(ownerDAIAfter);
+
                     const liquidatedDebt = borrowAmt
                         .sub(
                             ONE_USDC.mul(eighteenPrecision)
@@ -540,6 +578,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(100))
                         .div(new BN(35))
                         .div(new BN(100));
+
                     const usdcEarned = BN(daiDiff)
                         .mul(BN(daiPrice))
                         .div(BN(usdcPrice))
@@ -547,12 +586,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(95))
                         .mul(sixPrecision)
                         .div(eighteenPrecision);
+
                     expect(BN(usdcEarned)).to.be.bignumber.equal(ownerUSDCAfter);
+
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user2);
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
+
                 it("Borrow USDC, when user tries to liquidate partially", async function () {
                     this.timeout(0);
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
@@ -560,6 +602,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(new BN(100))
                         .mul(ONE_USDC)
                         .div(new BN(await tokenInfoRegistry.priceFromIndex(1)));
+
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
                     await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
@@ -581,11 +624,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     // update price of DAI to 70% of it's value
                     let updatedPrice = BN(originPrice).mul(new BN(7)).div(new BN(10));
+
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
                     // 4. Start liquidation.
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user1
                     );
+
                     const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -602,7 +647,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
                     await savingAccount.liquidate(user1, addressUSDC, addressDAI);
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -619,6 +666,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
                     expect(BN(user1DAIAfter).add(BN(ownerDAIAfter))).to.be.bignumber.equal(
                         BN(user1DAIBefore)
                     );
@@ -627,6 +675,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
                     const usdcDiff = BN(ownerUSDCBefore).sub(ownerUSDCAfter);
                     const daiEarned = BN(usdcDiff)
                         .mul(eighteenPrecision)
@@ -635,14 +684,17 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .div(BN(daiPrice))
                         .div(new BN(95))
                         .div(sixPrecision);
+
                     // console.log(usdcDiff.toString());
                     // console.log(daiEarned.toString());
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
                     expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
+
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(true);
                 });
+
                 it("Borrow USDC, When user tries to liquidate fully", async function () {
                     this.timeout(0);
                     // 2. Approve 1000 tokens
@@ -674,7 +726,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let originPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     // update price of DAI to 70% of it's value
                     let updatedPrice = BN(originPrice).mul(new BN(7)).div(new BN(10));
+
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+
                     // 4. Start liquidation.
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user1
@@ -695,7 +749,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
                     await savingAccount.liquidate(user1, addressUSDC, addressDAI);
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -712,6 +768,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
                     expect(BN(user1DAIAfter).add(BN(ownerDAIAfter))).to.be.bignumber.equal(
                         BN(user1DAIBefore)
                     );
@@ -720,6 +777,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
                     const usdcPrice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+
                     const usdcDiff = BN(ownerUSDCBefore).sub(ownerUSDCAfter);
                     const daiEarned = BN(usdcDiff)
                         .mul(eighteenPrecision)
@@ -741,6 +799,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         .mul(new BN(100))
                         .div(new BN(35))
                         .div(new BN(100));
+
                     // console.log(usdcDiff.toString());
                     // console.log(liquidatedDebt.toString());
 
@@ -763,6 +822,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
                     expect(BN(daiEarned)).to.be.bignumber.equal(ownerDAIAfter);
+
                     expect(liquidateBefore).to.equal(true);
                     expect(liquidateAfter).to.equal(false);
                     await mockChainlinkAggregatorforDAI.updateAnswer(originPrice);
