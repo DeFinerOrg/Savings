@@ -985,7 +985,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(liquidateAfter).to.equal(false);
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
-                it("Liquidate fully when user's collateral token's collateral factor is 20 and broowed token's LTV is 0", async function () {
+                it("Liquidate fully when user's collateral token's collateral factor is 20 and borrowed token's LTV is 0", async function () {
                     this.timeout(0);
                     // Set BorrowLTV of DAI token to 0
                     await testEngine.tokenInfoRegistry.updateBorrowLTV(addressDAI, new BN(0));
