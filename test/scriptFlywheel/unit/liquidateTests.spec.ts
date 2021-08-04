@@ -7,8 +7,9 @@ import { savAccBalVerify } from "../../../test-helpers/lib/lib";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
@@ -402,7 +403,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let user2BorrowPowerAfterLiquidate = await accountsContract.getBorrowPower(
                         user2
                     );
-                    let LTV3 = BN(userBorrowValAfterLiquidate)
+                    let userLTVAfterLiquidate = BN(userBorrowValAfterLiquidate)
                         .mul(new BN(100))
                         .div(BN(user2DepositsAfterLiquidate));
                     console.log(
@@ -417,7 +418,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "user2DepositsAfterLiquidate",
                         user2DepositsAfterLiquidate.toString()
                     );
-                    console.log("LTV3", LTV3.toString());
+                    console.log("userLTVAfterLiquidate", userLTVAfterLiquidate.toString());
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -434,6 +435,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(58));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(61));
 
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
@@ -536,6 +541,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
 
+                    const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user2);
+                    const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user2);
+                    let user2BorrowPowerAfterLiquidate = await accountsContract.getBorrowPower(
+                        user2
+                    );
+                    let userLTVAfterLiquidate = BN(userBorrowValAfterLiquidate)
+                        .mul(new BN(100))
+                        .div(BN(user2DepositsAfterLiquidate));
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -552,6 +566,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user2
                     );
+
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(58));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(61));
 
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
@@ -752,6 +770,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await savingAccount.liquidate(user1, addressUSDC, addressDAI);
 
+                    const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user1);
+                    const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user1);
+                    let user2BorrowPowerAfterLiquidate = await accountsContract.getBorrowPower(
+                        user2
+                    );
+                    let userLTVAfterLiquidate = BN(userBorrowValAfterLiquidate)
+                        .mul(new BN(100))
+                        .div(BN(user2DepositsAfterLiquidate));
+
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
                         owner
@@ -768,6 +795,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         addressDAI,
                         user1
                     );
+
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(58));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(61));
 
                     expect(BN(user1DAIAfter).add(BN(ownerDAIAfter))).to.be.bignumber.equal(
                         BN(user1DAIBefore)
@@ -964,6 +995,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     console.log("userLTVAfterLiquidate", userLTVAfterLiquidate.toString());
 
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(58));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(61));
                     expect(BN(userLTVAfterLiquidate)).to.be.bignumber.equal(BN(userLTVAfterBorrow));
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
@@ -1206,6 +1240,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user2
                     );
                     console.log("ownerDAIAfter", ownerDAIAfter.toString());
+
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(18));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(21));
 
                     expect(BN(user2USDCAfter).add(BN(ownerUSDCAfter))).to.be.bignumber.equal(
                         BN(user2USDCBefore)
@@ -1561,12 +1599,18 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         user1
                     );
 
-                    let user1DAIBalBeforeLiquidate =
-                        await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
-                    let user2DAIBalBeforeLiquidate =
-                        await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
-                    let user2ETHBalBeforeLiquidate =
-                        await accountsContract.getDepositBalanceCurrent(ETH_ADDRESS, user2);
+                    let user1DAIBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user1
+                    );
+                    let user2DAIBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    let user2ETHBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        ETH_ADDRESS,
+                        user2
+                    );
 
                     await savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI, { from: user2 });
 
@@ -1605,6 +1649,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("userLTVAfterLiquidate", userLTVAfterLiquidate.toString());
 
                     expect(BN(userLTVAfterLiquidate)).to.be.bignumber.equal(BN(userLTVAfterBorrow));
+
+                    // check that the user's LTV equals ILTV of it's collateral after liquidate
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.greaterThan(new BN(58));
+                    expect(BN(userLTVAfterLiquidate)).to.be.bignumber.lessThan(new BN(61));
 
                     // liquidator's depositted tokens should decrease
                     expect(BN(user2ETHBalAfterLiquidate)).to.be.bignumber.lessThan(
@@ -1686,8 +1734,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(UB).to.be.bignumber.greaterThan(UD);
 
                     // user2's balance before liquidation
-                    let user2DAIBalBeforeLiquidate =
-                        await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
+                    let user2DAIBalBeforeLiquidate = await accountsContract.getDepositBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
                     console.log(
                         "user2DAIBalBeforeLiquidate",
                         user2DAIBalBeforeLiquidate.toString()
