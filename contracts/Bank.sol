@@ -219,23 +219,25 @@ contract Bank is Constant, Initializable{
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
+        uint256 capitalUtilizationRatio = getCapitalUtilizationRatio(_token);
+        uint256 rateCurveConstant = globalConfig.rateCurveConstant();
+        // compoundSupply = Compound Supply Rate * 0.4
+        uint256 compoundSupply = (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights());
+        // compoundBorrow = Compound Borrow Rate * 0.6
+        uint256 compoundBorrow = (compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights());
+
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token)) {
         // If the token is NOT supported by the third party, borrowing rate = 3% / (1 - U)
-            return globalConfig.rateCurveConstant().div(1 - getCapitalUtilizationRatio(_token)).div(BLOCKS_PER_YEAR);
+            return rateCurveConstant.div(1 - capitalUtilizationRatio).div(BLOCKS_PER_YEAR);
         } else {
             // if the token is supported in third party, check if U = 1
-            if(getCapitalUtilizationRatio(_token) == 1)
-                // if U = 1, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6 + rateCurveConstant * 100
-                return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
-                add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).
-                add(globalConfig.rateCurveConstant().mul(100))
-                .div(10);
-
-            // if U != 1, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6 + (rateCurveConstant / (1 - U))
-            return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
-                add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).
-                add(globalConfig.rateCurveConstant().div(1 - getCapitalUtilizationRatio(_token)))
-                .div(10);
+            if(capitalUtilizationRatio == 1) {
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + rateCurveConstant * 100
+                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.mul(100)).div(10);
+            } else {
+                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + (rateCurveConstant / (1 - U))
+                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(1 - capitalUtilizationRatio)).div(10);
+            }
         }
     }
 
