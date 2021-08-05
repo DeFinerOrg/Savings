@@ -220,21 +220,23 @@ contract Bank is Constant, Initializable{
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token)) {
-        // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
+        // If the token is NOT supported by the third party, borrowing rate = 3% / (1 - U)
             return globalConfig.rateCurveConstant().div(1 - getCapitalUtilizationRatio(_token)).div(BLOCKS_PER_YEAR);
         } else {
-            // if the token is supported in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
+            // if the token is supported in third party, check if U = 1
             if(getCapitalUtilizationRatio(_token) == 1)
+                // if U = 1, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6 + rateCurveConstant * 100
                 return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
                 add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).
                 add(globalConfig.rateCurveConstant().mul(100))
                 .div(10);
 
+            // if U != 1, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6 + (rateCurveConstant / (1 - U))
             return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
                 add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).
                 add(globalConfig.rateCurveConstant().div(1 - getCapitalUtilizationRatio(_token)))
                 .div(10);
-            }
+        }
     }
 
     /**
