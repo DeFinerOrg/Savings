@@ -225,10 +225,12 @@ contract Bank is Constant, Initializable{
         uint256 compoundSupply = (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights());
         // compoundBorrow = Compound Borrow Rate * 0.6
         uint256 compoundBorrow = (compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights());
+        // unitSubtraction = (1 - U)
+        uint256 unitSubtraction = INT_UNIT.sub(capitalUtilizationRatio);
 
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token)) {
         // If the token is NOT supported by the third party, borrowing rate = 3% / (1 - U)
-            return rateCurveConstant.div(INT_UNIT - capitalUtilizationRatio).div(BLOCKS_PER_YEAR);
+            return rateCurveConstant.div(unitSubtraction).div(BLOCKS_PER_YEAR);
         } else {
             // if the token is supported in third party, check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
@@ -236,7 +238,7 @@ contract Bank is Constant, Initializable{
                 return compoundSupply.add(compoundBorrow).add(rateCurveConstant.mul(100)).div(10);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + (rateCurveConstant / (1 - U))
-                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(INT_UNIT - capitalUtilizationRatio)).div(10);
+                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(unitSubtraction)).div(10);
             }
         }
     }
