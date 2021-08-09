@@ -2,7 +2,7 @@ pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./IExOraclePriceData.sol";
+import "../IExOraclePriceData.sol";
 
 /**
  * @title FIN Oracle
