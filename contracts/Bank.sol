@@ -214,7 +214,7 @@ contract Bank is Constant, Initializable{
     }
 
     /**
-     * Get the borrowing interest rate Borrowing interest rate.
+     * Get the borrowing interest rate.
      * @param _token token address
      * @return the borrow rate for the current block
      */
@@ -229,10 +229,16 @@ contract Bank is Constant, Initializable{
         uint256 unitSubtraction = INT_UNIT.sub(capitalUtilizationRatio);
 
         if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token)) {
-        // If the token is NOT supported by the third party, borrowing rate = 3% / (1 - U)
-            return rateCurveConstant.div(unitSubtraction).div(BLOCKS_PER_YEAR);
+        // If the token is NOT supported by the third party, check if U = 1
+            if(capitalUtilizationRatio == INT_UNIT) {
+                // if U = 1, borrowing rate = rateCurveConstant * 100
+                return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+            } else {
+                // if U != 1, borrowing rate = 3% / (1 - U)
+                return rateCurveConstant.div(unitSubtraction).div(BLOCKS_PER_YEAR);
+            }
         } else {
-            // if the token is supported in third party, check if U = 1
+        // if the token is supported in third party, check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + rateCurveConstant * 100
                 return compoundSupply.add(compoundBorrow).add(rateCurveConstant.mul(100)).div(10);
