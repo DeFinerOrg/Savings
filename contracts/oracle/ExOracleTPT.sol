@@ -50,7 +50,7 @@ contract ExOracleTPT is Ownable {
     }
 
     /**
-     * @dev Only owner can set the FIN price in USD
+     * @dev Only owner can set the TPT price in USD
      * @notice The price is in USD, upto 6 decimal places.
      * for example to set $1.1, set `_price = 1100000`
      */
