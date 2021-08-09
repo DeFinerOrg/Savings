@@ -222,29 +222,30 @@ contract Bank is Constant, Initializable{
         uint256 capitalUtilizationRatio = getCapitalUtilizationRatio(_token);
         uint256 rateCurveConstant = globalConfig.rateCurveConstant();
         // compoundSupply = Compound Supply Rate * 0.4
-        uint256 compoundSupply = (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights());
+        uint256 compoundSupply = compoundPool[_token].depositRatePerBlock.mul(globalConfig.compoundSupplyRateWeights());
         // compoundBorrow = Compound Borrow Rate * 0.6
-        uint256 compoundBorrow = (compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights());
-        // unitSubtraction = (1 - U)
-        uint256 unitSubtraction = INT_UNIT.sub(capitalUtilizationRatio);
+        uint256 compoundBorrow = compoundPool[_token].borrowRatePerBlock.mul(globalConfig.compoundBorrowRateWeights());
+        // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
+        uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
 
-        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token)) {
-        // If the token is NOT supported by the third party, check if U = 1
-            if(capitalUtilizationRatio == INT_UNIT) {
-                // if U = 1, borrowing rate = rateCurveConstant * 100
-                return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
-            } else {
-                // if U != 1, borrowing rate = 3% / (1 - U)
-                return rateCurveConstant.div(unitSubtraction).div(BLOCKS_PER_YEAR);
-            }
-        } else {
-        // if the token is supported in third party, check if U = 1
+        bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
+        if(isSupportedOnCompound) {
+            // if the token is supported in third party (like Compound), check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + rateCurveConstant * 100
                 return compoundSupply.add(compoundBorrow).add(rateCurveConstant.mul(100)).div(10);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + (rateCurveConstant / (1 - U))
-                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(unitSubtraction)).div(10);
+                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(nonUtilizedCapRatio)).div(10);
+            }
+        } else {
+            // If the token is NOT supported by the third party, check if U = 1
+            if(capitalUtilizationRatio == INT_UNIT) {
+                // if U = 1, borrowing rate = rateCurveConstant * 100
+                return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+            } else {
+                // if 0 < U < 1, borrowing rate = 3% / (1 - U)
+                return rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
             }
         }
     }
@@ -268,6 +269,8 @@ contract Bank is Constant, Initializable{
     /**
      * Get capital utilization. Capital Utilization Rate (U )= total loan outstanding / Total market deposit
      * @param _token token address
+     * @return Capital utilization ratio `U`.
+     *  Valid range: 0 ≤ U ≤ 10^18
      */
     function getCapitalUtilizationRatio(address _token) public view returns(uint) {
         uint256 totalDepositsNow = getTotalDepositStore(_token);
