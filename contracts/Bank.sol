@@ -220,23 +220,28 @@ contract Bank is Constant, Initializable{
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
         uint256 capitalUtilizationRatio = getCapitalUtilizationRatio(_token);
+        // rateCurveConstant = <'3 * (10)^16'_rateCurveConstant_configurable>
         uint256 rateCurveConstant = globalConfig.rateCurveConstant();
-        // compoundSupply = Compound Supply Rate * 0.4
+        // compoundSupply = Compound Supply Rate * <'0.4'_supplyRateWeights_configurable>
         uint256 compoundSupply = compoundPool[_token].depositRatePerBlock.mul(globalConfig.compoundSupplyRateWeights());
-        // compoundBorrow = Compound Borrow Rate * 0.6
+        // compoundBorrow = Compound Borrow Rate * <'0.6'_borrowRateWeights_configurable>
         uint256 compoundBorrow = compoundPool[_token].borrowRatePerBlock.mul(globalConfig.compoundBorrowRateWeights());
         // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
         uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
 
         bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
         if(isSupportedOnCompound) {
+            uint256 compoundSupplyOrBorrow = compoundSupply.add(compoundBorrow).div(10);
+            uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
-                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + rateCurveConstant * 100
-                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.mul(100)).div(10);
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+                return compoundSupplyOrBorrow + rateConstant;
             } else {
-                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + (rateCurveConstant / (1 - U))
-                return compoundSupply.add(compoundBorrow).add(rateCurveConstant.div(nonUtilizedCapRatio)).div(10);
+                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return compoundSupplyOrBorrow + rateConstant;
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
