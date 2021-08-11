@@ -237,11 +237,11 @@ contract Bank is Constant, Initializable{
             if(capitalUtilizationRatio == INT_UNIT) {
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
-                return compoundSupplyOrBorrow + rateConstant;
+                return compoundSupplyOrBorrow.add(rateConstant);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
-                return compoundSupplyOrBorrow + rateConstant;
+                return compoundSupplyOrBorrow.add(rateConstant);
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
