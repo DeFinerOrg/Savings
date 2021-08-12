@@ -34,7 +34,7 @@ contract ExOracleTPT is Ownable {
     uint256 public constant USD_DECIMALS_MUL_DIV = 10 ** 6;
     uint256 public constant OKT_NUMERATOR = ONE_OKT * USD_DECIMALS_MUL_DIV;
 
-    event PriceUpdated(uint256 priceInUSD, uint256 timestamp);
+    event TPTPriceUpdated(uint256 priceInUSD, uint256 timestamp);
 
     /**
      * @dev Constructor of the contract
@@ -57,7 +57,7 @@ contract ExOracleTPT is Ownable {
     function setTPTPriceInUSD(uint256 _price) public onlyOwner {
         tptPriceInUSD = _price;
         tptLastUpdateTimestamp = now;
-        emit PriceUpdated(tptPriceInUSD, tptLastUpdateTimestamp);
+        emit TPTPriceUpdated(tptPriceInUSD, tptLastUpdateTimestamp);
     }
 
     /**
