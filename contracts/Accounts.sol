@@ -720,11 +720,12 @@ contract Accounts is Constant, Initializable{
         ) = tokenRegistry.getTokenInfoFromAddress(_borrowedToken);
 
         uint256 liquidateTokendivisor;
+        uint256 collateralLTV;
         (
             ,
             liquidateTokendivisor,
-            vars.liquidateTokenPrice
-            ,
+            vars.liquidateTokenPrice,
+            collateralLTV
         ) = tokenRegistry.getTokenInfoFromAddress(_collateralToken);
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
@@ -733,7 +734,7 @@ contract Accounts is Constant, Initializable{
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
         vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower)
             .mul(100)
-            .div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+            .div(vars.liquidationDiscountRatio.sub(collateralLTV));
 
         uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(
             vars.liquidateTokenBalance
