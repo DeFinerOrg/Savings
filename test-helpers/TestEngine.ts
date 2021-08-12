@@ -374,6 +374,7 @@ export class TestEngine {
             aggregators[9]
         );
 
+        // FIN-LP
         await this.tokenInfoRegistry.addToken(
             this.erc20Tokens[10],
             18,
@@ -383,6 +384,7 @@ export class TestEngine {
             aggregators[10]
         );
 
+        // FIN
         await this.tokenInfoRegistry.addToken(
             this.erc20Tokens[11],
             18,
@@ -390,6 +392,22 @@ export class TestEngine {
             false,
             cTokens[11],
             aggregators[11]
+        );
+
+        // set isSupportedOnCompound = false for tokens not supported on Compound:
+        // TUSD
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(this.erc20Tokens[3], false);
+        // MKR
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(this.erc20Tokens[4], false);
+        // FIN-LP
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(
+            this.erc20Tokens[10],
+            false
+        );
+        // FIN
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(
+            this.erc20Tokens[11],
+            false
         );
     }
 
