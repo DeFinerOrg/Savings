@@ -130,6 +130,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
             context("should fail", async () => {
                 it("when unsupported token address is passed", async function () {
                     this.timeout(0);
+                    let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                        addressTUSD
+                    );
+                    let MKRCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(addressMKR);
+                    console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                    console.log("MKRCompoundFlag", MKRCompoundFlag);
+
                     //Try depositting unsupported Token to SavingContract
                     await expectRevert(
                         savingAccount.liquidate(owner, dummy, addressDAI),
@@ -843,7 +850,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 it("when capital utilization ratio = 1 for Compound unsupported tokens", async function () {
                     this.timeout(0);
                     let ONE_TUSD = eighteenPrecision;
-                    await tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(addressTUSD, false);
+                    // await tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(addressTUSD, false);
                     let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                         addressTUSD
                     );
