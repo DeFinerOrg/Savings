@@ -231,17 +231,17 @@ contract Bank is Constant, Initializable{
 
         bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
         if(isSupportedOnCompound) {
-            uint256 compoundSupplyOrBorrow = compoundSupply.add(compoundBorrow).div(10);
+            uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
             uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
-                return compoundSupplyOrBorrow.add(rateConstant);
+                return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
-                return compoundSupplyOrBorrow.add(rateConstant);
+                return compoundSupplyPlusBorrow.add(rateConstant);
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
