@@ -1,4 +1,3 @@
-import { MaxReserveRatioUpdated } from "./../../../types/GlobalConfig.d";
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
@@ -334,14 +333,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                             numOfToken
                         );
 
-                        let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
 
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
@@ -358,14 +353,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         );
 
                         // Verify balances of user1 & user2 after deposit
-                        let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(
                             new BN(user1BalanceAfterDeposit).sub(new BN(user1TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
@@ -384,14 +375,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         });
 
                         // Verify balances of user1 & user2 after transfer
-                        let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(new BN(user1BalanceAfterTransfer)).to.be.bignumber.equal(
                             new BN(user1BalanceAfterDeposit).add(new BN(100))
                         );
@@ -462,14 +449,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                             numOfToken
                         );
 
-                        let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
 
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
@@ -486,14 +469,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         );
 
                         // Verify balances of user1 & user2 after deposit
-                        let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(
                             new BN(user1BalanceAfterDeposit).sub(new BN(user1TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
@@ -525,14 +504,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         expect(balcDAIAfterTransfer).to.be.bignumber.equal(balCDAIBeforeTransfer);
 
                         // Verify balances of user1 & user2 after transfer
-                        let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(new BN(user1BalanceAfterTransfer)).to.be.bignumber.equal(
                             new BN(user1BalanceAfterDeposit).add(new BN(500))
                         );
