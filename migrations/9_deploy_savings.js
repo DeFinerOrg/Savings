@@ -73,7 +73,7 @@ module.exports = async function (deployer, network) {
     const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
     console.log(
-        "=========================tokenInfoRegistry.initialize ============================"
+        "========================= tokenInfoRegistry.initialize ============================"
     );
 
     // Deploy Upgradability

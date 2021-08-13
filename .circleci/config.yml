@@ -20,11 +20,13 @@ jobs:
           sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
           sudo chmod +x /usr/local/bin/solc
       - checkout
+
       - run:
           name: "Pull Submodules"
           command: |
             git submodule init
-            git submodule update
+            git submodule update 
+
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
@@ -37,16 +39,16 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # Download and cache dependencies
+      # # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
-      - run: sudo npm i
+      # - run: cd compound-protocol && yarn install --lock-file
+      # - run: cd compound-protocol/scenario && npm i
+      - run: npm i
 
       - save_cache:
           paths:
@@ -65,7 +67,7 @@ jobs:
 
       - run: 
           name: Run tests
-          command: ./runtests.sh  #triggers truffle test
+          command: yarn test  #triggers truffle test
   
   coverage-SFW:
     docker:
@@ -205,6 +207,7 @@ workflows:
     version: 2.1
     build:
         jobs:
-            - tests
             - coverage-SFW
             - coverage-WPM
+            - tests
+
