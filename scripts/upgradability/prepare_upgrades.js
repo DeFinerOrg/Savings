@@ -54,7 +54,15 @@ async function main() {
             unsafeAllow: ["external-library-linking"],
         }
     );
+    const savingAccount = await SavingAccount.attach(savingAccountLatestAddress);
     console.log("savingAccountLatestAddress", savingAccountLatestAddress);
+
+    // initialize FIN & COMP addresses after upgrade
+    await savingAccount.initFINnCOMPAddresses();
+    let FINAddr = await savingAccount.FIN_ADDR();
+    let COMPAddr = await savingAccount.COMP_ADDR();
+    console.log("FINAddr", FINAddr);
+    console.log("COMPAddr", COMPAddr);
 }
 
 main()
