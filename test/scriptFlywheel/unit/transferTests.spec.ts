@@ -1,4 +1,7 @@
+<<<<<<< HEAD:test/scriptFlywheel/unit/transferTests.spec.ts
 import { MaxReserveRatioUpdated } from "./../../../types/GlobalConfig.d";
+=======
+>>>>>>> master-fork:test/unit/transferTests.spec.ts
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
@@ -10,7 +13,7 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 
 contract("SavingAccount.transfer", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -81,6 +84,7 @@ contract("SavingAccount.transfer", async (accounts) => {
         cUSDC = await MockCToken.at(cUSDC_addr);
         cETH = await MockCToken.at(cETH_addr);
         numOfToken = new BN(1000);
+        await savingAccount.fastForward(1);
     });
 
     // Funtion to verify Compound balance in tests
@@ -186,7 +190,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, addressDAI, new BN(2000), {
                             from: user2,
                         }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
 
@@ -252,6 +256,13 @@ contract("SavingAccount.transfer", async (accounts) => {
                     // 2. Borrow USDC
                     const user2USDCBalanceBefore = await erc20USDC.balanceOf(user2);
 
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmount, { from: user2 });
 
                     // Amount that is locked as collateral
@@ -292,7 +303,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                                 from: user2,
                             }
                         ),
-                        "Insufficient collateral when withdraw."
+                        "Insufficient collateral"
                     );
                 });
             });
@@ -334,14 +345,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                             numOfToken
                         );
 
-                        let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
 
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
@@ -358,14 +365,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         );
 
                         // Verify balances of user1 & user2 after deposit
-                        let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(
                             new BN(user1BalanceAfterDeposit).sub(new BN(user1TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
@@ -384,14 +387,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         });
 
                         // Verify balances of user1 & user2 after transfer
-                        let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(new BN(user1BalanceAfterTransfer)).to.be.bignumber.equal(
                             new BN(user1BalanceAfterDeposit).add(new BN(100))
                         );
@@ -462,14 +461,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                             numOfToken
                         );
 
-                        let user1TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2TotalBalanceBefore = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2TotalBalanceBefore =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
 
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                         await savingAccount.deposit(addressDAI, numOfToken, { from: user2 });
@@ -486,14 +481,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         );
 
                         // Verify balances of user1 & user2 after deposit
-                        let user1BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(
                             new BN(user1BalanceAfterDeposit).sub(new BN(user1TotalBalanceBefore))
                         ).to.be.bignumber.equal(numOfToken);
@@ -525,14 +516,10 @@ contract("SavingAccount.transfer", async (accounts) => {
                         expect(balcDAIAfterTransfer).to.be.bignumber.equal(balCDAIBeforeTransfer);
 
                         // Verify balances of user1 & user2 after transfer
-                        let user1BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user1
-                        );
-                        let user2BalanceAfterTransfer = await accountsContract.getDepositBalanceCurrent(
-                            addressDAI,
-                            user2
-                        );
+                        let user1BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user1);
+                        let user2BalanceAfterTransfer =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
                         expect(new BN(user1BalanceAfterTransfer)).to.be.bignumber.equal(
                             new BN(user1BalanceAfterDeposit).add(new BN(500))
                         );
@@ -609,7 +596,7 @@ contract("SavingAccount.transfer", async (accounts) => {
                         savingAccount.transfer(user1, ETH_ADDRESS, ETHtransferAmount, {
                             from: user2,
                         }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
 
@@ -691,6 +678,13 @@ contract("SavingAccount.transfer", async (accounts) => {
                     const user2BalanceDAIBeforeBorrow = await erc20DAI.balanceOf(user2);
 
                     // User 2 borrowed DAI
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                    const ethTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        ethTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
                     await savingAccount.borrow(addressDAI, DAIBorrowAmount, { from: user2 });
 
                     // Verify the loan amount.

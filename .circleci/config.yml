@@ -1,15 +1,82 @@
 version: 2.1
 jobs:
+<<<<<<< HEAD
   build:
+=======
+  tests:
+>>>>>>> master-fork
     docker:
       # specify the version you desire here
       - image: circleci/node:10.23.0
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-      # - image: trufflesuite/ganache-cli
-      #   command: ganache-cli --gasLimit 20000000 --gasPrice 20000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true
+     
+    working_directory: ~/repo
+
+    steps:
+      - run:
+<<<<<<< HEAD
+=======
+        |
+          sudo apt-get install libudev-dev
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+      - checkout
+
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update 
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: npm i
+
+      - save_cache:
+          paths:
+            - compound-protocol/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+
+      - save_cache:
+          paths:
+            - compound-protocol/scenario/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run: 
+          name: Run tests
+          command: yarn test  #triggers truffle test
+  
+  coverage-SFW:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.23.0
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
 
     working_directory: ~/repo
 
@@ -44,8 +111,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd compound-protocol && yarn install --lock-file
-      - run: cd compound-protocol/scenario && npm i
       - run: sudo npm i
 
       - save_cache:
@@ -62,12 +127,76 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      
-      # - run:
-      #     name: "Coverage environment"
-      #     background: true
-      #     command: yarn coverage-setup
 
+      - run: 
+          name: Run coverage
+          command: yarn prepare && yarn coverage-SFW  #triggers coverage for scriptFlywheel tests
+
+  coverage-WPM:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.23.0
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+
+    working_directory: ~/repo
+
+    steps:
+      - run:
+>>>>>>> master-fork
+        |
+          sudo apt-get install libudev-dev
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+<<<<<<< HEAD
+      - run: cd compound-protocol && yarn install --lock-file
+      - run: cd compound-protocol/scenario && npm i
+=======
+>>>>>>> master-fork
+      - run: sudo npm i
+
+      - save_cache:
+          paths:
+            - compound-protocol/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+
+      - save_cache:
+          paths:
+            - compound-protocol/scenario/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+<<<<<<< HEAD
       # - run: yarn coverage
       # - run: 
       #     name: Start EVM
@@ -77,3 +206,80 @@ jobs:
       - run: 
           name: Run tests
           command: ./runtests.sh  #triggers truffle test
+=======
+      - run: 
+          name: Run coverage
+          command: yarn prepare && yarn coverage-WPM  #triggers coverage for whitePaperModel tests
+
+  deploy-ready:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.23.0
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+
+    working_directory: ~/repo
+
+    steps:
+      - run:
+        |
+          sudo apt-get install libudev-dev
+          sudo wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux -O /usr/local/bin/solc
+          sudo chmod +x /usr/local/bin/solc
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: sudo npm i
+
+      - save_cache:
+          paths:
+            - compound-protocol/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/package.json" }}
+
+      - save_cache:
+          paths:
+            - compound-protocol/scenario/node_modules
+          key: v1-dependencies-{{ checksum "compound-protocol/scenario/package.json" }}
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run: 
+          name: truffle contract size
+          command: yarn prepare && yarn contract-size
+
+workflows:
+    version: 2.1
+    build:
+        jobs:
+            - coverage-SFW
+            - coverage-WPM
+            - tests
+            - deploy-ready
+
+>>>>>>> master-fork

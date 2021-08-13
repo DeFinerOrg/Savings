@@ -7,9 +7,14 @@ import { savAccBalVerify } from "../../../test-helpers/lib/lib";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
+<<<<<<< HEAD:test/scriptFlywheel/unit/modifiersTests.spec.ts
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
+=======
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
+>>>>>>> master-fork:test/unit/modifiersTests.spec.ts
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
@@ -155,6 +160,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_USDC = sixPrecision;
         ZERO = new BN(0);
+        await savingAccount.fastForward(1);
     });
 
     context("onlyOwner", async () => {
@@ -206,7 +212,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when the calling address is other than SavingAccount or Bank", async () => {
                 await expectRevert(
                     accountsContract.deposit(user1, addressDAI, new BN(10)),
-                    "Only authorized to call from DeFiner internal contracts."
+                    "not authorized"
                 );
             });
 

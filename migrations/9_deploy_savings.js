@@ -73,7 +73,11 @@ module.exports = async function (deployer, network) {
     const globalConfig = await GlobalConfig.deployed();
     await tokenInfoRegistry.initialize(globalConfig.address);
     console.log(
+<<<<<<< HEAD
         "=========================tokenInfoRegistry.initialize ============================"
+=======
+        "========================= tokenInfoRegistry.initialize ============================"
+>>>>>>> master-fork
     );
 
     // Deploy Upgradability
@@ -162,7 +166,20 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
+<<<<<<< HEAD
     if (network == "kovan" || network == "kovan-fork") {
+=======
+    if (network == "ropsten" || network == "ropsten-fork") {
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.ropsten.cTokenAddress,
+            DEAD_ADDR
+        );
+    } else if (network == "kovan" || network == "kovan-fork") {
+>>>>>>> master-fork
         await tokenInfoRegistry.addToken(
             ETH_ADDR,
             tokenData.ETH.decimals,
@@ -171,6 +188,18 @@ const initializeTokenInfoRegistry = async (
             tokenData.ETH.kovan.cTokenAddress,
             DEAD_ADDR
         );
+<<<<<<< HEAD
+=======
+    } else if (network == "rinkeby" || network == "rinkeby-fork") {
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.rinkeby.cTokenAddress,
+            DEAD_ADDR
+        );
+>>>>>>> master-fork
     } else if (network == "mainnet" || network == "mainnet-fork") {
         await tokenInfoRegistry.addToken(
             ETH_ADDR,

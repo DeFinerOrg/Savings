@@ -1,9 +1,14 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
+<<<<<<< HEAD:test/whitePaperModel/long_duration/withdrawTests.spec.ts
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
     "MockChainLinkAggregator"
 );
+=======
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
+>>>>>>> master-fork:test/long_duration/withdrawTests.spec.ts
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -150,6 +155,7 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
         ZERO = new BN(0);
+        await savingAccount.fastForward(1);
     });
 
     context("withdraw()", async () => {
@@ -162,20 +168,16 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
 
                     let userBalanceBeforeWithdraw = await erc20DAI.balanceOf(user1);
-                    const totalDefinerBalanceBeforeDeposit = await accountsContract.getDepositBalanceCurrent(
-                        erc20DAI.address,
-                        user1
-                    );
+                    const totalDefinerBalanceBeforeDeposit =
+                        await accountsContract.getDepositBalanceCurrent(erc20DAI.address, user1);
                     await savingAccount.fastForward(1000);
 
                     // deposit tokens
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
 
                     // Validate the total balance on DeFiner after deposit
-                    const totalDefinerBalanceAfterDeposit = await accountsContract.getDepositBalanceCurrent(
-                        erc20DAI.address,
-                        user1
-                    );
+                    const totalDefinerBalanceAfterDeposit =
+                        await accountsContract.getDepositBalanceCurrent(erc20DAI.address, user1);
                     const totalDefinerBalanceChange = new BN(totalDefinerBalanceAfterDeposit).sub(
                         new BN(totalDefinerBalanceBeforeDeposit)
                     );
@@ -255,9 +257,8 @@ contract("SavingAccount.withdrawLongDuration", async (accounts) => {
                     expect(user1DepositPrincipal).to.be.bignumber.equal(ZERO);
                     expect(user1BorrowInterest).to.be.bignumber.equal(new BN(0));
 
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(6790562824));
 
                     /* expect(

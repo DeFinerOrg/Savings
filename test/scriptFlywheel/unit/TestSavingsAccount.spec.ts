@@ -11,7 +11,10 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+<<<<<<< HEAD:test/scriptFlywheel/unit/TestSavingsAccount.spec.ts
 // const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
+=======
+>>>>>>> master-fork:test/unit/TestSavingsAccount.spec.ts
 
 contract("SavingAccount", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
@@ -36,5 +39,6 @@ contract("SavingAccount", async (accounts) => {
     beforeEach(async function () {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
+        await savingAccount.fastForward(1);
     });
 });

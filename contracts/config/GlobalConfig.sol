@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -210,4 +211,8 @@ contract GlobalConfig is Ownable {
 
         emit DeFinerRateUpdated(_deFinerRate);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> master-fork
 }

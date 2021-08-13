@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
@@ -16,8 +17,13 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
+<<<<<<< HEAD
     // FIN Token Address
     address public constant FINToken = 0x8D3573f24c0aa3819A2f5b02b2985dD82B487715;
+=======
+    address public FIN_ADDR;
+    address public COMP_ADDR;
+>>>>>>> master-fork
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -27,9 +33,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event WithdrawAll(address indexed token, address from, uint256 amount);
     event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
     event Claim(address from, uint256 amount);
+    event WithdrawCOMP(address beneficiary, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
-        if(!Utils._isETH(address(globalConfig), _token)) {
+        if(_token != ETH_ADDR) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
@@ -43,6 +50,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
         _;
     }
 
@@ -72,6 +84,15 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
             if(_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
+        }
+    }
+
+    function initFINnCOMPAddresses() public {
+        if (FIN_ADDR == address(0x0) && COMP_ADDR == address(0x0)){
+            FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
+            COMP_ADDR = address(0xc00e94Cb662C3520282E6f5717214004A7f26888);
+        } else {
+            revert("Already init");
         }
     }
 
@@ -225,10 +246,40 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     /**
      * An account claim all mined FIN token
      */
+<<<<<<< HEAD
     function claim() public nonReentrant {
         uint FINAmount = globalConfig.accounts().claim(msg.sender);
         IERC20(FINToken).safeTransfer(msg.sender, FINAmount);
+=======
+    function claim() public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
 
-        emit Claim(msg.sender, FINAmount);
+    function claimDepositFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimDepositFIN(msg.sender, _token);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    function claimBorrowFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimBorrowFIN(msg.sender, _token);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    /**
+     * Withdraw COMP token to beneficiary
+     */
+    function withdrawCOMP(address _beneficiary) external onlyOwner {
+        uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
+        IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
+>>>>>>> master-fork
+
+        emit WithdrawCOMP(_beneficiary, compBalance);
     }
 }

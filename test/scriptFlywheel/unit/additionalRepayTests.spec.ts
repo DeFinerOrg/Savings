@@ -19,6 +19,7 @@ contract("SavingAccount.repay", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -67,6 +68,7 @@ contract("SavingAccount.repay", async (accounts) => {
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
         bank = await testEngine.bank;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -92,6 +94,7 @@ contract("SavingAccount.repay", async (accounts) => {
         cWBTC = await MockCToken.at(cWBTC_addr);
         ZERO = new BN(0);
         ONE_YEAR = new BN(365).mul(new BN(24).mul(new BN(3600)));
+        await savingAccount.fastForward(1);
     });
 
     context("Addtional tests for repay()", async () => {
@@ -170,6 +173,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         await erc20USDC.balanceOf(savingAccount.address)
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressUSDC, numOfUSDC, { from: user1 });
 
                     const savingAccountCUSDCTokenAfterBorrow = BN(
@@ -278,6 +290,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
                         from: user2,
                     });
@@ -383,6 +404,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         await erc20DAI.balanceOf(savingAccount.address)
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
                         from: user2,
                     });
@@ -484,6 +514,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
                         from: user2,
                     });
@@ -587,6 +626,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, numOfDAI.div(new BN(2)), {
                         from: user2,
                     });
@@ -629,10 +677,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressDAI,
-                        user2
-                    );
+                    const userBalanceAfterFirstRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressDAI, user2);
 
                     const savingAccountCDAITokenAfterFirstRepay = BN(
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
@@ -655,10 +701,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressDAI,
-                        user2
-                    );
+                    const userBalanceAfterSecondRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressDAI, user2);
 
                     expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfDAI.div(new BN(2))
@@ -729,6 +773,15 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressUSDC, numOfUSDC.div(new BN(2)), {
                         from: user1,
                     });
@@ -780,10 +833,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         await erc20USDC.balanceOf(savingAccount.address)
                     );
 
-                    const userBalanceAfterFirstRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressUSDC,
-                        user1
-                    );
+                    const userBalanceAfterFirstRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
 
                     await savingAccount.repay(addressUSDC, quaterOfUSDC, { from: user1 });
 
@@ -798,10 +849,8 @@ contract("SavingAccount.repay", async (accounts) => {
                         savingAccount
                     );
 
-                    const userBalanceAfterSecondRepay = await accountsContract.getBorrowBalanceCurrent(
-                        addressUSDC,
-                        user1
-                    );
+                    const userBalanceAfterSecondRepay =
+                        await accountsContract.getBorrowBalanceCurrent(addressUSDC, user1);
 
                     expect(BN(userBalanceBeforeRepay)).to.be.bignumber.equal(
                         numOfUSDC.div(new BN(2))
@@ -1175,6 +1224,15 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     // 2. Start borrowing.
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressWBTC, new BN(10), { from: user1 });
 
                     await savAccBalVerify(
@@ -1276,6 +1334,15 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     // 2. Start borrowing.
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressWBTC, new BN(10), { from: user1 });
 
                     await savAccBalVerify(
@@ -1378,6 +1445,15 @@ contract("SavingAccount.repay", async (accounts) => {
                     );
 
                     // 2. Start borrowing.
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressWBTC, new BN(10), { from: user1 });
 
                     await savAccBalVerify(

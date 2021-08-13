@@ -11,7 +11,10 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+<<<<<<< HEAD:test/scriptFlywheel/unit/remainingCoverageTests.spec.ts
 // const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
+=======
+>>>>>>> master-fork:test/unit/remainingCoverageTests.spec.ts
 const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
     artifacts.require("MockChainLinkAggregator");
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
@@ -63,6 +66,7 @@ contract("RemainingCoverage", async (accounts) => {
         addressUSDC = tokens[1];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
+        await savingAccount.fastForward(1);
     });
 
     context("approveAll", async () => {
@@ -146,6 +150,11 @@ contract("RemainingCoverage", async (accounts) => {
                 await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
 
                 // 3. Verify the loan amount
@@ -195,6 +204,11 @@ contract("RemainingCoverage", async (accounts) => {
                 await savingAccount.deposit(addressDAI, numOfToken, { from: user1 });
                 await savingAccount.deposit(addressUSDC, numOfToken, { from: user2 });
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);

@@ -51,6 +51,7 @@ module.exports = {
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
         },
+<<<<<<< HEAD
         testnet: {
             url: "https://exchaintestrpc.okex.org",
             gas: 20000000,
@@ -66,6 +67,8 @@ module.exports = {
             url: "https://exchainrpc.okex.org",
             accounts: [MAINNET_PRIVATE_KEY],
         },
+=======
+>>>>>>> master-fork
     },
     gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
@@ -79,7 +82,11 @@ module.exports = {
     },
 
     typechain: {
+<<<<<<< HEAD
         outDir: "./types",
+=======
+        outDir: "./types/truffle-contracts",
+>>>>>>> master-fork
         target: "truffle-v5",
     },
 };

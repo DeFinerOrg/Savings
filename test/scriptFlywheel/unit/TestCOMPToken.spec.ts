@@ -11,7 +11,10 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
+<<<<<<< HEAD:test/scriptFlywheel/unit/TestCOMPToken.spec.ts
 // const ChainLinkAggregator: t.ChainLinkAggregatorContract = artifacts.require("ChainLinkAggregator");
+=======
+>>>>>>> master-fork:test/unit/TestCOMPToken.spec.ts
 const GlobalConfig: t.GlobalConfigContract = artifacts.require("GlobalConfig");
 
 contract("SavingAccount.COMP", async (accounts) => {
@@ -76,6 +79,7 @@ contract("SavingAccount.COMP", async (accounts) => {
         // Use CERC20, import from Compound
         cDAI = await MockCToken.at(addressCTokenForDAI);
         cUSDC = await MockCToken.at(addressCTokenForUSDC);
+        await savingAccount.fastForward(1);
     });
 
     context("constructor", async () => {
