@@ -40,6 +40,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let addressTUSD: any;
     let addressMKR: any;
     let addressWBTC: any;
+    let addressLP: any;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforUSDTAddress: any;
@@ -47,6 +48,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let mockChainlinkAggregatorforMKRAddress: any;
     let mockChainlinkAggregatorforWBTCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
+    let mockChainlinkAggregatorforFIN_LPAddress: any;
     let cDAI_addr: any;
     let cUSDC_addr: any;
     let cUSDT_addr: any;
@@ -63,6 +65,7 @@ contract("SavingAccount.borrow", async (accounts) => {
     let erc20TUSD: t.MockErc20Instance;
     let erc20USDT: t.MockErc20Instance;
     let erc20WBTC: t.MockErc20Instance;
+    let erc20LP: t.MockErc20Instance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
@@ -71,6 +74,7 @@ contract("SavingAccount.borrow", async (accounts) => {
 
     let mockChainlinkAggregatorforMKR: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforFIN_LP: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_USDC: any;
@@ -98,6 +102,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
+        addressLP = tokens[10];
 
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
@@ -105,7 +110,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforMKRAddress = mockChainlinkAggregators[4];
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
-        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
+        mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
+        mockChainlinkAggregatorforFIN_LPAddress = mockChainlinkAggregators[10];
 
         erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
@@ -113,6 +119,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
+        erc20LP = await ERC20.at(addressLP);
 
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
@@ -142,6 +149,9 @@ contract("SavingAccount.borrow", async (accounts) => {
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
         );
+        mockChainlinkAggregatorforFIN_LP = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforFIN_LPAddress
+        );
         mockChainlinkAggregatorforWBTC = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforWBTCAddress
         );
@@ -153,6 +163,7 @@ contract("SavingAccount.borrow", async (accounts) => {
         await mockChainlinkAggregatorforUSDC.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforUSDT.updateAnswer(DAIprice);
         await mockChainlinkAggregatorforTUSD.updateAnswer(DAIprice);
+        await mockChainlinkAggregatorforFIN_LP.updateAnswer(DAIprice);
         await savingAccount.fastForward(1);
     });
 
@@ -701,6 +712,231 @@ contract("SavingAccount.borrow", async (accounts) => {
                             expect(
                                 savingsCompoundWBTCAfterBorrow.sub(savingsCompoundWBTCAfterDeposit)
                             ).to.be.bignumber.equals(new BN(0));
+                        });
+
+                        it("Deposit USDT, borrow ETH, check if user is liquidatable, deposit FIN-LP", async function () {
+                            this.timeout(0);
+                            // get initial oracle prices
+                            const ethPriceInit = await mockChainlinkAggregatorforETH.latestAnswer();
+                            const daiPriceInit = await mockChainlinkAggregatorforDAI.latestAnswer();
+                            const usdtPriceInit =
+                                await mockChainlinkAggregatorforUSDT.latestAnswer();
+
+                            const ZERO = new BN(0);
+                            const ONE_USD = new BN(1);
+                            const ONE_ETH = eighteenPrecision;
+                            const ONE_USDT = sixPrecision;
+                            const ONE_FIN_LP = eighteenPrecision;
+
+                            // set oracle prices
+                            const ETH_USD_RATE = new BN(2000);
+                            let ONE_USD_IN_ETH = ONE_ETH.div(ETH_USD_RATE);
+                            await mockChainlinkAggregatorforETH.updateAnswer(ONE_ETH); // remain constant
+                            await mockChainlinkAggregatorforDAI.updateAnswer(ONE_USD_IN_ETH);
+                            await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH);
+                            // assuming that the FIN_LP price is 1 USD
+                            await mockChainlinkAggregatorforFIN_LP.updateAnswer(ONE_USD_IN_ETH);
+
+                            // get oracle prices
+                            const ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                            const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                            const usdtPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+
+                            const ethPriceInUSD = ethPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("ETH price in USD", ethPriceInUSD.toString());
+                            expect(ethPriceInUSD).to.be.bignumber.equal(ETH_USD_RATE);
+                            const daiPriceInUSD = daiPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("DAI price in USD", daiPriceInUSD.toString());
+                            expect(daiPriceInUSD).to.be.bignumber.equal(ONE_USD);
+                            const usdtPriceInUSD = usdtPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("USDT price in USD", usdtPriceInUSD.toString());
+                            expect(usdtPriceInUSD).to.be.bignumber.equal(ONE_USD);
+
+                            // owner - deposit 100 ETH
+                            await savingAccount.deposit(ETH_ADDRESS, ONE_ETH.mul(new BN(100)), {
+                                from: owner,
+                                value: ONE_ETH.mul(new BN(100)),
+                            });
+
+                            // 1. Transfer tokens to user1
+                            await erc20USDT.transfer(user1, ONE_USDT.mul(new BN(200)));
+                            await erc20DAI.transfer(user1, ONE_DAI.mul(new BN(200)));
+                            await erc20LP.transfer(user1, ONE_FIN_LP.mul(new BN(200)));
+
+                            await erc20USDT.approve(
+                                savingAccount.address,
+                                ONE_USDT.mul(new BN(200)),
+                                { from: user1 }
+                            );
+                            await erc20DAI.approve(
+                                savingAccount.address,
+                                ONE_DAI.mul(new BN(200)),
+                                { from: user1 }
+                            );
+                            await erc20LP.approve(
+                                savingAccount.address,
+                                ONE_FIN_LP.mul(new BN(200)),
+                                { from: user1 }
+                            );
+
+                            // Set BorrowLTV of FIN-LP token to 0
+                            await testEngine.tokenInfoRegistry.updateBorrowLTV(addressLP, ZERO);
+
+                            // ensure that borrowLTV is 0
+                            const finlpBorrowLTV = await testEngine.tokenInfoRegistry.getBorrowLTV(
+                                addressLP
+                            );
+                            expect(finlpBorrowLTV).to.be.bignumber.equal(ZERO);
+
+                            // 2. User1 deposits 100 USDT
+                            const collateralAmount = ONE_USDT.mul(new BN(100));
+                            await savingAccount.deposit(addressUSDT, collateralAmount, {
+                                from: user1,
+                            });
+
+                            // enable USDT as collateral
+                            const result = await tokenRegistry.getTokenInfoFromAddress(addressUSDT);
+                            const indexUSDT = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                indexUSDT,
+                                true,
+                                { from: user1 }
+                            );
+
+                            // print status before borrow
+                            let user1BorrowPower = await accountsContract.getBorrowPower(user1);
+                            let borrowPowerInUSD = user1BorrowPower.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("user1BorrowPower in ETH", user1BorrowPower.toString());
+                            console.log("user1BorrowPower in USD", borrowPowerInUSD.toString());
+                            expect(borrowPowerInUSD).to.be.bignumber.equal(new BN(60)); // $60
+                            let currentBorrowedETH = await accountsContract.getBorrowETH(user1);
+                            let currentBorrowedUSD = currentBorrowedETH
+                                .mul(ETH_USD_RATE)
+                                .div(ONE_ETH);
+                            console.log("current borrowed in USD:", currentBorrowedUSD.toString());
+                            expect(currentBorrowedUSD).to.be.bignumber.equal(ZERO);
+                            let availForBorrowInUSD = borrowPowerInUSD.sub(currentBorrowedUSD);
+                            console.log(
+                                "available for borrow in USD:",
+                                availForBorrowInUSD.toString()
+                            );
+                            expect(availForBorrowInUSD).to.be.bignumber.equal(new BN(60)); // $60
+
+                            // =========
+                            // 3. user 1 borrows ETH with all borrowPower
+                            await savingAccount.borrow(ETH_ADDRESS, user1BorrowPower, {
+                                from: user1,
+                            });
+                            console.log("USER BORROWED FULL BORROW POWER");
+                            // =========
+
+                            // print status after borrow
+                            user1BorrowPower = await accountsContract.getBorrowPower(user1);
+                            borrowPowerInUSD = user1BorrowPower.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("user1BorrowPower in ETH", user1BorrowPower.toString());
+                            console.log("user1BorrowPower in USD", borrowPowerInUSD.toString());
+                            expect(borrowPowerInUSD).to.be.bignumber.equal(new BN(60)); // $60
+                            currentBorrowedETH = await accountsContract.getBorrowETH(user1);
+                            currentBorrowedUSD = currentBorrowedETH.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log("current borrowed in USD:", currentBorrowedUSD.toString());
+                            expect(currentBorrowedUSD).to.be.bignumber.equal(new BN(60)); // $60
+                            availForBorrowInUSD = borrowPowerInUSD.sub(currentBorrowedUSD);
+                            console.log(
+                                "available for borrow in USD:",
+                                availForBorrowInUSD.toString()
+                            );
+                            expect(availForBorrowInUSD).to.be.bignumber.equal(ZERO); // $0
+
+                            let collAmtInETH = await accountsContract.getDepositETH(user1);
+                            let collateralAmtInUSD = collAmtInETH.mul(ETH_USD_RATE).div(ONE_ETH);
+                            console.log(
+                                "user collateral amount in USD:",
+                                collateralAmtInUSD.toString()
+                            );
+                            expect(collateralAmtInUSD).to.be.bignumber.equal(new BN(100)); // $100
+                            const borrowedAmtInETH = await accountsContract.getBorrowETH(user1);
+                            const borrowedAmtInUSD = borrowedAmtInETH
+                                .mul(ETH_USD_RATE)
+                                .div(ONE_ETH);
+                            console.log("borrowedAmtInETH", borrowedAmtInETH.toString());
+                            console.log(
+                                "user borrowed amount in USD:",
+                                borrowedAmtInUSD.toString()
+                            );
+                            expect(borrowedAmtInUSD).to.be.bignumber.equal(new BN(60)); // $60
+
+                            let collateralRatio = borrowedAmtInUSD
+                                .mul(new BN(100))
+                                .div(collateralAmtInUSD);
+                            console.log("collateral ratio in % :", collateralRatio.toString());
+                            expect(collateralRatio).to.be.bignumber.equal(new BN(60)); // 60%
+
+                            // TODO further
+                            // 4. increase ETH price
+                            const newETH_USD_RATE = new BN(3000);
+                            ONE_USD_IN_ETH = ONE_ETH.div(newETH_USD_RATE);
+                            //await mockChainlinkAggregatorforETH.updateAnswer(ONE_ETH); // remain constant
+                            await mockChainlinkAggregatorforDAI.updateAnswer(ONE_USD_IN_ETH);
+                            await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH);
+                            await mockChainlinkAggregatorforFIN_LP.updateAnswer(ONE_USD_IN_ETH);
+
+                            console.log("PRICE UPDATED");
+
+                            // get oracle prices
+                            const UPD_ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                            const UPD_daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                            const UPD_usdtPrice =
+                                await mockChainlinkAggregatorforUSDT.latestAnswer();
+                            console.log("ETH price in ETH", UPD_ethPrice.toString());
+                            console.log("DAI price in ETH", UPD_daiPrice.toString());
+                            console.log("USDT price in ETH", UPD_usdtPrice.toString());
+
+                            const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
+                            console.log("borrowedAmtInETH2", borrowedAmtInETH2.toString());
+                            const borrowedAmtInUSD2 = borrowedAmtInETH2
+                                .mul(newETH_USD_RATE)
+                                .div(ONE_ETH);
+                            console.log(
+                                "user borrowed amount in USD:",
+                                borrowedAmtInUSD2.toString()
+                            );
+                            // ETH price increased from $2000 to $3000 (which is 1.5 times)
+                            // so user borrowed $60 earlier, after price increase
+                            // $60 * 1.5 = $90
+                            expect(borrowedAmtInUSD2).to.be.bignumber.equal(new BN(90)); // $90
+                            collAmtInETH = await accountsContract.getDepositETH(user1);
+                            collateralAmtInUSD = collAmtInETH.mul(newETH_USD_RATE).div(ONE_ETH);
+                            console.log(
+                                "user collateral amount in USD:",
+                                collateralAmtInUSD.toString()
+                            );
+                            // rounding error $100 ~= $99
+                            expect(collateralAmtInUSD).to.be.bignumber.equal(new BN(99));
+                            collateralRatio = borrowedAmtInUSD2
+                                .mul(new BN(100))
+                                .div(collateralAmtInUSD);
+                            console.log("collateral ratio in % :", collateralRatio.toString());
+                            expect(collateralRatio).to.be.bignumber.equal(new BN(90)); // 90%
+
+                            let isAccountLiquidatable =
+                                await accountsContract.isAccountLiquidatable.call(user1);
+                            console.log("isAccountLiquidatable", isAccountLiquidatable);
+                            expect(isAccountLiquidatable).to.be.equal(true);
+
+                            // 4. user1 deposits 100 LPTokens
+                            await savingAccount.deposit(addressLP, ONE_FIN_LP.mul(new BN(100)), {
+                                from: user1,
+                            });
+
+                            isAccountLiquidatable =
+                                await accountsContract.isAccountLiquidatable.call(user1);
+                            console.log("isAccountLiquidatable", isAccountLiquidatable);
+                            expect(isAccountLiquidatable).to.be.equal(true);
+
+                            // revert back to original prices
+                            await mockChainlinkAggregatorforETH.updateAnswer(ethPriceInit);
+                            await mockChainlinkAggregatorforDAI.updateAnswer(daiPriceInit);
+                            await mockChainlinkAggregatorforUSDT.updateAnswer(usdtPriceInit);
                         });
                     });
                 }
