@@ -23,6 +23,7 @@ contract SavingAccount is
 
     GlobalConfig public globalConfig;
     address public FIN_ADDR;
+    address public COMP_ADDR;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -39,6 +40,7 @@ contract SavingAccount is
         uint256 payAmount
     );
     event Claim(address from, uint256 amount);
+    event WithdrawCOMP(address beneficiary, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
         if (!Utils._isETH(address(globalConfig), _token)) {
@@ -60,6 +62,11 @@ contract SavingAccount is
             msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts."
         );
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
         _;
     }
 
@@ -92,9 +99,10 @@ contract SavingAccount is
         }
     }
 
-    function initFINAddress() public {
-        if (FIN_ADDR == address(0x0)) {
+    function initFINnCOMPAddresses() public {
+        if (FIN_ADDR == address(0x0) && COMP_ADDR == address(0x0)) {
             FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
+            COMP_ADDR = address(0xc00e94Cb662C3520282E6f5717214004A7f26888);
         } else {
             revert("Already init");
         }
@@ -326,5 +334,15 @@ contract SavingAccount is
         IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
         emit Claim(msg.sender, finAmount);
         return finAmount;
+    }
+
+    /**
+     * Withdraw COMP token to beneficiary
+     */
+    function withdrawCOMP(address _beneficiary) external onlyOwner {
+        uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
+        IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
+
+        emit WithdrawCOMP(_beneficiary, compBalance);
     }
 }

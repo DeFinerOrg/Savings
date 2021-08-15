@@ -112,4 +112,8 @@ contract SavingAccountWithController is SavingAccount {
     function setFINAddress(address _FINAddress) public {
         FIN_ADDR = _FINAddress;
     }
+
+    function setCOMPAddress(address _COMPAddress) public {
+        COMP_ADDR = _COMPAddress;
+    }
 }
