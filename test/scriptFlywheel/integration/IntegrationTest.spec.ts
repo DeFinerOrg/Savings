@@ -1,7 +1,7 @@
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
-
+import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 var chai = require("chai");
 var expect = chai.expect;
 var tokenData = require("../../../test-helpers/tokenData.json");
@@ -11,6 +11,7 @@ const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
+let snapshotId: string;
 contract("Integration Tests", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     let testEngine: TestEngine;
@@ -80,8 +81,11 @@ contract("Integration Tests", async (accounts) => {
         // testEngine.deploy("scriptFlywheel.scen");
     });
 
-    beforeEach(async function () {
-        this.timeout(0);
+    beforeEach(async () => {
+        // Things to initialize before all test
+        testEngine = new TestEngine();
+        // testEngine.deploy("scriptFlywheel.scen");
+
         savingAccount = await testEngine.deploySavingAccount();
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
@@ -664,6 +668,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Borrow $0.6 million
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
 
                 // 3. Verify the amount borrowed
@@ -742,6 +751,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Borrow USDC
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
                     from: user1,
                 });
@@ -828,6 +842,11 @@ contract("Integration Tests", async (accounts) => {
                     .div(await tokenInfoRegistry.priceFromIndex(1))
                     .div(eighteenPrecision);
 
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
                     from: user1,
                 });
@@ -939,6 +958,15 @@ contract("Integration Tests", async (accounts) => {
 
                     // Start borrowing
                     const userBalanceBeforeBorrow = await erc20USDC.balanceOf(userNumber);
+                    const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: userNumber,
+                        }
+                    );
                     await savingAccount.borrow(addressUSDC, borrowAmount, {
                         from: userNumber,
                     });
@@ -1031,6 +1059,11 @@ contract("Integration Tests", async (accounts) => {
                 const user1BalanceBeforeBorrow = await erc20USDC.balanceOf(user1);
                 const borrowAmount = sixPrecision.mul(new BN(10));
 
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrowAmount, {
                     from: user1,
                 });
@@ -1157,6 +1190,11 @@ contract("Integration Tests", async (accounts) => {
                 const user2BalanceBeforeBorrow = await erc20DAI.balanceOf(user2);
 
                 // 2. Borrow
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                const usdcTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](usdcTokenIndex, true, {
+                    from: user2,
+                });
                 await savingAccount.borrow(addressDAI, borrowTokens, { from: user2 });
 
                 // 3. Verify the amount borrowed
@@ -1263,6 +1301,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
 
                 // Verify borrow
@@ -1383,6 +1426,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
 
                 await savAccBalVerify(
@@ -1534,6 +1582,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Borrow USDC
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrowAmount, { from: user1 });
 
                 // Amount that is locked as collateral
@@ -1697,6 +1750,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                const ethTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](ethTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
 
@@ -1830,6 +1888,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                const ethTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](ethTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressDAI, new BN(200), { from: user1 });
 
                 // Verify that the borrow was successful
@@ -2017,6 +2080,11 @@ contract("Integration Tests", async (accounts) => {
                 );
 
                 // 2. Start borrowing.
+                const result = await tokenInfoRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                const ethTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](ethTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressDAI, new BN(100), { from: user1 });
                 await savingAccount.borrow(addressUSDC, new BN(100), { from: user1 });
                 await savingAccount.borrow(addressBAT, new BN(100), { from: user1 });

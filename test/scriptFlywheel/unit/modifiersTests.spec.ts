@@ -206,7 +206,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
             it("when the calling address is other than SavingAccount or Bank", async () => {
                 await expectRevert(
                     accountsContract.deposit(user1, addressDAI, new BN(10)),
-                    "Only authorized to call from DeFiner internal contracts."
+                    "not authorized"
                 );
             });
 

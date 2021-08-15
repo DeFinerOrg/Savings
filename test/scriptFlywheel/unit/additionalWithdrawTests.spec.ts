@@ -18,6 +18,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -67,6 +68,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
+        tokenRegistry = testEngine.tokenInfoRegistry;
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
@@ -580,7 +582,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20USDC.address, doubleOfUSDC, { from: user1 }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
                 it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async function () {
@@ -659,7 +661,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20TUSD.address, doubleOfTUSD, { from: user1 }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
             });
@@ -733,6 +735,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                  * Should fail, beacuse user has to repay all the outstandings before withdrawing.
                  */
                 const borrows = new BN(10);
+                const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
 
                 await savAccBalVerify(
@@ -748,7 +755,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                 await expectRevert(
                     savingAccount.withdrawAll(erc20DAI.address, { from: user1 }),
-                    "Insufficient collateral when withdraw."
+                    "Insufficient collateral"
                 );
             });
             it("Deposit DAI, borrows USDC and wants to withdraw", async function () {
@@ -819,6 +826,11 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     user1
                 );
                 const borrows = new BN(10);
+                const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                const daiTokenIndex = result[0];
+                await accountsContract.methods["setCollateral(uint8,bool)"](daiTokenIndex, true, {
+                    from: user1,
+                });
                 await savingAccount.borrow(addressUSDC, borrows, { from: user1 });
 
                 await savAccBalVerify(
@@ -1418,7 +1430,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, numOfDAI, { from: user1 }),
-                        "SafeMath: subtraction overflow"
+                        "Insufficient balance."
                     );
                 });
             });
