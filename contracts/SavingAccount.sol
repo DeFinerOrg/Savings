@@ -43,7 +43,7 @@ contract SavingAccount is
     event WithdrawCOMP(address beneficiary, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
-        if (!Utils._isETH(address(globalConfig), _token)) {
+        if (_token != ETH_ADDR) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
