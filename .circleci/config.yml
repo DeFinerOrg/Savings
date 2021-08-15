@@ -248,7 +248,7 @@ jobs:
 
       - run: 
           name: truffle contract size
-          command: pwd && yarn prepare && yarn contract-size
+          command: yarn prepare && yarn contract-size
 
 workflows:
     version: 2.1
