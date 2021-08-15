@@ -163,6 +163,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
+
+        await savingAccount.setFINAddress(addressFIN);
     });
 
     beforeEach(async () => {
