@@ -125,6 +125,7 @@ contract("Integration Tests", async (accounts) => {
         cBAT = await MockCToken.at(cBAT_addr);
         cZRX = await MockCToken.at(cZRX_addr);
         cETH = await MockCToken.at(cETH_addr);
+        await savingAccount.fastForward(1);
     });
 
     context("Deposit and Withdraw", async () => {
