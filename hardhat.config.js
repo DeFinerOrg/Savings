@@ -62,10 +62,12 @@ module.exports = {
                 count: 20,
             },
         },
+        /*
         mainnet: {
             url: "https://exchainrpc.okex.org",
             accounts: [MAINNET_PRIVATE_KEY],
         },
+        */
     },
     gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
