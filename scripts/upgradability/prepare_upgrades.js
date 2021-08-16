@@ -3,6 +3,11 @@ async function main() {
     // =========================
     // Deploy SavingAccount V1.1
     // =========================
+    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Note:  The deployment part of this script is for local testing purposes only.
+    It should be removed when upgrading on testnet/mainnet
+    Use the address of the current deployments of UtilsV1._1, SavingLibV1_1, savingAccountV1_1Proxy instead
+    */
     const UtilsV1_1 = await ethers.getContractFactory("UtilsV1_1");
     const utilsV1_1 = await UtilsV1_1.deploy();
     console.log("-------------------- utilsV1_1 ---------------------", utilsV1_1.address);
@@ -21,7 +26,7 @@ async function main() {
     const SavingAccountV1_1 = await ethers.getContractFactory("SavingAccountV1_1", {
         libraries: { SavingLibV1_1: savingLibV1_1.address, UtilsV1_1: utilsV1_1.address },
     });
-    // SavingAccountV1_1 roxy
+    // SavingAccountV1_1 proxy
     const savingAccountV1_1Proxy = await upgrades.deployProxy(SavingAccountV1_1, [[], [], DUMMY], {
         initializer: "initialize",
         unsafeAllow: ["external-library-linking"],
@@ -69,6 +74,11 @@ async function main() {
     // ====================
     // Deploy Accounts V1.1
     // ====================
+    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Note:  The deployment part of this script is for local testing purposes only.
+    It should be removed when upgrading on testnet/mainnet
+    Use the address of the current deployments of AccountTokenLibV1_1, accountsV1_1Proxy instead
+    */
     const AccountTokenLibV1_1 = await ethers.getContractFactory("AccountTokenLibV1_1");
     const accountTokenLibV1_1 = await AccountTokenLibV1_1.deploy();
 
@@ -106,6 +116,11 @@ async function main() {
     // ====================
     // Deploy Bank V1.1
     // ====================
+    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Note:  The deployment part of this script is for local testing purposes only.
+    It should be removed when upgrading on testnet/mainnet
+    Use the address of the current deployments of BankV1_1, bankProxy instead
+    */
     const BankV1_1 = await ethers.getContractFactory("BankV1_1");
 
     // Bank v1.1 proxy
