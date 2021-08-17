@@ -1,5 +1,40 @@
+// Previously deployed libraries
+let utilsPrev;
+let savingLibPrev;
+let accountTokenLibPrev;
+
+// Proxy contracts to be upgraded
+let savingAccountPrevProxy;
+let accountsPrevProxy;
+let bankPrevProxy;
+
+const DUMMY = "0x0000000000000000000000000000000000000010";
+
 async function main() {
-    const DUMMY = "0x0000000000000000000000000000000000000010";
+    let network = process.env.HARDHAT_NETWORK;
+
+    if (network == "mainnet" || network == "mainnet-fork") {
+        this.utils = "";
+        this.savingLibPrev = "";
+        this.accountTokenLibPrev = "";
+        this.savingAccountPrevProxy = "";
+        this.accountsPrevProxy = "";
+        this.bankPrevProxy = "";
+    } else if (network == "kovan" || network == "kovan-fork") {
+        this.utils = "";
+        this.savingLibPrev = "";
+        this.accountTokenLibPrev = "";
+        this.savingAccountPrevProxy = "";
+        this.accountsPrevProxy = "";
+        this.bankPrevProxy = "";
+    } else if (network == "okex" || network == "okex-fork") {
+        this.utils = "";
+        this.savingLibPrev = "";
+        this.accountTokenLibPrev = "";
+        this.savingAccountPrevProxy = "";
+        this.accountsPrevProxy = "";
+        this.bankPrevProxy = "";
+    }
     // =========================
     // Deploy SavingAccount V1.1
     // =========================
