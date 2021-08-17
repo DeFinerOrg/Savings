@@ -280,6 +280,9 @@ const getChainLinkAggregators = async () => {
 const getExOracleDataSource = async () => {
     const network = net_work;
 
+    let dummy_Addr = "0x0000000000000000000000000000000000000042";
+    let dummy_Datasource = "0x0000000000000000000000000000000000000041";
+
     let exOracleAddress;
     let dataSource;
 
@@ -289,6 +292,11 @@ const getExOracleDataSource = async () => {
     } else if (network == "kovan" || network == "kovan-fork") {
         exOracleAddress = tokenData.ExOracle.testnet.exOracleAddress;
         dataSource = tokenData.ExOracle.testnet.dataSource;
+    } else if (network == "coverage" || network == "development") {
+        exOracleAddress = (await ExOracleFIN.new(dummy_Addr, dummy_Datasource)).address;
+        dataSource = dummy_Datasource;
+        console.log("exOracleAddress", exOracleAddress);
+        console.log("dataSource", dataSource);
     }
     return [exOracleAddress, dataSource];
 };
@@ -323,6 +331,9 @@ const addFINTokenSupport = async (tokenInfoRegistry, finOracleAddress) => {
         tokenAddr = tokenData.DeFiner.mainnet.tokenAddress;
         cTokenAddr = tokenData.DeFiner.mainnet.cTokenAddress;
     } else if (network == "kovan" || network == "kovan-fork") {
+        tokenAddr = tokenData.DeFiner.testnet.tokenAddress;
+        cTokenAddr = tokenData.DeFiner.testnet.cTokenAddress;
+    } else if (network == "coverage" || network == "development") {
         tokenAddr = tokenData.DeFiner.testnet.tokenAddress;
         cTokenAddr = tokenData.DeFiner.testnet.cTokenAddress;
     }
