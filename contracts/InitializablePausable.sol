@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
 import "./config/GlobalConfig.sol";
@@ -22,11 +23,11 @@ contract InitializablePausable {
      */
     event Unpaused(address account);
     
-    address private globalConfigPausable;
+    address private globalConfig;
     bool private _paused;
 
     function _initialize(address _globalConfig) internal {
-        globalConfigPausable = _globalConfig;
+        globalConfig = _globalConfig;
         _paused = false;
     }
 
@@ -58,7 +59,7 @@ contract InitializablePausable {
      */
     function pause() public onlyPauser whenNotPaused {
         _paused = true;
-        emit Paused(GlobalConfig(globalConfigPausable).owner());
+        emit Paused(GlobalConfig(globalConfig).owner());
     }
 
     /**
@@ -66,11 +67,11 @@ contract InitializablePausable {
      */
     function unpause() public onlyPauser whenPaused {
         _paused = false;
-        emit Unpaused(GlobalConfig(globalConfigPausable).owner());
+        emit Unpaused(GlobalConfig(globalConfig).owner());
     }
 
     modifier onlyPauser() {
-        require(msg.sender == GlobalConfig(globalConfigPausable).owner(), "PauserRole: caller does not have the Pauser role");
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "PauserRole: caller does not have the Pauser role");
         _;
     }
 }

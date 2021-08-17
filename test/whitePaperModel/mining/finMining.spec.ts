@@ -2,9 +2,8 @@ import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { takeSnapshot, revertToSnapShot } from "../../../test-helpers/SnapshotUtils";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
-    "MockChainLinkAggregator"
-);
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
+    artifacts.require("MockChainLinkAggregator");
 var chai = require("chai");
 var expect = chai.expect;
 let snapshotId: string;
@@ -12,7 +11,7 @@ var tokenData = require("../../../test-helpers/tokenData.json");
 
 const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 
-const ERC20: t.MockErc20Contract = artifacts.require("ERC20");
+const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
 contract("SavingAccount.borrow", async (accounts) => {
@@ -21,6 +20,8 @@ contract("SavingAccount.borrow", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let bank: t.BankInstance;
+    let tokenRegistry: t.TokenRegistryInstance;
+    let accountsContract: t.AccountsInstance;
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];
@@ -81,21 +82,18 @@ contract("SavingAccount.borrow", async (accounts) => {
     let ONE_USDC: any;
     let ONE_FIN: any;
 
-    before(function () {
+    before(async () => {
         // Things to initialize before all test
-        this.timeout(0);
         testEngine = new TestEngine();
         // testEngine.deploy("whitePaperModel.scen");
-    });
-
-    beforeEach(async function () {
-        this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
 
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         bank = await testEngine.bank;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
+        tokenRegistry = testEngine.tokenInfoRegistry;
+        accountsContract = testEngine.accounts;
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
         addressUSDT = tokens[2];
@@ -166,6 +164,10 @@ contract("SavingAccount.borrow", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
 
+        await savingAccount.setFINAddress(addressFIN);
+    });
+
+    beforeEach(async () => {
         // Take snapshot of the EVM before each test
         snapshotId = await takeSnapshot();
     });
@@ -191,6 +193,15 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -285,9 +296,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -296,8 +306,19 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
+
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("50000000239635890844809"));
                 });
 
@@ -316,6 +337,15 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -411,9 +441,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -422,9 +451,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585661757));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
+
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("150000001088430855561536"));
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest3: Three user deposit in different blocks with one borrow", async function () {
@@ -444,6 +484,15 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -566,9 +615,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const totalBorrowInterest = BN(user1BorrowInterest)
                         .add(user2BorrowInterest)
                         .add(user3BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -577,9 +625,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(19168622444));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
+
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("183333351461896584727671")); // 1.8333335036068736e-12
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest4: Two user deposit in different blocks with two borrows", async function () {
@@ -591,6 +650,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, ONE_FIFTH_DAI, { from: user1 });
 
                     await savingAccount.fastForward(100000);
@@ -598,6 +666,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -694,9 +769,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
                     const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -705,9 +779,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7988612884));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
+
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("278571581765745567836486"));
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest5: Three user deposit in different blocks with two borrows", async function () {
@@ -721,6 +806,15 @@ contract("SavingAccount.borrow", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user3 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    const result = await tokenRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user1,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, ONE_FIFTH_DAI, { from: user1 });
 
                     await savingAccount.fastForward(100000);
@@ -728,6 +822,13 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true,
+                        {
+                            from: user2,
+                        }
+                    );
                     await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
@@ -851,9 +952,8 @@ contract("SavingAccount.borrow", async (accounts) => {
                     const totalBorrowInterest = BN(user1BorrowInterest)
                         .add(user2BorrowInterest)
                         .add(user3BorrowInterest);
-                    const totalCompoundInterest = BN(compoundAfterFastForward).sub(
-                        compoundPrincipal
-                    );
+                    const totalCompoundInterest =
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
@@ -862,9 +962,20 @@ contract("SavingAccount.borrow", async (accounts) => {
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(15974974617));
                     // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
 
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
+
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
                     expect(BN(balFIN)).to.be.bignumber.equal(new BN("340476516325314737083808")); // 7.85729643603791*0.2 + 1.8333341356503024
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
             });
         });

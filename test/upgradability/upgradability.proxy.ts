@@ -3,9 +3,15 @@ import * as t from "../../types/truffle-contracts/index";
 var chai = require("chai");
 
 const { ethers, upgrades } = require("hardhat");
+const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 
 contract("SavingAccount() proxy", async (accounts) => {
+    let SAV: t.SavingAccountWithControllerInstance;
+
     const DUMMY: string = "0x0000000000000000000000000000000000000010";
+    const FINAddress = "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40";
+    const COMPAddress = "0xc00e94Cb662C3520282E6f5717214004A7f26888";
+    // let SavingAccount: t.SavingAccountWithControllerInstance;
 
     before(function () {
         // Things to initialize before all test
@@ -249,6 +255,68 @@ contract("SavingAccount() proxy", async (accounts) => {
             // Bank latest Proxy
             // ======================
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
+        });
+
+        it("SavingAccount - initFINnCOMPAddresses(): from V1.1 to latest", async () => {
+            // ==================
+            // SavingAccount V1.1
+            // ==================
+            const UtilsV1_1 = await ethers.getContractFactory("UtilsV1_1");
+            const utilsV1_1 = await UtilsV1_1.deploy();
+
+            const SavingLibV1_1 = await ethers.getContractFactory("SavingLibV1_1", {
+                libraries: {
+                    UtilsV1_1: utilsV1_1.address,
+                },
+            });
+            const savingLibV1_1 = await SavingLibV1_1.deploy();
+
+            const SavingAccountV1_1 = await ethers.getContractFactory("SavingAccountV1_1", {
+                libraries: { SavingLibV1_1: savingLibV1_1.address, UtilsV1_1: utilsV1_1.address },
+            });
+
+            // ====================
+            // SavingAccount latest
+            // ====================
+            const Utils = await ethers.getContractFactory("Utils");
+            const utils = await Utils.deploy();
+
+            const SavingLib = await ethers.getContractFactory("SavingLib", {
+                libraries: {
+                    Utils: utils.address,
+                },
+            });
+            const savingLib = await SavingLib.deploy();
+
+            const SavingAccount = await ethers.getContractFactory("SavingAccount", {
+                libraries: { SavingLib: savingLib.address, Utils: utils.address },
+            });
+
+            // ========================
+            // SavingAccount V1.1 Proxy
+            // ========================
+            const savingAccountProxy = await upgrades.deployProxy(
+                SavingAccountV1_1,
+                [[], [], DUMMY],
+                { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
+            );
+
+            // ==========================
+            // SavingAccount latest Proxy
+            // ==========================
+            const SAV = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccount, {
+                unsafeAllow: ["external-library-linking"],
+            });
+
+            // call initFINnCOMPAddresses() & verify FIN & COMP addresses after upgrade
+            await SAV.initFINnCOMPAddresses();
+            const FINAddrAfter = await SAV.FIN_ADDR();
+            const COMPAddrAfter = await SAV.COMP_ADDR();
+            expect(FINAddrAfter).to.be.equal(FINAddress);
+            expect(COMPAddrAfter).to.be.equal(COMPAddress);
+
+            // call initFINAddress() again
+            await expectRevert(SAV.initFINnCOMPAddresses(), "Already init");
         });
     });
 

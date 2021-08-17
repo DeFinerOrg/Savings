@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.5.14;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -14,7 +15,7 @@ contract Bank is Constant, Initializable{
     mapping(address => uint256) public totalReserve;   // amount of tokens in reservation
     mapping(address => uint256) public totalCompound;  // amount of tokens in compound
     // Token => block-num => rate
-    mapping(address => mapping(uint => uint)) public depositRateIndex; // the index curve of deposit rate
+    mapping(address => mapping(uint => uint)) public depositeRateIndex; // the index curve of deposit rate
     // Token => block-num => rate
     mapping(address => mapping(uint => uint)) public borrowRateIndex;   // the index curve of borrow rate
     // token address => block number
@@ -43,7 +44,7 @@ contract Bank is Constant, Initializable{
         uint borrowRatePerBlock;    // the borrow rate of the token in third party
     }
 
-    event UpdateIndex(address indexed token, uint256 depositRateIndex, uint256 borrowRateIndex);
+    event UpdateIndex(address indexed token, uint256 depositeRateIndex, uint256 borrowRateIndex);
     event UpdateDepositFINIndex(address indexed _token, uint256 depositFINRateIndex);
     event UpdateBorrowFINIndex(address indexed _token, uint256 borrowFINRateIndex);
 
@@ -181,7 +182,7 @@ contract Bank is Constant, Initializable{
         deltaBlock = lastDepositFINRateCheckpoint[_token] == 0 ? 0 : currentBlock.sub(lastDepositFINRateCheckpoint[_token]);
         // If the totalDeposit of the token is zero, no FIN token should be mined and the FINRateIndex is unchanged.
         depositFINRateIndex[_token][currentBlock] = depositFINRateIndex[_token][lastDepositFINRateCheckpoint[_token]].add(
-            getTotalDepositStore(_token) == 0 ? 0 : depositRateIndex[_token][lastCheckpoint[_token]]
+            getTotalDepositStore(_token) == 0 ? 0 : depositeRateIndex[_token][lastCheckpoint[_token]]
                 .mul(deltaBlock)
                 .mul(globalConfig.tokenInfoRegistry().depositeMiningSpeeds(_token))
                 .div(getTotalDepositStore(_token)));
@@ -213,18 +214,45 @@ contract Bank is Constant, Initializable{
     }
 
     /**
-     * Get the borrowing interest rate Borrowing interest rate.
+     * Get the borrowing interest rate.
      * @param _token token address
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
-        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
-        // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
-            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).div(INT_UNIT).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR);
+        uint256 capitalUtilizationRatio = getCapitalUtilizationRatio(_token);
+        // rateCurveConstant = <'3 * (10)^16'_rateCurveConstant_configurable>
+        uint256 rateCurveConstant = globalConfig.rateCurveConstant();
+        // compoundSupply = Compound Supply Rate * <'0.4'_supplyRateWeights_configurable>
+        uint256 compoundSupply = compoundPool[_token].depositRatePerBlock.mul(globalConfig.compoundSupplyRateWeights());
+        // compoundBorrow = Compound Borrow Rate * <'0.6'_borrowRateWeights_configurable>
+        uint256 compoundBorrow = compoundPool[_token].borrowRatePerBlock.mul(globalConfig.compoundBorrowRateWeights());
+        // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
+        uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
 
-        // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
-            add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).div(10);
+        bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
+        if(isSupportedOnCompound) {
+            uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
+            uint256 rateConstant;
+            // if the token is supported in third party (like Compound), check if U = 1
+            if(capitalUtilizationRatio == INT_UNIT) {
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+                return compoundSupplyPlusBorrow.add(rateConstant);
+            } else {
+                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return compoundSupplyPlusBorrow.add(rateConstant);
+            }
+        } else {
+            // If the token is NOT supported by the third party, check if U = 1
+            if(capitalUtilizationRatio == INT_UNIT) {
+                // if U = 1, borrowing rate = rateCurveConstant * 100
+                return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+            } else {
+                // if 0 < U < 1, borrowing rate = 3% / (1 - U)
+                return rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+            }
+        }
     }
 
     /**
@@ -246,6 +274,8 @@ contract Bank is Constant, Initializable{
     /**
      * Get capital utilization. Capital Utilization Rate (U )= total loan outstanding / Total market deposit
      * @param _token token address
+     * @return Capital utilization ratio `U`.
+     *  Valid range: 0 ≤ U ≤ 10^18
      */
     function getCapitalUtilizationRatio(address _token) public view returns(uint) {
         uint256 totalDepositsNow = getTotalDepositStore(_token);
@@ -276,9 +306,9 @@ contract Bank is Constant, Initializable{
      * @dev This function should always be called after current block is set as a new rateIndex point.
      */
     function getDepositAccruedRate(address _token, uint _depositRateRecordStart) external view returns (uint256) {
-        uint256 depositRate = depositRateIndex[_token][_depositRateRecordStart];
+        uint256 depositRate = depositeRateIndex[_token][_depositRateRecordStart];
         require(depositRate != 0, "_depositRateRecordStart is not a check point on index curve.");
-        return depositRateIndexNow(_token).mul(INT_UNIT).div(depositRate);
+        return depositeRateIndexNow(_token).mul(INT_UNIT).div(depositRate);
     }
 
     /**
@@ -314,7 +344,7 @@ contract Bank is Constant, Initializable{
             if(cToken == address(0)) {
                 compoundPool[_token].supported = false;
                 borrowRateIndex[_token][blockNumber] = UNIT;
-                depositRateIndex[_token][blockNumber] = UNIT;
+                depositeRateIndex[_token][blockNumber] = UNIT;
                 // Update the last checkpoint
                 lastCheckpoint[_token] = blockNumber;
             }
@@ -326,7 +356,7 @@ contract Bank is Constant, Initializable{
                 compoundPool[_token].borrowRatePerBlock = ICToken(cToken).borrowRatePerBlock();  // initial value
                 compoundPool[_token].depositRatePerBlock = ICToken(cToken).supplyRatePerBlock(); // initial value
                 borrowRateIndex[_token][blockNumber] = UNIT;
-                depositRateIndex[_token][blockNumber] = UNIT;
+                depositeRateIndex[_token][blockNumber] = UNIT;
                 // Update the last checkpoint
                 lastCheckpoint[_token] = blockNumber;
                 lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
@@ -336,7 +366,7 @@ contract Bank is Constant, Initializable{
             if(cToken == address(0)) {
                 compoundPool[_token].supported = false;
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
-                depositRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
+                depositeRateIndex[_token][blockNumber] = depositeRateIndexNow(_token);
                 // Update the last checkpoint
                 lastCheckpoint[_token] = blockNumber;
             } else {
@@ -348,7 +378,7 @@ contract Bank is Constant, Initializable{
                 compoundPool[_token].depositRatePerBlock = cTokenExchangeRate.mul(UNIT).div(lastCTokenExchangeRate[cToken])
                     .sub(UNIT).div(blockNumber.sub(lastCheckpoint[_token]));
                 borrowRateIndex[_token][blockNumber] = borrowRateIndexNow(_token);
-                depositRateIndex[_token][blockNumber] = depositRateIndexNow(_token);
+                depositeRateIndex[_token][blockNumber] = depositeRateIndexNow(_token);
                 // Update the last checkpoint
                 lastCheckpoint[_token] = blockNumber;
                 lastCTokenExchangeRate[cToken] = cTokenExchangeRate;
@@ -361,7 +391,7 @@ contract Bank is Constant, Initializable{
                 .div(borrowRateIndex[_token][previousCheckpoint]);
         }
 
-        emit UpdateIndex(_token, depositRateIndex[_token][getBlockNumber()], borrowRateIndex[_token][getBlockNumber()]);
+        emit UpdateIndex(_token, depositeRateIndex[_token][getBlockNumber()], borrowRateIndex[_token][getBlockNumber()]);
     }
 
     /**
@@ -369,13 +399,13 @@ contract Bank is Constant, Initializable{
      * @param _token token address
      * @dev This is an looking forward estimation from last checkpoint and not the exactly rate that the user will pay or earn.
      */
-    function depositRateIndexNow(address _token) public view returns(uint) {
+    function depositeRateIndexNow(address _token) public view returns(uint) {
         uint256 lcp = lastCheckpoint[_token];
         // If this is the first checkpoint, set the index be 1.
         if(lcp == 0)
             return INT_UNIT;
 
-        uint256 lastDepositeRateIndex = depositRateIndex[_token][lcp];
+        uint256 lastDepositeRateIndex = depositeRateIndex[_token][lcp];
         uint256 depositRatePerBlock = getDepositRatePerBlock(_token);
         // newIndex = oldIndex*(1+r*delta_block). If delta_block = 0, i.e. the last checkpoint is current block, index doesn't change.
         return lastDepositeRateIndex.mul(getBlockNumber().sub(lcp).mul(depositRatePerBlock).add(INT_UNIT)).div(INT_UNIT);
