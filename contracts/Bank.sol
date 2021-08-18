@@ -229,28 +229,30 @@ contract Bank is Constant, Initializable{
         // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
         uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
 
+        // Blocks per year for OKExChain
+        uint256 blocksPerYear = BLOCKS_PER_YEAR * 5; // No need to use SafeMath
         bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
         if(isSupportedOnCompound) {
             uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
             uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
-                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
-                rateConstant = rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / blocksPerYear)
+                rateConstant = rateCurveConstant.mul(100).div(blocksPerYear);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
-                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
-                rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / blocksPerYear)
+                rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(blocksPerYear);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
             if(capitalUtilizationRatio == INT_UNIT) {
                 // if U = 1, borrowing rate = rateCurveConstant * 100
-                return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
+                return rateCurveConstant.mul(100).div(blocksPerYear);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)
-                return rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return rateCurveConstant.div(nonUtilizedCapRatio).div(blocksPerYear);
             }
         }
     }
