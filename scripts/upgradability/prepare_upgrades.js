@@ -8,8 +8,6 @@ let savingAccountPrevProxy;
 let accountsPrevProxy;
 let bankPrevProxy;
 
-const DUMMY = "0x0000000000000000000000000000000000000010";
-
 async function main() {
     let network = process.env.HARDHAT_NETWORK;
 
@@ -35,41 +33,6 @@ async function main() {
         this.accountsPrevProxy = "";
         this.bankPrevProxy = "";
     }
-    // =========================
-    // Deploy SavingAccount V1.1
-    // =========================
-    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    Note:  The deployment part of this script is for local testing purposes only.
-    It should be removed when upgrading on testnet/mainnet
-    Use the address of the current deployments of UtilsV1._1, SavingLibV1_1, savingAccountV1_1Proxy instead
-    */
-    const UtilsV1_1 = await ethers.getContractFactory("UtilsV1_1");
-    const utilsV1_1 = await UtilsV1_1.deploy();
-    console.log("-------------------- utilsV1_1 ---------------------", utilsV1_1.address);
-
-    const SavingLibV1_1 = await ethers.getContractFactory("SavingLibV1_1", {
-        libraries: {
-            UtilsV1_1: utilsV1_1.address,
-        },
-    });
-    const savingLibV1_1 = await SavingLibV1_1.deploy();
-    console.log(
-        "---------------------- savingLibV1_1 -----------------------",
-        savingLibV1_1.address
-    );
-
-    const SavingAccountV1_1 = await ethers.getContractFactory("SavingAccountV1_1", {
-        libraries: { SavingLibV1_1: savingLibV1_1.address, UtilsV1_1: utilsV1_1.address },
-    });
-    // SavingAccountV1_1 proxy
-    const savingAccountV1_1Proxy = await upgrades.deployProxy(SavingAccountV1_1, [[], [], DUMMY], {
-        initializer: "initialize",
-        unsafeAllow: ["external-library-linking"],
-    });
-    console.log(
-        "-------------------- SavingAccountV1_1 ---------------------",
-        savingAccountV1_1Proxy.address
-    );
 
     // ==========================
     // Upgrade SavingAccount V1.1
@@ -106,28 +69,6 @@ async function main() {
     console.log("FINAddr", FINAddr);
     console.log("COMPAddr", COMPAddr);
 
-    // ====================
-    // Deploy Accounts V1.1
-    // ====================
-    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    Note:  The deployment part of this script is for local testing purposes only.
-    It should be removed when upgrading on testnet/mainnet
-    Use the address of the current deployments of AccountTokenLibV1_1, accountsV1_1Proxy instead
-    */
-    const AccountTokenLibV1_1 = await ethers.getContractFactory("AccountTokenLibV1_1");
-    const accountTokenLibV1_1 = await AccountTokenLibV1_1.deploy();
-
-    const AccountsV1_1 = await ethers.getContractFactory("AccountsV1_1", {
-        libraries: {
-            AccountTokenLibV1_1: accountTokenLibV1_1.address,
-        },
-    });
-    // Accounts v1.1 proxy
-    const accountsV1_1Proxy = await upgrades.deployProxy(AccountsV1_1, [DUMMY], {
-        initializer: "initialize",
-        unsafeAllow: ["external-library-linking"],
-    });
-
     // =====================
     // Upgrade Accounts V1.1
     // =====================
@@ -147,21 +88,6 @@ async function main() {
         }
     );
     console.log("AccountsLatestAddress", AccountsLatestAddress);
-
-    // ====================
-    // Deploy Bank V1.1
-    // ====================
-    /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    Note:  The deployment part of this script is for local testing purposes only.
-    It should be removed when upgrading on testnet/mainnet
-    Use the address of the current deployments of BankV1_1, bankProxy instead
-    */
-    const BankV1_1 = await ethers.getContractFactory("BankV1_1");
-
-    // Bank v1.1 proxy
-    const bankProxy = await upgrades.deployProxy(BankV1_1, [DUMMY], {
-        initializer: "initialize",
-    });
 
     // =====================
     // Upgrade Bank V1.1
