@@ -22,8 +22,6 @@ contract SavingAccount is
     using SafeMath for uint256;
 
     GlobalConfig public globalConfig;
-    address public FIN_ADDR;
-    address public COMP_ADDR;
 
     address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
     address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
@@ -99,15 +97,6 @@ contract SavingAccount is
             if (_cTokenAddresses[i] != address(0x0) && _tokenAddresses[i] != ETH_ADDR) {
                 approveAll(_tokenAddresses[i]);
             }
-        }
-    }
-
-    function initFINnCOMPAddresses() public {
-        if (FIN_ADDR == address(0x0) && COMP_ADDR == address(0x0)) {
-            FIN_ADDR = address(0x054f76beED60AB6dBEb23502178C52d6C5dEbE40);
-            COMP_ADDR = address(0xc00e94Cb662C3520282E6f5717214004A7f26888);
-        } else {
-            revert("Already init");
         }
     }
 
