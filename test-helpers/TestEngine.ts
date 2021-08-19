@@ -294,8 +294,7 @@ export class TestEngine {
             this.constant.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance =
-            await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
         // SavingAccountWithController.setAsDeployed(savingAccount);
 
         const initialize_data = savingAccount.contract.methods
@@ -306,9 +305,6 @@ export class TestEngine {
                 this.compoundTokens.Contracts.Comptroller
             )
             .encodeABI();
-
-        // set FINAddress & COMPAddress variable to mainnet address in SavingAccount
-        await savingAccount.initFINnCOMPAddresses();
 
         const accounts_initialize_data = this.accounts.contract.methods
             .initialize(this.globalConfig.address, this.compoundTokens.Contracts.Comptroller)
@@ -452,8 +448,7 @@ export class TestEngine {
             this.constant.address
         );
 
-        const savingAccount: t.SavingAccountWithControllerInstance =
-            await SavingAccountWithController.new();
+        const savingAccount: t.SavingAccountWithControllerInstance = await SavingAccountWithController.new();
 
         const initialize_data = savingAccount.contract.methods
             .initialize(
