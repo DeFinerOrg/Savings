@@ -192,6 +192,8 @@ contract("SavingAccount() proxy", async (accounts) => {
             const SAV = await upgrades.upgradeProxy(savingAccountProxy.address, SavingAccount, {
                 unsafeAllow: ["external-library-linking"],
             });
+
+            expect(await SAV.version()).to.be.equal("v1.2.0");
         });
 
         it("Accounts from V1.1 to latest", async () => {
@@ -231,6 +233,7 @@ contract("SavingAccount() proxy", async (accounts) => {
             const upgradeAccounts = await upgrades.upgradeProxy(accountsProxy.address, Accounts, {
                 unsafeAllow: ["external-library-linking"],
             });
+            expect(await upgradeAccounts.version()).to.be.equal("v1.2.0");
         });
 
         it("Bank from V1.1 to latest", async () => {
@@ -255,6 +258,7 @@ contract("SavingAccount() proxy", async (accounts) => {
             // Bank latest Proxy
             // ======================
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
+            expect(await upgradeBank.version()).to.be.equal("v1.2.0");
         });
 
         it("SavingAccount - initFINnCOMPAddresses(): from V1.1 to latest", async () => {

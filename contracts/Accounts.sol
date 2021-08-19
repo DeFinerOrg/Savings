@@ -878,4 +878,8 @@ contract Accounts is Constant, Initializable{
             .div(bank.borrowRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
     }
+
+    function version() public pure returns(string memory) {
+        return "v1.2.0";
+    }
 }
