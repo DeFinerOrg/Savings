@@ -105,11 +105,45 @@ contract SavingAccountWithController is SavingAccount {
     function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return globalConfig.bank().getTokenState(_token);
     }
+
+    address public finAddr;
     function setFINAddress(address _FINAddress) public {
-        FIN_ADDR = _FINAddress;
+        finAddr = _FINAddress;
     }
 
+    address public compAddr;
     function setCOMPAddress(address _COMPAddress) public {
-        COMP_ADDR = _COMPAddress;
+        compAddr = _COMPAddress;
+    }
+
+    // override claim functions to use `finAddr`
+    // =========================================
+    function claim() public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    function claimDepositFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimDepositFIN(msg.sender, _token);
+        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    function claimBorrowFIN(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimBorrowFIN(msg.sender, _token);
+        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    // override function to use `compAddr`
+    function withdrawCOMP(address _beneficiary) external onlyOwner {
+        uint256 compBalance = IERC20(compAddr).balanceOf(address(this));
+        IERC20(compAddr).safeTransfer(_beneficiary, compBalance);
+
+        emit WithdrawCOMP(_beneficiary, compBalance);
     }
 }
