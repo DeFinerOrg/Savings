@@ -337,4 +337,8 @@ contract SavingAccount is
 
         emit WithdrawCOMP(_beneficiary, compBalance);
     }
+
+    function version() public pure returns(string memory) {
+        return "v1.2.0";
+    }
 }
