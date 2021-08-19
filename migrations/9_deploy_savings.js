@@ -162,13 +162,31 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    if (network == "kovan" || network == "kovan-fork") {
+    if (network == "ropsten" || network == "ropsten-fork") {
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.ropsten.cTokenAddress,
+            DEAD_ADDR
+        );
+    } else if (network == "kovan" || network == "kovan-fork") {
         await tokenInfoRegistry.addToken(
             ETH_ADDR,
             tokenData.ETH.decimals,
             tokenData.ETH.isFeeEnabled,
             tokenData.ETH.isSupportedByCompound,
             tokenData.ETH.kovan.cTokenAddress,
+            DEAD_ADDR
+        );
+    } else if (network == "rinkeby" || network == "rinkeby-fork") {
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.rinkeby.cTokenAddress,
             DEAD_ADDR
         );
     } else if (network == "mainnet" || network == "mainnet-fork") {

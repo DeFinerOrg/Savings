@@ -25,6 +25,9 @@ contract SavingAccount is
     address public FIN_ADDR;
     address public COMP_ADDR;
 
+    address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
+    address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
     event Repay(address indexed token, address from, uint256 amount);
@@ -43,7 +46,7 @@ contract SavingAccount is
     event WithdrawCOMP(address beneficiary, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
-        if (_token != ETH_ADDR) {
+        if(_token != ETH_ADDR) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
