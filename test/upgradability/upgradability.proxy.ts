@@ -1,6 +1,7 @@
 import * as t from "../../types/truffle-contracts/index";
 
 var chai = require("chai");
+var expect = chai.expect;
 
 const { ethers, upgrades } = require("hardhat");
 const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
@@ -8,6 +9,8 @@ const { BN, expectRevert, time } = require("@openzeppelin/test-helpers");
 contract("SavingAccount() proxy", async (accounts) => {
     let SAV: t.SavingAccountWithControllerInstance;
 
+    const ETH_BLOCKS_PER_YEAR = new BN(2102400);
+    const OEC_BLOCKS_PER_YEAR = new BN(10512000);
     const DUMMY: string = "0x0000000000000000000000000000000000000010";
     const FINAddress = "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40";
     const COMPAddress = "0xc00e94Cb662C3520282E6f5717214004A7f26888";
@@ -186,6 +189,9 @@ contract("SavingAccount() proxy", async (accounts) => {
                 { initializer: "initialize", unsafeAllow: ["external-library-linking"] }
             );
 
+            let blocksPerYear = new BN((await savingAccountProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(ETH_BLOCKS_PER_YEAR);
+
             // ==========================
             // SavingAccount latest Proxy
             // ==========================
@@ -199,6 +205,9 @@ contract("SavingAccount() proxy", async (accounts) => {
             const COMPAddrAfter = await SAV.COMP_ADDR();
             expect(FINAddrAfter).to.be.equal("0x054f76beED60AB6dBEb23502178C52d6C5dEbE40");
             expect(COMPAddrAfter).to.be.equal("0xc00e94Cb662C3520282E6f5717214004A7f26888");
+
+            blocksPerYear = new BN((await savingAccountProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
         });
 
         it("Accounts from V1.1 to latest", async () => {
@@ -232,6 +241,9 @@ contract("SavingAccount() proxy", async (accounts) => {
                 unsafeAllow: ["external-library-linking"],
             });
 
+            let blocksPerYear = new BN((await accountsProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(ETH_BLOCKS_PER_YEAR);
+
             // ======================
             // Accounts latest Proxy
             // ======================
@@ -239,6 +251,9 @@ contract("SavingAccount() proxy", async (accounts) => {
                 unsafeAllow: ["external-library-linking"],
             });
             expect(await upgradeAccounts.version()).to.be.equal("v1.2.0");
+
+            blocksPerYear = new BN((await accountsProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
         });
 
         it("Bank from V1.1 to latest", async () => {
@@ -259,11 +274,17 @@ contract("SavingAccount() proxy", async (accounts) => {
                 initializer: "initialize",
             });
 
+            let blocksPerYear = new BN((await bankProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(ETH_BLOCKS_PER_YEAR);
+
             // ======================
             // Bank latest Proxy
             // ======================
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
             expect(await upgradeBank.version()).to.be.equal("v1.2.0");
+     blocksPerYear = new BN((await bankProxy.BLOCKS_PER_YEAR()).toString());
+     expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
+
         });
     });
 
