@@ -18,8 +18,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     GlobalConfig public globalConfig;
 
-    address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
-    address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    address public constant FIN_ADDR = 0xF69DB0D004dC1B75d881cCae4BfAe4d17CEb2f7A;
+    address public constant COMP_ADDR = 0x61460874a7196d6a22D1eE4922473664b3E95270;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
