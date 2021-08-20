@@ -12,8 +12,9 @@ const Accounts: t.AccountsContract = artifacts.require("Accounts");
 
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
-const MockChainLinkAggregator: t.MockChainLinkAggregatorContract =
-    artifacts.require("MockChainLinkAggregator");
+const MockChainLinkAggregator: t.MockChainLinkAggregatorContract = artifacts.require(
+    "MockChainLinkAggregator"
+);
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -191,7 +192,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
 
         await upgradeContracts();
 
-        await ensureDeployedContractOfVersion("v1.2");
+        await ensureDeployedContractOfVersion("v1.2.0");
     });
 
     it("should default to disable all for new user", async () => {
@@ -201,7 +202,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
         const user = user1;
         await upgradeContracts();
 
-        await ensureDeployedContractOfVersion("v1.2");
+        await ensureDeployedContractOfVersion("v1.2.0");
 
         // user1 creates his position on v1.2
         await expectCollInitForUser(user, DISABLED);
@@ -248,7 +249,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -287,7 +288,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -320,7 +321,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -364,7 +365,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -433,7 +434,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectCollInitForUser(user2, DISABLED);
                 await expectCollInitForUser(owner, DISABLED);
@@ -519,7 +520,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -545,7 +546,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
 
                 // Upgrade
                 await upgradeContracts();
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
@@ -567,7 +568,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
 
                 // Upgrade
                 await upgradeContracts();
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
@@ -597,7 +598,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
@@ -625,7 +626,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user, DISABLED);
                 await expectAllCollStatusDisabledForUser(user);
 
@@ -669,7 +670,7 @@ contract("Collateral Feature Upgrade Tests", async (accounts) => {
                 // Upgrade
                 await upgradeContracts();
 
-                await ensureDeployedContractOfVersion("v1.2");
+                await ensureDeployedContractOfVersion("v1.2.0");
                 await expectCollInitForUser(user1, DISABLED);
                 await expectAllCollStatusDisabledForUser(user1);
 
@@ -691,7 +692,7 @@ async function ensureDeployedContractOfVersion(version: string) {
 async function upgradeContracts() {
     await ensureDeployedContractOfVersion("v1.1");
     await upgradeFrom_v1_1_to_v1_2(testEngine);
-    await ensureDeployedContractOfVersion("v1.2");
+    await ensureDeployedContractOfVersion("v1.2.0");
 }
 
 async function expectAllCollStatusDisabledForUser(user: string) {

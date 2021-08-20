@@ -7,10 +7,6 @@ contract BankWithController is Bank {
 
     address comptroller;
 
-    function version() public pure returns(string memory) {
-        return "v1.2";
-    }
-
     function initialize(
         GlobalConfig _globalConfig,
         address _comptroller
