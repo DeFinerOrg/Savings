@@ -26,11 +26,11 @@ contract GlobalConfig is Ownable {
     uint256 public deFinerRate = 10;
     address payable public deFinerCommunityFund = msg.sender;
 
-    Bank public bank; // the Bank contract
-    SavingAccount public savingAccount; // the SavingAccount contract
-    TokenRegistry public tokenInfoRegistry; // the TokenRegistry contract
-    Accounts public accounts; // the Accounts contract
-    Constant public constants; // the constants contract
+    Bank public bank;                               // the Bank contract
+    SavingAccount public savingAccount;             // the SavingAccount contract
+    TokenRegistry public tokenInfoRegistry;     // the TokenRegistry contract
+    Accounts public accounts;                       // the Accounts contract
+    Constant public constants;                      // the constants contract
 
     event CommunityFundRatioUpdated(uint256 indexed communityFundRatio);
     event MinReserveRatioUpdated(uint256 indexed minReserveRatio);
