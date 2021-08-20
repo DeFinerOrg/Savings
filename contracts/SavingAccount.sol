@@ -71,6 +71,11 @@ contract SavingAccount is
         _;
     }
 
+    modifier onlyOwner() {
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
+        _;
+    }
+
     /**
      * Initialize function to be called by the Deployer for the first time
      * @param _tokenAddresses list of token addresses
