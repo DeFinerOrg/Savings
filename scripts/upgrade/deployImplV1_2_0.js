@@ -28,6 +28,7 @@ async function deploySavingAccountImpl() {
     });
 
     const savingAccount = await SavingAccount.deploy();
+    // init implementation contract with fake values
     await savingAccount.initialize([], [], ZERO_ADDRESS);
     console.log("SavingAccount impl: ", savingAccount.address);
 
@@ -43,6 +44,7 @@ async function deploySavingAccountImpl() {
 async function deployBankImpl() {
     const Bank = await ethers.getContractFactory("Bank");
     const bank = await Bank.deploy();
+    // init implementation contract with fake values
     await bank.initialize(ZERO_ADDRESS);
 
     console.log("Bank impl: ", bank.address);
@@ -62,6 +64,7 @@ async function deployAccountsImpl() {
     });
 
     const account = await Accounts.deploy();
+    // init implementation contract with fake values
     await account.initialize(ZERO_ADDRESS);
 
     console.log("Accounts impl: ", account.address);
