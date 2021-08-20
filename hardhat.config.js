@@ -6,6 +6,14 @@ require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
+let _mnemonic = "";
+let MAINNET_PRIVATE_KEY = "";
+try {
+    const fs = require("fs");
+    _mnemonic = fs.readFileSync(".secret").toString().trim();
+    MAINNET_PRIVATE_KEY = fs.readFileSync(".privateKey").toString().trim();
+} catch (e) {}
+
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
 task("balance", "Prints an account's balance")
@@ -42,6 +50,17 @@ module.exports = {
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
             loggingEnabled: true,
+        },
+        kovan: {
+            url: "https://kovan.infura.io/v3/10bace39d64a4b4ba79ee1ee94ea9207",
+            gas: 12500000,
+            blockGasLimit: 12500000,
+            accounts: {
+                mnemonic: _mnemonic,
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+            },
         },
     },
     gasReporter: {},
