@@ -23,8 +23,10 @@ contract SavingAccount is
 
     GlobalConfig public globalConfig;
 
-    address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
-    address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    // FIN token contract on OEC
+    address public constant FIN_ADDR = 0x8D3573f24c0aa3819A2f5b02b2985dD82B487715;
+    // WePiggy does not have its token ok OEC
+    address public constant COMP_ADDR = 0x0000000000000000000000000000000000000000;
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -331,12 +333,15 @@ contract SavingAccount is
     /**
      * Withdraw COMP token to beneficiary
      */
+    // NOTICE: No token for WePiggy on OEC
+    /*
     function withdrawCOMP(address _beneficiary) external onlyOwner {
         uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
         IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
 
         emit WithdrawCOMP(_beneficiary, compBalance);
     }
+    */
 
     function version() public pure returns(string memory) {
         return "v1.2.0";
