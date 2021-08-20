@@ -31,8 +31,8 @@ async function deploySavingAccountImpl() {
     await savingAccount.initialize([], [], ZERO_ADDRESS);
     console.log("SavingAccount impl: ", savingAccount.address);
 
-    console.log(await savingAccount.FIN_ADDR());
-    console.log(await savingAccount.COMP_ADDR());
+    console.log("FIN_ADDR: ", await savingAccount.FIN_ADDR());
+    console.log("COMP_ADDR: ", await savingAccount.COMP_ADDR());
 
     return savingAccount.address;
 }
