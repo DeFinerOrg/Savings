@@ -24,7 +24,7 @@ contract SavingAccount is
     GlobalConfig public globalConfig;
 
     // FIN token contract on OEC
-    address public constant FIN_ADDR = 0x8d3573f24c0aa3819a2f5b02b2985dd82b487715;
+    address public constant FIN_ADDR = 0x8D3573f24c0aa3819A2f5b02b2985dD82B487715;
     // WePiggy does not have its token ok OEC
     //address public constant COMP_ADDR = 0x0000000000000000000000000000000000000000;
 
