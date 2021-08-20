@@ -203,8 +203,8 @@ contract("SavingAccount() proxy", async (accounts) => {
 
             const FINAddrAfter = await SAV.FIN_ADDR();
             const COMPAddrAfter = await SAV.COMP_ADDR();
-            expect(FINAddrAfter).to.be.equal("0x054f76beED60AB6dBEb23502178C52d6C5dEbE40");
-            expect(COMPAddrAfter).to.be.equal("0xc00e94Cb662C3520282E6f5717214004A7f26888");
+            expect(FINAddrAfter).to.be.equal("0x8D3573f24c0aa3819A2f5b02b2985dD82B487715");
+            expect(COMPAddrAfter).to.be.equal("0x0000000000000000000000000000000000000000");
 
             blocksPerYear = new BN((await savingAccountProxy.BLOCKS_PER_YEAR()).toString());
             expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
@@ -282,9 +282,8 @@ contract("SavingAccount() proxy", async (accounts) => {
             // ======================
             const upgradeBank = await upgrades.upgradeProxy(bankProxy.address, Bank);
             expect(await upgradeBank.version()).to.be.equal("v1.2.0");
-     blocksPerYear = new BN((await bankProxy.BLOCKS_PER_YEAR()).toString());
-     expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
-
+            blocksPerYear = new BN((await bankProxy.BLOCKS_PER_YEAR()).toString());
+            expect(blocksPerYear).to.be.bignumber.equal(OEC_BLOCKS_PER_YEAR);
         });
     });
 
