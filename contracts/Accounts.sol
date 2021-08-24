@@ -829,6 +829,7 @@ contract Accounts is Constant, Initializable{
         Bank bank = globalConfig.bank();
         uint256 currentBlock = getBlockNumber();
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        bank.updateMining(_token);
         bank.updateDepositFINIndex(_token);
         uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
         calculateDepositFIN(lastDepositBlock, _token, _account, currentBlock);
@@ -842,6 +843,7 @@ contract Accounts is Constant, Initializable{
         Bank bank = globalConfig.bank();
         uint256 currentBlock = getBlockNumber();
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        bank.updateMining(_token);
         bank.updateBorrowFINIndex(_token);
         uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
         calculateBorrowFIN(lastBorrowBlock, _token, _account, currentBlock);
