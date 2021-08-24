@@ -29,6 +29,7 @@ contract("borrowMiningTests", async (accounts) => {
     let tokens: any;
     let addressDAI: any;
     let addressUSDC: any;
+    let addressUSDT: any;
     let addressTUSD: any;
     let addressMKR: any;
     let addressWBTC: any;
@@ -43,6 +44,7 @@ contract("borrowMiningTests", async (accounts) => {
     let cWBTC: t.MockCTokenInstance;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
     let erc20TUSD: t.MockErc20Instance;
     let erc20MKR: t.MockErc20Instance;
     let erc20WBTC: t.MockErc20Instance;
@@ -54,6 +56,7 @@ contract("borrowMiningTests", async (accounts) => {
     let HALF_DAI: any;
     let ONE_FIFTH_DAI: any;
     let ONE_USDC: any;
+    let ONE_USDT: any;
     let ONE_FIN: any;
 
     before(async () => {
@@ -70,12 +73,14 @@ contract("borrowMiningTests", async (accounts) => {
 
         addressDAI = tokens[0];
         addressUSDC = tokens[1];
+        addressUSDT = tokens[2];
         addressTUSD = tokens[3];
         addressMKR = tokens[4];
         addressWBTC = tokens[8];
         addressFIN = tokens[11];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
+        erc20USDT = await ERC20.at(addressUSDT);
         erc20TUSD = await ERC20.at(addressTUSD);
         erc20MKR = await ERC20.at(addressMKR);
         erc20WBTC = await ERC20.at(addressWBTC);
@@ -90,10 +95,12 @@ contract("borrowMiningTests", async (accounts) => {
         ONE_FIFTH_DAI = ONE_DAI.div(new BN(5));
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
+        ONE_USDT = sixPrecision;
         ONE_FIN = eighteenPrecision;
 
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressDAI, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressUSDC, ONE_FIN, ONE_FIN);
+        await testEngine.tokenInfoRegistry.updateMiningSpeed(addressUSDT, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
@@ -122,7 +129,7 @@ contract("borrowMiningTests", async (accounts) => {
             context("borrow mining", async () => {
                 context("Compound supported 18 decimal token", async () => {
                     context("should succeed", async () => {
-                        it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function () {
+                        /*it("Deposit DAI then user 1 & 2 borrow small amount of DAI on same block", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -1094,11 +1101,109 @@ contract("borrowMiningTests", async (accounts) => {
                             expect(BN(claimableAmountUser2)).to.be.bignumber.equal(
                                 BN(balFINUser2Diff)
                             );
+                        }); */
+                        it("deposit ETH, borrow USDT and claim the mined tokens", async function () {
+                            this.timeout(0);
+                            await erc20FIN.transfer(
+                                savingAccount.address,
+                                ONE_FIN.mul(new BN(1000000))
+                            );
+                            await savingAccount.fastForward(100000);
+                            const numOfUSDT = ONE_USDT.mul(new BN(1000));
+                            const depositAmountUSDT = new BN(500).mul(ONE_USDT);
+                            const depositAmountETH = new BN(1000).mul(eighteenPrecision);
+                            await erc20USDT.transfer(user1, numOfUSDT);
+
+                            // deposit ETH & USDT
+                            await erc20USDT.approve(savingAccount.address, numOfUSDT, {
+                                from: user2,
+                            });
+                            await erc20USDT.approve(savingAccount.address, numOfUSDT, {
+                                from: user1,
+                            });
+
+                            // user 1 deposits USDT
+                            await savingAccount.deposit(addressUSDT, depositAmountUSDT, {
+                                from: user1,
+                            });
+
+                            // user 2 deposits ETH
+                            await savingAccount.deposit(ETH_ADDRESS, depositAmountETH, {
+                                value: depositAmountETH,
+                                from: user2,
+                            });
+                            // 2. Start borrowing.
+                            const result = await tokenRegistry.getTokenInfoFromAddress(ETH_ADDRESS);
+                            const ethTokenIndex = result[0];
+                            await accountsContract.methods["setCollateral(uint8,bool)"](
+                                ethTokenIndex,
+                                true,
+                                {
+                                    from: user2,
+                                }
+                            );
+                            // user 2 borrows USDT
+                            await savingAccount.borrow(addressUSDT, new BN(10).mul(ONE_USDT), {
+                                from: user2,
+                            });
+                            // 3. Verify the loan amount.
+                            const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
+                            // expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
+                            //     borrowAmount
+                            // );
+                            // Deposit an extra token to create a new rate check point
+                            await savingAccount.fastForward(1000);
+                            await savingAccount.deposit(erc20USDT.address, new BN(10), {
+                                from: user1,
+                            });
+                            // 4. Claim the minted tokens
+                            // fastforward
+                            const balFIN1 = await erc20FIN.balanceOf(user2);
+                            console.log("balFIN1", balFIN1.toString());
+                            await savingAccount.fastForward(100000);
+                            // Deposit an extra tokens to create a new rate check point
+                            await savingAccount.deposit(erc20USDT.address, new BN(10), {
+                                from: user1,
+                            });
+
+                            // FIN balance before claim
+                            const claimableBorrowAmountUser2 =
+                                await savingAccount.claimBorrowFIN.call(addressUSDT, {
+                                    from: user2,
+                                });
+                            console.log(
+                                "claimableBorrowAmountUser2",
+                                claimableBorrowAmountUser2.toString()
+                            );
+
+                            // const claimableDepositAmountUser2 =
+                            //     await savingAccount.claimDepositFIN.call(ETH_ADDRESS, {
+                            //         from: user1,
+                            //     });
+                            // console.log(
+                            //     "claimableDepositAmountUser2",
+                            //     claimableDepositAmountUser2.toString()
+                            // );
+
+                            const claimableDepositAmountUser1 =
+                                await savingAccount.claimDepositFIN.call(addressUSDT, {
+                                    from: user1,
+                                });
+                            console.log(
+                                "claimableDepositAmountUser2",
+                                claimableDepositAmountUser1.toString()
+                            );
+
+                            let totalClaimUser2 = await savingAccount.claim.call({ from: user2 });
+                            console.log("totalCalimUser2", totalClaimUser2.toString());
+
+                            let totalClaimUser1 = await savingAccount.claim.call({ from: user1 });
+                            console.log("totalCalimUser1", totalClaimUser1.toString());
                         });
                     });
                 });
 
-                context("Compound supported 6 decimal token", async () => {
+                /*context("Compound supported 6 decimal token", async () => {
                     context("should succeed", async () => {
                         it("Deposit DAI & USDC then borrow small amount of USDC", async function () {
                             this.timeout(0);
@@ -1485,7 +1590,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                         });
                     });
-                });
+                }); */
             });
         });
     });
