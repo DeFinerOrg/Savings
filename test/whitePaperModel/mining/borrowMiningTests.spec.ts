@@ -974,8 +974,18 @@ contract("borrowMiningTests", async (accounts) => {
                                 }
                             );
 
+                            const balFINBeforeUser2 = await erc20FIN.balanceOf(user2);
+                            const balFINBeforeUser1 = new BN(await erc20FIN.balanceOf(user1));
+                            const claimableDAIUser1 = new BN(
+                                await savingAccount.claimForToken.call(addressDAI, { from: user1 })
+                            );
+                            const claimableDAIUser2 = new BN(
+                                await savingAccount.claimForToken.call(addressDAI, { from: user2 })
+                            );
+
                             await savingAccount.claimForToken(addressDAI, { from: user2 });
                             await savingAccount.claim({ from: user1 });
+
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
                             const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
                             const balFINUser1Diff = BN(balFINAfterUser1).sub(BN(balFINUser1));
@@ -984,10 +994,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("151500000258173303249000")
+                                balFINBeforeUser2.add(claimableDAIUser2)
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("50500000258173303210200")
+                                balFINBeforeUser1.add(claimableDAIUser1)
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -1258,13 +1268,6 @@ contract("borrowMiningTests", async (accounts) => {
 
                             // FIN balance before claim
                             // User 1
-                            const claimDepositUser1 = new BN(
-                                await savingAccount.claimForToken.call(addressDAI, {
-                                    from: user1,
-                                })
-                            );
-                            console.log("claimDepositUser1", claimDepositUser1.toString());
-
                             const claimDAIUser1 = new BN(
                                 await savingAccount.claimForToken.call(addressDAI, {
                                     from: user1,
@@ -1272,14 +1275,14 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             console.log("claimDAIUser1", claimDAIUser1.toString());
 
-                            const TotalclaimableAmountUser1 = new BN(
+                            const totalClaimableAmountUser1 = new BN(
                                 await savingAccount.claim.call({
                                     from: user1,
                                 })
                             );
                             console.log(
-                                "TotalclaimableAmountUser1",
-                                TotalclaimableAmountUser1.toString()
+                                "totalClaimableAmountUser1",
+                                totalClaimableAmountUser1.toString()
                             );
 
                             // User 2
@@ -1290,17 +1293,24 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                             console.log("claimDAIUser2", claimDAIUser2.toString());
 
-                            const TotalclaimableAmountUser2 = new BN(
+                            const totalClaimableAmountUser2 = new BN(
                                 await savingAccount.claim.call({
                                     from: user2,
                                 })
                             );
                             console.log(
-                                "TotalclaimableAmountUser2",
-                                TotalclaimableAmountUser2.toString()
+                                "totalClaimableAmountUser2",
+                                totalClaimableAmountUser2.toString()
                             );
 
-                            expect(claimDAIUser2).to.be.bignumber.equal(TotalclaimableAmountUser2);
+                            expect(totalClaimableAmountUser2).to.be.bignumber.greaterThan(
+                                new BN(0)
+                            );
+                            expect(totalClaimableAmountUser1).to.be.bignumber.greaterThan(
+                                new BN(0)
+                            );
+                            expect(claimDAIUser1).to.be.bignumber.equal(totalClaimableAmountUser1);
+                            expect(claimDAIUser2).to.be.bignumber.equal(totalClaimableAmountUser2);
                         });
                         it("deposit ETH, borrow USDT and claim the mined tokens", async function () {
                             this.timeout(0);
@@ -1408,9 +1418,8 @@ contract("borrowMiningTests", async (accounts) => {
                             let totalClaimUser1 = await savingAccount.claim.call({ from: user1 });
                             console.log("totalClaimUser1", totalClaimUser1.toString());
 
-                            // expect(
-                            //     claimableUSDTAmountUser1.add(claimableETHAmountUser2)
-                            // ).to.be.bignumber.equal(totalClaimUser1);
+                            expect(claimableUSDTAmountUser2).to.be.bignumber.greaterThan(new BN(0));
+                            expect(claimableETHAmountUser2).to.be.bignumber.greaterThan(new BN(0));
                             expect(
                                 claimableUSDTAmountUser2.add(claimableETHAmountUser2)
                             ).to.be.bignumber.equal(totalClaimUser2);
@@ -1423,7 +1432,7 @@ contract("borrowMiningTests", async (accounts) => {
                         });
                         it("zero claimForToken test", async function () {
                             let zeroClaimAmt = new BN(
-                                await savingAccount.claim.call({ from: user1 })
+                                await savingAccount.claimForToken.call(addressDAI, { from: user1 })
                             );
                             expect(zeroClaimAmt).to.be.bignumber.equal(new BN(0));
                         });
