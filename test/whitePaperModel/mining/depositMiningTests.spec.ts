@@ -1842,7 +1842,7 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("202000000678307669513994")
                                 );
                             });
-                            it("claim FIN on depositted DAI using the `claimDepositFIN` function", async function () {
+                            it("claim FIN on depositted DAI using the `claimForToken` function", async function () {
                                 this.timeout(0);
                                 await erc20FIN.transfer(
                                     savingAccount.address,
@@ -1933,14 +1933,14 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                let claimableAmountUser1 = await savingAccount.claimDepositFIN.call(
+                                let claimableAmountUser1 = await savingAccount.claimForToken.call(
                                     addressDAI,
                                     {
                                         from: user1,
                                     }
                                 );
 
-                                await savingAccount.claimDepositFIN(addressDAI, { from: user1 });
+                                await savingAccount.claimForToken(addressDAI, { from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
@@ -1953,12 +1953,12 @@ contract("depositMiningTests", async (accounts) => {
                                     new BN("101016641704110500915293")
                                 );
 
-                                await savingAccount.claimDepositFIN(addressDAI, { from: user1 });
+                                await savingAccount.claimForToken(addressDAI, { from: user1 });
                                 const balFIN2 = await erc20FIN.balanceOf(user1);
                                 expect(BN(balFIN2)).to.be.bignumber.equal(BN(balFIN));
                             });
 
-                            it("when deposit and claimDepositFIN happen on different blocks", async function () {
+                            it("when deposit and claimForToken happen on different blocks", async function () {
                                 const ZERO = new BN(0);
                                 this.timeout(0);
                                 await erc20FIN.transfer(
@@ -2048,26 +2048,30 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.claimDepositFIN.call(addressDAI, {
+                                const claimableAmountUser1 = await savingAccount.claimForToken.call(
+                                    addressDAI,
+                                    {
                                         from: user1,
-                                    });
+                                    }
+                                );
                                 expect(claimableAmountUser1).to.be.bignumber.greaterThan(ZERO);
 
                                 await savingAccount.fastForward(100000);
 
                                 // still return value as the index are updated
-                                const claimableAmountUser2 =
-                                    await savingAccount.claimDepositFIN.call(addressDAI, {
+                                const claimableAmountUser2 = await savingAccount.claimForToken.call(
+                                    addressDAI,
+                                    {
                                         from: user1,
-                                    });
+                                    }
+                                );
                                 expect(claimableAmountUser2).to.be.bignumber.greaterThan(ZERO);
                                 expect(claimableAmountUser2).to.be.bignumber.greaterThan(
                                     claimableAmountUser1
                                 );
                             });
 
-                            it("claim FIN on depositted ETH using the `claimDepositFIN` function", async function () {
+                            it("claim FIN on depositted ETH using the `claimForToken` function", async function () {
                                 await erc20FIN.transfer(
                                     savingAccount.address,
                                     ONE_FIN.mul(new BN(1000000))
@@ -2135,12 +2139,14 @@ contract("depositMiningTests", async (accounts) => {
                                 const balFINUser1 = await erc20FIN.balanceOf(user1);
 
                                 // FIN balance before claim
-                                const claimableAmountUser1 =
-                                    await savingAccount.claimDepositFIN.call(ETH_ADDRESS, {
+                                const claimableAmountUser1 = await savingAccount.claimForToken.call(
+                                    ETH_ADDRESS,
+                                    {
                                         from: user1,
-                                    });
+                                    }
+                                );
 
-                                await savingAccount.claimDepositFIN(ETH_ADDRESS, { from: user1 });
+                                await savingAccount.claimForToken(ETH_ADDRESS, { from: user1 });
                                 const balFIN = await erc20FIN.balanceOf(user1);
                                 console.log("balFIN", balFIN.toString());
                                 const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));

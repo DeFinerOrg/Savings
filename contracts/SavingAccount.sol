@@ -240,16 +240,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         return finAmount;
     }
 
-    function claimDepositFIN(address _token) public nonReentrant returns (uint256) {
-        uint256 finAmount = globalConfig.accounts().claimDepositFIN(msg.sender, _token);
-        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
-        emit Claim(msg.sender, finAmount);
-        return finAmount;
-    }
-
-    function claimBorrowFIN(address _token) public nonReentrant returns (uint256) {
-        uint256 finAmount = globalConfig.accounts().claimBorrowFIN(msg.sender, _token);
-        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+    function claimForToken(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimForToken(msg.sender, _token);
+        if(finAmount > 0) IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
         emit Claim(msg.sender, finAmount);
         return finAmount;
     }
