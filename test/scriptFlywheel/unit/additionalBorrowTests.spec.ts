@@ -317,7 +317,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = new BN(0);
                             await expectRevert(
                                 savingAccount.borrow(addressTUSD, borrow, { from: user1 }),
-                                "Borrow zero amount of token is not allowed."
+                                "borrow amount is 0"
                             );
                         });
                         it("Deposits TUSD, borrows WBTC and the amount is zero", async function () {
@@ -362,7 +362,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                             let borrow = new BN(0);
                             await expectRevert(
                                 savingAccount.borrow(addressWBTC, borrow, { from: user2 }),
-                                "Borrow zero amount of token is not allowed."
+                                "borrow amount is 0"
                             );
                         });
                     });
