@@ -825,29 +825,32 @@ contract Accounts is Constant, Initializable{
         return _FINAmount;
     }
 
-    function claimDepositFIN(address _account, address _token) public onlyAuthorized returns(uint256) {
-        Bank bank = globalConfig.bank();
-        uint256 currentBlock = getBlockNumber();
-        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
-        bank.updateMining(_token);
-        bank.updateDepositFINIndex(_token);
-        uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
-        calculateDepositFIN(lastDepositBlock, _token, _account, currentBlock);
-        tokenInfo.deposit(0, bank.getDepositAccruedRate(_token, lastDepositBlock), currentBlock);
-        uint256 _FINAmount = FINAmount[_account];
-        FINAmount[_account] = 0;
-        return _FINAmount;
-    }
+    function claimForToken(address _account, address _token) public onlyAuthorized returns(uint256) {
+        Account memory account = accounts[_account];
+        (uint8 index,,,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
+        bool isDeposit = account.depositBitmap.isBitSet(index);
+        bool isBorrow = account.borrowBitmap.isBitSet(index);
+        if(! (isDeposit || isBorrow)) return 0;
 
-    function claimBorrowFIN(address _account, address _token) public onlyAuthorized returns(uint256) {
         Bank bank = globalConfig.bank();
         uint256 currentBlock = getBlockNumber();
+
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
         bank.updateMining(_token);
-        bank.updateBorrowFINIndex(_token);
-        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
-        calculateBorrowFIN(lastBorrowBlock, _token, _account, currentBlock);
-        tokenInfo.borrow(0, bank.getBorrowAccruedRate(_token, lastBorrowBlock), currentBlock);
+
+        if (isDeposit) {
+            bank.updateDepositFINIndex(_token);
+            uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+            calculateDepositFIN(lastDepositBlock, _token, _account, currentBlock);
+            tokenInfo.deposit(0, bank.getDepositAccruedRate(_token, lastDepositBlock), currentBlock);
+        }
+        if (isBorrow) {
+            bank.updateBorrowFINIndex(_token);
+            uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+            calculateBorrowFIN(lastBorrowBlock, _token, _account, currentBlock);
+            tokenInfo.borrow(0, bank.getBorrowAccruedRate(_token, lastBorrowBlock), currentBlock);
+        }
+
         uint256 _FINAmount = FINAmount[_account];
         FINAmount[_account] = 0;
         return _FINAmount;
