@@ -4,12 +4,21 @@ pragma solidity 0.5.14;
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
 import "./registry/TokenRegistry.sol";
 import "./Bank.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
+
+interface IGlobalConfig {
+    function savingAccount() external view returns (address);
+    function tokenInfoRegistry() external view returns (TokenRegistry);
+    function bank() external view returns (Bank);
+    function deFinerCommunityFund() external view returns (address);
+    function deFinerRate() external view returns (uint256);
+    function liquidationThreshold() external view returns (uint256);
+    function liquidationDiscountRatio() external view returns (uint256);
+}
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -18,7 +27,7 @@ contract Accounts is Constant, Initializable{
     using Math for uint256;
 
     mapping(address => Account) public accounts;
-    GlobalConfig globalConfig;
+    IGlobalConfig globalConfig;
     mapping(address => uint256) public FINAmount;
 
     modifier onlyAuthorized() {
@@ -50,7 +59,7 @@ contract Accounts is Constant, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfig _globalConfig
+        IGlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }
@@ -267,12 +276,12 @@ contract Accounts is Constant, Initializable{
 
     function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         initCollateralFlag(_accountAddr);
-        require(_amount != 0, "Borrow zero amount of token is not allowed.");
-        require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
+        require(_amount != 0, "borrow amount is 0");
+        require(isUserHasAnyDeposits(_accountAddr), "no user deposits");
         (uint8 tokenIndex, uint256 tokenDivisor, uint256 tokenPrice,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
         require(
             getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor)) <=
-            getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
+            getBorrowPower(_accountAddr), "Insufficient collateral when borrow"
         );
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
@@ -324,7 +333,7 @@ contract Accounts is Constant, Initializable{
     function _withdraw(address _accountAddr, address _token, uint256 _amount, bool _isCommission) internal returns (uint256, uint256) {
         uint256 calcAmount = _amount;
         // Check if withdraw amount is less than user's balance
-        require(calcAmount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        require(calcAmount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 lastBlock = tokenInfo.getLastDepositBlock();
@@ -681,7 +690,7 @@ contract Accounts is Constant, Initializable{
     {
         initCollateralFlag(_liquidator);
         initCollateralFlag(_borrower);
-        require(isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
+        require(isAccountLiquidatable(_borrower), "borrower is not liquidatable");
 
         // It is required that the liquidator doesn't exceed it's borrow power.
         // if liquidator has any borrows, then only check for borrowPower condition
@@ -689,7 +698,7 @@ contract Accounts is Constant, Initializable{
         if(liquidateAcc.borrowBitmap > 0) {
             require(
                 getBorrowETH(_liquidator) < getBorrowPower(_liquidator),
-                "No extra funds are used for liquidation."
+                "No extra funds used for liquidation"
             );
         }
 
@@ -699,11 +708,11 @@ contract Accounts is Constant, Initializable{
 
         // _borrowedToken balance of the liquidator (deposit balance)
         vars.targetTokenBalance = getDepositBalanceCurrent(_borrowedToken, _liquidator);
-        require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
+        require(vars.targetTokenBalance > 0, "amount must be > 0");
 
         // _borrowedToken balance of the borrower (borrow balance)
         vars.targetTokenBalanceBorrowed = getBorrowBalanceCurrent(_borrowedToken, _borrower);
-        require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
+        require(vars.targetTokenBalanceBorrowed > 0, "borrower not own any debt token");
 
         // _borrowedToken available for liquidation
         uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
@@ -827,7 +836,7 @@ contract Accounts is Constant, Initializable{
 
     function claimForToken(address _account, address _token) public onlyAuthorized returns(uint256) {
         Account memory account = accounts[_account];
-        (uint8 index,,,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
+        uint8 index = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
         bool isDeposit = account.depositBitmap.isBitSet(index);
         bool isBorrow = account.borrowBitmap.isBitSet(index);
         if(! (isDeposit || isBorrow)) return 0;
