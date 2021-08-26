@@ -125,19 +125,13 @@ contract SavingAccountWithController is SavingAccount {
         return finAmount;
     }
 
-    function claimDepositFIN(address _token) public nonReentrant returns (uint256) {
-        uint256 finAmount = globalConfig.accounts().claimDepositFIN(msg.sender, _token);
-        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+    function claimForToken(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimForToken(msg.sender, _token);
+        if(finAmount > 0) IERC20(finAddr).safeTransfer(msg.sender, finAmount);
         emit Claim(msg.sender, finAmount);
         return finAmount;
     }
 
-    function claimBorrowFIN(address _token) public nonReentrant returns (uint256) {
-        uint256 finAmount = globalConfig.accounts().claimBorrowFIN(msg.sender, _token);
-        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
-        emit Claim(msg.sender, finAmount);
-        return finAmount;
-    }
 
     // override function to use `compAddr`
     function withdrawCOMP(address _beneficiary) external onlyOwner {
