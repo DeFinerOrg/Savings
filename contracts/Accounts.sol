@@ -4,12 +4,21 @@ pragma solidity 0.5.14;
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
 import "./registry/TokenRegistry.sol";
 import "./Bank.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
+
+interface IGlobalConfig {
+    function savingAccount() external view returns (address);
+    function tokenInfoRegistry() external view returns (TokenRegistry);
+    function bank() external view returns (Bank);
+    function deFinerCommunityFund() external view returns (address);
+    function deFinerRate() external view returns (uint256);
+    function liquidationThreshold() external view returns (uint256);
+    function liquidationDiscountRatio() external view returns (uint256);
+}
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -18,7 +27,7 @@ contract Accounts is Constant, Initializable{
     using Math for uint256;
 
     mapping(address => Account) public accounts;
-    GlobalConfig globalConfig;
+    IGlobalConfig globalConfig;
     mapping(address => uint256) public FINAmount;
 
     modifier onlyAuthorized() {
@@ -50,7 +59,7 @@ contract Accounts is Constant, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfig _globalConfig
+        IGlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }
