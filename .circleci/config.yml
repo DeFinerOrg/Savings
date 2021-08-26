@@ -3,7 +3,7 @@ jobs:
   tests:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.23.0
+      - image: circleci/node:12.22.5
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -67,7 +67,7 @@ jobs:
   coverage-SFW:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.23.0
+      - image: circleci/node:12.22.5
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -129,7 +129,7 @@ jobs:
   coverage-WPM:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.23.0
+      - image: circleci/node:12.22.5
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -191,7 +191,7 @@ jobs:
   deploy-ready:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.23.0
+      - image: circleci/node:12.22.5
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/

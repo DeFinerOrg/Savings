@@ -166,7 +166,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user2, addressUSDC, addressDAI),
-                        "The borrower is not liquidatable."
+                        "borrower is not liquidatable"
                     );
                 });
 
@@ -201,7 +201,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user2, addressUSDC, addressDAI),
-                        "The account amount must be greater than zero."
+                        "amount must be > 0"
                     );
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
@@ -1761,7 +1761,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.liquidate(user1, ETH_ADDRESS, addressDAI),
-                        "The borrower is not liquidatable."
+                        "borrower is not liquidatable"
                     );
                 });
             });
