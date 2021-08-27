@@ -49,19 +49,23 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let mockChainlinkAggregatorforTUSDAddress: any;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
+    let mockChainlinkAggregatorforUSDTAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
+    let erc20USDT: t.MockErc20Instance;
     let erc20MKR: t.MockErc20Instance;
     let erc20TUSD: t.MockErc20Instance;
     let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforUSDT: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_ETH: any;
     let ONE_USDC: any;
+    let ONE_USDT: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
@@ -92,9 +96,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
+        mockChainlinkAggregatorforUSDTAddress = mockChainlinkAggregators[2];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
+        erc20USDT = await ERC20.at(addressUSDT);
         erc20MKR = await ERC20.at(addressMKR);
         erc20TUSD = await ERC20.at(addressTUSD);
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
@@ -102,6 +108,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
         );
         mockChainlinkAggregatorforUSDC = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforUSDCAddress
+        );
+        mockChainlinkAggregatorforUSDT = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforUSDTAddress
         );
         mockChainlinkAggregatorforETH = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforETHAddress
@@ -121,13 +130,14 @@ contract("SavingAccount.liquidate", async (accounts) => {
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
         ONE_USDC = sixPrecision;
+        ONE_USDT = sixPrecision;
 
         await savingAccount.fastForward(1000);
     });
 
     context("liquidate()", async () => {
         context("with Token", async () => {
-            context("should fail", async () => {
+            /*context("should fail", async () => {
                 it("when unsupported token address is passed", async function () {
                     this.timeout(0);
                     let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
@@ -205,10 +215,61 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                     await mockChainlinkAggregatorforUSDC.updateAnswer(originPrice);
                 });
-            });
+            });*/
 
             context("should succeed", async () => {
-                it("When user tries to liquidate partially", async function () {
+                it("liquidate with select collateral", async function () {
+                    this.timeout(0);
+                    // User 1 has 1 DAI
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    // User 2 has 1 USDC & 1 USDT
+                    await erc20USDC.transfer(user2, ONE_USDC);
+                    await erc20USDT.transfer(user2, ONE_USDT);
+
+                    // borrowAmt = 0.6 DAI
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_DAI)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20USDT.approve(savingAccount.address, ONE_USDT, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savingAccount.deposit(addressUSDT, ONE_USDT, { from: user2 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+
+                    // 2. Start borrowing.
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    // enable collateral for USDC
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
+                    // User 2 borrows at full ILTV
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+
+                    // 3. Change the price.
+                    let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    let USDTprice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                    // update price of DAI to 60% of it's value
+                    let updatedPrice = BN(USDCprice).mul(new BN(6)).div(new BN(10));
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+                    // 4. Start liquidation.
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user2
+                    );
+                    console.log("liquidateBefore", liquidateBefore);
+                    expect(liquidateBefore).to.be.equal(true);
+                });
+                /*it("When user tries to liquidate partially", async function () {
                     this.timeout(0);
                     await erc20DAI.transfer(user1, ONE_DAI);
                     await erc20USDC.transfer(user2, ONE_USDC);
@@ -246,6 +307,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
                         user2
                     );
+                    console.log("liquidateBefore", liquidateBefore);
 
                     const ownerUSDCBefore = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
@@ -1728,11 +1790,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(BN(user2TUSDBalBeforeLiquidate)).to.be.bignumber.lessThan(
                         BN(user2TUSDBalAfterLiquidate)
                     );
-                });
+                });*/
             });
         });
 
-        context("with ETH", async () => {
+        /*context("with ETH", async () => {
             context("should fail", async () => {
                 it("when the ratio of borrowed money and collateral is less than 85%", async function () {
                     this.timeout(0);
@@ -2056,6 +2118,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     );
                 });
             });
-        });
+        });*/
     });
 });
