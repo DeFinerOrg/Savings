@@ -269,6 +269,60 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("liquidateBefore", liquidateBefore);
                     expect(liquidateBefore).to.be.equal(true);
                 });
+                it("liquidate with token for which collateral is not enabled", async function () {
+                    this.timeout(0);
+                    // User 1 has 1 DAI
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    // User 2 has 1 USDC & 1 USDT
+                    await erc20USDC.transfer(user2, ONE_USDC);
+                    await erc20USDT.transfer(user2, ONE_USDT);
+
+                    // borrowAmt = 0.6 DAI
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_DAI)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20USDT.approve(savingAccount.address, ONE_USDT, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savingAccount.deposit(addressUSDT, ONE_USDT, { from: user2 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+
+                    // 2. Start borrowing.
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    // enable collateral for USDC
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
+                    // User 2 borrows at full ILTV
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+
+                    // 3. Change the price.
+                    let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    let USDTprice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                    // update price of DAI to 60% of it's value
+                    let updatedPrice = BN(USDCprice).mul(new BN(6)).div(new BN(10));
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+
+                    // 4. Start liquidation.
+                    const liquidateBefore = await accountsContract.isAccountLiquidatable.call(
+                        user2
+                    );
+                    console.log("liquidateBefore", liquidateBefore);
+
+                    await savingAccount.liquidate(user2, addressDAI, addressUSDT, { from: user2 });
+                });
                 /*it("When user tries to liquidate partially", async function () {
                     this.timeout(0);
                     await erc20DAI.transfer(user1, ONE_DAI);
