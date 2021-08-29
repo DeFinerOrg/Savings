@@ -250,7 +250,8 @@ contract Bank is Constant, Initializable{
                 return rateCurveConstant.mul(100).div(BLOCKS_PER_YEAR);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)
-                return rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                uint256 decimals = globalConfig.tokenInfoRegistry().getTokenDecimals(_token);
+                return rateCurveConstant.mul(10**decimals).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
             }
         }
     }
