@@ -228,6 +228,7 @@ contract Bank is Constant, Initializable{
         uint256 compoundBorrow = compoundPool[_token].borrowRatePerBlock.mul(globalConfig.compoundBorrowRateWeights());
         // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
         uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
+        uint256 decimals = globalConfig.tokenInfoRegistry().getTokenDecimals(_token);
 
         bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
         if(isSupportedOnCompound) {
@@ -240,7 +241,7 @@ contract Bank is Constant, Initializable{
                 return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
-                rateConstant = rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                rateConstant = rateCurveConstant.mul(10**decimals).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             }
         } else {
@@ -250,7 +251,7 @@ contract Bank is Constant, Initializable{
                 return rateCurveConstant.mul(1000).div(BLOCKS_PER_YEAR);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)
-                return rateCurveConstant.div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return rateCurveConstant.mul(10**decimals).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
             }
         }
     }
