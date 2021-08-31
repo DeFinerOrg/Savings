@@ -646,7 +646,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
-                    it("when capital utilization ratio > 0.899 & < 0.90 for Compound unsupported tokens", async function () {
+                    it("when capital utilization ratio > 0.80 & < 0.85 for Compound unsupported tokens", async function () {
                         this.timeout(0);
                         let ONE_TUSD = eighteenPrecision;
                         let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
