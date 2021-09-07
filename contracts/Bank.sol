@@ -236,7 +236,7 @@ contract Bank is Constant, Initializable{
             uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
             if(capitalUtilizationRatio > ((10**18) - (10**15))) { // > 0.999
-                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 1000) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.mul(1000).div(BLOCKS_PER_YEAR);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
@@ -247,7 +247,7 @@ contract Bank is Constant, Initializable{
         } else {
             // If the token is NOT supported by the third party, check if U = 1
             if(capitalUtilizationRatio > ((10**18) - (10**15))) { // > 0.999
-                // if U = 1, borrowing rate = rateCurveConstant * 100
+                // if U = 1, borrowing rate = rateCurveConstant * 1000
                 return rateCurveConstant.mul(1000).div(BLOCKS_PER_YEAR);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)

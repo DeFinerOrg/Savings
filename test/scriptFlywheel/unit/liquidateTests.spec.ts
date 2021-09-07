@@ -1813,9 +1813,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("U2", U2.toString());
 
                     // 3. Change the price.
-                    let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    // update price of DAI to 50% of it's value
-                    let updatedPrice = BN(DAIprice).mul(new BN(5)).div(new BN(10));
+                    let TUSDprice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                    // increase TUSD price by 30%
+                    let updatedPrice = BN(TUSDprice).mul(new BN(13)).div(new BN(10));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
 
@@ -1826,14 +1826,15 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("totalDeposits: ", depositStore[0].toString());
                     console.log("totalLoans: ", depositStore[1].toString());
 
-                    let UB = new BN(userBorrowValAfterBorrow).mul(new BN(100));
-                    let UD = new BN(getDeposits).mul(new BN(95));
+                    let UB = new BN(userBorrowValAfterBorrow);
+                    let UD = new BN(getDeposits);
                     let LTV = BN(userBorrowValAfterBorrow).mul(new BN(100).div(BN(getDeposits)));
                     console.log("getDeposits", getDeposits.toString());
                     console.log("userBorrowValAfterBorrow", userBorrowValAfterBorrow.toString());
                     console.log("userBorrowPower", userBorrowPower.toString());
                     console.log("UD", UD.toString());
                     console.log("UB", UB.toString());
+                    console.log("LTV",LTV.toString());
 
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
 
@@ -1986,6 +1987,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("userBorrowPower", userBorrowPower.toString());
                     console.log("UD", UD.toString());
                     console.log("UB", UB.toString());
+                    console.log("LTV",LTV.toString());
 
                     const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
 
