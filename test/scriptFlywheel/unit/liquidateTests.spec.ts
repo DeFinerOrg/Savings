@@ -1865,25 +1865,25 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("TUSD price in USD", tusdPriceInUSDAfter.toString());
 
                     console.log("--------------- price updated -----------------");
-                    let collAmtInETH2 = await accountsContract.getDepositETH(user1);
-                    let collateralAmtInUSD2 = collAmtInETH2.mul(ETH_USD_RATE).div(ONE_ETH);
+                    let collAmtInETH2 = BN(await accountsContract.getDepositETH(user1));
+                    let CCV = collAmtInETH2.mul(ETH_USD_RATE).div(ONE_ETH);
                     console.log(
-                        "user collateral amount in USD:",
-                        collateralAmtInUSD2.toString()
+                        "CCV in USD:",
+                        CCV.toString()
                     );
                     const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
-                    const borrowedAmtInUSD2 = borrowedAmtInETH2
+                    const CBB = BN(borrowedAmtInETH2
                         .mul(ETH_USD_RATE)
-                        .div(ONE_ETH);
+                        .div(ONE_ETH));
                     console.log("borrowedAmtInETH2", borrowedAmtInETH2.toString());
                     console.log(
                         "user borrowed amount in USD:",
-                        borrowedAmtInUSD2.toString()
+                        CBB.toString()
                     );
                     
-                    let collateralRatio2 = borrowedAmtInUSD2
+                    let collateralRatio2 = CBB
                         .mul(new BN(100))
-                        .div(collateralAmtInUSD2);
+                        .div(CCV);
                     console.log("collateral ratio in % :", collateralRatio2.toString());
                     expect(collateralRatio2).to.be.bignumber.equal(new BN(120));
 
@@ -1893,7 +1893,36 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(isAccountLiquidatable).to.be.equal(true);
 
                     // 4. Owner liquidates User1
+                    let ownerDAIBalBeforeLiquidate =
+                        BN(await accountsContract.getDepositBalanceCurrent(addressDAI, owner));
+                    console.log(
+                        "ownerDAIBalBeforeLiquidate",
+                        ownerDAIBalBeforeLiquidate.toString()
+                    );
+
+                    let CCVtimesILTV = CCV.mul(new BN(6)).div(new BN(10));
+                    console.log("CCVtimesILTV", CCVtimesILTV.toString());
+                    
+                    // TODO: calculate UAAL
+                    let UAAL = CBB.sub(CCVtimesILTV) 
+
                     await savingAccount.liquidate(user1, addressTUSD, addressDAI, { from: owner });
+
+                    let ownerDAIBalAfterLiquidate =
+                        BN(await accountsContract.getDepositBalanceCurrent(addressDAI, owner));
+                    console.log(
+                        "ownerDAIBalAfterLiquidate",
+                        ownerDAIBalAfterLiquidate.toString()
+                    );
+
+                    // owner gets the collateral
+                    expect(ownerDAIBalAfterLiquidate).to.be.bignumber.equal(ONE_DAI.mul(new BN(10000)));
+
+                    // reset the prices
+                    await mockChainlinkAggregatorforETH.updateAnswer(ethPriceInit);
+                    await mockChainlinkAggregatorforDAI.updateAnswer(daiPriceInit);
+                    await mockChainlinkAggregatorforTUSD.updateAnswer(tusdPriceInit);
+                    await mockChainlinkAggregatorforUSDT.updateAnswer(usdtPriceInit);
 
                 });
                 /*it("user deposits DAI, borrows USDC, TUSD and owner liquidates with USDC", async function () {
