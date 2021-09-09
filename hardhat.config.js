@@ -72,12 +72,24 @@ module.exports = {
     gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
     solidity: {
-        version: "0.5.14",
-        settings: {
-            optimizer: {
-                enabled: true,
+        compilers: [
+            {
+                version: "0.5.14",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                    },
+                },
             },
-        },
+            {
+                version: "0.8.0",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                    },
+                },
+            },
+        ],
     },
 
     typechain: {
