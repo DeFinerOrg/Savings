@@ -1,7 +1,7 @@
 import * as t from "../../types/truffle-contracts/index";
 import { TestEngine } from "../../test-helpers/TestEngine";
 
-const { BN, time } = require("@openzeppelin/test-helpers");
+const { BN, time, expectRevert } = require("@openzeppelin/test-helpers");
 
 var chai = require("chai");
 var expect = chai.expect;
@@ -101,6 +101,68 @@ contract("TimelockController for ProxyAdmin", async (accounts) => {
             await testEngine.proxyAdmin.transferOwnership(timelock.address, { from: owner });
 
             expect(await testEngine.proxyAdmin.owner()).to.be.equal(await timelock.address);
+        });
+
+        it("should fail when delay is not over", async () => {
+            const bankProxy = testEngine.bank.address;
+            const proxyAdmin = await ProxyAdmin.at(testEngine.proxyAdmin.address);
+
+            const currBankImpl = await proxyAdmin.getProxyImplementation(testEngine.bank.address);
+
+            // deploy new
+            const newBank = await Bank.new();
+
+            // upgrade via TimelockController
+            expect(currBankImpl).to.be.not.equal(ZERO_ADDRESS);
+            const data = await proxyAdmin.contract.methods
+                .upgrade(bankProxy, newBank.address)
+                .encodeABI();
+
+            // schedule upgrade job
+            const target = proxyAdmin.address;
+            const value = new BN(0);
+            const predecessor = "0x";
+            const salt = "0x";
+            const delay = FOURTY_EIGHT_HOURS;
+            const tx = await timelock.schedule(target, value, data, predecessor, salt, delay, {
+                from: proposer,
+            });
+            const jobID: string = tx.logs[0].args[0].toString();
+
+            const targetTimestamp = await timelock.getTimestamp(jobID);
+            expect(targetTimestamp).to.be.bignumber.not.equal(ZERO);
+
+            expect(await timelock.isOperationPending(jobID)).to.be.equal(true);
+            expect(await timelock.isOperationReady(jobID)).to.be.equal(false);
+            expect(await timelock.isOperationDone(jobID)).to.be.equal(false);
+
+            // increase 10 hours
+            const TEN_HOURS = new BN(10).mul(ONE_HOUR);
+            await time.increase(TEN_HOURS);
+
+            // job is not ready to execute
+            expect(await timelock.isOperationPending(jobID)).to.be.equal(true);
+            expect(await timelock.isOperationReady(jobID)).to.be.equal(false);
+            expect(await timelock.isOperationDone(jobID)).to.be.equal(false);
+
+            // validate
+            let newBankImpl = await proxyAdmin.getProxyImplementation(testEngine.bank.address);
+            expect(newBankImpl).to.be.equal(currBankImpl);
+
+            // execute job, should fail
+            await expectRevert(
+                timelock.execute(target, value, data, predecessor, salt, { from: executor }),
+                "TimelockController: operation is not ready"
+            );
+
+            // job is not ready to execute
+            expect(await timelock.isOperationPending(jobID)).to.be.equal(true);
+            expect(await timelock.isOperationReady(jobID)).to.be.equal(false);
+            expect(await timelock.isOperationDone(jobID)).to.be.equal(false);
+
+            // validate, not executed
+            newBankImpl = await proxyAdmin.getProxyImplementation(testEngine.bank.address);
+            expect(newBankImpl).to.be.equal(currBankImpl);
         });
 
         it("should upgrade Bank after delay via TimelockController", async () => {
