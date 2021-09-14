@@ -483,7 +483,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         // hardcoded value to ensure that U > 0.90 && U < 0.95
                         let U = await bankContract.getCapitalUtilizationRatio(addressTUSD);
 
-                        // ensure that U > 0.80... && U < 0.85
+                        // ensure that U > 0.90... && U < 0.95
                         expect(new BN(U)).to.be.bignumber.greaterThan(
                             ONE_DAI.mul(new BN(9)).div(new BN(10))
                         );
