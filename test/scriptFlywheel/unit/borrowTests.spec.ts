@@ -268,7 +268,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 1. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressDAI, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
+                        "no user deposits"
                     );
                 });
 
@@ -951,7 +951,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
+                        "no user deposits"
                     );
                 });
 
@@ -1009,7 +1009,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(ETH_ADDRESS, balance, { from: user1 }),
-                        "Insufficient collateral when borrow."
+                        "Insufficient collateral when borrow"
                     );
                 });
 
@@ -1852,7 +1852,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
+                        "no user deposits"
                     );
                 });
 
@@ -1864,7 +1864,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressTUSD, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
+                        "no user deposits"
                     );
                 });
 
@@ -1887,7 +1887,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     );
                     await expectRevert(
                         savingAccount.borrow(addressMKR, new BN(1001), { from: user2 }),
-                        "Insufficient collateral when borrow."
+                        "Insufficient collateral when borrow"
                     );
                 });
 
@@ -2189,7 +2189,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(10), { from: user2 }),
-                        "The user doesn't have any deposits."
+                        "no user deposits"
                     );
                 });
 
@@ -2241,7 +2241,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // 2. Start borrowing.
                     await expectRevert(
                         savingAccount.borrow(addressUSDC, new BN(1001), { from: user1 }),
-                        "Insufficient collateral when borrow."
+                        "Insufficient collateral when borrow"
                     );
                 });
             });
