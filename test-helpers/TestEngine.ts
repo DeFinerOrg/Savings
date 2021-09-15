@@ -491,4 +491,12 @@ export class TestEngine {
 
         return proxy;
     }
+
+    public async deployOnlyAccounts(): Promise<t.AccountsInstance> {
+        return Accounts.new();
+    }
+
+    public async deployOnlySavingAccount(): Promise<t.SavingAccountInstance> {
+        return SavingAccount.new();
+    }
 }
