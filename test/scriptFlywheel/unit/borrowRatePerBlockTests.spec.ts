@@ -126,55 +126,45 @@ contract("SavingAccount.liquidate", async (accounts) => {
     });
 
     context("getBorrowRatePerBlock()", async () => {
-        context("with 18 decimal Token", async () => {
-            context("Compound supported tokens", async () => {
+        context("Compound supported tokens", async () => {
+            context("with 18 decimal Token", async () => {
                 context("should succeed", async () => {    
                     it("when U = 1 for Compound supported tokens");
-    
+        
                     it("when U is between 0.9999 & 1 for Compound supported tokens");
-
+        
                     it("when U is between 0.90 and 0.5 for Compound supported tokens");
-
+        
                     it("when U is between 0.8999 & 0.90 for Compound supported tokens");
-
+        
                     it("when U is between 0.80 and 0.85 for Compound supported tokens");
                 });
             });
-
-            context("Compound unsupported tokens", async () => {
-                context("should succeed", async () => {
-                    it("when Compound unsupported token address is passed");
-                });
-            });
-        });
-
-        context("with 6 decimal Token", async () => {
-            context("Compound supported tokens", async () => {
+        
+            context("with 6 decimal Token", async () => {
                 context("should succeed", async () => {    
                     it("when U = 1 for 6 decimal token");
-    
+        
                     it("when U is between 0.9999 & 1 for 6 decimal token");
-
+        
                     it("when U is between 0.90 and 0.5 for 6 decimal token");
-
+        
                     it("when U is between 0.8999 & 0.90 for 6 decimal token");
-
+                    
                     it("when U is between 0.80 and 0.85 for 6 decimal token");
                 });
             });
-        });
-
-        context("with 8 decimal Token", async () => {
-            context("Compound supported tokens", async () => {
+        
+            context("with 8 decimal Token", async () => {
                 context("should succeed", async () => {    
                     it("when U = 1 for 8 decimal token");
-    
+        
                     it("when U is between 0.9999 & 1 for 8 decimal token");
-
+        
                     it("when U is between 0.90 and 0.5 for 8 decimal token");
-
+        
                     it("when U is between 0.8999 & 0.90 for 8 decimal token");
-
+        
                     it("when U is between 0.80 and 0.85 for 8 decimal token");
                 });
             });
