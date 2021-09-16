@@ -39,30 +39,37 @@ contract("SavingAccount.liquidate", async (accounts) => {
     let addressTUSD: any;
     let addressUSDT: any;
     let addressWBTC: any;
+    let addressBAT: any;
     let cDAI_addr: any;
     let cUSDC_addr: any;
     let cUSDT_addr: any;
     let cWBTC_addr: any;
+    let cBAT_addr: any;
     let cDAI: t.MockCTokenInstance;
     let cUSDC: t.MockCTokenInstance;
     let cUSDT: t.MockCTokenInstance;
     let cWBTC: t.MockCTokenInstance;
+    let cBAT: t.MockCTokenInstance;
     let mockChainlinkAggregatorforTUSDAddress: any;
     let mockChainlinkAggregatorforDAIAddress: any;
     let mockChainlinkAggregatorforUSDCAddress: any;
     let mockChainlinkAggregatorforETHAddress: any;
+    let mockChainlinkAggregatorforBATAddress: any;
     let erc20DAI: t.MockErc20Instance;
     let erc20USDC: t.MockErc20Instance;
     let erc20MKR: t.MockErc20Instance;
     let erc20TUSD: t.MockErc20Instance;
+    let erc20BAT: t.MockErc20Instance;
     let mockChainlinkAggregatorforTUSD: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforDAI: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforUSDC: t.MockChainLinkAggregatorInstance;
     let mockChainlinkAggregatorforETH: t.MockChainLinkAggregatorInstance;
+    let mockChainlinkAggregatorforBAT: t.MockChainLinkAggregatorInstance;
     let numOfToken: any;
     let ONE_DAI: any;
     let ONE_ETH: any;
     let ONE_USDC: any;
+    let ONE_BAT: any;
     // testEngine = new TestEngine();
     // testEngine.deploy("scriptFlywheel.scen");
 
@@ -87,17 +94,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
         addressMKR = tokens[4];
         addressTUSD = tokens[3];
         addressUSDT = tokens[2];
-
+        addressBAT = tokens[5];
         addressWBTC = tokens[8];
 
         mockChainlinkAggregatorforTUSDAddress = mockChainlinkAggregators[3];
         mockChainlinkAggregatorforDAIAddress = mockChainlinkAggregators[0];
         mockChainlinkAggregatorforUSDCAddress = mockChainlinkAggregators[1];
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[9];
+        mockChainlinkAggregatorforBATAddress = mockChainlinkAggregators[5];
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20MKR = await ERC20.at(addressMKR);
         erc20TUSD = await ERC20.at(addressTUSD);
+        erc20BAT = await ERC20.at(addressBAT);
         mockChainlinkAggregatorforDAI = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforDAIAddress
         );
@@ -110,18 +119,24 @@ contract("SavingAccount.liquidate", async (accounts) => {
         mockChainlinkAggregatorforTUSD = await MockChainLinkAggregator.at(
             mockChainlinkAggregatorforTUSDAddress
         );
+        mockChainlinkAggregatorforBAT = await MockChainLinkAggregator.at(
+            mockChainlinkAggregatorforBATAddress
+        );
         cDAI_addr = await testEngine.tokenInfoRegistry.getCToken(addressDAI);
         cUSDC_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDC);
         cUSDT_addr = await testEngine.tokenInfoRegistry.getCToken(addressUSDT);
         cWBTC_addr = await testEngine.tokenInfoRegistry.getCToken(addressWBTC);
+        cBAT_addr = await testEngine.tokenInfoRegistry.getCToken(addressBAT);
         cDAI = await MockCToken.at(cDAI_addr);
         cUSDC = await MockCToken.at(cUSDC_addr);
         cUSDT = await MockCToken.at(cUSDT_addr);
         cWBTC = await MockCToken.at(cWBTC_addr);
+        cBAT = await MockCToken.at(cBAT_addr);
         numOfToken = new BN(1000);
         ONE_DAI = eighteenPrecision;
         ONE_ETH = eighteenPrecision;
         ONE_USDC = sixPrecision;
+        ONE_BAT = eighteenPrecision;
 
         await savingAccount.fastForward(1000);
     });
@@ -130,9 +145,259 @@ contract("SavingAccount.liquidate", async (accounts) => {
         context("Compound supported tokens", async () => {
             context("with 18 decimal Token", async () => {
                 context("should succeed", async () => {    
-                    it("when U = 1 for Compound supported tokens");
+                    it("when U = 1 for Compound supported tokens", async function () {
+                        this.timeout(0);
+                        let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressBAT
+                        );
+                        console.log("BATCompoundFlag", BATCompoundFlag);
+
+                        let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
+                        // set price of BAT at $0.7
+                        let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                        let newBATprice = BN(DAIprice).mul(new BN(7)).div(new BN(10));
+                        await mockChainlinkAggregatorforBAT.updateAnswer(newBATprice);
+                        
+                        const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
+                            .mul(new BN(60))
+                            .div(new BN(100))
+                            .mul(ONE_BAT)
+                            .div(new BN(await tokenInfoRegistry.priceFromIndex(5)));
+                        const borrowAmt2 = ONE_DAI.sub(BN(borrowAmt));
+                        console.log("borrowAmt1", borrowAmt.toString());
+                        console.log("borrowAmt2", borrowAmt2.toString());
+    
+                        await erc20DAI.transfer(user1, ONE_DAI);
+                        await erc20BAT.transfer(user2, ONE_BAT);
+                        await erc20DAI.transfer(owner, ONE_DAI);
+                        await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                        await erc20BAT.approve(savingAccount.address, ONE_BAT, { from: user2 });
+                        await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: owner });
+                        await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                        await savingAccount.deposit(addressDAI, ONE_DAI, { from: owner });
+                        await savingAccount.deposit(addressBAT, ONE_BAT, {
+                            from: user2,
+                        });
+                        let user2BATBalAfterDeposit = await accountsContract.getDepositBalanceCurrent(
+                            addressBAT,
+                            user2
+                        );
+                        console.log("user2BATBalAfterDeposit", user2BATBalAfterDeposit.toString());
+    
+                        // 2. Start borrowing.
+                        const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                        const daiTokenIndex = result[0];
+                        await accountsContract.methods["setCollateral(uint8,bool)"](
+                            daiTokenIndex,
+                            true,
+                            { from: user1 }
+                        );
+                        await accountsContract.methods["setCollateral(uint8,bool)"](
+                            daiTokenIndex,
+                            true,
+                            { from: owner }
+                        );
+                        console.log("borrowAmt", borrowAmt.toString());
+    
+                        let U1 = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        console.log("U1", U1.toString());
+    
+                        await savingAccount.borrow(addressBAT, borrowAmt, { from: user1 });
+                        await savingAccount.borrow(addressBAT, borrowAmt2);
+                        console.log("---------------------- borrow -------------------------");
+    
+                        let U2 = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        console.log("U2", U2.toString());
+    
+                        // 3. Change the price.
+                        // update price of DAI to 70% of it's value
+                        let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
+    
+                        await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+    
+                        const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user1);
+                        const getDeposits = await accountsContract.getDepositETH(user1);
+                        const userBorrowPower = await accountsContract.getBorrowPower(user1);
+                        let depositStore = await bankContract.getTokenState(addressBAT);
+                        console.log("totalDeposits: ", depositStore[0].toString());
+                        console.log("totalLoans: ", depositStore[1].toString());
+    
+                        let UB = new BN(userBorrowValAfterBorrow).mul(new BN(100));
+                        let UD = new BN(getDeposits).mul(new BN(95));
+                        let LTV = BN(userBorrowValAfterBorrow).mul(new BN(100).div(BN(getDeposits)));
+                        console.log("getDeposits", getDeposits.toString());
+                        console.log("userBorrowValAfterBorrow", userBorrowValAfterBorrow.toString());
+                        console.log("userBorrowPower", userBorrowPower.toString());
+                        console.log("UD", UD.toString());
+                        console.log("UB", UB.toString());
+    
+                        const liquidateAfter = await accountsContract.isAccountLiquidatable.call(user1);
+    
+                        expect(liquidateAfter).to.equal(true);
+                        expect(UB).to.be.bignumber.greaterThan(UD);
+    
+                        // user2's balance before liquidation
+                        let user2DAIBalBeforeLiquidate =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
+                        console.log(
+                            "user2DAIBalBeforeLiquidate",
+                            user2DAIBalBeforeLiquidate.toString()
+                        );
+    
+                        // check if U = 1
+                        let U = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        expect(new BN(U)).to.be.bignumber.equal(eighteenPrecision);
+    
+                        let borrowAPR = new BN(await bankContract.getBorrowRatePerBlock(addressBAT));
+                        let depositAPR = new BN(await bankContract.getDepositRatePerBlock(addressBAT));
+                        console.log("borrowAPR", borrowAPR.toString());
+                        console.log("depositAPR", depositAPR.toString());
+    
+                        expect(borrowAPR).to.be.bignumber.greaterThan(new BN(0));
+                        expect(depositAPR).to.be.bignumber.greaterThan(new BN(0));
+    
+                        await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
+                        await mockChainlinkAggregatorforBAT.updateAnswer(BATpriceInit);
+                    });
         
-                    it("when U is between 0.9999 & 1 for Compound supported tokens");
+                    it("when U is between 0.9999 & 1 for Compound supported tokens", async function () {
+                        this.timeout(0);
+                        let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressBAT
+                        );
+                        console.log("BATCompoundFlag", BATCompoundFlag);
+
+                        let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
+                        // set price of BAT at $0.7
+                        let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                        let newBATprice = BN(DAIprice).mul(new BN(7)).div(new BN(10));
+                        await mockChainlinkAggregatorforBAT.updateAnswer(newBATprice);
+
+                        const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
+                            .mul(new BN(60))
+                            .div(new BN(100))
+                            .mul(ONE_BAT)
+                            .div(new BN(await tokenInfoRegistry.priceFromIndex(5)));
+                        const borrowAmt2 = new BN(await tokenInfoRegistry.priceFromIndex(0))
+                            .mul(new BN(10))
+                            .div(new BN(100))
+                            .mul(ONE_BAT)
+                            .div(new BN(await tokenInfoRegistry.priceFromIndex(5)));
+                        console.log("borrowAmt1", borrowAmt.toString());
+                        console.log("borrowAmt2", borrowAmt2.toString());
+
+                        await erc20DAI.transfer(user1, ONE_DAI);
+                        await erc20BAT.transfer(user2, ONE_BAT);
+                        await erc20DAI.transfer(owner, ONE_DAI);
+                        await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                        await erc20BAT.approve(savingAccount.address, ONE_BAT, { from: user2 });
+                        await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: owner });
+                        await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                        await savingAccount.deposit(addressDAI, ONE_DAI, { from: owner });
+                        await savingAccount.deposit(addressBAT, ONE_BAT, {
+                            from: user2,
+                        });
+                        let user2BATBalAfterDeposit =
+                            await accountsContract.getDepositBalanceCurrent(addressBAT, user2);
+                        console.log(
+                            "user2BATBalAfterDeposit",
+                            user2BATBalAfterDeposit.toString()
+                        );
+
+                        // 2. Start borrowing.
+                        const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                        const daiTokenIndex = result[0];
+                        await accountsContract.methods["setCollateral(uint8,bool)"](
+                            daiTokenIndex,
+                            true,
+                            { from: user1 }
+                        );
+                        await accountsContract.methods["setCollateral(uint8,bool)"](
+                            daiTokenIndex,
+                            true,
+                            { from: owner }
+                        );
+                        console.log("borrowAmt", borrowAmt.toString());
+
+                        let U1 = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        console.log("U1", U1.toString());
+
+                        await savingAccount.borrow(addressBAT, borrowAmt, { from: user1 });
+                        await savingAccount.borrow(addressBAT, borrowAmt2);
+                        console.log("---------------------- borrow -------------------------");
+
+                        let U2 = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        console.log("U2", U2.toString());
+
+                        // 3. Change the price.
+                        // update price of DAI to 70% of it's value
+                        let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
+
+                        await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
+
+                        const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user1);
+                        const getDeposits = await accountsContract.getDepositETH(user1);
+                        const userBorrowPower = await accountsContract.getBorrowPower(user1);
+                        let depositStore = await bankContract.getTokenState(addressBAT);
+                        console.log("totalDeposits: ", depositStore[0].toString());
+                        console.log("totalLoans: ", depositStore[1].toString());
+
+                        let UB = new BN(userBorrowValAfterBorrow).mul(new BN(100));
+                        let UD = new BN(getDeposits).mul(new BN(95));
+                        let LTV = BN(userBorrowValAfterBorrow).mul(
+                            new BN(100).div(BN(getDeposits))
+                        );
+                        console.log("getDeposits", getDeposits.toString());
+                        console.log(
+                            "userBorrowValAfterBorrow",
+                            userBorrowValAfterBorrow.toString()
+                        );
+                        console.log("userBorrowPower", userBorrowPower.toString());
+                        console.log("UD", UD.toString());
+                        console.log("UB", UB.toString());
+
+                        const liquidateAfter = await accountsContract.isAccountLiquidatable.call(
+                            user1
+                        );
+
+                        expect(liquidateAfter).to.equal(true);
+                        expect(UB).to.be.bignumber.greaterThan(UD);
+
+                        // user2's balance before liquidation
+                        let user2DAIBalBeforeLiquidate =
+                            await accountsContract.getDepositBalanceCurrent(addressDAI, user2);
+                        console.log(
+                            "user2DAIBalBeforeLiquidate",
+                            user2DAIBalBeforeLiquidate.toString()
+                        );
+
+                        // check if 0.9999 < U < 1
+                        let U = await bankContract.getCapitalUtilizationRatio(addressBAT);
+                        // ensure that U > 0.999... && U < 1
+                        expect(new BN(U)).to.be.bignumber.greaterThan(
+                            eighteenPrecision.mul(new BN("9990").div(new BN(10000)))
+                        );
+                        expect(new BN(U)).to.be.bignumber.lessThan(eighteenPrecision);
+
+                        let borrowAPR = new BN(
+                            await bankContract.getBorrowRatePerBlock(addressBAT)
+                        );
+                        let depositAPR = new BN(
+                            await bankContract.getDepositRatePerBlock(addressBAT)
+                        );
+                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
+                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        console.log("Yearly borrowAPR", borrowAPRYearly.toString());
+                        console.log("Yearly depositAPR", depositAPRYearly.toString());
+                        console.log("borrowAPR per block", borrowAPR.toString());
+                        console.log("depositAPR per block", depositAPR.toString());
+
+                        expect(borrowAPR).to.be.bignumber.greaterThan(new BN(0));
+                        expect(depositAPR).to.be.bignumber.greaterThan(new BN(0));
+
+                        await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
+                        await mockChainlinkAggregatorforBAT.updateAnswer(BATpriceInit);
+                    });
         
                     it("when U is between 0.90 and 0.5 for Compound supported tokens");
         
@@ -171,7 +436,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
             });
         });
 
-        context("with Compound unsupported tokens", async () => {
+        /*context("with Compound unsupported tokens", async () => {
             context("should succeed", async () => {
                 it("when capital utilization ratio = 1 for Compound unsupported tokens", async function () {
                     this.timeout(0);
@@ -826,6 +1091,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     });
                 });
             });
-        });
+        });*/
     });
 });
