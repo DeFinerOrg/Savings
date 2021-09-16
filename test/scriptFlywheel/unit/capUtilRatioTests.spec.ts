@@ -29,7 +29,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     const dummy = accounts[9];
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
-    const OKEX_BPY = new BN(10512000);
+    const ETH_BPY = new BN(2102400);
 
     let tokens: any;
     let mockChainlinkAggregators: any;
@@ -361,8 +361,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let depositAPR = new BN(
                             await bankContract.getDepositRatePerBlock(addressTUSD)
                         );
-                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
-                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        let borrowAPRYearly = borrowAPR.mul(ETH_BPY);
+                        let depositAPRYearly = depositAPR.mul(ETH_BPY);
                         console.log("Yearly borrowAPR", borrowAPRYearly.toString());
                         console.log("Yearly depositAPR", depositAPRYearly.toString());
                         console.log("borrowAPR per block", borrowAPR.toString());
@@ -497,8 +497,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let depositAPR = new BN(
                             await bankContract.getDepositRatePerBlock(addressTUSD)
                         );
-                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
-                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        let borrowAPRYearly = borrowAPR.mul(ETH_BPY);
+                        let depositAPRYearly = depositAPR.mul(ETH_BPY);
                         console.log("Yearly borrowAPR", borrowAPRYearly.toString());
                         console.log("Yearly depositAPR", depositAPRYearly.toString());
                         console.log("borrowAPR", borrowAPR.toString());
@@ -634,8 +634,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let depositAPR = new BN(
                             await bankContract.getDepositRatePerBlock(addressTUSD)
                         );
-                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
-                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        let borrowAPRYearly = borrowAPR.mul(ETH_BPY);
+                        let depositAPRYearly = depositAPR.mul(ETH_BPY);
                         console.log("Yearly borrowAPR", borrowAPRYearly.toString());
                         console.log("Yearly depositAPR", depositAPRYearly.toString());
                         console.log("borrowAPR", borrowAPR.toString());
@@ -768,8 +768,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let depositAPR = new BN(
                             await bankContract.getDepositRatePerBlock(addressTUSD)
                         );
-                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
-                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        let borrowAPRYearly = borrowAPR.mul(ETH_BPY);
+                        let depositAPRYearly = depositAPR.mul(ETH_BPY);
                         console.log("Yearly borrowAPR", borrowAPRYearly.toString());
                         console.log("Yearly depositAPR", depositAPRYearly.toString());
                         console.log("borrowAPR", borrowAPR.toString());

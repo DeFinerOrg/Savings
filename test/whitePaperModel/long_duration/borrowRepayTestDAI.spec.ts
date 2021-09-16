@@ -155,7 +155,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
 
-        BLOCKS_PER_YEAR = new BN(10512000);
+        BLOCKS_PER_YEAR = new BN(2102400);
         await savingAccount.fastForward(1);
     });
 
@@ -309,8 +309,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     // the rate simulator.
                     // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650900000)); // 3007210014379.6274/2 || 1503559214300
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494926));
-                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494926));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494927));
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494927));
                 });
             });
         });
