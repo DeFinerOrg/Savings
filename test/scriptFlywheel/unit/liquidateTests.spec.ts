@@ -1737,7 +1737,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     expect(BN(user2TUSDBalBeforeLiquidate)).to.be.bignumber.lessThan(
                         BN(user2TUSDBalAfterLiquidate)
                     );
-                });*/
+                });
                 it("when LTV > 100%", async function () {
                     this.timeout(0);
                     // get initial oracle prices
@@ -1917,6 +1917,228 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     // owner gets the collateral
                     expect(ownerDAIBalAfterLiquidate).to.be.bignumber.equal(ONE_DAI.mul(new BN(10000)));
+
+                    // reset the prices
+                    await mockChainlinkAggregatorforETH.updateAnswer(ethPriceInit);
+                    await mockChainlinkAggregatorforDAI.updateAnswer(daiPriceInit);
+                    await mockChainlinkAggregatorforTUSD.updateAnswer(tusdPriceInit);
+                    await mockChainlinkAggregatorforUSDT.updateAnswer(usdtPriceInit);
+
+                });*/
+                it("when collateral is Compound unsupported & LTV > 100%", async function () {
+                    this.timeout(0);
+                    // get initial oracle prices
+                    const ethPriceInit = await mockChainlinkAggregatorforETH.latestAnswer();
+                    const daiPriceInit = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    const tusdPriceInit =
+                        await mockChainlinkAggregatorforTUSD.latestAnswer();
+                    const usdtPriceInit =
+                        await mockChainlinkAggregatorforUSDT.latestAnswer();
+
+                    const ZERO = new BN(0);
+                    const ONE_USD = new BN(1);
+                    const ONE_ETH = eighteenPrecision;
+                    const ONE_TUSD = eighteenPrecision;
+                    const ONE_USDT = sixPrecision;
+
+                    // set oracle prices
+                    const ETH_USD_RATE = new BN(2000);
+                    let ONE_USD_IN_ETH = ONE_ETH.div(ETH_USD_RATE);
+                    await mockChainlinkAggregatorforETH.updateAnswer(ONE_ETH); // remain constant
+                    await mockChainlinkAggregatorforDAI.updateAnswer(ONE_USD_IN_ETH);
+                    await mockChainlinkAggregatorforTUSD.updateAnswer(ONE_USD_IN_ETH);
+                    await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH);
+
+                    // get oracle prices
+                    const ethPrice = await mockChainlinkAggregatorforETH.latestAnswer();
+                    const daiPrice = await mockChainlinkAggregatorforDAI.latestAnswer();
+                    const tusdPrice = await mockChainlinkAggregatorforTUSD.latestAnswer();
+                    const usdtPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+
+                    const ethPriceInUSD = ethPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("ETH price in USD", ethPriceInUSD.toString());
+                    expect(ethPriceInUSD).to.be.bignumber.equal(ETH_USD_RATE);
+                    const daiPriceInUSD = daiPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("DAI price in USD", daiPriceInUSD.toString());
+                    expect(daiPriceInUSD).to.be.bignumber.equal(ONE_USD);
+                    const tusdPriceInUSD = tusdPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("TUSD price in USD", tusdPriceInUSD.toString());
+                    expect(tusdPriceInUSD).to.be.bignumber.equal(ONE_USD);
+                    const usdtPriceInUSD = usdtPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("USDT price in USD", usdtPriceInUSD.toString());
+                    expect(usdtPriceInUSD).to.be.bignumber.equal(ONE_USD);
+
+                    // approve tokens
+                    await erc20USDT.approve(
+                        savingAccount.address,
+                        ONE_TUSD.mul(new BN(10000)),
+                        { from: owner }
+                    );
+                    await erc20TUSD.approve(
+                        savingAccount.address,
+                        ONE_TUSD.mul(new BN(10000)),
+                        { from: user1 }
+                    );
+                    await erc20USDT.approve(
+                        savingAccount.address,
+                        ONE_USDT.mul(new BN(6000)),
+                        { from: user2 }
+                    );
+
+                    // owner - deposit 1000 USDT
+                    await savingAccount.deposit(addressUSDT, ONE_USDT.mul(new BN(10000)), {
+                        from: owner,
+                    });
+                    let ownerUSDTBalAfterDeposit =
+                        await accountsContract.getDepositBalanceCurrent(addressUSDT, owner);
+                    console.log("ownerUSDTBalAfterDeposit", ownerUSDTBalAfterDeposit.toString());
+
+                    // 1. Transfer tokens to user1 & user2
+                    await erc20TUSD.transfer(user1, ONE_TUSD.mul(new BN(10000)));
+                    await erc20USDT.transfer(user2, ONE_USDT.mul(new BN(6000)));
+
+                    // 2. User1 deposits 10000 TUSD & User2 deposits 6000 USDT
+                    await savingAccount.deposit(addressTUSD, ONE_TUSD.mul(new BN(10000)), {
+                        from: user1,
+                    });
+                    await savingAccount.deposit(addressUSDT, ONE_USDT.mul(new BN(6000)), {
+                        from: user2,
+                    });
+
+                    console.log("---------------- user1 depositted 10000 TUSD (Compound unsupported) ----------------------");
+
+                    // enable TUSD as collateral
+                    const indexTUSD = await tokenInfoRegistry.getTokenIndex(addressTUSD);
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        indexTUSD,
+                        true,
+                        { from: user1 }
+                    );
+
+                    let user1TUSDBalAfterDeposit =
+                        await accountsContract.getDepositBalanceCurrent(addressTUSD, user1);
+                    console.log("user1TUSDBalAfterDeposit", user1TUSDBalAfterDeposit.toString());
+
+                    // user's borrow power
+                    let user1BorrowPower = await accountsContract.getBorrowPower(user1);
+                    let borrowPowerInUSD = user1BorrowPower.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("user1BorrowPower in ETH", user1BorrowPower.toString());
+                    console.log("user1BorrowPower in USD", borrowPowerInUSD.toString());
+
+                    let collAmtInETH = await accountsContract.getDepositETH(user1);
+                    let collateralAmtInUSD = collAmtInETH.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log(
+                        "user collateral amount in USD:",
+                        collateralAmtInUSD.toString()
+                    );
+
+                    // 3. User1 borrows 6000 USDT
+                    await savingAccount.borrow(addressUSDT, ONE_USDT.mul(new BN(6000)), {
+                        from: user1,
+                    });
+                    console.log("---------------- user1 borrowed 6000 USDT ----------------------");
+
+                    const borrowedAmtInETH = await accountsContract.getBorrowETH(user1);
+                    const borrowedAmtInUSD = borrowedAmtInETH
+                        .mul(ETH_USD_RATE)
+                        .div(ONE_ETH);
+                    console.log("borrowedAmtInETH", borrowedAmtInETH.toString());
+                    console.log(
+                        "user borrowed amount in USD:",
+                        borrowedAmtInUSD.toString()
+                    );
+                    
+                    let collateralRatio = borrowedAmtInUSD
+                        .mul(new BN(100))
+                        .div(collateralAmtInUSD);
+                    console.log("collateral ratio in % :", collateralRatio.toString());
+                    expect(collateralRatio).to.be.bignumber.equal(new BN(60)); // 60%
+
+                    // increase USDT price
+                    await mockChainlinkAggregatorforUSDT.updateAnswer(ONE_USD_IN_ETH.mul(new BN(3)));
+                    const updatedUSDTPrice = await mockChainlinkAggregatorforUSDT.latestAnswer();
+                    const usdtPriceInUSDAfter = updatedUSDTPrice.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("USDT price in USD", usdtPriceInUSDAfter.toString());
+
+                    console.log("--------------- price updated -----------------");
+                    let collAmtInETH2 = BN(await accountsContract.getDepositETH(user1));
+                    let CCV = collAmtInETH2.mul(ETH_USD_RATE).div(ONE_ETH);
+                    console.log("collAmtInETH2", collAmtInETH2.toString());
+                    console.log(
+                        "CCV in USD:",
+                        CCV.toString()
+                    );
+                    const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
+                    const CBB = BN(borrowedAmtInETH2
+                        .mul(ETH_USD_RATE)
+                        .div(ONE_ETH));
+                    console.log("borrowedAmtInETH2", borrowedAmtInETH2.toString());
+                    console.log(
+                        "user borrowed amount in USD:",
+                        CBB.toString()
+                    );
+                    
+                    let collateralRatio2 = CBB
+                        .mul(new BN(100))
+                        .div(CCV);
+                    console.log("collateral ratio in % :", collateralRatio2.toString());
+                    expect(collateralRatio2).to.be.bignumber.equal(new BN(180));
+
+                    let isAccountLiquidatable =
+                        await accountsContract.isAccountLiquidatable.call(user1);
+                    console.log("isAccountLiquidatable", isAccountLiquidatable);
+                    expect(isAccountLiquidatable).to.be.equal(true);
+
+                    // 4. Owner liquidates User1
+                    let ownerTUSDBalBeforeLiquidate =
+                        BN(await accountsContract.getDepositBalanceCurrent(addressTUSD, owner));
+                    console.log(
+                        "ownerTUSDBalBeforeLiquidate",
+                        ownerTUSDBalBeforeLiquidate.toString()
+                    );
+
+                    let CCVtimesILTV = CCV.mul(new BN(6)).div(new BN(10));
+                    console.log("CCVtimesILTV", CCVtimesILTV.toString());
+                    
+                    let liquidationDiscountRatio = new BN(5);
+                    let ILTV = new BN(60);
+                    let den = new BN(100).sub(liquidationDiscountRatio).sub(ILTV);
+                    console.log("den", den.toString());
+                    
+                    // calculate UAAL
+                    let UAAL = (CBB.sub(CCVtimesILTV)).mul(new BN(100)).div(den);
+
+                    console.log("CBB of user", CBB.toString());
+                    console.log("CCV of user", CCV.toString());
+                    console.log("UAAL of the user", UAAL.toString());
+                     
+                    await savingAccount.liquidate(user1, addressUSDT, addressTUSD, { from: owner });
+
+                    let ownerTUSDBalAfterLiquidate =
+                        BN(await accountsContract.getDepositBalanceCurrent(addressTUSD, owner));
+                    console.log(
+                        "ownerTUSDBalAfterLiquidate",
+                        ownerTUSDBalAfterLiquidate.toString()
+                    );
+
+                    let ownerUSDTBalAfterLiquidate =
+                        await accountsContract.getDepositBalanceCurrent(addressUSDT, owner);
+                    console.log("ownerUSDTBalAfterLiquidate", ownerUSDTBalAfterLiquidate.toString());
+
+                    let user1TUSDBalAfterLiquidate =
+                        await accountsContract.getDepositBalanceCurrent(addressTUSD, user1);
+                    console.log("user1TUSDBalAfterLiquidate", user1TUSDBalAfterLiquidate.toString());
+                    
+                    // borrower's collateral should reduce
+                    expect(BN(user1TUSDBalAfterLiquidate)).to.be.bignumber.lessThan(
+                        BN(user1TUSDBalAfterDeposit)
+                    );
+                    // liquidator's depositted tokens should decrease
+                    expect(BN(ownerUSDTBalAfterLiquidate)).to.be.bignumber.lessThan(
+                        BN(ownerUSDTBalAfterDeposit)
+                    );
+                    // owner gets the collateral
+                    expect(ownerTUSDBalAfterLiquidate).to.be.bignumber.equal(ONE_TUSD.mul(new BN(10000)));
 
                     // reset the prices
                     await mockChainlinkAggregatorforETH.updateAnswer(ethPriceInit);
