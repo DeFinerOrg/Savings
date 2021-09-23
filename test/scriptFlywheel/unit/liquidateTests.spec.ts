@@ -2068,6 +2068,9 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "CCV in USD:",
                         CCV.toString()
                     );
+                    let collAmtInETHOwner = BN(await accountsContract.getDepositETH(user1));
+                    let CCVOwner = collAmtInETHOwner.mul(ETH_USD_RATE).div(ONE_ETH);
+
                     const borrowedAmtInETH2 = await accountsContract.getBorrowETH(user1);
                     const CBB = BN(borrowedAmtInETH2
                         .mul(ETH_USD_RATE)
@@ -2077,6 +2080,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         "user borrowed amount in USD:",
                         CBB.toString()
                     );
+
+                    const borrowedAmtInETHOwner = await accountsContract.getBorrowETH(owner);
+                    const CBBOwner = BN(borrowedAmtInETHOwner
+                        .mul(ETH_USD_RATE)
+                        .div(ONE_ETH));
                     
                     let collateralRatio2 = CBB
                         .mul(new BN(100))
@@ -2097,8 +2105,10 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         ownerTUSDBalBeforeLiquidate.toString()
                     );
 
+                    let CCVtimesILTVOwner = CCVOwner.mul(new BN(6)).div(new BN(10));
                     let CCVtimesILTV = CCV.mul(new BN(6)).div(new BN(10));
                     console.log("CCVtimesILTV", CCVtimesILTV.toString());
+                    console.log("CCVtimesILTVOwner", CCVtimesILTVOwner.toString());
                     
                     let liquidationDiscountRatio = new BN(5);
                     let ILTV = new BN(60);
@@ -2107,10 +2117,14 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     
                     // calculate UAAL
                     let UAAL = (CBB.sub(CCVtimesILTV)).mul(new BN(100)).div(den);
+                    let UAALOwner = (CBBOwner.sub(CCVtimesILTV)).mul(new BN(100)).div(den);
 
                     console.log("CBB of user", CBB.toString());
                     console.log("CCV of user", CCV.toString());
                     console.log("UAAL of the user", UAAL.toString());
+                    console.log("CBB of liquidator", CBBOwner.toString());
+                    console.log("CCV of liquidator", CCVOwner.toString());
+                    console.log("UAAL of the liquidator", UAALOwner.toString());
                      
                     await savingAccount.liquidate(user1, addressUSDT, addressTUSD, { from: owner });
 
