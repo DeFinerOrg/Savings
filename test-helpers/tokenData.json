@@ -281,6 +281,9 @@
             "tokenAddress": "0x486792bcdb13F8aaCf85288D98850FA2804F95c7",
             "aggregatorAddress": "0x444F88FDd587C1Bd6B50bB8924f964DEC590e403",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        },
+        "kovan": {
+            "tokenAddress": "0x77E78fbFe224C43558299CF8b6E2b34BA4795f0F"
         }
     },
     "DeFiner": {
@@ -293,6 +296,9 @@
             "tokenAddress": "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40",
             "aggregatorAddress": "0xd7Cd4e27d9333013b0Fe9cE82855f71Ae126C51E",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        },
+        "kovan": {
+            "tokenAddress": "0xF69DB0D004dC1B75d881cCae4BfAe4d17CEb2f7A"
         }
     }
 }
