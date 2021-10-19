@@ -22,7 +22,7 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -92,10 +92,10 @@ module.exports = {
                     mnemonic,
                     "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
+            from: "0xA9AEd235325A8434C827e1AdA04e78E760c4757e", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
-            gasPrice: 50000000000, //150Gwei
+            gasPrice: 21000000000, //150Gwei
         },
     },
 

@@ -13,17 +13,17 @@ import "./Constant.sol";
 contract GlobalConfig is Ownable {
     using SafeMath for uint256;
 
-    uint256 public communityFundRatio = 10;
+    uint256 public communityFundRatio = 20;
     uint256 public minReserveRatio = 10;
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
-    uint256 public compoundSupplyRateWeights = 4;
-    uint256 public compoundBorrowRateWeights = 6;
-    uint256 public rateCurveSlope = 15 * 10 ** 16;
-    uint256 public rateCurveConstant = 3 * 10 ** 16;
+    uint256 public compoundSupplyRateWeights = 1;
+    uint256 public compoundBorrowRateWeights = 9;
+    uint256 public rateCurveSlope = 0;
+    uint256 public rateCurveConstant = 4 * 10 ** 16;
     uint256 public deFinerRate = 10;
-    address payable public deFinerCommunityFund = msg.sender;
+    address payable public deFinerCommunityFund = 0xC0fd76eDcb8893a83c293ed06a362b1c18a584C7;
 
     Bank public bank;                               // the Bank contract
     SavingAccount public savingAccount;             // the SavingAccount contract
