@@ -25,18 +25,20 @@ async function getTransactionsByAccount(myaccount: string, fromBlock: BN, target
             .then((events) => {
                 events.forEach(async (e) => {
                     // console.log(e.blockNumber, e.transactionHash);
-                    await web3.eth.getTransaction(e.transactionHash).then((tx: any) => {
-                        console.log(
-                            tx.blockNumber,
-                            tx.hash,
-                            tx.from,
-                            tx.to,
-                            tx.gas,
-                            tx.gasPrice,
-                            tx.value,
-                            tx.input
-                        );
-                    });
+                    let tx = await web3.eth.getTransaction(e.transactionHash);
+                    let txBlock = await web3.eth.getBlock(tx.blockNumber);
+
+                    console.log(
+                        tx.blockNumber,
+                        tx.hash,
+                        tx.from,
+                        tx.to,
+                        tx.gas,
+                        tx.gasPrice,
+                        tx.value,
+                        tx.input,
+                        txBlock.timestamp
+                    );
                 });
             });
         fromBlock = fromBlock.add(batchSize).add(new BN(1));
