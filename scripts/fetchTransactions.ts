@@ -40,23 +40,94 @@ async function getTransactionsByAccount(myaccount: string, fromBlock: BN, target
                     let tx = await web3.eth.getTransaction(e.transactionHash);
                     let txBlock = await web3.eth.getBlock(tx.blockNumber);
                     let getTx = await getTxInput(tx.input);
-                    let tokenSymbol = await getTokenSymbol(getTx[1]);
 
-                    console.log(
-                        tx.blockNumber,
-                        getTx[0], // Method type (deposit/withdraw/...etc)
-                        tx.hash,
-                        tx.from,
-                        tx.to,
-                        tx.gas,
-                        tx.gasPrice,
-                        tx.value,
-                        tx.input,
-                        txBlock.timestamp,
-                        tokenSymbol,
-                        getTx[2],
-                        getTx[3]
-                    );
+                    if (
+                        getTx[0] == "Borrow" ||
+                        getTx[0] == "Deposit" ||
+                        getTx[0] == "Repay" ||
+                        getTx[0] == "Withdraw"
+                    ) {
+                        let tokenSymbol = await getTokenSymbol(getTx[1]);
+                        console.log(
+                            tx.blockNumber,
+                            getTx[0], // Method type (deposit/withdraw/...etc)
+                            tx.hash,
+                            tx.from,
+                            tx.to,
+                            tx.gas,
+                            tx.gasPrice,
+                            tx.value,
+                            tx.input,
+                            txBlock.timestamp,
+                            tokenSymbol,
+                            getTx[2] // Amount
+                        );
+                    } else if (getTx[0] == "WithdrawAll") {
+                        let tokenSymbol = await getTokenSymbol(getTx[1]);
+                        console.log(
+                            tx.blockNumber,
+                            getTx[0], // Method type (deposit/withdraw/...etc)
+                            tx.hash,
+                            tx.from,
+                            tx.to,
+                            tx.gas,
+                            tx.gasPrice,
+                            tx.value,
+                            tx.input,
+                            txBlock.timestamp,
+                            tokenSymbol
+                        );
+                    } else if (getTx[0] == "Liquidate") {
+                        let borrowedToken = await getTokenSymbol(getTx[2]);
+                        let collateralToken = await getTokenSymbol(getTx[3]);
+                        console.log(
+                            tx.blockNumber,
+                            getTx[0], // Method type (deposit/withdraw/...etc)
+                            tx.hash,
+                            tx.from,
+                            tx.to,
+                            tx.gas,
+                            tx.gasPrice,
+                            tx.value,
+                            tx.input,
+                            txBlock.timestamp,
+                            borrowedToken,
+                            collateralToken
+                        );
+                    } else if (getTx[0] == "Transfer") {
+                        let tokenSymbol = await getTokenSymbol(getTx[2]);
+                        console.log(
+                            tx.blockNumber,
+                            getTx[0], // Method type (deposit/withdraw/...etc)
+                            tx.hash,
+                            tx.from,
+                            tx.to,
+                            tx.gas,
+                            tx.gasPrice,
+                            tx.value,
+                            tx.input,
+                            txBlock.timestamp,
+                            tokenSymbol,
+                            getTx[3] // Amount
+                        );
+                    } else if (
+                        getTx[0] == "Claim" ||
+                        getTx[0] == "Pause" ||
+                        getTx[0] == "Unpause"
+                    ) {
+                        console.log(
+                            tx.blockNumber,
+                            getTx[0], // Method type (deposit/withdraw/...etc)
+                            tx.hash,
+                            tx.from,
+                            tx.to,
+                            tx.gas,
+                            tx.gasPrice,
+                            tx.value,
+                            tx.input,
+                            txBlock.timestamp
+                        );
+                    }
                 });
             });
         fromBlock = fromBlock.add(batchSize).add(new BN(1));
@@ -103,7 +174,7 @@ async function getTxInput(txInput: string) {
         result.push("Liquidate", txData[0], txData[1], txData[2]);
     } else if (txType == TRANSFER) {
         let txData = await web3.eth.abi.decodeParameters(
-            ["address", "address", "address"],
+            ["address", "address", "uint256"],
             finalStr
         );
         result.push("Transfer", txData[0], txData[1], txData[2]);
