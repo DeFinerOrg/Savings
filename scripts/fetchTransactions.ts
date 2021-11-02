@@ -40,9 +40,11 @@ async function getTransactionsByAccount(myaccount: string, fromBlock: BN, target
                     let tx = await web3.eth.getTransaction(e.transactionHash);
                     let txBlock = await web3.eth.getBlock(tx.blockNumber);
                     let getTx = await getTxInput(tx.input);
+                    let tokenSymbol = await getTokenSymbol(getTx[1]);
 
                     console.log(
                         tx.blockNumber,
+                        getTx[0], // Method type (deposit/withdraw/...etc)
                         tx.hash,
                         tx.from,
                         tx.to,
@@ -51,7 +53,9 @@ async function getTransactionsByAccount(myaccount: string, fromBlock: BN, target
                         tx.value,
                         tx.input,
                         txBlock.timestamp,
-                        getTx
+                        tokenSymbol,
+                        getTx[2],
+                        getTx[3]
                     );
                 });
             });
@@ -105,10 +109,27 @@ async function getTxInput(txInput: string) {
         result.push("Transfer", txData[0], txData[1], txData[2]);
     }
 
-    console.log(result);
     return result;
-    // console.log("strippedStr", strippedStr);
-    // console.log("finalStr", finalStr);
+}
+
+async function getTokenSymbol(tokenAddr: string) {
+    if (tokenAddr == "0xdF54B6c6195EA4d948D03bfD818D365cf175cFC2") {
+        return "OKB";
+    } else if (tokenAddr == "0x382bB369d343125BfB2117af9c149795C6C65C50") {
+        return "USDT";
+    } else if (tokenAddr == "0x54e4622DC504176b3BB432dCCAf504569699a7fF") {
+        return "BTCK";
+    } else if (tokenAddr == "0xEF71CA2EE68F45B9Ad6F72fbdb33d707b872315C") {
+        return "ETHK";
+    } else if (tokenAddr == "0x8D3573f24c0aa3819A2f5b02b2985dD82B487715") {
+        return "FIN";
+    } else if (tokenAddr == "0x8179D97Eb6488860d816e3EcAFE694a4153F216c") {
+        return "CHE";
+    } else if (tokenAddr == "0x000000000000000000000000000000000000000E") {
+        return "OKT";
+    } else if (tokenAddr == "0x2bE36b6D2153444061E66F43f151aE8d9af7F93C") {
+        return "FIN-LP";
+    }
 }
 
 main()
