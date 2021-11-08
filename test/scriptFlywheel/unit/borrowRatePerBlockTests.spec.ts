@@ -2151,7 +2151,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     // 3. Change the price.
                     let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                    // update price of DAI to 70% of it's value
+                    // update price of DAI to 60% of it's value
                     let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
@@ -2267,7 +2267,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         // 3. Change the price.
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                        // update price of DAI to 70% of it's value
+                        // update price of DAI to 60% of it's value
                         let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
@@ -2400,7 +2400,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         // 3. Change the price.
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                        // update price of DAI to 70% of it's value
+                        // update price of DAI to 60% of it's value
                         let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
@@ -2539,7 +2539,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         // 3. Change the price.
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                        // update price of DAI to 70% of it's value
+                        // update price of DAI to 60% of it's value
                         let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
@@ -2673,7 +2673,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         // 3. Change the price.
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
-                        // update price of DAI to 70% of it's value
+                        // update price of DAI to 60% of it's value
                         let updatedPrice = BN(DAIprice).mul(new BN(6)).div(new BN(10));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(updatedPrice);
