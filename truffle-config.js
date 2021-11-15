@@ -62,7 +62,7 @@ module.exports = {
             disableConfirmationListener: true,
             allowUnlimitedContractSize: true,
         },
-        mainnet: {
+        eth_mainnet: {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
@@ -86,7 +86,7 @@ module.exports = {
         //     gasPrice: 15000000000,
         // },
 
-        kovan: {
+        eth_kovan: {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
@@ -96,6 +96,18 @@ module.exports = {
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei
+        },
+
+        polygon_mainnet: {
+            provider: () =>
+                new HDWalletProvider(
+                    mnemonic,
+                    "https://rpc-mainnet.maticvigil.com/"
+                ),
+            from: "0xfca782E34D89c66f6c0471173d295A8cbAc15cC5", 
+            network_id: 137,
+            gas: 6000000,
+            gasPrice: 30000000000, 
         },
     },
 
