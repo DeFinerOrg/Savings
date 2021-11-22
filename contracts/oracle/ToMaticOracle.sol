@@ -6,18 +6,18 @@ import { SafeMath} from "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract ToMaticOracle {
     using SafeMath for uint256;
-    string public tokenPairName,
-    string public maticPairName,
+    string public tokenPairName;
+    string public maticPairName;
     string public targetPairName;
     // example pair DAI/ETH
-    AggregatorInterface public tokenPriceOracle1;
+    AggregatorInterface public tokenPriceOracle;
     // example pair MATIC/ETH
     AggregatorInterface public maticPriceOracle;
 
     constructor(
         string memory _targetPairName,
         string memory _tokenPairName,
-        AggregatorInterface _tokenPriceOracle1,
+        AggregatorInterface _tokenPriceOracle,
         string memory _maticPairName,
         AggregatorInterface _maticPriceOracle
     ) public {
@@ -25,7 +25,7 @@ contract ToMaticOracle {
 
         // pair1
         tokenPairName = _tokenPairName;
-        tokenPriceOracle1 = _tokenPriceOracle1;
+        tokenPriceOracle = _tokenPriceOracle;
 
         // pair2
         maticPairName = _maticPairName;
@@ -34,7 +34,7 @@ contract ToMaticOracle {
 
     function latestAnswer() external view returns (int256) {
         // 1 DAI rate is represented in ETH
-        uint256 tokenPrice = toUint256(tokenPriceOracle1.latestAnswer());
+        uint256 tokenPrice = toUint256(tokenPriceOracle.latestAnswer());
         // 1 MATIC rate is repsented in ETH
         uint256 maticPrice = toUint256(maticPriceOracle.latestAnswer());
         // number of MATIC in 1 ETH
