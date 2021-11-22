@@ -18,8 +18,8 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     GlobalConfig public globalConfig;
 
-    address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
-    address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+    address public constant FIN_ADDR = 0x576c990A8a3E7217122e9973b2230A3be9678E94;
+    address public constant COMP_ADDR = address(0);
 
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
@@ -250,12 +250,14 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     /**
      * Withdraw COMP token to beneficiary
      */
+    /*
     function withdrawCOMP(address _beneficiary) external onlyOwner {
         uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
         IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
 
         emit WithdrawCOMP(_beneficiary, compBalance);
     }
+    */
 
     function version() public pure returns(string memory) {
         return "v1.2.0";
