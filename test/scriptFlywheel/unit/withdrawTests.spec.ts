@@ -1644,7 +1644,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, withdrawAmount),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
 
@@ -1669,7 +1669,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     const withdrawAmount = new BN(20);
                     await expectRevert(
                         savingAccount.withdraw(ETH_ADDRESS, withdrawAmount),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
             });

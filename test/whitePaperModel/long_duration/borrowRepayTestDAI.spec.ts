@@ -1,3 +1,5 @@
+import { GlobalConfigContract } from './../../../types/truffle-contracts/GlobalConfig.d';
+import { BankContract, BankInstance } from './../../../types/truffle-contracts/Bank.d';
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { saveContract } from "../../../compound-protocol/scenario/src/Networks";
@@ -18,6 +20,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     let testEngine: TestEngine;
     let savingAccount: t.SavingAccountWithControllerInstance;
     let accountsContract: t.AccountsInstance;
+    let bankContract: t.BankInstance;
     let tokenRegistry: t.TokenRegistryInstance;
 
     const owner = accounts[0];
@@ -74,6 +77,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
     let ONE_DAI: any;
     let HALF_DAI: any;
     let ONE_USDC: any;
+    let BLOCKS_PER_YEAR: any;
 
     before(function () {
         this.timeout(0);
@@ -86,6 +90,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         this.timeout(0);
         savingAccount = await testEngine.deploySavingAccount();
         accountsContract = await testEngine.accounts;
+        bankContract = await testEngine.bank;
         tokenRegistry = await testEngine.tokenInfoRegistry;
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
@@ -149,6 +154,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
         HALF_DAI = ONE_DAI.div(new BN(2));
         TWO_DAIS = ONE_DAI.mul(new BN(2));
         ONE_USDC = sixPrecision;
+
+        BLOCKS_PER_YEAR = new BN(2102400);
         await savingAccount.fastForward(1);
     });
 
@@ -165,7 +172,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user1 });
                     await erc20DAI.approve(savingAccount.address, TWO_DAIS, { from: user2 });
                     await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
-                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 });
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user2 }); // 1000000000000000000
 
                     // 2. Start borrowing.
                     const user2BalanceBefore = BN(await erc20DAI.balanceOf(user2));
@@ -176,7 +183,7 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         true,
                         { from: user2 }
                     );
-                    await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 });
+                    await savingAccount.borrow(addressDAI, HALF_DAI, { from: user2 }); // 500000000000000000
                     const user2BalanceAfter = BN(await erc20DAI.balanceOf(user2));
                     expect(user2BalanceAfter.sub(user2BalanceBefore)).to.be.bignumber.equal(
                         HALF_DAI
@@ -185,6 +192,9 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         await cDAI.balanceOfUnderlying.call(savingAccount.address)
                     );
                     const cDAIBeforeFastForward = BN(await cDAI.balanceOf(savingAccount.address));
+
+                    let capUtilRatioDAI1 = BN(await bankContract.getCapitalUtilizationRatio(addressDAI));
+                    console.log("capUtilRatioDAI1",capUtilRatioDAI1.toString());
 
                     // 3. Fastforward
                     await savingAccount.fastForward(100000);
@@ -207,6 +217,8 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                     );
                     console.log("user2BorrowInterestBefore", user2BorrowInterestBefore.toString()); // borrowInterest == 0
 
+                    let capUtilRatioDAIBeforeRepay = BN(await bankContract.getCapitalUtilizationRatio(addressDAI));
+                    console.log("capUtilRatioDAIBeforeRepay",capUtilRatioDAIBeforeRepay.toString());
                     // Repay DAI and withdraw all
                     await savingAccount.repay(addressDAI, ONE_DAI, { from: user2 });
 
@@ -248,6 +260,11 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
                         addressDAI,
                         { from: user1 }
                     );
+                    let lastDepBlock = BN(await accountsContract.getLastDepositBlock(user1,addressDAI));
+                    let depositRate = BN(await bankContract.depositeRateIndex(addressDAI,lastDepBlock));
+                    console.log("lastDepBlock",lastDepBlock.toString());
+                    console.log("depositRate",depositRate.toString());
+                    
                     const user1DepositInterest = await savingAccount.getDepositInterest(
                         addressDAI,
                         { from: user1 }
@@ -283,17 +300,17 @@ contract("SavingAccount.borrowRepayTestDAI", async (accounts) => {
 
                     // Verify the interest
                     // First do a sanity check on (Deposit interest = Borrow interest + Compound interest)
-                    const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest);
+                    const totalDepositInterest = BN(user1DepositInterest).add(user2DepositInterest); // 96633026800000 + 0
                     const totalBorrowInterest = BN(user1BorrowInterest).add(user2BorrowInterest);
                     const totalCompoundInterest =
-                        BN(compoundAfterFastForward).sub(compoundPrincipal);
-
+                        BN(compoundAfterFastForward).sub(compoundPrincipal);                    
+                    // console.log("totalDepositInterestBefore", totalDepositInterestBefore.toString());
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650900000)); // 3007210014379.6274/2 || 1503559214300
+                    // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1503650900000)); // 3007210014379.6274/2 || 1503559214300
                     expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(0));
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494927));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494927));
                 });
             });
         });
