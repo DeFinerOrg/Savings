@@ -66,10 +66,9 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    "https://bsc-dataseed1.ninicoin.io"
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
-            network_id: 1,
+            network_id: 56,
             gas: 7000000,
             gasPrice: 150000000000, //150Gwei
         },
