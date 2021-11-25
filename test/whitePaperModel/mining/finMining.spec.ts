@@ -624,7 +624,7 @@ contract("SavingAccount.FINMining", async (accounts) => {
                     // the rate simulator.
                     // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(6027877038146)); // 6027624308533.946
                     // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(5995130370685)); // 5994879668807.049
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(19168622913)); // 19168622492
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(19168622480)); // 19168622492
                     // totalBorrowInterest + totalCompundInterest = totalDepositInterest
                     expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(1815385066830369)); // 367597864096682
 
@@ -779,7 +779,7 @@ contract("SavingAccount.FINMining", async (accounts) => {
                     // the rate simulator.
                     // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(5409338432181)); // 5409141661712.451
                     // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(5396156769917)); // 5395960736096.195
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7988185581));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7988555908));
                     // totalBorrowInterest + totalCompundInterest = totalDepositInterest
                     expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(1899907676564845)); // 1899912869531228
 
@@ -963,7 +963,7 @@ contract("SavingAccount.FINMining", async (accounts) => {
                     // the rate simulator.
                     // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(9620596025538)); // 9620206729297.027
                     // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(9592639769497)); // 9592252337099.182
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(15974120732));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(15974860710));
                     // totalBorrowInterest + totalCompundInterest = totalDepositInterest
                     expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(3211345830177217)); // 3211357809383536
 
