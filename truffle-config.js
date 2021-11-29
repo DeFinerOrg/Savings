@@ -22,7 +22,7 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const secrets = fs.readFileSync(".secret.json").toString().trim();
+const secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -97,6 +97,7 @@ module.exports = {
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei
+            networkCheckTimeout: 2147483647
         },
     },
 

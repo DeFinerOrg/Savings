@@ -3,7 +3,7 @@ Use the following command to generate the ABI:
 
     yarn compile
     
-This will create a new directory named `build/` with the ABI files for the respective contracts
+This will create a new directory named `artifacts/contracts/` with the ABI files for the respective contracts
 
 ## Deploying the contracts:
 To deploy the contracts on a testnet, you'll need to have an account on Infura/Alchemy.  
@@ -19,9 +19,9 @@ Please follow the steps below to deploy the contracts:
 
 **2)** Deploy the contracts using the following command in your terminal:  
 ```
-truffle migrate --network <network_name>
+yarn deploy-testnet --network <network_name>
 ```
 E.x.: 
 ```
-truffle migrate --network kovan
+yarn deploy-testnet --network kovan
 ```
