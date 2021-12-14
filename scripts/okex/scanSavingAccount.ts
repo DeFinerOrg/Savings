@@ -74,17 +74,54 @@ async function depositsAndBorrows() {
     console.log("addr:", addresses[0]);
     
 
-    let fromBlock = 7447771;
-    let targetBlock = 7447773; // 7489979
-    console.log("fromBlock", fromBlock, "targetBlock", targetBlock);
-    let batchSize = 1;
-    let toBlock = 0;
+    // let fromBlock = 7447771;
+    // let targetBlock = 7447773; // 7489979
+    // console.log("fromBlock", fromBlock, "targetBlock", targetBlock);
+    // let batchSize = 1;
+    // let toBlock = 0;
 
     for (let i = 0; i < addresses.length; i++) {
         const user = addresses[i];
-        const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision);
-        // const borrow = await addresses.getBorrowBalanceCurrent(CHE, e);
-        console.log(user, depositBalanceOKB.toString());
+        // ----------- Deposits -----------
+        const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision).toString();
+        const depositBalanceUSDT = BN(await accounts.getDepositBalanceCurrent(USDT,user)).div(eighteenPrecision).toString();
+        const depositBalanceBTCK = BN(await accounts.getDepositBalanceCurrent(BTCK,user)).div(eighteenPrecision).toString();
+        const depositBalanceETHK = BN(await accounts.getDepositBalanceCurrent(ETHK,user)).div(eighteenPrecision).toString();
+        const depositBalanceOKT = BN(await accounts.getDepositBalanceCurrent(OKT,user)).div(eighteenPrecision).toString();
+        const depositBalanceCHE = BN(await accounts.getDepositBalanceCurrent(CHE,user)).div(eighteenPrecision).toString();
+        const depositBalanceFIN = BN(await accounts.getDepositBalanceCurrent(FIN,user)).div(eighteenPrecision).toString();
+        const depositBalanceFIN_LP = BN(await accounts.getDepositBalanceCurrent(FIN_LP,user)).div(eighteenPrecision).toString();
+
+        // ----------- Borrows -----------
+        const borrowBalanceOKB = BN(await accounts.getBorrowBalanceCurrent(OKB,user)).div(eighteenPrecision).toString();
+        const borrowBalanceUSDT = BN(await accounts.getBorrowBalanceCurrent(USDT,user)).div(eighteenPrecision).toString();
+        const borrowBalanceBTCK = BN(await accounts.getBorrowBalanceCurrent(BTCK,user)).div(eighteenPrecision).toString();
+        const borrowBalanceETHK = BN(await accounts.getBorrowBalanceCurrent(ETHK,user)).div(eighteenPrecision).toString();
+        const borrowBalanceOKT = BN(await accounts.getBorrowBalanceCurrent(OKT,user)).div(eighteenPrecision).toString();
+        const borrowBalanceCHE = BN(await accounts.getBorrowBalanceCurrent(CHE,user)).div(eighteenPrecision).toString();
+        const borrowBalanceFIN = BN(await accounts.getBorrowBalanceCurrent(FIN,user)).div(eighteenPrecision).toString();
+        const borrowBalanceFIN_LP = BN(await accounts.getBorrowBalanceCurrent(FIN_LP,user)).div(eighteenPrecision).toString();
+
+        console.log(
+            currBlockNumber, 
+            user, 
+            depositBalanceOKB, 
+            depositBalanceUSDT, 
+            depositBalanceBTCK, 
+            depositBalanceETHK,
+            depositBalanceOKT,
+            depositBalanceCHE,
+            depositBalanceFIN,
+            depositBalanceFIN_LP,
+            borrowBalanceOKB,
+            borrowBalanceUSDT,
+            borrowBalanceBTCK,
+            borrowBalanceETHK,
+            borrowBalanceOKT,
+            borrowBalanceCHE,
+            borrowBalanceFIN,
+            borrowBalanceFIN_LP
+        );
     }
 
     const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,"0xb4CcaA030102713b96de6F6DEBaf9751c47BB78f")).div(eighteenPrecision);
