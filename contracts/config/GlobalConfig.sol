@@ -22,7 +22,7 @@ contract GlobalConfig is Ownable {
     uint256 public compoundBorrowRateWeights = 9;
     uint256 public rateCurveSlope = 0;
     uint256 public rateCurveConstant = 4 * 10 ** 16;
-    uint256 public deFinerRate = 10;
+    uint256 public deFinerRate = 25;
     address payable public deFinerCommunityFund = 0xC0fd76eDcb8893a83c293ed06a362b1c18a584C7;
 
     Bank public bank;                               // the Bank contract
