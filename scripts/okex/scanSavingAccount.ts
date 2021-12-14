@@ -1,5 +1,6 @@
 import * as t from "../../types/truffle-contracts/index";
 const { BN } = require("@openzeppelin/test-helpers");
+const { ethers } = require("hardhat");
 
 const SavingAccount: t.SavingAccountContract = artifacts.require("SavingAccount");
 const Accounts: t.AccountsContract = artifacts.require("Accounts");
@@ -22,8 +23,8 @@ const eighteenPrecision = new BN(10).pow(new BN(18));
 
 
 async function main() {
-    await scanSavingAccount();
-    // await depositsAndBorrows();
+    // await scanSavingAccount();
+    await depositsAndBorrows();
     // await scanBank();
 }
 
@@ -62,59 +63,112 @@ async function main() {
     }
 }*/
 
-async function depositsAndBorrows(){
+async function depositsAndBorrows() {
+    const currBlockNumber = await ethers.provider.getBlockNumber();
+    console.log(currBlockNumber);
+
     const accounts: t.AccountsInstance = await Accounts.at(ACCOUNTS);
     const addresses: any = require("./userAddresses.json");
 
-    let fromBlock = 4766916;
-    let targetBlock = 7489979; // 7489979
+    console.log("addressesLength", addresses.length);
+    console.log("addr:", addresses[0]);
+    
+
+    let fromBlock = 7447771;
+    let targetBlock = 7447773; // 7489979
     console.log("fromBlock", fromBlock, "targetBlock", targetBlock);
-    let batchSize = 200;
+    let batchSize = 1;
     let toBlock = 0;
 
-    while (true) {
-        if (fromBlock + batchSize > targetBlock) {
-            toBlock = targetBlock;
-        } else {
-            toBlock = fromBlock + batchSize;
-        }
-        console.log(fromBlock, toBlock);
-
-        await Promise.all(addresses.map(async (user:string) => {
-            // ----------- Deposits -----------
-            const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision);
-            const depositBalanceUSDT = await accounts.getDepositBalanceCurrent(USDT,user);
-            const depositBalanceBTCK = await accounts.getDepositBalanceCurrent(BTCK,user);
-            const depositBalanceETHK = await accounts.getDepositBalanceCurrent(ETHK,user);
-            const depositBalanceOKT = await accounts.getDepositBalanceCurrent(OKT,user);
-            const depositBalanceCHE = await accounts.getDepositBalanceCurrent(CHE,user);
-            const depositBalanceFIN = await accounts.getDepositBalanceCurrent(FIN,user);
-            const depositBalanceFIN_LP = await accounts.getDepositBalanceCurrent(FIN_LP,user);
-
-            // ----------- Borrows -----------
-            const borrowBalanceOKB = await accounts.getBorrowBalanceCurrent(OKB,user);
-            const borrowBalanceUSDT = await accounts.getBorrowBalanceCurrent(USDT,user);
-            const borrowBalanceBTCK = await accounts.getBorrowBalanceCurrent(BTCK,user);
-            const borrowBalanceETHK = await accounts.getBorrowBalanceCurrent(ETHK,user);
-            const borrowBalanceOKT = await accounts.getBorrowBalanceCurrent(OKT,user);
-            const borrowBalanceCHE = await accounts.getBorrowBalanceCurrent(CHE,user);
-            const borrowBalanceFIN = await accounts.getBorrowBalanceCurrent(FIN,user);
-            const borrowBalanceFIN_LP = await accounts.getBorrowBalanceCurrent(FIN_LP,user);
-
-            console.log("user", user);
-            console.log(user,depositBalanceOKB.toString());
-            // console.log("depositBalanceUSDT",depositBalanceUSDT.toString());
-            // console.log("depositBalanceBTCK",depositBalanceBTCK.toString());
-            // console.log("depositBalanceETHK",depositBalanceETHK.toString());
-            // console.log("depositBalanceOKT",depositBalanceOKT.toString());
-            // console.log("depositBalanceCHE",depositBalanceCHE.toString());
-            // console.log("depositBalanceFIN",depositBalanceFIN.toString());
-            // console.log("depositBalanceFIN_LP",depositBalanceFIN_LP.toString());
-        }));
-
-        if (fromBlock >= targetBlock) break;
-        fromBlock = toBlock + 1;
+    for (let i = 0; i < addresses.length; i++) {
+        const user = addresses[i];
+        const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision);
+        // const borrow = await addresses.getBorrowBalanceCurrent(CHE, e);
+        console.log(user, depositBalanceOKB.toString());
     }
+
+    const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,"0xb4CcaA030102713b96de6F6DEBaf9751c47BB78f")).div(eighteenPrecision);
+    console.log(depositBalanceOKB.toString());
+
+    // await Promise.all(addresses.map(async (user:string) => {
+    //     // ----------- Deposits -----------
+    //     const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision);
+    //     const depositBalanceUSDT = await accounts.getDepositBalanceCurrent(USDT,user);
+    //     const depositBalanceBTCK = await accounts.getDepositBalanceCurrent(BTCK,user);
+    //     const depositBalanceETHK = await accounts.getDepositBalanceCurrent(ETHK,user);
+    //     const depositBalanceOKT = await accounts.getDepositBalanceCurrent(OKT,user);
+    //     const depositBalanceCHE = await accounts.getDepositBalanceCurrent(CHE,user);
+    //     const depositBalanceFIN = await accounts.getDepositBalanceCurrent(FIN,user);
+    //     const depositBalanceFIN_LP = await accounts.getDepositBalanceCurrent(FIN_LP,user);
+    
+    //     // ----------- Borrows -----------
+    //     const borrowBalanceOKB = await accounts.getBorrowBalanceCurrent(OKB,user);
+    //     const borrowBalanceUSDT = await accounts.getBorrowBalanceCurrent(USDT,user);
+    //     const borrowBalanceBTCK = await accounts.getBorrowBalanceCurrent(BTCK,user);
+    //     const borrowBalanceETHK = await accounts.getBorrowBalanceCurrent(ETHK,user);
+    //     const borrowBalanceOKT = await accounts.getBorrowBalanceCurrent(OKT,user);
+    //     const borrowBalanceCHE = await accounts.getBorrowBalanceCurrent(CHE,user);
+    //     const borrowBalanceFIN = await accounts.getBorrowBalanceCurrent(FIN,user);
+    //     const borrowBalanceFIN_LP = await accounts.getBorrowBalanceCurrent(FIN_LP,user);
+    
+    //     console.log("user", user);
+    //     console.log(user,depositBalanceOKB.toString());
+    //     // console.log("depositBalanceUSDT",depositBalanceUSDT.toString());
+    //     // console.log("depositBalanceBTCK",depositBalanceBTCK.toString());
+    //     // console.log("depositBalanceETHK",depositBalanceETHK.toString());
+    //     // console.log("depositBalanceOKT",depositBalanceOKT.toString());
+    //     // console.log("depositBalanceCHE",depositBalanceCHE.toString());
+    //     // console.log("depositBalanceFIN",depositBalanceFIN.toString());
+    //     // console.log("depositBalanceFIN_LP",depositBalanceFIN_LP.toString());
+    // }));
+
+    // while (true) {
+    //     if (fromBlock + batchSize > targetBlock) {
+    //         toBlock = targetBlock;
+    //     } else {
+    //         toBlock = fromBlock + batchSize;
+    //     }
+    //     console.log(fromBlock, toBlock);
+
+    // await accounts
+    //     .getPastEvents("allEvents", { fromBlock: fromBlock, toBlock: toBlock })
+    //     .then(function (events) {
+    //         events.forEach(async(e) => {
+    //     await Promise.all(addresses.map(async (user:string) => {
+    //         // ----------- Deposits -----------
+    //         const depositBalanceOKB = BN(await accounts.getDepositBalanceCurrent(OKB,user)).div(eighteenPrecision);
+    //         const depositBalanceUSDT = await accounts.getDepositBalanceCurrent(USDT,user);
+    //         const depositBalanceBTCK = await accounts.getDepositBalanceCurrent(BTCK,user);
+    //         const depositBalanceETHK = await accounts.getDepositBalanceCurrent(ETHK,user);
+    //         const depositBalanceOKT = await accounts.getDepositBalanceCurrent(OKT,user);
+    //         const depositBalanceCHE = await accounts.getDepositBalanceCurrent(CHE,user);
+    //         const depositBalanceFIN = await accounts.getDepositBalanceCurrent(FIN,user);
+    //         const depositBalanceFIN_LP = await accounts.getDepositBalanceCurrent(FIN_LP,user);
+
+    //         // ----------- Borrows -----------
+    //         const borrowBalanceOKB = await accounts.getBorrowBalanceCurrent(OKB,user);
+    //         const borrowBalanceUSDT = await accounts.getBorrowBalanceCurrent(USDT,user);
+    //         const borrowBalanceBTCK = await accounts.getBorrowBalanceCurrent(BTCK,user);
+    //         const borrowBalanceETHK = await accounts.getBorrowBalanceCurrent(ETHK,user);
+    //         const borrowBalanceOKT = await accounts.getBorrowBalanceCurrent(OKT,user);
+    //         const borrowBalanceCHE = await accounts.getBorrowBalanceCurrent(CHE,user);
+    //         const borrowBalanceFIN = await accounts.getBorrowBalanceCurrent(FIN,user);
+    //         const borrowBalanceFIN_LP = await accounts.getBorrowBalanceCurrent(FIN_LP,user);
+
+    //         console.log("user", user);
+    //         console.log(user,depositBalanceOKB.toString());
+    //         // console.log("depositBalanceUSDT",depositBalanceUSDT.toString());
+    //         // console.log("depositBalanceBTCK",depositBalanceBTCK.toString());
+    //         // console.log("depositBalanceETHK",depositBalanceETHK.toString());
+    //         // console.log("depositBalanceOKT",depositBalanceOKT.toString());
+    //         // console.log("depositBalanceCHE",depositBalanceCHE.toString());
+    //         // console.log("depositBalanceFIN",depositBalanceFIN.toString());
+    //         // console.log("depositBalanceFIN_LP",depositBalanceFIN_LP.toString());
+    //     }));
+    // });
+    
+    // if (fromBlock >= targetBlock) break;
+    // fromBlock = toBlock + 1;
 }
 
 async function scanSavingAccount() {
@@ -125,10 +179,10 @@ async function scanSavingAccount() {
     let repayTotal: BN = new BN(0);
     console.log("block  from    event   token   amount  amtInHumanReadable");
     //CHE added to TokenRegistry 4766916
-    let fromBlock = 4766916;
-    let targetBlock = 7489979; // 7489979
+    let fromBlock = 7440000;
+    let targetBlock = 7450000; // 7489979
     console.log("fromBlock", fromBlock, "targetBlock", targetBlock);
-    let batchSize = 2000;
+    let batchSize = 100;
     let toBlock = 0;
 
     while (true) {
@@ -154,7 +208,7 @@ async function scanSavingAccount() {
                     // } else {
                     //     // ignore other tokens
                     // }
-                    if (e.event == "Deposit" || e.event == "Borrow"){
+                    
                         const user = e.returnValues.from;
 
                         // ----------- Deposits -----------
@@ -201,7 +255,6 @@ async function scanSavingAccount() {
                             borrowBalanceFIN_LP
                         );
                         // uniqueAddrs.add(from);
-                    }
                 });
             });
         
