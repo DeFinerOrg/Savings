@@ -22,7 +22,8 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const mnemonic = fs.readFileSync(".secret").toString().trim();
+const secret = JSON.parse(fs.readFileSync(".secret.json").toString().trim());
+
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -65,13 +66,13 @@ module.exports = {
         mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    secret.mnemonic,
+                    `wss://eth-mainnet.alchemyapi.io/v2/AgjPg6rtyaDSO9qs1Srensh6HDGSGo4S`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
+            from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
-            gasPrice: 150000000000, //150Gwei
+            gasPrice: 60000000000, //60Gwei
         },
 
         // rinkeby: {
@@ -87,15 +88,18 @@ module.exports = {
         // },
 
         kovan: {
-            provider: () =>
+            provider: () => 
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
+                    secret.mnemonic,
+                    `wss://eth-kovan.alchemyapi.io/v2/AgjPg6rtyaDSO9qs1Srensh6HDGSGo4S`
                 ),
-            from: "0xA9AEd235325A8434C827e1AdA04e78E760c4757e", // default address to use for any transaction Truffle makes during migrations
+            from: "0x025d41b9ce37a49CAF645a6c794aD071a01aB496", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
-            gas: 6000000,
-            gasPrice: 21000000000, //150Gwei
+            gas: 7000000,
+            gasPrice: 150000000000, //150Gwei
+            allowUnlimitedContractSize: true,
+            networkCheckTimeout: 2147483647,
+            timeoutBlocks: 200
         },
     },
 
