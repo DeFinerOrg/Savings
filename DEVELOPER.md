@@ -9,7 +9,7 @@ This will create a new directory named `artifacts/contracts/` with the ABI files
 To deploy the contracts on a testnet, you'll need to have an account on Infura/Alchemy.  
 Please follow the steps below to deploy the contracts:
 
-**1)** In the root of the project create a file named .secret and add the following content:  
+**1)** In the root of the project create a file named .secrets.json and add the following content:  
 ```
 {
    "mnemonic": <your wallet's seed>,
