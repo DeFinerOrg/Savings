@@ -22,7 +22,8 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const mnemonic = fs.readFileSync(".secret").toString().trim();
+console.log("mnemonic: ", mnemonic);
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -98,16 +99,16 @@ module.exports = {
             gasPrice: 50000000000, //150Gwei
         },
 
-        polygon_mainnet: {
+        mainnet: {
             provider: () =>
                 new HDWalletProvider(
                     mnemonic,
-                    "https://rpc-mainnet.maticvigil.com/"
+                    "wss://polygon-mainnet.g.alchemy.com/v2/JO9fRCDkzxzHvjcFPjy5vsFq9UhhRSxh"
                 ),
-            from: "0xfca782E34D89c66f6c0471173d295A8cbAc15cC5", 
+            from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", 
             network_id: 137,
             gas: 6000000,
-            gasPrice: 30000000000, 
+            gasPrice: 35000000000, 
         },
     },
 

@@ -136,7 +136,7 @@
         "latestAnswer": "41623010370000000000",
         "mainnet": {
             "tokenAddress": "0x576c990A8a3E7217122e9973b2230A3be9678E94",
-            "aggregatorAddress": "0x0000000000000000000000000000000000000001",
+            "aggregatorAddress": "0x27B938EAB0b3097447D9c87550452da112055441",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
     }
