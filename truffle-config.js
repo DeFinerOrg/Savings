@@ -22,7 +22,16 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+let secrets;
+
+try {
+    fs.readFileSync(".secrets.json");
+    this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+    console.log(this.secrets.mnemonic);
+} catch(err){
+    console.log("secrets don't exist");
+}
+
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -65,7 +74,7 @@ module.exports = {
         mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
+                    this.secrets.mnemonic,
                     "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
@@ -77,7 +86,7 @@ module.exports = {
         // rinkeby: {
         //     provider: () =>
         //         new HDWalletProvider(
-        //             mnemonic,
+        //             this.secrets.mnemonic,
         //             "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
         //         ),
         //     from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
@@ -89,8 +98,8 @@ module.exports = {
         kovan: {
             provider: () => {
                 return new HDWalletProvider(
-                    secrets.mnemonic,
-                    `https://kovan.infura.io/v3/${secrets.projectId}`
+                    this.secrets.mnemonic,
+                    `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 );
             },
             // from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
