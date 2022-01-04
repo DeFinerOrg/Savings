@@ -22,8 +22,13 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-const mnemonic = fs.readFileSync(".secret").toString().trim();
-console.log("mnemonic: ", mnemonic);
+let secrets;
+
+try {
+    this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+} catch {
+    console.log("secrets don't exist");
+}
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -66,7 +71,7 @@ module.exports = {
         eth_mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
+                    this.secrets.mnemonic,
                     "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
@@ -90,7 +95,7 @@ module.exports = {
         eth_kovan: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
+                    this.secrets.mnemonic,
                     "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
@@ -102,7 +107,7 @@ module.exports = {
         mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
+                    this.secrets.mnemonic,
                     "wss://polygon-mainnet.g.alchemy.com/v2/JO9fRCDkzxzHvjcFPjy5vsFq9UhhRSxh"
                 ),
             from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", 
