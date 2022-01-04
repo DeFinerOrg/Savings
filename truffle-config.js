@@ -25,10 +25,8 @@ const fs = require("fs");
 let secrets;
 
 try {
-    fs.readFileSync(".secrets.json");
     this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
-    console.log(this.secrets.mnemonic);
-} catch(err){
+} catch {
     console.log("secrets don't exist");
 }
 
