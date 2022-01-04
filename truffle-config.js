@@ -27,7 +27,7 @@ let secrets;
 try {
     this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
 } catch {
-    console.log("secrets don't exist");
+    console.warn("WARN: secrets.json doesn't exist");
 }
 
 module.exports = {
