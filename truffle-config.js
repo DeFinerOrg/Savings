@@ -27,7 +27,7 @@ let secrets;
 try {
     this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
 } catch {
-    console.log("secrets don't exist");
+    console.warn("WARN: secrets.json doesn't exist");
 }
 
 
@@ -73,9 +73,8 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    `https://mainnet.infura.io/v3/${this.secrets.projectId}`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
             gasPrice: 150000000000, //150Gwei
@@ -100,7 +99,6 @@ module.exports = {
                     `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 );
             },
-            // from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei

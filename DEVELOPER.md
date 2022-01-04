@@ -6,14 +6,14 @@ Use the following command to generate the ABI:
 This will create a new directory named `artifacts/contracts/` with the ABI files for the respective contracts
 
 ## Deploying the contracts:
-To deploy the contracts on a testnet, you'll need to have an account on Infura/Alchemy.  
+To deploy the contracts on a testnet, you'll need to have an account on Infura.  
 Please follow the steps below to deploy the contracts:
 
 **1)** In the root of the project create a file named .secrets.json and add the following content:  
 ```
 {
-   "mnemonic": <your wallet's seed>,
-   "projectId": <your Infura project Id>
+   "mnemonic": "<your wallet's seed>",
+   "projectId": "<your Infura project Id>"
 }
 ```
 
