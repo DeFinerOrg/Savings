@@ -62,6 +62,18 @@ module.exports = {
                 count: 20,
             },
         },
+        okex: {
+            url: "https://exchainrpc.okex.org",
+            gas: 20000000,
+            blockGasLimit: 12000000,
+            timeout: 2147483647,
+            accounts: {
+                mnemonic: _mnemonic,
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+            },
+        },
         /*
         mainnet: {
             url: "https://exchainrpc.okex.org",
