@@ -72,9 +72,8 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    `https://mainnet.infura.io/v3/${this.secrets.projectId}`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
             gasPrice: 150000000000, //150Gwei
@@ -96,7 +95,7 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
+                    `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
@@ -108,7 +107,7 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    "wss://polygon-mainnet.g.alchemy.com/v2/JO9fRCDkzxzHvjcFPjy5vsFq9UhhRSxh"
+                    `wss://polygon-mainnet.g.alchemy.com/v2/${this.secrets.projectId}`
                 ),
             from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", 
             network_id: 137,
