@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
-contract Receive is ReentrancyGuard {
+contract Claim is ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     
