@@ -11,10 +11,9 @@ contract Receive is ReentrancyGuard {
     mapping(address => uint256) public winner;
     address public FIN = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
     address admin = msg.sender;
-    bool _notEntered = true;
     
     modifier onlyAdmin() {
-        require(msg.sender == admin, "The caller not admin.");
+        require(msg.sender == admin, "The caller is not the admin.");
         _;
     }
     
