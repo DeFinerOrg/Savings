@@ -276,15 +276,15 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
-                            // expect(BN(totalDepositInterest)).to.be.bignumber.equal(
-                            //     new BN(3007301600000)
-                            // ); // 3007210014379.6274
-                            // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
-                            //     new BN(2997716150000)
-                            // ); // 2997625026684.72
-                            // expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
-                            //     new BN(9585493199)
-                            // );
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(
+                                new BN(0)
+                            ); // 0.7226835095459703
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
+                                new BN(0)
+                            ); // 0.7226745778213711
+                            expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
+                                new BN(0)
+                            );
 
                             // FIN balance before claim
                             const claimableAmountUser1 = await savingAccount.claim.call({
@@ -476,8 +476,8 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
-                            // expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1277119)); // 3007210014379.6274
-                            // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1271274)); // 2997625026684.72
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(76510331));
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(76504486));
                             expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7540));
                             // totalBorrowInterest + totalCompundInterest = totalDepositInterest
                             expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(76512026)); // 76510331
@@ -659,12 +659,12 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("totalCompoundInterest", totalCompoundInterest.toString());
                             // Second, verify the interest rate calculation. Need to compare these value to
                             // the rate simulator.
-                            // expect(BN(totalDepositInterest)).to.be.bignumber.equal(
-                            //     new BN(1109299704061956)
-                            // ); // 3007210014379.6274
-                            // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
-                            //     new BN(1105063953654800)
-                            // ); // 2997625026684.72
+                            expect(BN(totalDepositInterest)).to.be.bignumber.equal(
+                                new BN("73170115995468710")
+                            ); // 72282518592802510
+                            expect(BN(totalBorrowInterest)).to.be.bignumber.equal(
+                                new BN("73165880239605200")
+                            ); // 72281798547468510
                             expect(BN(totalCompoundInterest)).to.be.bignumber.equal(
                                 new BN(5539188762448)
                             );
