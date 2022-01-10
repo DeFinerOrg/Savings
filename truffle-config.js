@@ -84,9 +84,8 @@ module.exports = {
         //     provider: () =>
         //         new HDWalletProvider(
         //             this.secrets.mnemonic,
-        //             "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //             `https://rinkeby.infura.io/v3/${this.secrets.projectId}`
         //         ),
-        //     from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
         //     network_id: 4,
         //     gas: 6000000,
         //     gasPrice: 15000000000,
