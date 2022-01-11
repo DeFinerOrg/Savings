@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
-    "compile": "npx hardhat compile",
+    "compile": "truffle compile",
     "test": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts && sh runSingleTest.sh test/upgradability/timelockController.spec.ts",
     "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
