@@ -22,7 +22,7 @@
     "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 20000000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true --mnemonic “begin vessel olive rocket pink distance admit foam lizard type fault enjoy”",
     "buidler-evm": "npx buidler node",
     "contract-size": "yarn delete-timelock-mock && truffle compile && truffle run contract-size --checkMaxSize --contracts SavingAccount Accounts Bank InitializablePausable Constant GlobalConfig AccountTokenLib BitmapLib SavingLib Utils ETHPerFIN ETHPerLPToken TokenRegistry AccountsProxy BankProxy SavingAccountProxy",
-    "delete-timelock-mock": "rimraf contracts/mocks/MockTimelockController.sol",
+    "delete-timelock-mock": "rimraf contracts/mocks/MockTimelockController.sol"
   },
   "repository": {
     "type": "git",
