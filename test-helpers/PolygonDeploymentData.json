@@ -112,7 +112,7 @@
             "isSupportedByCompound": false,
             "latestAnswer": "41623010370000000000",
             "mainnet": {
-                "tokenAddress": "0xf28164A485B0B2C90639E47b0f377b4a438a16B1",
+                "tokenAddress": "0x831753dd7087cac61ab5644b308642cc1c33dc13",
                 "aggregatorAddress": "0xfD3ACD8E3B2E9Df9264E574BE31A4E3726fc58eB",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
@@ -136,7 +136,7 @@
         "latestAnswer": "41623010370000000000",
         "mainnet": {
             "tokenAddress": "0x576c990A8a3E7217122e9973b2230A3be9678E94",
-            "aggregatorAddress": "0x0000000000000000000000000000000000000001",
+            "aggregatorAddress": "0x27B938EAB0b3097447D9c87550452da112055441",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
     }

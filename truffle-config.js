@@ -22,7 +22,13 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+let secrets;
+
+try {
+    this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+} catch {
+    console.warn("WARN: secrets.json doesn't exist");
+}
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -65,10 +71,9 @@ module.exports = {
         eth_mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    this.secrets.mnemonic,
+                    `https://mainnet.infura.io/v3/${this.secrets.projectId}`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 1,
             gas: 7000000,
             gasPrice: 150000000000, //150Gwei
@@ -89,8 +94,8 @@ module.exports = {
         eth_kovan: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
+                    this.secrets.mnemonic,
+                    `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 ),
             from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
@@ -98,16 +103,16 @@ module.exports = {
             gasPrice: 50000000000, //150Gwei
         },
 
-        polygon_mainnet: {
+        mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://rpc-mainnet.maticvigil.com/"
+                    this.secrets.mnemonic,
+                    `wss://polygon-mainnet.g.alchemy.com/v2/${this.secrets.projectId}`
                 ),
-            from: "0xfca782E34D89c66f6c0471173d295A8cbAc15cC5", 
+            from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", 
             network_id: 137,
             gas: 6000000,
-            gasPrice: 30000000000, 
+            gasPrice: 35000000000, 
         },
     },
 
