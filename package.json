@@ -23,7 +23,6 @@
     "buidler-evm": "npx buidler node",
     "contract-size": "yarn delete-timelock-mock && truffle compile && truffle run contract-size --checkMaxSize --contracts SavingAccount Accounts Bank InitializablePausable Constant GlobalConfig AccountTokenLib BitmapLib SavingLib Utils ETHPerFIN ETHPerLPToken TokenRegistry AccountsProxy BankProxy SavingAccountProxy",
     "delete-timelock-mock": "rimraf contracts/mocks/MockTimelockController.sol",
-    "deploy-testnet": "yarn delete-timelock-mock && truffle migrate"
   },
   "repository": {
     "type": "git",
