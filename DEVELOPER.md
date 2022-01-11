@@ -1,7 +1,7 @@
 ## Generate ABI:
 Use the following command to generate the ABI:    
 
-    yarn compile
+    yarn generate
     
 This will create a new directory named `artifacts/contracts/` with the ABI files for the respective contracts
 
@@ -19,9 +19,9 @@ Please follow the steps below to deploy the contracts:
 
 **2)** Deploy the contracts using the following command in your terminal:  
 ```
-yarn deploy-testnet --network <network_name>
+yarn delete-timelock-mock && truffle migrate --network <network_name>
 ```
 E.x.: 
 ```
-yarn deploy-testnet --network kovan
+yarn delete-timelock-mock && truffle migrate  --network kovan
 ```
