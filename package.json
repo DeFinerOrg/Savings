@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
-    "compile": "truffle compile",
+    "compile": "npx hardhat compile",
     "test": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts && sh runSingleTest.sh test/upgradability/timelockController.spec.ts",
     "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
@@ -22,7 +22,8 @@
     "ganache": "ganache-cli --gasLimit 0x1fffffffffffff --gasPrice 20000000 --defaultBalanceEther 1000000000 --allowUnlimitedContractSize true --mnemonic “begin vessel olive rocket pink distance admit foam lizard type fault enjoy”",
     "buidler-evm": "npx buidler node",
     "contract-size": "yarn delete-timelock-mock && truffle compile && truffle run contract-size --checkMaxSize --contracts SavingAccount Accounts Bank InitializablePausable Constant GlobalConfig AccountTokenLib BitmapLib SavingLib Utils ETHPerFIN ETHPerLPToken TokenRegistry AccountsProxy BankProxy SavingAccountProxy",
-    "delete-timelock-mock": "rimraf contracts/mocks/MockTimelockController.sol"
+    "delete-timelock-mock": "rimraf contracts/mocks/MockTimelockController.sol",
+    "deploy-testnet": "yarn delete-timelock-mock && truffle migrate"
   },
   "repository": {
     "type": "git",
