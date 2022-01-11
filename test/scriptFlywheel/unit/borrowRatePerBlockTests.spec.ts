@@ -167,7 +167,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressBAT
                         );
-                        console.log("BATCompoundFlag", BATCompoundFlag);
+                        expect(BATCompoundFlag).to.be.equal(true);
 
                         let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
                         // set price of BAT at $0.7
@@ -282,7 +282,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressBAT
                         );
-                        console.log("BATCompoundFlag", BATCompoundFlag);
+                        expect(BATCompoundFlag).to.be.equal(true);
 
                         let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
                         // set price of BAT at $0.7
@@ -421,7 +421,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressBAT
                         );
-                        console.log("BATCompoundFlag", BATCompoundFlag);
+                        expect(BATCompoundFlag).to.be.equal(true);
 
                         let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
                         // set price of BAT at $0.7
@@ -559,7 +559,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressBAT
                         );
-                        console.log("BATCompoundFlag", BATCompoundFlag);
+                        expect(BATCompoundFlag).to.be.equal(true);
 
                         let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
                         // set price of BAT at $0.7
@@ -699,7 +699,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let BATCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressBAT
                         );
-                        console.log("BATCompoundFlag", BATCompoundFlag);
+                        expect(BATCompoundFlag).to.be.equal(true);
 
                         let BATpriceInit = BN(await mockChainlinkAggregatorforBAT.latestAnswer());
                         // set price of BAT at $0.7
@@ -840,6 +840,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 context("should succeed", async () => {
                     it("when U = 1 for 6 decimal token", async function (){
                         this.timeout(0);
+                        let USDCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(USDCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
                         
@@ -946,6 +951,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.9999 & 1 for 6 decimal token", async function (){
                         this.timeout(0);
+                        let USDCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(USDCCompoundFlag).to.be.equal(true);
+
                         let USDCpriceInit = BN(await mockChainlinkAggregatorforUSDC.latestAnswer());
                         // set price of USDC at $1
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -1080,6 +1090,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.90 and 0.95 for 6 decimal token", async function() {
                         this.timeout(0);
+                        let USDCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(USDCCompoundFlag).to.be.equal(true);
+
                         let USDCpriceInit = BN(await mockChainlinkAggregatorforUSDC.latestAnswer());
                         // set price of USDC at $1
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -1213,6 +1228,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.8999 & 0.90 for 6 decimal token", async function (){
                         this.timeout(0);
+                        let USDCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(USDCCompoundFlag).to.be.equal(true);
+
                         let USDCpriceInit = BN(await mockChainlinkAggregatorforUSDC.latestAnswer());
                         // set price of USDC at $1
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -1346,6 +1366,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.80 and 0.85 for 6 decimal token", async function() {
                         this.timeout(0);
+                        let USDCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(USDCCompoundFlag).to.be.equal(true);
+
                         let USDCpriceInit = BN(await mockChainlinkAggregatorforUSDC.latestAnswer());
                         // set price of USDC at $1
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
@@ -1483,6 +1508,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                 context("should succeed", async () => {
                     it("when U = 1 for 8 decimal token", async function() {
                         this.timeout(0);
+                        let WBTCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(WBTCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let WBTCprice = await mockChainlinkAggregatorforWBTC.latestAnswer();
 
@@ -1597,6 +1627,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.9999 & 1 for 8 decimal token", async function(){
                         this.timeout(0);
+                        let WBTCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(WBTCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let WBTCprice = await mockChainlinkAggregatorforWBTC.latestAnswer();
 
@@ -1720,6 +1755,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.90 and 0.95 for 8 decimal token", async function(){
                         this.timeout(0);
+                        let WBTCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(WBTCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let WBTCprice = await mockChainlinkAggregatorforWBTC.latestAnswer();
 
@@ -1842,6 +1882,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.8999 & 0.90 for 8 decimal token", async function (){
                         this.timeout(0);
+                        let WBTCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(WBTCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let WBTCprice = await mockChainlinkAggregatorforWBTC.latestAnswer();
 
@@ -1965,6 +2010,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                     it("when U is between 0.80 and 0.85 for 8 decimal token", async function(){
                         this.timeout(0);
+                        let WBTCCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
+                            addressUSDC
+                        );
+                        expect(WBTCCompoundFlag).to.be.equal(true);
+
                         let DAIprice = await mockChainlinkAggregatorforDAI.latestAnswer();
                         let WBTCprice = await mockChainlinkAggregatorforWBTC.latestAnswer();
 
@@ -2096,7 +2146,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                         addressTUSD
                     );
-                    console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                    expect(TUSDCompoundFlag).to.be.equal(false);
 
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                         .mul(new BN(60))
@@ -2194,8 +2244,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("borrowAPR", borrowAPR.toString());
                     console.log("depositAPR", depositAPR.toString());
 
-                    expect(borrowAPR).to.be.bignumber.greaterThan(new BN(0));
-                    expect(depositAPR).to.be.bignumber.greaterThan(new BN(0));
+                    // When U = 1, for Compound unsupported tokens:
+                    // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
+                    //                    = (3 * (10**16) * 1000 ) / 10512000
+                    //                    = 2853881278538
+                    expect(borrowAPR).to.be.bignumber.equal(new BN("2853881278538"));
+                    expect(depositAPR).to.be.bignumber.equal(new BN("2853881278538"));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                 });
@@ -2207,7 +2261,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressTUSD
                         );
-                        console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                        expect(TUSDCompoundFlag).to.be.equal(false);
 
                         const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                             .mul(new BN(60))
@@ -2340,7 +2394,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressTUSD
                         );
-                        console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                        expect(TUSDCompoundFlag).to.be.equal(false);
 
                         const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                             .mul(new BN(60))
@@ -2479,7 +2533,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressTUSD
                         );
-                        console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                        expect(TUSDCompoundFlag).to.be.equal(false);
 
                         const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                             .mul(new BN(60))
@@ -2613,7 +2667,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let TUSDCompoundFlag = await tokenInfoRegistry.isSupportedOnCompound(
                             addressTUSD
                         );
-                        console.log("TUSDCompoundFlag", TUSDCompoundFlag);
+                        expect(TUSDCompoundFlag).to.be.equal(false);
 
                         const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(0))
                             .mul(new BN(60))
