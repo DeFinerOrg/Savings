@@ -159,7 +159,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     });
 
     context("getBorrowRatePerBlock()", async () => {
-        context("Compound supported tokens", async () => {
+        /*context("Compound supported tokens", async () => {
             context("with 18 decimal Token", async () => {
                 context("should succeed", async () => {
                     it("when U = 1 for Compound supported tokens", async function () {
@@ -2136,7 +2136,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     });
                 });
             });
-        });
+        });*/
 
         context("with Compound unsupported tokens", async () => {
             context("should succeed", async () => {
@@ -2383,8 +2383,12 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         console.log("borrowAPR per block", borrowAPR.toString());
                         console.log("depositAPR per block", depositAPR.toString());
 
-                        expect(borrowAPR).to.be.bignumber.greaterThan(new BN(0));
-                        expect(depositAPR).to.be.bignumber.greaterThan(new BN(0));
+                        // When U = 1, for Compound unsupported tokens:
+                        // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
+                        //                    = (3 * (10**16) * 1000 ) / 10512000
+                        //                    = 2853881278538
+                        expect(borrowAPR).to.be.bignumber.equal(new BN("2853881278538"));
+                        expect(depositAPR).to.be.bignumber.equal(new BN("2853789239581"));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
