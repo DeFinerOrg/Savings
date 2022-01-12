@@ -159,7 +159,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
     });
 
     context("getBorrowRatePerBlock()", async () => {
-        /*context("Compound supported tokens", async () => {
+        context("Compound supported tokens", async () => {
             context("with 18 decimal Token", async () => {
                 context("should succeed", async () => {
                     it("when U = 1 for Compound supported tokens", async function () {
@@ -2136,7 +2136,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     });
                 });
             });
-        });*/
+        });
 
         context("with Compound unsupported tokens", async () => {
             context("should succeed", async () => {
