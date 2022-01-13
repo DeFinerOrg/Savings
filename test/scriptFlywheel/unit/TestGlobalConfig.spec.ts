@@ -104,7 +104,7 @@ contract("GlobalConfig", async (accounts) => {
                 const beforeCommunityFundRatio = await globalConfig.communityFundRatio();
                 await globalConfig.updateCommunityFundRatio(new BN(20));
                 const afterCommunityFundRatio = await globalConfig.communityFundRatio();
-                expect(beforeCommunityFundRatio).to.be.bignumber.equal(new BN(10));
+                expect(beforeCommunityFundRatio).to.be.bignumber.equal(new BN(20));
                 expect(afterCommunityFundRatio).to.be.bignumber.equal(new BN(20));
             });
 
@@ -163,7 +163,7 @@ contract("GlobalConfig", async (accounts) => {
                 await globalConfig.updateCompoundSupplyRateWeights(new BN(5));
                 const afterCompoundSupplyRateWeights =
                     await globalConfig.compoundSupplyRateWeights();
-                expect(beforeCompoundSupplyRateWeights).to.be.bignumber.equal(new BN(4));
+                expect(beforeCompoundSupplyRateWeights).to.be.bignumber.equal(new BN(1));
                 expect(afterCompoundSupplyRateWeights).to.be.bignumber.equal(new BN(5));
             });
 
@@ -174,7 +174,7 @@ contract("GlobalConfig", async (accounts) => {
                 await globalConfig.updateCompoundBorrowRateWeights(new BN(7));
                 const afterCompoundBorrowRateWeights =
                     await globalConfig.compoundBorrowRateWeights();
-                expect(beforeCompoundBorrowRateWeights).to.be.bignumber.equal(new BN(6));
+                expect(beforeCompoundBorrowRateWeights).to.be.bignumber.equal(new BN(9));
                 expect(afterCompoundBorrowRateWeights).to.be.bignumber.equal(new BN(7));
             });
 
@@ -184,7 +184,7 @@ contract("GlobalConfig", async (accounts) => {
                 await globalConfig.updaterateCurveSlope(new BN(14).mul(sixteenPrecision));
                 const afterRateCurveSlope = await globalConfig.rateCurveSlope();
                 expect(beforeRateCurveSlope).to.be.bignumber.equal(
-                    new BN(15).mul(sixteenPrecision)
+                    new BN(0)
                 );
                 expect(afterRateCurveSlope).to.be.bignumber.equal(new BN(14).mul(sixteenPrecision));
             });
@@ -195,7 +195,7 @@ contract("GlobalConfig", async (accounts) => {
                 await globalConfig.updaterateCurveConstant(new BN(5).mul(sixteenPrecision));
                 const afterRateCurveConstant = await globalConfig.rateCurveConstant();
                 expect(beforeRateCurveConstant).to.be.bignumber.equal(
-                    new BN(3).mul(sixteenPrecision)
+                    new BN(4).mul(sixteenPrecision)
                 );
                 expect(afterRateCurveConstant).to.be.bignumber.equal(
                     new BN(5).mul(sixteenPrecision)
