@@ -315,7 +315,7 @@ contract("SavingAccount.borrow", async (accounts) => {
                     // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(2997716400000)); // 2997625026684.72
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585494927));
                     // total Borrow Interest + total Compund Interest = total deposit Interest
-                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(954301061394927)); // 954301061200000
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(129846469794927)); // 954301061200000
                 });
 
                 // modified

@@ -147,6 +147,7 @@ const initializeTokenInfoRegistry = async (
                 chainLinkOracle
             );
             console.log("initializeTokenInfoRegistry: " + i);
+            console.log("tokenAddr:" + tokenAddr);
         })
     );
 

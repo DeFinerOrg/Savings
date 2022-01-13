@@ -9,8 +9,9 @@ contract("SavingAccount() proxy", async (accounts) => {
     let SAV: t.SavingAccountWithControllerInstance;
 
     const DUMMY: string = "0x0000000000000000000000000000000000000010";
-    const FINAddress = "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40";
+    const FINAddress = "0x576c990A8a3E7217122e9973b2230A3be9678E94";
     const COMPAddress = "0xc00e94Cb662C3520282E6f5717214004A7f26888";
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     // let SavingAccount: t.SavingAccountWithControllerInstance;
 
     before(function () {
@@ -197,8 +198,8 @@ contract("SavingAccount() proxy", async (accounts) => {
 
             const FINAddrAfter = await SAV.FIN_ADDR();
             const COMPAddrAfter = await SAV.COMP_ADDR();
-            expect(FINAddrAfter).to.be.equal("0x054f76beED60AB6dBEb23502178C52d6C5dEbE40");
-            expect(COMPAddrAfter).to.be.equal("0xc00e94Cb662C3520282E6f5717214004A7f26888");
+            expect(FINAddrAfter).to.be.equal("0x576c990A8a3E7217122e9973b2230A3be9678E94");
+            expect(COMPAddrAfter).to.be.equal(ZERO_ADDRESS);
         });
 
         it("Accounts from V1.1 to latest", async () => {
