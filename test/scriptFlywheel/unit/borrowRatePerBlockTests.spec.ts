@@ -30,7 +30,7 @@ contract("Borrow rate per block tests", async (accounts) => {
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
     const eightPrecision = new BN(10).pow(new BN(8));
-    const BLOCKS_PER_YEAR = new BN(10512000);
+    const BLOCKS_PER_YEAR = new BN(2102400);
 
     let tokens: any;
     let mockChainlinkAggregators: any;
