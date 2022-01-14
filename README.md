@@ -15,6 +15,5 @@ Clone the repository and follow these steps to compile the contracts and run tes
 **2)** Run test scripts:
 
     yarn test
-
-
+    
 For more info about the protocol, please refer to our docs here: https://app.gitbook.com/@definer/s/definer/
