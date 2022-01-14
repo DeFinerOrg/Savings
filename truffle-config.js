@@ -82,10 +82,9 @@ module.exports = {
         // rinkeby: {
         //     provider: () =>
         //         new HDWalletProvider(
-        //             mnemonic,
-        //             "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //             this.secrets.mnemonic,
+        //             `https://rinkeby.infura.io/v3/${this.secrets.projectId}`
         //         ),
-        //     from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
         //     network_id: 4,
         //     gas: 6000000,
         //     gasPrice: 15000000000,
@@ -97,7 +96,6 @@ module.exports = {
                     this.secrets.mnemonic,
                     `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei
@@ -109,7 +107,6 @@ module.exports = {
                     this.secrets.mnemonic,
                     `wss://polygon-mainnet.g.alchemy.com/v2/${this.secrets.projectId}`
                 ),
-            from: "0xf162e2c9282A9DE3e8DAFCA84ccED0D5E105e166", 
             network_id: 137,
             gas: 6000000,
             gasPrice: 35000000000, 
