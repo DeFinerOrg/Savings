@@ -22,7 +22,13 @@ require("ts-node/register");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+let secrets;
+
+try {
+    this.secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
+} catch {
+    console.warn("WARN: secrets.json doesn't exist");
+}
 
 module.exports = {
     contracts_build_directory: "./build/contracts",
@@ -65,11 +71,10 @@ module.exports = {
         mainnet: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://mainnet.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+                    this.secrets.mnemonic,
+                    "https://bsc-dataseed1.ninicoin.io"
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
-            network_id: 1,
+            network_id: 56,
             gas: 7000000,
             gasPrice: 150000000000, //150Gwei
         },
@@ -77,10 +82,9 @@ module.exports = {
         // rinkeby: {
         //     provider: () =>
         //         new HDWalletProvider(
-        //             mnemonic,
-        //             "https://rinkeby.infura.io/v3/cf38c21326954ac28aa4f8c3ee33550c"
+        //             this.secrets.mnemonic,
+        //             `https://rinkeby.infura.io/v3/${this.secrets.projectId}`
         //         ),
-        //     from: "0xbe389ed367E32deecEB49B456AD2720EA0C02C3f", // default address to use for any transaction Truffle makes during migrations
         //     network_id: 4,
         //     gas: 6000000,
         //     gasPrice: 15000000000,
@@ -89,10 +93,9 @@ module.exports = {
         kovan: {
             provider: () =>
                 new HDWalletProvider(
-                    mnemonic,
-                    "https://kovan.infura.io/v3/88375992b7cc4e9c81a67c24b2bebdbf"
+                    this.secrets.mnemonic,
+                    `https://kovan.infura.io/v3/${this.secrets.projectId}`
                 ),
-            from: "0x8376E7bcA6Bc2DDFe4dfDb2B79d9833ba4196a51", // default address to use for any transaction Truffle makes during migrations
             network_id: 42,
             gas: 6000000,
             gasPrice: 50000000000, //150Gwei

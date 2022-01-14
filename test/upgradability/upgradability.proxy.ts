@@ -197,8 +197,8 @@ contract("SavingAccount() proxy", async (accounts) => {
 
             const FINAddrAfter = await SAV.FIN_ADDR();
             const COMPAddrAfter = await SAV.COMP_ADDR();
-            expect(FINAddrAfter).to.be.equal("0x054f76beED60AB6dBEb23502178C52d6C5dEbE40");
-            expect(COMPAddrAfter).to.be.equal("0xc00e94Cb662C3520282E6f5717214004A7f26888");
+            expect(FINAddrAfter).to.be.equal("0x69a3e3eE0534c1099e1456e4fEDb6b8782a82731");
+            expect(COMPAddrAfter).to.be.equal("0xcF6BB5389c92Bdda8a3747Ddb454cB7a64626C63");
         });
 
         it("Accounts from V1.1 to latest", async () => {
