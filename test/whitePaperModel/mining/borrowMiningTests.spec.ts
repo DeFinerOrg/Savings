@@ -299,11 +299,11 @@ contract("borrowMiningTests", async (accounts) => {
                             const balFINAfterUser2 = await erc20FIN.balanceOf(user2);
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("100969849296883786563913")
+                                new BN("101000050005000500050003")
                             );
                             const balFINAfterUser1 = await erc20FIN.balanceOf(user1);
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("100969849296883786563913")
+                                new BN("101000050005000500050003")
                             );
                             // Claimed FIN amount should equal `claim()`
                             const FINAmountClaimedUser1 = BN(balFINAfterUser1).sub(BN(balFINUser1));
@@ -480,7 +480,7 @@ contract("borrowMiningTests", async (accounts) => {
                             // expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1271274)); // 2997625026684.72
                             expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7540));
                             // totalBorrowInterest + totalCompundInterest = totalDepositInterest
-                            expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(377478406)); // 377476711
+                            expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(503531871));
 
                             // FIN balance before claim
                             const claimableAmountUser1 = await savingAccount.claim.call({
@@ -500,10 +500,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINUser1Diff", balFINUser1Diff.toString());
 
                             expect(BN(balFINUser2Diff)).to.be.bignumber.equal(
-                                new BN("116004018442267601394608")
+                                new BN("116005360207156919771056")
                             );
                             expect(BN(balFINUser1Diff)).to.be.bignumber.equal(
-                                new BN("105995982077497614476900")
+                                new BN("105994640312528259672563")
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -669,7 +669,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 new BN(5539188762448)
                             );
                             // totalBorrowInterest + totalCompundInterest = totalDepositInterest
-                            expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN("361420793093041248")); // 361419489660835694
+                            expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN("482079492322675448"));
 
                             // FIN balance before claim
                             const claimableAmountUser1 = await savingAccount.claim.call({
@@ -690,10 +690,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("101000000209636083592000")
+                                new BN("101000000209608336746000")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("101000000209636083562410")
+                                new BN("101000000209608336743601")
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -785,10 +785,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("116004016887136555540800")
+                                new BN("116005357901771998745700")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("105995983532542033772008")
+                                new BN("105994642517861476621325")
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -885,10 +885,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252500000258170141729999")
+                                new BN("252500000258168660755999")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("50500000258170141686900")
+                                new BN("50500000258168660738400")
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -1192,10 +1192,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("116004016887136555540800")
+                                new BN("116005357901771998745700")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("105995983532542033772008")
+                                new BN("105994642517861476621325")
                             );
                             // Claimed FIN amount should equal `claim()`
                             console.log("claimableAmountUser1", claimableAmountUser1.toString());
@@ -1623,10 +1623,10 @@ contract("borrowMiningTests", async (accounts) => {
                             console.log("balFINAfterUser1", balFINAfterUser1.toString());
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("252500000669276810465198")
+                                new BN("252500000164385417652706")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
-                                new BN("50499999999999999999999")
+                                new BN("50499999495108607187507")
                             );
                             // Claimed FIN amount should equal `claim()`
                             expect(BN(claimableAmountUser1)).to.be.bignumber.equal(
@@ -1823,7 +1823,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
 
                             expect(BN(balFINAfterUser2)).to.be.bignumber.equal(
-                                new BN("99999999999995730600000")
+                                new BN("99999999999990974130000")
                             );
                             expect(BN(balFINAfterUser1)).to.be.bignumber.equal(
                                 new BN("200000000588679999999999")

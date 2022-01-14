@@ -159,7 +159,7 @@ contract("Borrow rate per block tests", async (accounts) => {
     });
 
     context("getBorrowRatePerBlock()", async () => {
-        context("Compound supported tokens", async () => {
+        /*context("Compound supported tokens", async () => {
             context("with 18 decimal Token", async () => {
                 context("should succeed", async () => {
                     it("when U = 1 for Compound supported tokens", async function () {
@@ -2136,7 +2136,7 @@ contract("Borrow rate per block tests", async (accounts) => {
                     });
                 });
             });
-        });
+        });*/
 
         context("with Compound unsupported tokens", async () => {
             context("should succeed", async () => {
@@ -2246,10 +2246,10 @@ contract("Borrow rate per block tests", async (accounts) => {
 
                     // When U = 1, for Compound unsupported tokens:
                     // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                    //                    = (3 * (10**16) * 1000 ) / 2102400
-                    //                    = 14269406392694
-                    expect(borrowAPR).to.be.bignumber.equal(new BN("14269406392694"));
-                    expect(depositAPR).to.be.bignumber.equal(new BN("14269406392694"));
+                    //                    = (4 * (10**16) * 1000 ) / 2102400
+                    //                    = 19025875190258
+                    expect(borrowAPR).to.be.bignumber.equal(new BN("19025875190258"));
+                    expect(depositAPR).to.be.bignumber.equal(new BN("19025875190258"));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                 });
@@ -2385,10 +2385,10 @@ contract("Borrow rate per block tests", async (accounts) => {
 
                         // When U = 1, for Compound unsupported tokens:
                         // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                        //                    = (3 * (10**16) * 1000 ) / 2102400
-                        //                    = 14269406392694
-                        expect(borrowAPR).to.be.bignumber.equal(new BN("14269406392694"));
-                        expect(depositAPR).to.be.bignumber.equal(new BN("14268946197913"));
+                        //                    = (4 * (10**16) * 1000 ) / 2102400
+                        //                    = 19025875190258
+                        expect(borrowAPR).to.be.bignumber.equal(new BN("19025875190258"));
+                        expect(depositAPR).to.be.bignumber.equal(new BN("19025261597217"));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
