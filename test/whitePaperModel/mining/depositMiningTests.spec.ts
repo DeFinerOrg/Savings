@@ -2062,7 +2062,7 @@ contract("depositMiningTests", async (accounts) => {
                                 const claimableAmountUser2 = await savingAccount.claimForToken.call(
                                     addressDAI,
                                     {
-                                        from: user1,
+                                        from: user2,
                                     }
                                 );
                                 expect(claimableAmountUser2).to.be.bignumber.greaterThan(ZERO);
