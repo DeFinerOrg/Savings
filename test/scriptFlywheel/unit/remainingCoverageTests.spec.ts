@@ -209,9 +209,9 @@ contract("RemainingCoverage", async (accounts) => {
                 // 3. Verify the loan amount
                 const user2Balance = await erc20DAI.balanceOf(user2);
 
-                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable(user2);
+                let isAccountLiquidatableStr = await accountsContract.isAccountLiquidatable.call(user2);
                 // should return "false"
-                //expect(isAccountLiquidatableStr).equal(false);
+                expect(isAccountLiquidatableStr).equal(false);
             });
         });
     });
