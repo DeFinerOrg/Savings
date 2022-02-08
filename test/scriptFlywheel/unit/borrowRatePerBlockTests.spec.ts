@@ -2245,11 +2245,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("depositAPR", depositAPR.toString());
 
                     // When U = 1, for Compound unsupported tokens:
-                    // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                    //                    = (3 * (10**16) * 1000 ) / 10512000
-                    //                    = 2853881278538
-                    expect(borrowAPR).to.be.bignumber.equal(new BN("2853881278538"));
-                    expect(depositAPR).to.be.bignumber.equal(new BN("2853881278538"));
+                    // borrowRatePerBlock = rateCurveConstant * 50 / BLOCKS_PER_YEAR
+                    //                    = (3 * (10**16) * 50 ) / 10512000
+                    //                    = 142694063926
+                    expect(borrowAPR).to.be.bignumber.equal(new BN("142694063926"));
+                    expect(depositAPR).to.be.bignumber.equal(new BN("142694063926"));
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                 });
@@ -2384,11 +2384,11 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         console.log("depositAPR per block", depositAPR.toString());
 
                         // When U = 1, for Compound unsupported tokens:
-                        // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                        //                    = (3 * (10**16) * 1000 ) / 10512000
-                        //                    = 2853881278538
-                        expect(borrowAPR).to.be.bignumber.equal(new BN("2853881278538"));
-                        expect(depositAPR).to.be.bignumber.equal(new BN("2853789239581"));
+                        // borrowRatePerBlock = rateCurveConstant * 50 / BLOCKS_PER_YEAR
+                        //                    = (3 * (10**16) * 50 ) / 10512000
+                        //                    = 142694063926
+                        expect(borrowAPR).to.be.bignumber.equal(new BN("142694063926"));
+                        expect(depositAPR).to.be.bignumber.equal(new BN("142689461978"));
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
