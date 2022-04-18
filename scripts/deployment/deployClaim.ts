@@ -1,16 +1,25 @@
 import * as t from "../../types/truffle-contracts/index";
 
-const claim: any = artifacts.require("Claim");
+var tokenData = require("../../test-helpers/tokenData.json");
+
+const Claim: t.ClaimContract = artifacts.require("Claim");
+
+let FINToken: string;
 
 async function main() {
+    FINToken = tokenData.DeFiner.mainnet.tokenAddess;
     await deployClaim();
     // await buildData();
 }
 
 async function deployClaim() {
-    const claimContract = await claim.new();
+    // await validateFINToken();
+
+    const claimContract = await Claim.new(FINToken);
     console.log("Claim contract Deployed at: ", claimContract.address);
 }
+
+// async function validateFINToken() {}
 
 main()
     .then(() => process.exit(0))
