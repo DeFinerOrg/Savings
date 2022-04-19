@@ -1,13 +1,14 @@
 import * as t from "../../types/truffle-contracts/index";
 
-var tokenData = require("../../test-helpers/tokenData.json");
+const tokenData = require("../../test-helpers/tokenData.json");
 
 const Claim: t.ClaimContract = artifacts.require("Claim");
 
 let FINToken: string;
 
 async function main() {
-    FINToken = tokenData.DeFiner.mainnet.tokenAddess;
+    FINToken = tokenData.DeFiner.mainnet.tokenAddress;
+    console.log("FIN Token:", FINToken);
     await deployClaim();
     // await buildData();
 }
