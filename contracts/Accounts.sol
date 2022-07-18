@@ -770,6 +770,15 @@ contract Accounts is Constant, Initializable{
             .div(vars.liquidationDiscountRatio)
             .div(vars.liquidateTokenPrice);
 
+        // code in a block to avoid stack-too-deep-error
+        {
+            Bank bank = globalConfig.bank();
+            bank.updateDepositFINIndex(_collateralToken);
+            bank.updateDepositFINIndex(_borrowedToken);
+            bank.updateBorrowFINIndex(_collateralToken);
+            bank.updateBorrowFINIndex(_borrowedToken);
+        }
+
         deposit(_liquidator, _collateralToken, vars.payAmount);
         withdraw_liquidate(_liquidator, _borrowedToken, vars.repayAmount);
         withdraw_liquidate(_borrower, _collateralToken, vars.payAmount);
