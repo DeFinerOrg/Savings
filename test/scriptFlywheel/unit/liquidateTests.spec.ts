@@ -323,6 +323,86 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
                 });
 
+                it("When user tries to liquidate partially with mining", async function () {
+                    this.timeout(0);
+                    await tokenInfoRegistry.updateMiningSpeed(
+                        addressDAI,
+                        eighteenPrecision,
+                        eighteenPrecision
+                    );
+                    await tokenInfoRegistry.updateMiningSpeed(
+                        addressUSDC,
+                        eighteenPrecision,
+                        eighteenPrecision
+                    );
+
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20USDC.transfer(user2, ONE_USDC);
+
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_DAI)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+                    await savingAccount.fastForward(1000);
+
+                    // 2. Start borrowing.
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                    await savingAccount.fastForward(1000);
+
+                    // 3. Change the price.
+                    let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    // update price of DAI to 70% of it's value
+                    let updatedPrice = BN(USDCprice).mul(new BN(7)).div(new BN(10));
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+                    // 4. Start liquidation.
+
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true
+                    );
+
+                    let U1 = await bankContract.getCapitalUtilizationRatio(addressDAI);
+                    let depositStore = await bankContract.getTotalDepositStore(addressDAI);
+                    console.log("U1", U1.toString());
+                    console.log("depositStore", depositStore.toString());
+
+                    // const currentBlock = await savingAccount.getBlockNumber();
+                    // const currFINRate = await bank.depositFINRateIndex(addressDAI, currentBlock);
+                    const lastBlock = await bankContract.lastDepositFINRateCheckpoint(addressDAI);
+                    console.log("lastBlock:" + lastBlock.toString());
+
+                    const depRateIndex = await bankContract.depositFINRateIndex(
+                        addressDAI,
+                        lastBlock
+                    );
+                    console.log(depRateIndex.toString());
+
+                    await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
+                });
+
                 it("When user tries to liquidate fully - 1", async function () {
                     this.timeout(0);
                     // 2. Approve 1000 tokens
