@@ -1,0 +1,19 @@
+name: gemini-contracts
+on: [push]
+
+jobs:
+  deploy-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - run: git submodule init
+      - run: git submodule update
+      - run: npm i
+      - run: yarn prepare && yarn contract-size
