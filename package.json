@@ -84,14 +84,14 @@
     "typescript": "^4.3.2",
     "web3": "^1.2.8",
     "web3-utils": "^1.2.6",
-    "yarn": "^1.22.19"
+    "yarn": "^1.22.19",
+    "web3-eth-contract": "^1.2.11"
   },
   "dependencies": {
     "@babel/core": "^7.12.3",
     "@types/shelljs": "^0.8.8",
     "shelljs": "^0.8.4",
     "solidity-parser-antlr": "^0.4.11",
-    "solium": "^1.2.5",
-    "web3-eth-contract": "^1.2.11"
+    "solium": "^1.2.5"
   }
 }
