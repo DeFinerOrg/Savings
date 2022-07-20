@@ -16,13 +16,10 @@ jobs:
         id: cache-npm
         uses: actions/cache@v3
         with:
-          path: |
-            **/node_modules
-            **/.eslintcache
-          key: ${{ runner.os }}-build-${{ hashFiles('**/package-lock.json') }}
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: Install modules
-        continue-on-error: true
         run: npm i
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
