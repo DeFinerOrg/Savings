@@ -27,7 +27,8 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: Install modules
         continue-on-error: true
-        run: npm i && npm install yarn
+        run: npm i
+      - run: npm install yarn
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
@@ -54,7 +55,8 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: Install modules
         continue-on-error: true
-        run: npm i && npm install yarn
+        run: npm i
+      - run: npm install yarn
       - run: npx yarn prepare && npx yarn coverage-SFW
   coverage-WPM:
     runs-on: ubuntu-latest
@@ -81,7 +83,8 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: Install modules
         continue-on-error: true
-        run: npm i && npm install yarn
+        run: npm i
+      - run: npm install yarn
       - run: npx yarn prepare && npx yarn coverage-WPM
   tests:
     runs-on: ubuntu-latest
@@ -108,5 +111,6 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: Install modules
         continue-on-error: true
-        run: npm i && npm install yarn
+        run: npm i
+      - run: npm install yarn
       - run: npx yarn test
