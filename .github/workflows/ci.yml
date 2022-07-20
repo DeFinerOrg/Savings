@@ -27,9 +27,8 @@ jobs:
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
         name: List the state of node modules
         continue-on-error: true
-        run: npm list
         run: npm i
-        run: npm install yarn
+      - run: npm install yarn
       - run: npx yarn delete-timelock-mock && npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
