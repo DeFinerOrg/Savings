@@ -18,9 +18,7 @@ jobs:
         with:
           path: node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
-        name: Install modules
-        run: npm i
+      - run: npm i
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
