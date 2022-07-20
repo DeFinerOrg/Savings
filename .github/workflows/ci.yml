@@ -30,6 +30,12 @@ jobs:
       - run: git submodule init
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn prepare && npx yarn coverage-SFW
   coverage-WPM:
@@ -42,6 +48,12 @@ jobs:
       - run: git submodule init
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn prepare && npx yarn coverage-WPM
   tests:
@@ -54,5 +66,11 @@ jobs:
       - run: git submodule init
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn test
