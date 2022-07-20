@@ -37,6 +37,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
@@ -54,9 +56,6 @@ jobs:
         name: Install modules
         continue-on-error: true
         run: npm i
-      - run: git submodule init
-      - run: git submodule update
-      - run: npm i
       - run: npm install yarn
       - run: npx yarn prepare && npx yarn coverage-SFW
   coverage-WPM:
@@ -66,6 +65,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
@@ -83,9 +84,6 @@ jobs:
         name: Install modules
         continue-on-error: true
         run: npm i
-      - run: git submodule init
-      - run: git submodule update
-      - run: npm i
       - run: npm install yarn
       - run: npx yarn prepare && npx yarn coverage-WPM
   tests:
@@ -95,6 +93,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
@@ -112,8 +112,5 @@ jobs:
         name: Install modules
         continue-on-error: true
         run: npm i
-      - run: git submodule init
-      - run: git submodule update
-      - run: npm i
       - run: npm install yarn
       - run: npx yarn test
