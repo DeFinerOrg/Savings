@@ -9,6 +9,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
@@ -26,10 +28,8 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-      - run: git submodule init
-      - run: git submodule update
-      - run: npm i
-      - run: npm install yarn
+        run: npm i
+        run: npm install yarn
       - run: npx yarn delete-timelock-mock && npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
