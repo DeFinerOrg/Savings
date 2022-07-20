@@ -11,6 +11,7 @@ jobs:
           node-version: 12.22.5
       - run: git submodule init
       - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
