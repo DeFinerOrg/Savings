@@ -25,7 +25,7 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
-        name: List the state of node modules
+        name: Install modules
         continue-on-error: true
         run: npm i
       - run: npm install yarn
@@ -51,9 +51,9 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
-        name: List the state of node modules
+        name: Install modules
         continue-on-error: true
-        run: npm list
+        run: npm i
       - run: git submodule init
       - run: git submodule update
       - run: npm i
@@ -80,9 +80,9 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
-        name: List the state of node modules
+        name: Install modules
         continue-on-error: true
-        run: npm list
+        run: npm i
       - run: git submodule init
       - run: git submodule update
       - run: npm i
@@ -109,9 +109,9 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
-        name: List the state of node modules
+        name: Install modules
         continue-on-error: true
-        run: npm list
+        run: npm i
       - run: git submodule init
       - run: git submodule update
       - run: npm i
