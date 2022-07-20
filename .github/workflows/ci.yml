@@ -28,7 +28,6 @@ jobs:
         name: Install modules
         continue-on-error: true
         run: npm i
-      - run: npm install yarn
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
