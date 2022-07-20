@@ -16,4 +16,5 @@ jobs:
       - run: git submodule init
       - run: git submodule update
       - run: npm i
-      - run: yarn prepare && yarn contract-size
+      - run: npm install yarn
+      - run: npx yarn prepare && npx yarn contract-size
