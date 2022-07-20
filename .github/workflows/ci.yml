@@ -9,6 +9,35 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+      - run: git submodule init
+      - run: git submodule update
+      - run: npm i
+      - run: npm install yarn
+      - run: npx yarn delete-timelock-mock && npx yarn prepare && npx yarn contract-size
+  coverage-SFW:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
       - uses: actions/cache@v2
         with:
           path: "**/node_modules"
@@ -17,4 +46,36 @@ jobs:
       - run: git submodule update
       - run: npm i
       - run: npm install yarn
-      - run: npx yarn prepare && npx yarn contract-size
+      - run: npx yarn prepare && npx yarn coverage-SFW
+  coverage-WPM:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - run: git submodule init
+      - run: git submodule update
+      - run: npm i
+      - run: npm install yarn
+      - run: npx yarn prepare && npx yarn coverage-WPM
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - run: git submodule init
+      - run: git submodule update
+      - run: npm i
+      - run: npm install yarn
+      - run: npx yarn test
