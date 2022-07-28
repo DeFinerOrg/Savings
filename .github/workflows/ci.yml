@@ -56,7 +56,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn prepare && npx yarn coverage-WPM
-  tests:
+  tests-whitePaperModel:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -73,4 +73,40 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
-      - run: npx yarn test
+      - run: npx yarn test-whitePaperModel
+  tests-scriptFlyWheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
+      - run: npm i
+      - run: npx yarn test-scriptFlyWheel
+tests-upgradability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
+      - run: npm i
+      - run: npx yarn test-upgradability

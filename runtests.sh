@@ -2,9 +2,11 @@
 
 failed=0
 
-yarn prepare
+echo "Model: $1"
 
-declare -a modelArr=("whitePaperModel" "scriptFlywheel")
+declare -a modelArr=("$1")
+
+yarn prepare
 
 for model in "${modelArr[@]}"
   do
