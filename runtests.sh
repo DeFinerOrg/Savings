@@ -11,8 +11,8 @@ yarn prepare
 for model in "${modelArr[@]}"
   do
     echo "$model"
-    rm -rf compound-protocol/networks/development.json
-    cp snapshots/config/$model.json compound-protocol/networks/development.json
+    rm -rf ./compound-protocol/networks/development.json
+    cp ./snapshots/config/$model.json ./compound-protocol/networks/development.json
 
     # Run each test file individually
     for file in $(find test/$model -type f -name "*.spec.ts");
