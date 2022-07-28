@@ -213,6 +213,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
         bank.updateBorrowFINIndex(_collateralToken);
         
         (uint256 repayAmount, uint256 payAmount) = globalConfig.accounts().liquidate(msg.sender, _borrower, _borrowedToken, _collateralToken);
+        bank.update(_borrowedToken, repayAmount, ActionType.LiquidateRepayAction);
 
         emit Liquidate(msg.sender, _borrower, _borrowedToken, repayAmount, _collateralToken, payAmount);
     }
@@ -273,6 +274,7 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 }
 
 interface IBank {
+    function update(address _token, uint _amount, Constant.ActionType _action) external;
     function newRateIndexCheckpoint(address) external;
     function updateDepositFINIndex(address) external;
     function updateBorrowFINIndex(address) external;
