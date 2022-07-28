@@ -438,7 +438,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("userBorrowVal", userBorrowVal.toString());
                     console.log("user2Deposits", user2Deposits.toString());
                     console.log("================ user 2 borrows DAI ================");
+                    // const daiTotalLoanBefore = await bankContract.totalLoans(addressDAI);
+                    // console.log("before daiTotalLoan:", daiTotalLoanBefore.toString());
+
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+
+                    console.log("borrowAmt:", borrowAmt.toString());
+                    const daiTotalLoanBefore = await bankContract.totalLoans(addressDAI);
+                    console.log("after daiTotalLoan:", daiTotalLoanBefore.toString());
+                    let borrowBalDaiOfUser2 = await accountsContract.getBorrowBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    expect(borrowBalDaiOfUser2).to.be.bignumber.equal(daiTotalLoanBefore);
                     const user2DepositsAfterBorrow = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user2);
                     let user2BorrowPowerAfterBorrow = await accountsContract.getBorrowPower(user2);
@@ -499,7 +511,18 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let depositStore = await bankContract.getTotalDepositStore(addressDAI);
                     console.log("U1", U1.toString());
                     console.log("depositStore", depositStore.toString());
+
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
+                    const daiTotalLoanAfter = await bankContract.totalLoans(addressDAI);
+                    console.log("after liquidate daiTotalLoan:", daiTotalLoanAfter.toString());
+                    borrowBalDaiOfUser2 = await accountsContract.getBorrowBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    console.log("borrow balance current user2:", borrowBalDaiOfUser2.toString());
+                    expect(daiTotalLoanAfter).to.be.bignumber.lt(daiTotalLoanBefore);
+                    expect(borrowBalDaiOfUser2).to.be.bignumber.equal(daiTotalLoanAfter);
                     console.log("====================== User2 Liquidated =======================");
                     const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user2);
@@ -779,7 +802,23 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("U1", U1.toString());
                     console.log("loans", tokenState[1].toString());
                     console.log("depositStore", depositStore.toString());
+
+                    const usdcTotalLoansBefore = await bankContract.totalLoans(addressUSDC);
+                    let borrowBalCurrUsdcOfUser1 = await accountsContract.getBorrowBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
+                    expect(usdcTotalLoansBefore).to.be.bignumber.equal(borrowBalCurrUsdcOfUser1);
+
                     await savingAccount.liquidate(user1, addressUSDC, addressDAI);
+
+                    const usdcTotalLoansAfter = await bankContract.totalLoans(addressUSDC);
+                    expect(usdcTotalLoansAfter).to.be.bignumber.lt(usdcTotalLoansBefore);
+                    borrowBalCurrUsdcOfUser1 = await accountsContract.getBorrowBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
+                    expect(usdcTotalLoansAfter).to.be.bignumber.equal(borrowBalCurrUsdcOfUser1);
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,
