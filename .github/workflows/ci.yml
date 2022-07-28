@@ -74,7 +74,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn test-whitePaperModel
-  tests-scriptFlyWheel:
+  tests-scriptFlywheel:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,7 +91,7 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
-      - run: npx yarn test-scriptFlyWheel
+      - run: npx yarn test-scriptFlywheel
   tests-upgradability:
     runs-on: ubuntu-latest
     steps:
