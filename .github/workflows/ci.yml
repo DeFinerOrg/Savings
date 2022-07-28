@@ -92,7 +92,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npx yarn test-scriptFlyWheel
-tests-upgradability:
+  tests-upgradability:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
