@@ -62,7 +62,7 @@ jobs:
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - run: npm i
       - run: npx yarn test-upgradability
-  tests-scriptFlywheel:
+  tests-collateralFeature:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -73,4 +73,88 @@ jobs:
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - run: npm i
-      - run: npx yarn test-scriptFlywheel
+      - run: npx yarn test-collateralFeature
+  tests-deposit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-deposit
+  tests-withdraw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-withdraw
+  tests-repay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-repay
+  tests-borrow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-borrow
+  tests-liquidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-liquidate
+  tests-transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-transfer
+  tests-others:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - run: npm i
+      - run: npx yarn test-others

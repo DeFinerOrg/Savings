@@ -3,6 +3,7 @@
 failed=0
 
 echo "Model: $1"
+echo "Regex: $2"
 
 declare -a modelArr=("$1")
 
@@ -15,7 +16,7 @@ for model in "${modelArr[@]}"
     cp ./snapshots/config/$model.json ./compound-protocol/networks/development.json
 
     # Run each test file individually
-    for file in $(find test/$model -type f -name "*.spec.ts");
+    for file in $(find test/$model -type f -name "$2");
     do
       # delete previous ganache snapshot and extract a fresh copy  
       rm -rf snapshots/$model
