@@ -20,7 +20,7 @@
     "test-all": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts && sh runSingleTest.sh test/upgradability/timelockController.spec.ts",
     "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
-    "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip",
+    "unzip-snapshot": "cd snapshots && unzip -q $FILE.zip && cd ..",
     "clean-snapshot": "rimraf snapshots/whitePaperModel && rimraf snapshots/scriptFlywheel && rimraf snapshots/coverage",
     "coverage-WPM": "FILE=coverage npm run clean-snapshot && FILE=coverage npm run unzip-snapshot && npm run copy-coverage-files-WPM && npm run exec-coverage-WPM",
     "copy-coverage-files-WPM": "cp snapshots/config/coverage/whitePaperModel.json ./compound-protocol/networks/development.json",
