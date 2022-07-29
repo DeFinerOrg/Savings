@@ -16,7 +16,7 @@ for model in "${modelArr[@]}"
     cp ./snapshots/config/$model.json ./compound-protocol/networks/development.json
 
     # Run each test file individually
-    for file in $(find test/$model -type f -name "$2");
+    for file in $(find test/$model -type f -iname "$2");
     do
       # delete previous ganache snapshot and extract a fresh copy  
       rm -rf snapshots/$model
