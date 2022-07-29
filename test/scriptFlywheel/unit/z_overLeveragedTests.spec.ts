@@ -1,5 +1,5 @@
 import { BigNumber } from "bignumber.js";
-import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contracts/index.d";
+import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contracts";
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 import { savAccBalVerify } from "../../../test-helpers/lib/lib";
