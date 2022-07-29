@@ -16,9 +16,12 @@ jobs:
         id: cache-npm
         uses: actions/cache@v3
         with:
-          path: node_modules
+          path: ~/.npm
           key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - run: npm i
+      - if: ${{ steps.cache-npm.outputs.cache-hit == 'false' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm ci
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
