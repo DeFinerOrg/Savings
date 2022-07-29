@@ -15,7 +15,7 @@
     "test-liquidate": "./runtests.sh scriptFlywheel '*liquidate*.spec.ts'",
     "test-transfer": "./runtests.sh scriptFlywheel '*transfer*.spec.ts'",
     "test-others": "./runtests.sh scriptFlywheel 'z_*.spec.ts'",
-    "test-whitePaperModel": "./runtests.sh whitePaperModel",
+    "test-whitePaperModel": "./runtests.sh whitePaperModel '*.spec.ts'",
     "test-upgradability": "npx hardhat test test/upgradability/upgradability.proxy.ts",
     "test-all": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts && sh runSingleTest.sh test/upgradability/timelockController.spec.ts",
     "generate": "npx hardhat compile && npx hardhat typechain",
