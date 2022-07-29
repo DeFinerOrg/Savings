@@ -9,11 +9,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12.22.5
-      
       - run: git submodule init
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
-
       - name: Cache node modules
         id: cache-nodemodules
         uses: actions/cache@v2
@@ -29,7 +27,6 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-
       - name: Install Dependencies
         if: steps.cache-nodemodules.outputs.cache-hit != 'true'
         run: npm ci
