@@ -1,4 +1,4 @@
-name: gemini-contracts
+name: savings-contracts
 on: [push]
 
 jobs:
