@@ -1,3 +1,32 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@RenanSouza2 
+DeFinerOrg
+/
+Savings
+Public
+Code
+Issues
+Pull requests
+12
+Actions
+Projects
+Wiki
+Security
+Insights
+Savings/.github/workflows/ci.yml
+@jchittoda
+jchittoda use single package-lock.json file to calculate hash for cache
+Latest commit fd35a03 3 days ago
+ History
+ 1 contributor
+405 lines (380 sloc)  13.1 KB
+
 name: gemini-contracts
 on: [push]
 
@@ -13,12 +42,23 @@ jobs:
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v3
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - run: npm i
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
       - run: npx yarn prepare && npx yarn contract-size
   coverage-SFW:
     runs-on: ubuntu-latest
@@ -31,12 +71,24 @@ jobs:
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v3
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - run: npm i
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
       - run: npx yarn prepare && npx yarn coverage-SFW
   coverage-WPM:
     runs-on: ubuntu-latest
@@ -49,14 +101,26 @@ jobs:
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v3
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - run: npm i
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
       - run: npx yarn prepare && npx yarn coverage-WPM
-  tests:
+  tests-whitePaperModel:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -67,10 +131,306 @@ jobs:
       - run: git submodule update
       - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
       - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v3
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ hashFiles('package-lock.json') }}
-      - run: npm i
-      - run: npx yarn test
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+      - run: npx yarn test-whitePaperModel
+  tests-upgradability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-upgradability
+  tests-collateralFeature:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-collateralFeature
+  tests-deposit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-deposit
+  tests-withdraw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-withdraw
+  tests-repay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-repay
+  tests-borrow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-borrow
+  tests-liquidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-liquidate
+  tests-transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-transfer
+  tests-others:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.22.5
+      - run: git submodule init
+      - run: git submodule update
+      - run: rm contracts/mocks/MockTimelockController.sol && rm test/upgradability/timelockController.spec.ts
+      - name: Cache node modules
+        id: cache-nodemodules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          # caching node_modules
+          path: |
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Install Dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - run: npx yarn test-others
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+You have unread notifications
