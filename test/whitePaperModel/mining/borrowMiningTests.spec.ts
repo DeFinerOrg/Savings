@@ -703,7 +703,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 BN(balFINUser2Diff)
                             );
                         });
-                        /*it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
+                        it("borrowMining4: Deposit DAI then user 1 & 2 borrow large amount of DAI after some blocks", async function () {
                             this.timeout(0);
                             await erc20FIN.transfer(
                                 savingAccount.address,
@@ -1439,7 +1439,7 @@ contract("borrowMiningTests", async (accounts) => {
                                 await savingAccount.claimForToken.call(addressDAI, { from: user1 })
                             );
                             expect(zeroClaimAmt).to.be.bignumber.equal(new BN(0));
-                        });*/
+                        });
                     });
                 });
 
