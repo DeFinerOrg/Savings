@@ -22,6 +22,7 @@ contract("Borrow rate per block tests", async (accounts) => {
     let tokenInfoRegistry: t.TokenRegistryInstance;
     let accountsContract: t.AccountsInstance;
     let bankContract: t.BankInstance;
+    let globalConfig: t.GlobalConfigInstance;
 
     const owner = accounts[0];
     const user1 = accounts[1];
@@ -30,7 +31,7 @@ contract("Borrow rate per block tests", async (accounts) => {
     const eighteenPrecision = new BN(10).pow(new BN(18));
     const sixPrecision = new BN(10).pow(new BN(6));
     const eightPrecision = new BN(10).pow(new BN(8));
-    const BLOCKS_PER_YEAR = new BN(2102400);
+    let BLOCKS_PER_YEAR: BN;
 
     let tokens: any;
     let mockChainlinkAggregators: any;
@@ -95,6 +96,8 @@ contract("Borrow rate per block tests", async (accounts) => {
         tokenInfoRegistry = await testEngine.tokenInfoRegistry;
         accountsContract = await testEngine.accounts;
         bankContract = await testEngine.bank;
+        globalConfig = await testEngine.globalConfig;
+        BLOCKS_PER_YEAR = await bankContract.BLOCKS_PER_YEAR();
         // 1. initialization.
         tokens = await testEngine.erc20Tokens;
         mockChainlinkAggregators = await testEngine.mockChainlinkAggregators;
@@ -2355,11 +2358,17 @@ contract("Borrow rate per block tests", async (accounts) => {
                     console.log("depositAPR", depositAPR.toString());
 
                     // When U = 1, for Compound unsupported tokens:
-                    // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                    //                    = (3 * (10**16) * 1000 ) / 15768000
-                    //                    = 1902587519025
-                    expect(borrowAPR).to.be.bignumber.equal(new BN("1902587519025"));
-                    expect(depositAPR).to.be.bignumber.equal(new BN("1902587519025"));
+                    // borrowRatePerBlock = rateCurveConstant * 50 / BLOCKS_PER_YEAR
+
+                    const rateCurveConstant = await globalConfig.rateCurveConstant();
+                    // console.log("rateCurveConstant:", rateCurveConstant.toString());
+                    const multiplier = new BN(50);
+                    const borrowRatePerBlock = rateCurveConstant
+                        .mul(multiplier)
+                        .div(BLOCKS_PER_YEAR);
+                    // console.log("borroRatePerBlock:", borrowRatePerBlock.toString());
+                    expect(borrowAPR).to.be.bignumber.equal(borrowRatePerBlock);
+                    expect(depositAPR).to.be.bignumber.equal(borrowRatePerBlock);
 
                     await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                 });
@@ -2494,11 +2503,15 @@ contract("Borrow rate per block tests", async (accounts) => {
                         console.log("depositAPR per block", depositAPR.toString());
 
                         // When U = 1, for Compound unsupported tokens:
-                        // borrowRatePerBlock = rateCurveConstant * 1000 / BLOCKS_PER_YEAR
-                        //                    = (3 * (10**16) * 1000 ) / 15768000
-                        //                    = 1902587519025
-                        expect(borrowAPR).to.be.bignumber.equal(new BN("1902587519025"));
-                        expect(depositAPR).to.be.bignumber.equal(new BN("1902526159720"));
+                        // borrowRatePerBlock = rateCurveConstant * 50 / BLOCKS_PER_YEAR
+                        const rateCurveConstant = await globalConfig.rateCurveConstant();
+                        // console.log("rateCurveConstant:", rateCurveConstant.toString());
+                        const multiplier = new BN(50);
+                        const borrowRatePerBlock = rateCurveConstant
+                            .mul(multiplier)
+                            .div(BLOCKS_PER_YEAR);
+                        expect(borrowAPR).to.be.bignumber.equal(borrowRatePerBlock);
+                        expect(depositAPR).to.be.bignumber.equal("95126307985");
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
@@ -2655,7 +2668,7 @@ contract("Borrow rate per block tests", async (accounts) => {
                             .mul(ONE_TUSD)
                             .div(new BN(await tokenInfoRegistry.priceFromIndex(3)));
                         const borrowAmt2 = new BN(await tokenInfoRegistry.priceFromIndex(0))
-                            .mul(new BN(2581))
+                            .mul(new BN(2582))
                             .div(new BN(10000))
                             .mul(ONE_TUSD)
                             .div(new BN(await tokenInfoRegistry.priceFromIndex(3)));
