@@ -49,7 +49,6 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-            loggingEnabled: true,
         },
         testnet: {
             url: "https://exchaintestrpc.okex.org",
