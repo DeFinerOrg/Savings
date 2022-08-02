@@ -1,5 +1,5 @@
 import * as t from "../../../types/truffle-contracts/index";
-import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contracts/index.d";
+import { MockChainLinkAggregatorInstance } from "../../../types/truffle-contracts";
 import { TestEngine } from "../../../test-helpers/TestEngine";
 
 var chai = require("chai");

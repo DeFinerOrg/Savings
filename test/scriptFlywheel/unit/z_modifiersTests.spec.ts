@@ -1,4 +1,4 @@
-import { TokenRegistryContract } from ".././../../types/truffle-contracts/index.d";
+import { TokenRegistryContract } from "../../../types/truffle-contracts";
 import { BigNumber } from "bignumber.js";
 import * as t from "../../../types/truffle-contracts/index";
 import { TestEngine } from "../../../test-helpers/TestEngine";

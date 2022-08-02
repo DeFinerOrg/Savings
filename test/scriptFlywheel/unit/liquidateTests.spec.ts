@@ -323,6 +323,86 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
                 });
 
+                it("When user tries to liquidate partially with mining", async function () {
+                    this.timeout(0);
+                    await tokenInfoRegistry.updateMiningSpeed(
+                        addressDAI,
+                        eighteenPrecision,
+                        eighteenPrecision
+                    );
+                    await tokenInfoRegistry.updateMiningSpeed(
+                        addressUSDC,
+                        eighteenPrecision,
+                        eighteenPrecision
+                    );
+
+                    await erc20DAI.transfer(user1, ONE_DAI);
+                    await erc20USDC.transfer(user2, ONE_USDC);
+
+                    const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(1))
+                        .mul(new BN(60))
+                        .div(new BN(100))
+                        .mul(ONE_DAI)
+                        .div(new BN(await tokenInfoRegistry.priceFromIndex(0)));
+
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI, { from: user1 });
+                    await erc20USDC.approve(savingAccount.address, ONE_USDC, { from: user2 });
+                    await erc20DAI.approve(savingAccount.address, ONE_DAI);
+
+                    await savingAccount.deposit(addressDAI, ONE_DAI, { from: user1 });
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(addressUSDC, ONE_USDC, { from: user2 });
+                    await savingAccount.fastForward(1000);
+                    await savingAccount.deposit(addressDAI, ONE_DAI.div(new BN(100)));
+                    await savingAccount.fastForward(1000);
+
+                    // 2. Start borrowing.
+                    let result = await tokenInfoRegistry.getTokenInfoFromAddress(addressUSDC);
+                    const usdcTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        usdcTokenIndex,
+                        true,
+                        { from: user2 }
+                    );
+                    await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+                    await savingAccount.fastForward(1000);
+
+                    // 3. Change the price.
+                    let USDCprice = await mockChainlinkAggregatorforUSDC.latestAnswer();
+                    // update price of DAI to 70% of it's value
+                    let updatedPrice = BN(USDCprice).mul(new BN(7)).div(new BN(10));
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(updatedPrice);
+                    // 4. Start liquidation.
+
+                    result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
+                    const daiTokenIndex = result[0];
+                    await accountsContract.methods["setCollateral(uint8,bool)"](
+                        daiTokenIndex,
+                        true
+                    );
+
+                    let U1 = await bankContract.getCapitalUtilizationRatio(addressDAI);
+                    let depositStore = await bankContract.getTotalDepositStore(addressDAI);
+                    console.log("U1", U1.toString());
+                    console.log("depositStore", depositStore.toString());
+
+                    // const currentBlock = await savingAccount.getBlockNumber();
+                    // const currFINRate = await bank.depositFINRateIndex(addressDAI, currentBlock);
+                    const lastBlock = await bankContract.lastDepositFINRateCheckpoint(addressDAI);
+                    console.log("lastBlock:" + lastBlock.toString());
+
+                    const depRateIndex = await bankContract.depositFINRateIndex(
+                        addressDAI,
+                        lastBlock
+                    );
+                    console.log(depRateIndex.toString());
+
+                    await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
+                    await mockChainlinkAggregatorforUSDC.updateAnswer(USDCprice);
+                });
+
                 it("When user tries to liquidate fully - 1", async function () {
                     this.timeout(0);
                     // 2. Approve 1000 tokens
@@ -358,7 +438,19 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("userBorrowVal", userBorrowVal.toString());
                     console.log("user2Deposits", user2Deposits.toString());
                     console.log("================ user 2 borrows DAI ================");
+                    // const daiTotalLoanBefore = await bankContract.totalLoans(addressDAI);
+                    // console.log("before daiTotalLoan:", daiTotalLoanBefore.toString());
+
                     await savingAccount.borrow(addressDAI, borrowAmt, { from: user2 });
+
+                    console.log("borrowAmt:", borrowAmt.toString());
+                    const daiTotalLoanBefore = await bankContract.totalLoans(addressDAI);
+                    console.log("after daiTotalLoan:", daiTotalLoanBefore.toString());
+                    let borrowBalDaiOfUser2 = await accountsContract.getBorrowBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    expect(borrowBalDaiOfUser2).to.be.bignumber.equal(daiTotalLoanBefore);
                     const user2DepositsAfterBorrow = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterBorrow = await accountsContract.getBorrowETH(user2);
                     let user2BorrowPowerAfterBorrow = await accountsContract.getBorrowPower(user2);
@@ -419,7 +511,18 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     let depositStore = await bankContract.getTotalDepositStore(addressDAI);
                     console.log("U1", U1.toString());
                     console.log("depositStore", depositStore.toString());
+
                     await savingAccount.liquidate(user2, addressDAI, addressUSDC);
+
+                    const daiTotalLoanAfter = await bankContract.totalLoans(addressDAI);
+                    console.log("after liquidate daiTotalLoan:", daiTotalLoanAfter.toString());
+                    borrowBalDaiOfUser2 = await accountsContract.getBorrowBalanceCurrent(
+                        addressDAI,
+                        user2
+                    );
+                    console.log("borrow balance current user2:", borrowBalDaiOfUser2.toString());
+                    expect(daiTotalLoanAfter).to.be.bignumber.lt(daiTotalLoanBefore);
+                    expect(borrowBalDaiOfUser2).to.be.bignumber.equal(daiTotalLoanAfter);
                     console.log("====================== User2 Liquidated =======================");
                     const user2DepositsAfterLiquidate = await accountsContract.getDepositETH(user2);
                     const userBorrowValAfterLiquidate = await accountsContract.getBorrowETH(user2);
@@ -699,7 +802,23 @@ contract("SavingAccount.liquidate", async (accounts) => {
                     console.log("U1", U1.toString());
                     console.log("loans", tokenState[1].toString());
                     console.log("depositStore", depositStore.toString());
+
+                    const usdcTotalLoansBefore = await bankContract.totalLoans(addressUSDC);
+                    let borrowBalCurrUsdcOfUser1 = await accountsContract.getBorrowBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
+                    expect(usdcTotalLoansBefore).to.be.bignumber.equal(borrowBalCurrUsdcOfUser1);
+
                     await savingAccount.liquidate(user1, addressUSDC, addressDAI);
+
+                    const usdcTotalLoansAfter = await bankContract.totalLoans(addressUSDC);
+                    expect(usdcTotalLoansAfter).to.be.bignumber.lt(usdcTotalLoansBefore);
+                    borrowBalCurrUsdcOfUser1 = await accountsContract.getBorrowBalanceCurrent(
+                        addressUSDC,
+                        user1
+                    );
+                    expect(usdcTotalLoansAfter).to.be.bignumber.equal(borrowBalCurrUsdcOfUser1);
 
                     const ownerUSDCAfter = await accountsContract.getDepositBalanceCurrent(
                         addressUSDC,

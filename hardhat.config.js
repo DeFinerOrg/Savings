@@ -41,8 +41,11 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-            loggingEnabled: true,
         },
+        local:{
+            timeout: 10_000_000,
+            url: "http://127.0.0.1:8545"
+        }
     },
     gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
