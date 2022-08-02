@@ -1443,7 +1443,7 @@ contract("borrowMiningTests", async (accounts) => {
                     });
                 });
 
-                /*context("Compound supported 6 decimal token", async () => {
+                context("Compound supported 6 decimal token", async () => {
                     context("should succeed", async () => {
                         it("Deposit DAI & USDC then borrow small amount of USDC", async function () {
                             this.timeout(0);
@@ -1830,7 +1830,7 @@ contract("borrowMiningTests", async (accounts) => {
                             );
                         });
                     });
-                });*/
+                });
             });
         });
     });
