@@ -4,7 +4,7 @@
   "description": "Saving pool contract.",
   "main": "index.js",
   "scripts": {
-    "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --lock-file && cd scenario && npm i && cd ../..",
+    "preinstall": "git submodule init && git submodule update && cd compound-protocol && yarn install --ignore-engines --lock-file && cd scenario && npm i && cd ../..",
     "compile": "truffle compile",
     "test-scriptFlywheel": "./runtests.sh scriptFlywheel",
     "test-collateralFeature": "./runtests.sh scriptFlywheel 'collateralFeature*.spec.ts'",
@@ -17,6 +17,7 @@
     "test-others": "./runtests.sh scriptFlywheel 'z_*.spec.ts'",
     "test-whitePaperModel": "./runtests.sh whitePaperModel '*.spec.ts'",
     "test-upgradability": "npx hardhat test test/upgradability/upgradability.proxy.ts",
+    "test-integration": "./runtests.sh scriptFlywheel '*integration*.spec.ts'",
     "test-all": "./runtests.sh && npx hardhat test test/upgradability/upgradability.proxy.ts && sh runSingleTest.sh test/upgradability/timelockController.spec.ts",
     "generate": "npx hardhat compile && npx hardhat typechain",
     "prepare": "yarn generate",
