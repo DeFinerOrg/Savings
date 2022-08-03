@@ -29,4 +29,6 @@ echo "PID: $NODE_PID"
 echo "Running test $file"
 cmd="npx hardhat test $file --network development"
 $cmd
+code=$?
 kill $NODE_PID
+exit $code

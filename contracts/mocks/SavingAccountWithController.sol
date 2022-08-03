@@ -19,10 +19,6 @@ contract SavingAccountWithController is SavingAccount {
         // THIS IS AN UPGRADABLE CONTRACT
     }
 
-    function version() public pure returns(string memory) {
-        return "v1.2";
-    }
-
     /**
      * Intialize the contract
      * @param _tokenAddresses list of token addresses
@@ -108,5 +104,40 @@ contract SavingAccountWithController is SavingAccount {
 
     function getTokenState(address _token) public view returns (uint256 deposits, uint256 loans, uint256 reserveBalance, uint256 remainingAssets){
         return globalConfig.bank().getTokenState(_token);
+    }
+
+    address public finAddr;
+    function setFINAddress(address _FINAddress) public {
+        finAddr = _FINAddress;
+    }
+
+    address public compAddr;
+    function setCOMPAddress(address _COMPAddress) public {
+        compAddr = _COMPAddress;
+    }
+
+    // override claim functions to use `finAddr`
+    // =========================================
+    function claim() public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    function claimForToken(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimForToken(msg.sender, _token);
+        if(finAmount > 0) IERC20(finAddr).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+
+    // override function to use `compAddr`
+    function withdrawCOMP(address _beneficiary) external onlyOwner {
+        uint256 compBalance = IERC20(compAddr).balanceOf(address(this));
+        IERC20(compAddr).safeTransfer(_beneficiary, compBalance);
+
+        emit WithdrawCOMP(_beneficiary, compBalance);
     }
 }

@@ -2,18 +2,21 @@
 
 failed=0
 
-yarn prepare
+echo "Model: $1"
+echo "Regex: $2"
 
-declare -a modelArr=("whitePaperModel" "scriptFlywheel")
+declare -a modelArr=("$1")
+
+yarn prepare
 
 for model in "${modelArr[@]}"
   do
     echo "$model"
-    rm -rf compound-protocol/networks/development.json
-    cp snapshots/config/$model.json compound-protocol/networks/development.json
+    rm -rf ./compound-protocol/networks/development.json
+    cp ./snapshots/config/$model.json ./compound-protocol/networks/development.json
 
     # Run each test file individually
-    for file in $(find ./test/$model -type f -name "*.spec.ts");
+    for file in $(find test/$model -type f -iname "$2");
     do
       # delete previous ganache snapshot and extract a fresh copy  
       rm -rf snapshots/$model

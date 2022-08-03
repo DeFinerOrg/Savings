@@ -214,18 +214,45 @@ contract Bank is Constant, Initializable{
     }
 
     /**
-     * Get the borrowing interest rate Borrowing interest rate.
+     * Get the borrowing interest rate.
      * @param _token token address
      * @return the borrow rate for the current block
      */
     function getBorrowRatePerBlock(address _token) public view returns(uint) {
-        if(!globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token))
-        // If the token is NOT supported by the third party, borrowing rate = 3% + U * 15%.
-            return getCapitalUtilizationRatio(_token).mul(globalConfig.rateCurveSlope()).div(INT_UNIT).add(globalConfig.rateCurveConstant()).div(BLOCKS_PER_YEAR);
+        uint256 capitalUtilizationRatio = getCapitalUtilizationRatio(_token);
+        // rateCurveConstant = <'3 * (10)^16'_rateCurveConstant_configurable>
+        uint256 rateCurveConstant = globalConfig.rateCurveConstant();
+        // compoundSupply = Compound Supply Rate * <'0.4'_supplyRateWeights_configurable>
+        uint256 compoundSupply = compoundPool[_token].depositRatePerBlock.mul(globalConfig.compoundSupplyRateWeights());
+        // compoundBorrow = Compound Borrow Rate * <'0.6'_borrowRateWeights_configurable>
+        uint256 compoundBorrow = compoundPool[_token].borrowRatePerBlock.mul(globalConfig.compoundBorrowRateWeights());
+        // nonUtilizedCapRatio = (1 - U) // Non utilized capital ratio
+        uint256 nonUtilizedCapRatio = INT_UNIT.sub(capitalUtilizationRatio);
 
-        // if the token is suppored in third party, borrowing rate = Compound Supply Rate * 0.4 + Compound Borrow Rate * 0.6
-        return (compoundPool[_token].depositRatePerBlock).mul(globalConfig.compoundSupplyRateWeights()).
-            add((compoundPool[_token].borrowRatePerBlock).mul(globalConfig.compoundBorrowRateWeights())).div(10);
+        bool isSupportedOnCompound = globalConfig.tokenInfoRegistry().isSupportedOnCompound(_token);
+        if(isSupportedOnCompound) {
+            uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
+            uint256 rateConstant;
+            // if the token is supported in third party (like Compound), check if U = 1
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
+                // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
+                return compoundSupplyPlusBorrow.add(rateConstant);
+            } else {
+                // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
+                rateConstant = rateCurveConstant.mul(10**18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return compoundSupplyPlusBorrow.add(rateConstant);
+            }
+        } else {
+            // If the token is NOT supported by the third party, check if U = 1
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
+                // if U = 1, borrowing rate = rateCurveConstant * 100
+                return rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
+            } else {
+                // if 0 < U < 1, borrowing rate = 3% / (1 - U)
+                return rateCurveConstant.mul(10**18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+            }
+        }
     }
 
     /**
@@ -247,6 +274,8 @@ contract Bank is Constant, Initializable{
     /**
      * Get capital utilization. Capital Utilization Rate (U )= total loan outstanding / Total market deposit
      * @param _token token address
+     * @return Capital utilization ratio `U`.
+     *  Valid range: 0 ≤ U ≤ 10^18
      */
     function getCapitalUtilizationRatio(address _token) public view returns(uint) {
         uint256 totalDepositsNow = getTotalDepositStore(_token);
@@ -515,4 +544,9 @@ contract Bank is Constant, Initializable{
     function getBlockNumber() private view returns (uint) {
         return block.number;
     }
+
+    function version() public pure returns(string memory) {
+        return "v1.2.0";
+    }
+
 }

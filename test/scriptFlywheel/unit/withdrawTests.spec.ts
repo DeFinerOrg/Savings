@@ -106,8 +106,8 @@ contract("SavingAccount.withdraw", async (accounts) => {
         mockChainlinkAggregatorforWBTCAddress = mockChainlinkAggregators[8];
 
         mockChainlinkAggregatorforETHAddress = mockChainlinkAggregators[0];
-        erc20WBTC = await ERC20.at(addressWBTC);
 
+        erc20WBTC = await ERC20.at(addressWBTC);
         erc20DAI = await ERC20.at(addressDAI);
         erc20USDC = await ERC20.at(addressUSDC);
         erc20USDT = await ERC20.at(addressUSDT);
@@ -675,6 +675,41 @@ contract("SavingAccount.withdraw", async (accounts) => {
                             savingAccountDAITokenAfterDeposit,
                             bank,
                             savingAccount
+                        );
+                    });
+
+                    it("Withdraw COMP tokens", async function () {
+                        this.timeout(0);
+                        // Deploy mock ERC20 token for testing
+                        const name = "Test Token";
+                        const symbol = "TTKN";
+                        const decimals = new BN(18);
+                        const initialSupply = new BN(10000);
+
+                        const erc20TTKN: t.MockErc20Instance = await ERC20.new(
+                            name,
+                            symbol,
+                            decimals,
+                            initialSupply
+                        );
+
+                        // Transfer mock tokens to SavingAccount
+                        await erc20TTKN.transfer(
+                            savingAccount.address,
+                            initialSupply.mul(eighteenPrecision)
+                        );
+                        const savingAccountBalTTKN = new BN(
+                            await erc20TTKN.balanceOf(savingAccount.address)
+                        );
+
+                        // Withdrawing all TTKN from SavingAccount
+                        await savingAccount.setCOMPAddress(erc20TTKN.address);
+                        await savingAccount.withdrawCOMP(owner);
+                        let userBalanceAfterWithdrawTTKN = await erc20TTKN.balanceOf(owner);
+
+                        // Verify user balance
+                        expect(userBalanceAfterWithdrawTTKN).to.be.bignumber.equal(
+                            savingAccountBalTTKN
                         );
                     });
                 });
@@ -1609,7 +1644,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, withdrawAmount),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
 
@@ -1634,7 +1669,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     const withdrawAmount = new BN(20);
                     await expectRevert(
                         savingAccount.withdraw(ETH_ADDRESS, withdrawAmount),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
             });

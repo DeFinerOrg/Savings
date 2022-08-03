@@ -18,6 +18,9 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
 
     GlobalConfig public globalConfig;
 
+    address public constant FIN_ADDR = 0x054f76beED60AB6dBEb23502178C52d6C5dEbE40;
+    address public constant COMP_ADDR = 0xc00e94Cb662C3520282E6f5717214004A7f26888;
+
     event Transfer(address indexed token, address from, address to, uint256 amount);
     event Borrow(address indexed token, address from, uint256 amount);
     event Repay(address indexed token, address from, uint256 amount);
@@ -26,9 +29,10 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     event WithdrawAll(address indexed token, address from, uint256 amount);
     event Liquidate(address liquidator, address borrower, address borrowedToken, uint256 repayAmount, address collateralToken, uint256 payAmount);
     event Claim(address from, uint256 amount);
+    event WithdrawCOMP(address beneficiary, uint256 amount);
 
     modifier onlySupportedToken(address _token) {
-        if(!Utils._isETH(address(globalConfig), _token)) {
+        if(_token != ETH_ADDR) {
             require(globalConfig.tokenInfoRegistry().isTokenExist(_token), "Unsupported token");
         }
         _;
@@ -42,6 +46,11 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     modifier onlyAuthorized() {
         require(msg.sender == address(globalConfig.bank()),
             "Only authorized to call from DeFiner internal contracts.");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
         _;
     }
 
@@ -224,10 +233,31 @@ contract SavingAccount is Initializable, InitializableReentrancyGuard, Constant,
     /**
      * An account claim all mined FIN token
      */
-    function claim() public nonReentrant {
-        uint FINAmount = globalConfig.accounts().claim(msg.sender);
-        IERC20(globalConfig.tokenInfoRegistry().addressFromIndex(11)).safeTransfer(msg.sender, FINAmount);
+    function claim() public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claim(msg.sender);
+        IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
 
-        emit Claim(msg.sender, FINAmount);
+    function claimForToken(address _token) public nonReentrant returns (uint256) {
+        uint256 finAmount = globalConfig.accounts().claimForToken(msg.sender, _token);
+        if(finAmount > 0) IERC20(FIN_ADDR).safeTransfer(msg.sender, finAmount);
+        emit Claim(msg.sender, finAmount);
+        return finAmount;
+    }
+
+    /**
+     * Withdraw COMP token to beneficiary
+     */
+    function withdrawCOMP(address _beneficiary) external onlyOwner {
+        uint256 compBalance = IERC20(COMP_ADDR).balanceOf(address(this));
+        IERC20(COMP_ADDR).safeTransfer(_beneficiary, compBalance);
+
+        emit WithdrawCOMP(_beneficiary, compBalance);
+    }
+
+    function version() public pure returns(string memory) {
+        return "v1.2.0";
     }
 }

@@ -582,7 +582,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20USDC.address, doubleOfUSDC, { from: user1 }),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
                 it("Deposit DAI and TUSD, withdraw more USDC tokens than it deposits", async function () {
@@ -661,7 +661,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
                     // Verify 2.
                     await expectRevert(
                         savingAccount.withdraw(erc20TUSD.address, doubleOfTUSD, { from: user1 }),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
             });
@@ -1430,7 +1430,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
 
                     await expectRevert(
                         savingAccount.withdraw(erc20DAI.address, numOfDAI, { from: user1 }),
-                        "Insufficient balance."
+                        "Insufficient balance"
                     );
                 });
             });

@@ -14,7 +14,7 @@ const { BN, expectRevert } = require("@openzeppelin/test-helpers");
 const ERC20: t.MockErc20Contract = artifacts.require("MockERC20");
 const MockCToken: t.MockCTokenContract = artifacts.require("MockCToken");
 
-contract("SavingAccount.borrow", async (accounts) => {
+contract("SavingAccount.FINMining", async (accounts) => {
     const ETH_ADDRESS: string = "0x000000000000000000000000000000000000000E";
     const addressZero: string = "0x0000000000000000000000000000000000000000";
     let testEngine: TestEngine;
@@ -163,6 +163,8 @@ contract("SavingAccount.borrow", async (accounts) => {
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressTUSD, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressMKR, ONE_FIN, ONE_FIN);
         await testEngine.tokenInfoRegistry.updateMiningSpeed(addressWBTC, ONE_FIN, ONE_FIN);
+
+        await savingAccount.setFINAddress(addressFIN);
     });
 
     beforeEach(async () => {
@@ -299,14 +301,26 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(3007301600000)); // 3007210014379.6274
-                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(2997716150000)); // 2997625026684.72
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493199));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(954301061000000));
+                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(954291475650000));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585493200)); // 9585493199
+                    // totalBorrowInterest + totalCompundInterest = totalDepositInterest
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(954301061143200)); // 954301061000000
+
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("50000000239635890844809"));
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("50000000239519464333467"));
                 });
 
                 it("FinMiningTest2: Two user deposit in different blocks with one borrow", async function () {
@@ -433,14 +447,26 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(3014114810209)); // 3014000217924.464
-                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(2997738999999)); // 2997625026682.0825
+                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(954307873240042));
+                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(954291497399999));
                     expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(9585661757));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    // totalBorrowInterest + totalCompundInterest = totalDepositInterest
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(954301083061756)); // 954307873240042
+
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("150000001088430855561536"));
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("150000001088317675732373"));
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest3: Three user deposit in different blocks with one borrow", async function () {
@@ -596,14 +622,26 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(6027877038146)); // 6027624308533.946
-                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(5995130370685)); // 5994879668807.049
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(19168622444));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1815398643768557));
+                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1815365898207456));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(19168622913)); // 19168622492
+                    // totalBorrowInterest + totalCompundInterest = totalDepositInterest
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(1815385066830369)); // 367597864096682
+
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("183333351461896584727671")); // 1.8333335036068736e-12
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("183338634741097975162430")); // 1.8333335036068736e-12
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest4: Two user deposit in different blocks with two borrows", async function () {
@@ -739,14 +777,26 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(5409338432181)); // 5409141661712.451
-                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(5396156769917)); // 5395960736096.195
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7988612884));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(1899912869531228));
+                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(1899899688379264));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(7988185581));
+                    // totalBorrowInterest + totalCompundInterest = totalDepositInterest
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(1899907676564845)); // 1899912869531228
+
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("278571581765745567836486"));
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("278616881423910733951608"));
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
 
                 it("FinMiningTest5: Three user deposit in different blocks with two borrows", async function () {
@@ -911,14 +961,26 @@ contract("SavingAccount.borrow", async (accounts) => {
 
                     // Second, verify the interest rate calculation. Need to compare these value to
                     // the rate simulator.
-                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(9620596025538)); // 9620206729297.027
-                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(9592639769497)); // 9592252337099.182
-                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(15974974617));
-                    // expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(totalDepositInterest);
+                    expect(BN(totalDepositInterest)).to.be.bignumber.equal(new BN(3211357809383536));
+                    expect(BN(totalBorrowInterest)).to.be.bignumber.equal(new BN(3211329856056485));
+                    expect(BN(totalCompoundInterest)).to.be.bignumber.equal(new BN(15974120732));
+                    // totalBorrowInterest + totalCompundInterest = totalDepositInterest
+                    expect(BN(totalBorrowInterest).add(totalCompoundInterest)).to.be.bignumber.equal(new BN(3211345830177217)); // 3211357809383536
+
+                    const balFINUser1 = await erc20FIN.balanceOf(user1);
+
+                    // FIN balance before claim
+                    const claimableAmountUser1 = await savingAccount.claim.call({
+                        from: user1,
+                    });
 
                     await savingAccount.claim({ from: user1 });
                     const balFIN = await erc20FIN.balanceOf(user1);
-                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("340476516325314737083808")); // 7.85729643603791*0.2 + 1.8333341356503024
+                    expect(BN(balFIN)).to.be.bignumber.equal(new BN("340574663609428305790285")); // 7.85729643603791*0.2 + 1.8333341356503024
+                    const balFINUser1Diff = BN(balFIN).sub(BN(balFINUser1));
+
+                    // Claimed FIN amount should equal `claim()`
+                    expect(BN(claimableAmountUser1)).to.be.bignumber.equal(BN(balFINUser1Diff));
                 });
             });
         });

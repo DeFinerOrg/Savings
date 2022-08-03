@@ -7,12 +7,8 @@ contract AccountsWithController is Accounts {
 
     address comptroller;
 
-    function version() public pure returns(string memory) {
-        return "v1.2";
-    }
-
     function initialize(
-        GlobalConfig _globalConfig,
+        IGlobalConfig _globalConfig,
         address _comptroller
     ) public initializer {
         super.initialize(_globalConfig); // expected 3 passed 5 args

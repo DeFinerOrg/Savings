@@ -4,12 +4,21 @@ pragma solidity 0.5.14;
 import "./lib/AccountTokenLib.sol";
 import "./lib/BitmapLib.sol";
 import "./config/Constant.sol";
-import "./config/GlobalConfig.sol";
 import "./registry/TokenRegistry.sol";
 import "./Bank.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "openzeppelin-solidity/contracts/math/Math.sol";
+
+interface IGlobalConfig {
+    function savingAccount() external view returns (address);
+    function tokenInfoRegistry() external view returns (TokenRegistry);
+    function bank() external view returns (Bank);
+    function deFinerCommunityFund() external view returns (address);
+    function deFinerRate() external view returns (uint256);
+    function liquidationThreshold() external view returns (uint256);
+    function liquidationDiscountRatio() external view returns (uint256);
+}
 
 contract Accounts is Constant, Initializable{
     using AccountTokenLib for AccountTokenLib.TokenInfo;
@@ -18,7 +27,7 @@ contract Accounts is Constant, Initializable{
     using Math for uint256;
 
     mapping(address => Account) public accounts;
-    GlobalConfig globalConfig;
+    IGlobalConfig globalConfig;
     mapping(address => uint256) public FINAmount;
 
     modifier onlyAuthorized() {
@@ -50,7 +59,7 @@ contract Accounts is Constant, Initializable{
      * @param _globalConfig the global configuration contract
      */
     function initialize(
-        GlobalConfig _globalConfig
+        IGlobalConfig _globalConfig
     ) public initializer {
         globalConfig = _globalConfig;
     }
@@ -242,11 +251,12 @@ contract Accounts is Constant, Initializable{
     function getDepositInterest(address _account, address _token) public view returns(uint256) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
         // If the account has never deposited the token, return 0.
-        if (tokenInfo.getLastDepositBlock() == 0)
+        uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+        if (lastDepositBlock == 0)
             return 0;
         else {
             // As the last deposit block exists, the block is also a check point on index curve.
-            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
             return tokenInfo.calculateDepositInterest(accruedRate);
         }
     }
@@ -254,34 +264,37 @@ contract Accounts is Constant, Initializable{
     function getBorrowInterest(address _accountAddr, address _token) public view returns(uint256) {
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // If the account has never borrowed the token, return 0
-        if (tokenInfo.getLastBorrowBlock() == 0)
+        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+        if (lastBorrowBlock == 0)
             return 0;
         else {
             // As the last borrow block exists, the block is also a check point on index curve.
-            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBorrowBlock);
             return tokenInfo.calculateBorrowInterest(accruedRate);
         }
     }
 
     function borrow(address _accountAddr, address _token, uint256 _amount) external onlyAuthorized {
         initCollateralFlag(_accountAddr);
-        require(_amount != 0, "Borrow zero amount of token is not allowed.");
-        require(isUserHasAnyDeposits(_accountAddr), "The user doesn't have any deposits.");
+        require(_amount != 0, "borrow amount is 0");
+        require(isUserHasAnyDeposits(_accountAddr), "no user deposits");
         (uint8 tokenIndex, uint256 tokenDivisor, uint256 tokenPrice,) = globalConfig.tokenInfoRegistry().getTokenInfoFromAddress(_token);
         require(
-            getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor))
-            <= getBorrowPower(_accountAddr), "Insufficient collateral when borrow."
+            getBorrowETH(_accountAddr).add(_amount.mul(tokenPrice).div(tokenDivisor)) <=
+            getBorrowPower(_accountAddr), "Insufficient collateral when borrow"
         );
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
+        uint256 blockNumber = getBlockNumber();
+        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
 
-        if(tokenInfo.getLastBorrowBlock() == 0)
-            tokenInfo.borrow(_amount, INT_UNIT, getBlockNumber());
+        if(lastBorrowBlock == 0)
+            tokenInfo.borrow(_amount, INT_UNIT, blockNumber);
         else {
-            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
-            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            calculateBorrowFIN(lastBorrowBlock, _token, _accountAddr, blockNumber);
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBorrowBlock);
             // Update the token principla and interest
-            tokenInfo.borrow(_amount, accruedRate, getBlockNumber());
+            tokenInfo.borrow(_amount, accruedRate, blockNumber);
         }
 
         // Since we have checked that borrow amount is larget than zero. We can set the borrow
@@ -320,25 +333,25 @@ contract Accounts is Constant, Initializable{
     function _withdraw(address _accountAddr, address _token, uint256 _amount, bool _isCommission) internal returns (uint256, uint256) {
         uint256 calcAmount = _amount;
         // Check if withdraw amount is less than user's balance
-        require(calcAmount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance.");
+        require(calcAmount <= getDepositBalanceCurrent(_token, _accountAddr), "Insufficient balance");
 
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         uint256 lastBlock = tokenInfo.getLastDepositBlock();
-        uint256 currentBlock = getBlockNumber();
-        calculateDepositFIN(lastBlock, _token, _accountAddr, currentBlock);
+        uint256 blockNumber = getBlockNumber();
+        calculateDepositFIN(lastBlock, _token, _accountAddr, blockNumber);
 
         uint256 principalBeforeWithdraw = tokenInfo.getDepositPrincipal();
 
-        if (tokenInfo.getLastDepositBlock() == 0)
-            tokenInfo.withdraw(calcAmount, INT_UNIT, getBlockNumber());
+        if (lastBlock == 0)
+            tokenInfo.withdraw(calcAmount, INT_UNIT, blockNumber);
         else {
             // As the last deposit block exists, the block is also a check point on index curve.
-            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-            tokenInfo.withdraw(calcAmount, accruedRate, getBlockNumber());
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastBlock);
+            tokenInfo.withdraw(calcAmount, accruedRate, blockNumber);
         }
 
         uint256 principalAfterWithdraw = tokenInfo.getDepositPrincipal();
-        if(tokenInfo.getDepositPrincipal() == 0) {
+        if(principalAfterWithdraw == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromDepositBitmap(_accountAddr, tokenIndex);
         }
@@ -365,12 +378,14 @@ contract Accounts is Constant, Initializable{
             setInDepositBitmap(_accountAddr, tokenIndex);
         }
 
-        if(tokenInfo.getLastDepositBlock() == 0)
-            tokenInfo.deposit(_amount, INT_UNIT, getBlockNumber());
+        uint256 blockNumber = getBlockNumber();
+        uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+        if(lastDepositBlock == 0)
+            tokenInfo.deposit(_amount, INT_UNIT, blockNumber);
         else {
-            calculateDepositFIN(tokenInfo.getLastDepositBlock(), _token, _accountAddr, getBlockNumber());
-            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, tokenInfo.getLastDepositBlock());
-            tokenInfo.deposit(_amount, accruedRate, getBlockNumber());
+            calculateDepositFIN(lastDepositBlock, _token, _accountAddr, blockNumber);
+            uint256 accruedRate = globalConfig.bank().getDepositAccruedRate(_token, lastDepositBlock);
+            tokenInfo.deposit(_amount, accruedRate, blockNumber);
         }
     }
 
@@ -382,16 +397,18 @@ contract Accounts is Constant, Initializable{
         uint256 remain = _amount > amountOwedWithInterest ? _amount.sub(amountOwedWithInterest) : 0;
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         // Sanity check
-        require(tokenInfo.getBorrowPrincipal() > 0, "Token BorrowPrincipal must be greater than 0. To deposit balance, please use deposit button.");
-        if(tokenInfo.getLastBorrowBlock() == 0)
+        uint256 borrowPrincipal = tokenInfo.getBorrowPrincipal();
+        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+        require(borrowPrincipal > 0, "BorrowPrincipal not gt 0");
+        if(lastBorrowBlock == 0)
             tokenInfo.repay(amount, INT_UNIT, getBlockNumber());
         else {
-            calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), _token, _accountAddr, getBlockNumber());
-            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, tokenInfo.getLastBorrowBlock());
+            calculateBorrowFIN(lastBorrowBlock, _token, _accountAddr, getBlockNumber());
+            uint256 accruedRate = globalConfig.bank().getBorrowAccruedRate(_token, lastBorrowBlock);
             tokenInfo.repay(amount, accruedRate, getBlockNumber());
         }
 
-        if(tokenInfo.getBorrowPrincipal() == 0) {
+        if(borrowPrincipal == 0) {
             uint8 tokenIndex = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
             unsetFromBorrowBitmap(_accountAddr, tokenIndex);
         }
@@ -405,15 +422,16 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         Bank bank = globalConfig.bank();
         uint256 accruedRate;
+        uint256 depositRateIndex = bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock());
         if(tokenInfo.getDepositPrincipal() == 0) {
             return 0;
         } else {
-            if(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()) == 0) {
+            if(depositRateIndex == 0) {
                 accruedRate = INT_UNIT;
             } else {
                 accruedRate = bank.depositeRateIndexNow(_token)
                 .mul(INT_UNIT)
-                .div(bank.depositeRateIndex(_token, tokenInfo.getLastDepositBlock()));
+                .div(depositRateIndex);
             }
             return tokenInfo.getDepositBalance(accruedRate);
         }
@@ -431,15 +449,16 @@ contract Accounts is Constant, Initializable{
         AccountTokenLib.TokenInfo storage tokenInfo = accounts[_accountAddr].tokenInfos[_token];
         Bank bank = globalConfig.bank();
         uint256 accruedRate;
+        uint256 borrowRateIndex = bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock());
         if(tokenInfo.getBorrowPrincipal() == 0) {
             return 0;
         } else {
-            if(bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()) == 0) {
+            if(borrowRateIndex == 0) {
                 accruedRate = INT_UNIT;
             } else {
                 accruedRate = bank.borrowRateIndexNow(_token)
                 .mul(INT_UNIT)
-                .div(bank.borrowRateIndex(_token, tokenInfo.getLastBorrowBlock()));
+                .div(borrowRateIndex);
             }
             return tokenInfo.getBorrowBalance(accruedRate);
         }
@@ -504,8 +523,11 @@ contract Accounts is Constant, Initializable{
                     // continue calculating borrow power for i(th) token
                     (address token, uint256 divisor, uint256 price, uint256 borrowLTV) = tokenRegistry.getTokenInfoFromIndex(i);
 
-                    uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
-                    power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
+                    // avoid some gas consumption when borrowLTV == 0
+                    if(borrowLTV != 0) {
+                        uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _borrower);
+                        power = power.add(depositBalanceCurrent.mul(price).mul(borrowLTV).div(100).div(divisor));
+                    }
                 }
 
                 // right shift by 1
@@ -521,7 +543,31 @@ contract Accounts is Constant, Initializable{
         return power;
     }
 
+    function getCollateralETH(address _account) public view returns (uint256 collETH) {
+        TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
+        Account memory account = accounts[_account];
+        uint128 hasDeposits = account.depositBitmap;
+        for(uint8 i = 0; i < 128; i++) {
+            if(hasDeposits > 0) {
+                bool isEnabled = (hasDeposits & uint128(1)) > 0;
+                if(isEnabled) {
+                    (address token,
+                    uint256 divisor,
+                    uint256 price,
+                    uint256 borrowLTV) = tokenRegistry.getTokenInfoFromIndex(i);
+                    if(borrowLTV != 0) {
+                        uint256 depositBalanceCurrent = getDepositBalanceCurrent(token, _account);
+                        collETH = collETH.add(depositBalanceCurrent.mul(price).div(divisor));
+                    }
+                }
+                hasDeposits = hasDeposits >> 1;
+            } else {
+                break;
+            }
+        }
 
+        return collETH;
+    }
 
     /**
      * Get current deposit balance of a token
@@ -604,16 +650,13 @@ contract Accounts is Constant, Initializable{
         }
 
         uint256 liquidationThreshold = globalConfig.liquidationThreshold();
-        uint256 liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
 
         uint256 totalBorrow = getBorrowETH(_borrower);
-        uint256 totalCollateral = getDepositETH(_borrower);
+        uint256 totalCollateral = getCollateralETH(_borrower);
 
         // It is required that LTV is larger than LIQUIDATE_THREADHOLD for liquidation
         // return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
-        return
-            totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold) &&
-            totalBorrow.mul(100) <= totalCollateral.mul(liquidationDiscountRatio);
+        return totalBorrow.mul(100) > totalCollateral.mul(liquidationThreshold);
     }
 
     struct LiquidationVars {
@@ -647,7 +690,7 @@ contract Accounts is Constant, Initializable{
     {
         initCollateralFlag(_liquidator);
         initCollateralFlag(_borrower);
-        require(isAccountLiquidatable(_borrower), "The borrower is not liquidatable.");
+        require(isAccountLiquidatable(_borrower), "borrower is not liquidatable");
 
         // It is required that the liquidator doesn't exceed it's borrow power.
         // if liquidator has any borrows, then only check for borrowPower condition
@@ -655,7 +698,7 @@ contract Accounts is Constant, Initializable{
         if(liquidateAcc.borrowBitmap > 0) {
             require(
                 getBorrowETH(_liquidator) < getBorrowPower(_liquidator),
-                "No extra funds are used for liquidation."
+                "No extra funds used for liquidation"
             );
         }
 
@@ -665,37 +708,67 @@ contract Accounts is Constant, Initializable{
 
         // _borrowedToken balance of the liquidator (deposit balance)
         vars.targetTokenBalance = getDepositBalanceCurrent(_borrowedToken, _liquidator);
-        require(vars.targetTokenBalance > 0, "The account amount must be greater than zero.");
+        require(vars.targetTokenBalance > 0, "amount must be > 0");
 
         // _borrowedToken balance of the borrower (borrow balance)
         vars.targetTokenBalanceBorrowed = getBorrowBalanceCurrent(_borrowedToken, _borrower);
-        require(vars.targetTokenBalanceBorrowed > 0, "The borrower doesn't own any debt token specified by the liquidator.");
+        require(vars.targetTokenBalanceBorrowed > 0, "borrower not own any debt token");
 
         // _borrowedToken available for liquidation
         uint256 borrowedTokenAmountForLiquidation = vars.targetTokenBalance.min(vars.targetTokenBalanceBorrowed);
 
         // _collateralToken balance of the borrower (deposit balance)
         vars.liquidateTokenBalance = getDepositBalanceCurrent(_collateralToken, _borrower);
-        vars.liquidateTokenPrice = tokenRegistry.priceFromAddress(_collateralToken);
 
-        uint256 divisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_borrowedToken));
-        uint256 liquidateTokendivisor = 10 ** uint256(tokenRegistry.getTokenDecimals(_collateralToken));
+        uint256 targetTokenDivisor;
+        (
+            ,
+            targetTokenDivisor,
+            vars.targetTokenPrice,
+            vars.borrowTokenLTV
+        ) = tokenRegistry.getTokenInfoFromAddress(_borrowedToken);
+
+        uint256 liquidateTokendivisor;
+        uint256 collateralLTV;
+        (
+            ,
+            liquidateTokendivisor,
+            vars.liquidateTokenPrice,
+            collateralLTV
+        ) = tokenRegistry.getTokenInfoFromAddress(_collateralToken);
 
         // _collateralToken to purchase so that borrower's balance matches its borrow power
         vars.totalBorrow = getBorrowETH(_borrower);
         vars.borrowPower = getBorrowPower(_borrower);
         vars.liquidationDiscountRatio = globalConfig.liquidationDiscountRatio();
-        vars.borrowTokenLTV = tokenRegistry.getBorrowLTV(_borrowedToken);
-        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower).mul(100).div(vars.liquidationDiscountRatio.sub(vars.borrowTokenLTV));
+        vars.limitRepaymentValue = vars.totalBorrow.sub(vars.borrowPower)
+            .mul(100)
+            .div(vars.liquidationDiscountRatio.sub(collateralLTV));
 
-        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(vars.liquidateTokenBalance.mul(vars.liquidateTokenPrice).div(liquidateTokendivisor));
+        uint256 collateralTokenValueForLiquidation = vars.limitRepaymentValue.min(
+            vars.liquidateTokenBalance
+            .mul(vars.liquidateTokenPrice)
+            .div(liquidateTokendivisor)
+        );
 
-        vars.targetTokenPrice = tokenRegistry.priceFromAddress(_borrowedToken);
-        uint256 liquidationValue = collateralTokenValueForLiquidation.min(borrowedTokenAmountForLiquidation.mul(vars.targetTokenPrice).mul(100).div(divisor).div(vars.liquidationDiscountRatio));
+        uint256 liquidationValue = collateralTokenValueForLiquidation.min(
+            borrowedTokenAmountForLiquidation
+            .mul(vars.targetTokenPrice)
+            .mul(100)
+            .div(targetTokenDivisor)
+            .div(vars.liquidationDiscountRatio)
+        );
 
-        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio).mul(divisor).div(100).div(vars.targetTokenPrice);
-        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor).mul(100).mul(vars.targetTokenPrice);
-        vars.payAmount = vars.payAmount.div(divisor).div(vars.liquidationDiscountRatio).div(vars.liquidateTokenPrice);
+        vars.repayAmount = liquidationValue.mul(vars.liquidationDiscountRatio)
+            .mul(targetTokenDivisor)
+            .div(100)
+            .div(vars.targetTokenPrice);
+        vars.payAmount = vars.repayAmount.mul(liquidateTokendivisor)
+            .mul(100)
+            .mul(vars.targetTokenPrice);
+        vars.payAmount = vars.payAmount.div(targetTokenDivisor)
+            .div(vars.liquidationDiscountRatio)
+            .div(vars.liquidateTokenPrice);
 
         deposit(_liquidator, _collateralToken, vars.payAmount);
         withdraw_liquidate(_liquidator, _borrowedToken, vars.repayAmount);
@@ -723,36 +796,68 @@ contract Accounts is Constant, Initializable{
         TokenRegistry tokenRegistry = globalConfig.tokenInfoRegistry();
         Bank bank = globalConfig.bank();
 
+        uint256 currentBlock = getBlockNumber();
+
         Account memory account = accounts[_account];
-        uint128 hasDepositOrBorrow = account.depositBitmap | account.borrowBitmap;
+        uint128 depositBitmap = account.depositBitmap;
+        uint128 borrowBitmap = account.borrowBitmap;
+        uint128 hasDepositOrBorrow = depositBitmap | borrowBitmap;
 
         for(uint8 i = 0; i < 128; i++) {
             if(hasDepositOrBorrow > 0) {
-                bool isEnabled = (hasDepositOrBorrow & uint128(1)) > 0;
-                if(isEnabled) {
+                if((hasDepositOrBorrow & uint128(1)) > 0) {
                     address token = tokenRegistry.addressFromIndex(i);
                     AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[token];
-                    uint256 currentBlock = getBlockNumber();
                     bank.updateMining(token);
-
-                    if (isUserHasDeposits(_account, i)) {
+                    if (depositBitmap.isBitSet(i)) {
                         bank.updateDepositFINIndex(token);
-                        uint256 accruedRate = bank.getDepositAccruedRate(token, tokenInfo.getLastDepositBlock());
-                        calculateDepositFIN(tokenInfo.getLastDepositBlock(), token, _account, currentBlock);
-                        tokenInfo.deposit(0, accruedRate, currentBlock);
+                        uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+                        calculateDepositFIN(lastDepositBlock, token, _account, currentBlock);
+                        tokenInfo.deposit(0, bank.getDepositAccruedRate(token, lastDepositBlock), currentBlock);
                     }
 
-                    if (isUserHasBorrows(_account, i)) {
+                    if (borrowBitmap.isBitSet(i)) {
                         bank.updateBorrowFINIndex(token);
-                        uint256 accruedRate = bank.getBorrowAccruedRate(token, tokenInfo.getLastBorrowBlock());
-                        calculateBorrowFIN(tokenInfo.getLastBorrowBlock(), token, _account, currentBlock);
-                        tokenInfo.borrow(0, accruedRate, currentBlock);
+                        uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+                        calculateBorrowFIN(lastBorrowBlock, token, _account, currentBlock);
+                        tokenInfo.borrow(0, bank.getBorrowAccruedRate(token, lastBorrowBlock), currentBlock);
                     }
                 }
                 hasDepositOrBorrow = hasDepositOrBorrow >> 1;
             } else {
                 break;
             }
+        }
+
+        uint256 _FINAmount = FINAmount[_account];
+        FINAmount[_account] = 0;
+        return _FINAmount;
+    }
+
+    function claimForToken(address _account, address _token) public onlyAuthorized returns(uint256) {
+        Account memory account = accounts[_account];
+        uint8 index = globalConfig.tokenInfoRegistry().getTokenIndex(_token);
+        bool isDeposit = account.depositBitmap.isBitSet(index);
+        bool isBorrow = account.borrowBitmap.isBitSet(index);
+        if(! (isDeposit || isBorrow)) return 0;
+
+        Bank bank = globalConfig.bank();
+        uint256 currentBlock = getBlockNumber();
+
+        AccountTokenLib.TokenInfo storage tokenInfo = accounts[_account].tokenInfos[_token];
+        bank.updateMining(_token);
+
+        if (isDeposit) {
+            bank.updateDepositFINIndex(_token);
+            uint256 lastDepositBlock = tokenInfo.getLastDepositBlock();
+            calculateDepositFIN(lastDepositBlock, _token, _account, currentBlock);
+            tokenInfo.deposit(0, bank.getDepositAccruedRate(_token, lastDepositBlock), currentBlock);
+        }
+        if (isBorrow) {
+            bank.updateBorrowFINIndex(_token);
+            uint256 lastBorrowBlock = tokenInfo.getLastBorrowBlock();
+            calculateBorrowFIN(lastBorrowBlock, _token, _account, currentBlock);
+            tokenInfo.borrow(0, bank.getBorrowAccruedRate(_token, lastBorrowBlock), currentBlock);
         }
 
         uint256 _FINAmount = FINAmount[_account];
@@ -786,5 +891,9 @@ contract Accounts is Constant, Initializable{
             .mul(indexDifference)
             .div(bank.borrowRateIndex(_token, _currentBlock));
         FINAmount[_accountAddr] = FINAmount[_accountAddr].add(getFIN);
+    }
+
+    function version() public pure returns(string memory) {
+        return "v1.2.0";
     }
 }

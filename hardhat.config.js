@@ -6,6 +6,14 @@ require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
 // require("tsconfig-paths/register");
 
+let _mnemonic = "";
+let MAINNET_PRIVATE_KEY = "";
+try {
+    const fs = require("fs");
+    _mnemonic = fs.readFileSync(".secret").toString().trim();
+    MAINNET_PRIVATE_KEY = fs.readFileSync(".privateKey").toString().trim();
+} catch (e) {}
+
 // This is a sample Buidler task. To learn how to create your own go to
 // https://buidler.dev/guides/create-task.html
 task("balance", "Prints an account's balance")
@@ -41,18 +49,58 @@ module.exports = {
             allowUnlimitedContractSize: true,
             gas: 20000000,
             blockGasLimit: 0x1fffffffffffff,
-            loggingEnabled: true,
         },
+        testnet: {
+            url: "https://exchaintestrpc.okex.org",
+            gas: 20000000,
+            blockGasLimit: 12000000,
+            accounts: {
+                mnemonic: _mnemonic,
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+            },
+        },
+        okex: {
+            url: "https://exchainrpc.okex.org",
+            gas: 20000000,
+            blockGasLimit: 12000000,
+            timeout: 2147483647,
+            accounts: {
+                mnemonic: _mnemonic,
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+            },
+        },
+        /*
+        mainnet: {
+            url: "https://exchainrpc.okex.org",
+            accounts: [MAINNET_PRIVATE_KEY],
+        },
+        */
     },
     gasReporter: {},
     // This is a sample solc configuration that specifies which version of solc to use
     solidity: {
-        version: "0.5.14",
-        settings: {
-            optimizer: {
-                enabled: true,
+        compilers: [
+            {
+                version: "0.5.14",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                    },
+                },
             },
-        },
+            {
+                version: "0.8.0",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                    },
+                },
+            },
+        ],
     },
 
     typechain: {

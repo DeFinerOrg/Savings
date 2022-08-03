@@ -220,24 +220,21 @@ export class TestEngine {
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         const network = process.env.NETWORK;
         if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators;
-        await Promise.all(
-            tokenData.tokens.map(async (token: any) => {
-                let addr;
-                if (network == "development" || "coverage" || !network) {
-                    addr = (
-                        await MockChainLinkAggregator.new(
-                            token.decimals,
-                            new BN(token.latestAnswer)
-                        )
-                    ).address;
-                } else if (network == "ropsten") {
-                    addr = token.ropsten.aggregatorAddress;
-                } else if (network == "mainnet" || network == "mainnet-fork") {
-                    addr = token.mainnet.aggregatorAddress;
-                }
-                this.mockChainlinkAggregators.push(addr);
-            })
-        );
+        for (let i = 0; i < tokenData.tokens.length; i++) {
+            const token = tokenData.tokens[i];
+            let addr;
+            if (network == "development" || "coverage" || !network) {
+                addr = (
+                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
+                ).address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.aggregatorAddress;
+            } else if (network == "mainnet" || network == "mainnet-fork") {
+                addr = token.mainnet.aggregatorAddress;
+            }
+            this.mockChainlinkAggregators.push(addr);
+        }
+
         let ETHaddr = (
             await MockChainLinkAggregator.new(
                 tokenData.ETH.decimals,
@@ -380,24 +377,23 @@ export class TestEngine {
         cTokens: Array<string>,
         aggregators: Array<string>
     ): Promise<void> {
-        await Promise.all(
-            tokenData.tokens.map(async (token: any, i: number) => {
-                const tokenAddr = this.erc20Tokens[i];
-                const decimals = token.decimals;
-                const isTransferFeeEnabled = token.isFeeEnabled;
-                const isSupportedOnCompound = true;
-                const cToken = cTokens[i];
-                const chainLinkOracle = aggregators[i];
-                await this.tokenInfoRegistry.addToken(
-                    tokenAddr,
-                    decimals,
-                    isTransferFeeEnabled,
-                    isSupportedOnCompound,
-                    cToken,
-                    chainLinkOracle
-                );
-            })
-        );
+        for (let i = 0; i < tokenData.tokens.length; i++) {
+            const token = tokenData.tokens[i];
+            const tokenAddr = this.erc20Tokens[i];
+            const decimals = token.decimals;
+            const isTransferFeeEnabled = token.isFeeEnabled;
+            const isSupportedOnCompound = true;
+            const cToken = cTokens[i];
+            const chainLinkOracle = aggregators[i];
+            await this.tokenInfoRegistry.addToken(
+                tokenAddr,
+                decimals,
+                isTransferFeeEnabled,
+                isSupportedOnCompound,
+                cToken,
+                chainLinkOracle
+            );
+        }
 
         await this.tokenInfoRegistry.addToken(
             ETH_ADDR,
@@ -408,6 +404,7 @@ export class TestEngine {
             aggregators[9]
         );
 
+        // FIN-LP
         await this.tokenInfoRegistry.addToken(
             this.erc20Tokens[10],
             18,
@@ -417,6 +414,7 @@ export class TestEngine {
             aggregators[10]
         );
 
+        // FIN
         await this.tokenInfoRegistry.addToken(
             this.erc20Tokens[11],
             18,
@@ -424,6 +422,22 @@ export class TestEngine {
             false,
             cTokens[11],
             aggregators[11]
+        );
+
+        // set isSupportedOnCompound = false for tokens not supported on Compound:
+        // TUSD
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(this.erc20Tokens[3], false);
+        // MKR
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(this.erc20Tokens[4], false);
+        // FIN-LP
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(
+            this.erc20Tokens[10],
+            false
+        );
+        // FIN
+        await this.tokenInfoRegistry.updateTokenSupportedOnCompoundFlag(
+            this.erc20Tokens[11],
+            false
         );
     }
 
@@ -511,5 +525,13 @@ export class TestEngine {
         this.bank = await Bank.at(bankProxy.address);
 
         return proxy;
+    }
+
+    public async deployOnlyAccounts(): Promise<t.AccountsInstance> {
+        return Accounts.new();
+    }
+
+    public async deployOnlySavingAccount(): Promise<t.SavingAccountInstance> {
+        return SavingAccount.new();
     }
 }
