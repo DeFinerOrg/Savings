@@ -1610,8 +1610,6 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                 it("when capital utilization ratio = 1 for Compound supported tokens", async function () {
                     this.timeout(0);
-                    const TUSDpriceBegin = new BN("5172765000000000");
-                    await mockChainlinkAggregatorforTUSD.updateAnswer(TUSDpriceBegin);
                     let ONE_TUSD = eighteenPrecision;
                     const borrowAmt = new BN(await tokenInfoRegistry.priceFromIndex(3))
                         .mul(new BN(60))
