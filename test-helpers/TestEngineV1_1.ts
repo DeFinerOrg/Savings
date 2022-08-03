@@ -116,24 +116,21 @@ export class TestEngineV1_1 {
     public async deployMockChainLinkAggregators(): Promise<Array<string>> {
         const network = process.env.NETWORK;
         if (this.mockChainlinkAggregators.length != 0) return this.mockChainlinkAggregators;
-        await Promise.all(
-            tokenData.tokens.map(async (token: any) => {
-                let addr;
-                if (network == "development" || "coverage" || !network) {
-                    addr = (
-                        await MockChainLinkAggregator.new(
-                            token.decimals,
-                            new BN(token.latestAnswer)
-                        )
-                    ).address;
-                } else if (network == "ropsten") {
-                    addr = token.ropsten.aggregatorAddress;
-                } else if (network == "mainnet" || network == "mainnet-fork") {
-                    addr = token.mainnet.aggregatorAddress;
-                }
-                this.mockChainlinkAggregators.push(addr);
-            })
-        );
+        for (let i = 0; i < tokenData.tokens.length; i++) {
+            const token = tokenData.tokens[i];
+            let addr;
+            if (network == "development" || "coverage" || !network) {
+                addr = (
+                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
+                ).address;
+            } else if (network == "ropsten") {
+                addr = token.ropsten.aggregatorAddress;
+            } else if (network == "mainnet" || network == "mainnet-fork") {
+                addr = token.mainnet.aggregatorAddress;
+            }
+            this.mockChainlinkAggregators.push(addr);
+        }
+
         let ETHaddr = (
             await MockChainLinkAggregator.new(
                 tokenData.ETH.decimals,
@@ -283,24 +280,23 @@ export class TestEngineV1_1 {
         cTokens: Array<string>,
         aggregators: Array<string>
     ): Promise<void> {
-        await Promise.all(
-            tokenData.tokens.map(async (token: any, i: number) => {
-                const tokenAddr = this.erc20Tokens[i];
-                const decimals = token.decimals;
-                const isTransferFeeEnabled = token.isFeeEnabled;
-                const isSupportedOnCompound = true;
-                const cToken = cTokens[i];
-                const chainLinkOracle = aggregators[i];
-                await this.tokenInfoRegistry.addToken(
-                    tokenAddr,
-                    decimals,
-                    isTransferFeeEnabled,
-                    isSupportedOnCompound,
-                    cToken,
-                    chainLinkOracle
-                );
-            })
-        );
+        for (let i = 0; i < tokenData.tokens.length; i++) {
+            const token = tokenData.tokens[i];
+            const tokenAddr = this.erc20Tokens[i];
+            const decimals = token.decimals;
+            const isTransferFeeEnabled = token.isFeeEnabled;
+            const isSupportedOnCompound = true;
+            const cToken = cTokens[i];
+            const chainLinkOracle = aggregators[i];
+            await this.tokenInfoRegistry.addToken(
+                tokenAddr,
+                decimals,
+                isTransferFeeEnabled,
+                isSupportedOnCompound,
+                cToken,
+                chainLinkOracle
+            );
+        }
 
         await this.tokenInfoRegistry.addToken(
             ETH_ADDR,
