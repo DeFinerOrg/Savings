@@ -111,6 +111,11 @@ contract Bank is Constant, Initializable{
             else {
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
+        } else if(_action == ActionType.LiquidateRepayAction) {
+            // When liquidation is called the `totalLoans` amount should be reduced.
+            // We dont need to update other variables as all the amounts are adjusted internally,
+            // hence does not require updation of `totalReserve` / `totalCompound`
+            totalLoans[_token] = totalLoans[_token].sub(_amount);
         } else {
             // The lack of liquidity exception happens when the pool doesn't have enough tokens for borrow/withdraw
             // It happens when part of the token has lended to the other accounts.
