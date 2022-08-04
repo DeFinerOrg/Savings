@@ -2511,7 +2511,10 @@ contract("Borrow rate per block tests", async (accounts) => {
                             .mul(multiplier)
                             .div(BLOCKS_PER_YEAR);
                         expect(borrowAPR).to.be.bignumber.equal(borrowRatePerBlock);
-                        expect(depositAPR).to.be.bignumber.equal("95126307985");
+                        const expectedDepositRatePerBlock = borrowRatePerBlock
+                            .mul(U)
+                            .div(eighteenPrecision);
+                        expect(depositAPR).to.be.bignumber.equal(expectedDepositRatePerBlock);
 
                         await mockChainlinkAggregatorforDAI.updateAnswer(BN(DAIprice));
                     });
