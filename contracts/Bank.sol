@@ -239,23 +239,23 @@ contract Bank is Constant, Initializable{
             uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
             uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
-            if(capitalUtilizationRatio > (1e18 - 2e16)) { // > 0.98
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
                 rateConstant = rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
-                rateConstant = rateCurveConstant.mul(1e18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                rateConstant = rateCurveConstant.mul(10**18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
-            if(capitalUtilizationRatio > (1e18 - 2e16)) { // > 0.98
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
                 // if U = 1, borrowing rate = rateCurveConstant * 100
                 return rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)
-                return rateCurveConstant.mul(1e18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
+                return rateCurveConstant.mul(10**18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
             }
         }
     }
