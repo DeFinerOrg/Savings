@@ -464,10 +464,7 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         });
                         let user2BATBalAfterDeposit =
                             await accountsContract.getDepositBalanceCurrent(addressBAT, user2);
-                        console.log(
-                            "user2BATBalAfterDeposit",
-                            user2BATBalAfterDeposit.toString()
-                        );
+                        console.log("user2BATBalAfterDeposit", user2BATBalAfterDeposit.toString());
 
                         // 2. Start borrowing.
                         const result = await tokenInfoRegistry.getTokenInfoFromAddress(addressDAI);
@@ -538,11 +535,13 @@ contract("SavingAccount.liquidate", async (accounts) => {
 
                         // check if U = 0.98
                         let U = await bankContract.getCapitalUtilizationRatio(addressBAT);
-                        
+
                         expect(new BN(U)).to.be.bignumber.greaterThan(
                             eighteenPrecision.mul(new BN("98")).div(new BN(100))
                         );
-                        expect(new BN(U)).to.be.bignumber.lessThan(eighteenPrecision.mul(new BN("981")).div(new BN(1000)));
+                        expect(new BN(U)).to.be.bignumber.lessThan(
+                            eighteenPrecision.mul(new BN("981")).div(new BN(1000))
+                        );
 
                         let borrowAPR = new BN(
                             await bankContract.getBorrowRatePerBlock(addressBAT)
@@ -550,8 +549,8 @@ contract("SavingAccount.liquidate", async (accounts) => {
                         let depositAPR = new BN(
                             await bankContract.getDepositRatePerBlock(addressBAT)
                         );
-                        let borrowAPRYearly = borrowAPR.mul(OKEX_BPY);
-                        let depositAPRYearly = depositAPR.mul(OKEX_BPY);
+                        let borrowAPRYearly = borrowAPR.mul(BLOCKS_PER_YEAR);
+                        let depositAPRYearly = depositAPR.mul(BLOCKS_PER_YEAR);
                         console.log("Yearly borrowAPR", borrowAPRYearly.toString());
                         console.log("Yearly depositAPR", depositAPRYearly.toString());
                         console.log("borrowAPR per block", borrowAPR.toString());
