@@ -111,6 +111,11 @@ contract Bank is Constant, Initializable{
             else {
                 totalReserve[_token] = totalReserve[_token].add(_amount);
             }
+        } else if(_action == ActionType.LiquidateRepayAction) {
+            // When liquidation is called the `totalLoans` amount should be reduced.
+            // We dont need to update other variables as all the amounts are adjusted internally,
+            // hence does not require updation of `totalReserve` / `totalCompound`
+            totalLoans[_token] = totalLoans[_token].sub(_amount);
         } else {
             // The lack of liquidity exception happens when the pool doesn't have enough tokens for borrow/withdraw
             // It happens when part of the token has lended to the other accounts.
@@ -234,9 +239,9 @@ contract Bank is Constant, Initializable{
             uint256 compoundSupplyPlusBorrow = compoundSupply.add(compoundBorrow).div(10);
             uint256 rateConstant;
             // if the token is supported in third party (like Compound), check if U = 1
-            if(capitalUtilizationRatio > ((10**18) - (10**15))) { // > 0.999
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
                 // if U = 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant * 100) / BLOCKS_PER_YEAR)
-                rateConstant = rateCurveConstant.mul(1000).div(BLOCKS_PER_YEAR);
+                rateConstant = rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
                 return compoundSupplyPlusBorrow.add(rateConstant);
             } else {
                 // if U != 1, borrowing rate = compoundSupply + compoundBorrow + ((rateCurveConstant / (1 - U)) / BLOCKS_PER_YEAR)
@@ -245,9 +250,9 @@ contract Bank is Constant, Initializable{
             }
         } else {
             // If the token is NOT supported by the third party, check if U = 1
-            if(capitalUtilizationRatio > ((10**18) - (10**15))) { // > 0.999
+            if(capitalUtilizationRatio > ((10**18) - (2 * 10**16))) { // > 0.98
                 // if U = 1, borrowing rate = rateCurveConstant * 100
-                return rateCurveConstant.mul(1000).div(BLOCKS_PER_YEAR);
+                return rateCurveConstant.mul(50).div(BLOCKS_PER_YEAR);
             } else {
                 // if 0 < U < 1, borrowing rate = 3% / (1 - U)
                 return rateCurveConstant.mul(10**18).div(nonUtilizedCapRatio).div(BLOCKS_PER_YEAR);
