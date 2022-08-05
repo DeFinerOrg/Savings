@@ -253,7 +253,17 @@ contract SavingAccount is
         emit WithdrawAll(_token, msg.sender, actualAmount);
     }
 
-    function liquidate(address _borrower, address _borrowedToken, address _collateralToken) public onlySupportedToken(_borrowedToken) onlySupportedToken(_collateralToken) whenNotPaused nonReentrant {
+    function liquidate(
+        address _borrower,
+        address _borrowedToken,
+        address _collateralToken
+    )
+        public
+        onlySupportedToken(_borrowedToken)
+        onlySupportedToken(_collateralToken)
+        whenNotPaused
+        nonReentrant
+    {
         IBank bank = IBank(address(globalConfig.bank()));
         bank.newRateIndexCheckpoint(_borrowedToken);
         bank.newRateIndexCheckpoint(_collateralToken);
@@ -262,7 +272,13 @@ contract SavingAccount is
         bank.updateBorrowFINIndex(_borrowedToken);
         bank.updateBorrowFINIndex(_collateralToken);
         
-        (uint256 repayAmount, uint256 payAmount) = globalConfig.accounts().liquidate(msg.sender, _borrower, _borrowedToken, _collateralToken);
+        (uint256 repayAmount, uint256 payAmount) = globalConfig.accounts().liquidate(
+            msg.sender,
+            _borrower,
+            _borrowedToken,
+            _collateralToken
+        );
+        
         bank.update(_borrowedToken, repayAmount, ActionType.LiquidateRepayAction);
 
         emit Liquidate(
