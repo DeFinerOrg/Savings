@@ -134,7 +134,7 @@ contract SavingAccountWithController is SavingAccount {
 
 
     // override function to use `compAddr`
-    function withdrawCOMP(address _beneficiary) external onlyOwner {
+    function withdrawCOMP(address _beneficiary) external /*onlyOwner*/ {
         uint256 compBalance = IERC20(compAddr).balanceOf(address(this));
         IERC20(compAddr).safeTransfer(_beneficiary, compBalance);
 
