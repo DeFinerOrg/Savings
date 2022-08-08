@@ -68,10 +68,10 @@ contract SavingAccount is
         _;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
-        _;
-    }
+    // modifier onlyOwner() {
+    //     require(msg.sender == GlobalConfig(globalConfig).owner(), "Only owner");
+    //     _;
+    // }
 
     /**
      * Initialize function to be called by the Deployer for the first time
@@ -214,6 +214,7 @@ contract SavingAccount is
     function withdraw(address _token, uint256 _amount)
         external
         onlySupportedToken(_token)
+        onlyEnabledToken(_token)
         whenNotPaused
         nonReentrant
     {
@@ -231,6 +232,7 @@ contract SavingAccount is
     function withdrawAll(address _token)
         external
         onlySupportedToken(_token)
+        onlyEnabledToken(_token)
         whenNotPaused
         nonReentrant
     {
