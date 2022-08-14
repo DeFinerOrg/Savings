@@ -1280,17 +1280,6 @@
   resolved "https://registry.yarnpkg.com/@nomiclabs/buidler-ethers/-/buidler-ethers-2.0.2.tgz#56c7f3d6f2d1bbf701e97a0003abb30f1071b2c4"
   integrity sha512-lFcM7HVi44JB5xl7MKD8qChPQ5tfeO02ZYlrI6uef7J1SJCgE+wiokrl7HQ/jb7DgTHS5agfZxVO9yUbkrMIrQ==
 
-"@nomiclabs/buidler-truffle5@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@nomiclabs/buidler-truffle5/-/buidler-truffle5-1.3.4.tgz#aee775eff6a99e4102d993654a5af87ca708feab"
-  integrity sha512-aPbkdbNUF4R/hbb2B8BULlsQ5AUB5l4baIHFmLQ/fdRmFrkWBx+53tjpf+XOv8g8RZTJstpkxFSBRWD/U1EahA==
-  dependencies:
-    "@nomiclabs/truffle-contract" "^4.1.2"
-    "@types/chai" "^4.2.0"
-    chai "^4.2.0"
-    ethereumjs-util "^6.1.0"
-    fs-extra "^7.0.1"
-
 "@nomiclabs/buidler-waffle@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@nomiclabs/buidler-waffle/-/buidler-waffle-2.1.0.tgz#9869ac829162eb57ac4e4096f0a02bd7ef54a71a"
@@ -1399,7 +1388,7 @@
   dependencies:
     "@types/bignumber.js" "^5.0.0"
 
-"@nomiclabs/truffle-contract@^4.1.2", "@nomiclabs/truffle-contract@^4.2.23":
+"@nomiclabs/truffle-contract@^4.2.23":
   version "4.2.23"
   resolved "https://registry.yarnpkg.com/@nomiclabs/truffle-contract/-/truffle-contract-4.2.23.tgz#3431d09d2400413d3a14650494abc0a6233c16d4"
   integrity sha512-Khj/Ts9r0LqEpGYhISbc+8WTOd6qJ4aFnDR+Ew+neqcjGnhwrIvuihNwPFWU6hDepW3Xod6Y+rTo90N8sLRDjw==
@@ -1422,10 +1411,10 @@
     find-up "^4.1.0"
     fs-extra "^8.1.0"
 
-"@openzeppelin/contracts@^4.3.1":
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.4.2.tgz#4e889c9c66e736f7de189a53f8ba5b8d789425c2"
-  integrity sha512-NyJV7sJgoGYqbtNUWgzzOGW4T6rR19FmX1IJgXGdapGPWsuMelGJn9h03nos0iqfforCbCB0iYIR0MtIuIFLLw==
+"@openzeppelin/contracts@^4.7.2":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.7.2.tgz#7587416fe2d35abf574193515b8971bfe9f64bc7"
+  integrity sha512-4n/JL9izql8303mPqPdubuna/DWEMbmOzWYUWyCPhjhiEr2w3nQrjE7vZz1fBF+wzzP6dZbIcsgqACk53c9FGA==
 
 "@openzeppelin/hardhat-upgrades@^1.8.2":
   version "1.8.2"
@@ -10164,6 +10153,13 @@ rimraf@^2.2.8, rimraf@^2.6.3:
   dependencies:
     glob "^7.1.3"
 
+rimraf@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-3.0.2.tgz#f1a5402ba6220ad52cc1282bac1ae3aa49fd061a"
+  integrity sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
+  dependencies:
+    glob "^7.1.3"
+
 ripemd160@^2.0.0, ripemd160@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/ripemd160/-/ripemd160-2.0.2.tgz#a1c1a6f624751577ba5d07914cbc92850585890c"
@@ -10478,7 +10474,7 @@ shebang-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-1.0.0.tgz#da42f49740c0b42db2ca9728571cb190c98efea3"
   integrity sha1-2kL0l0DAtC2yypcoVxyxkMmO/qM=
 
-shelljs@^0.8.3, shelljs@^0.8.5:
+shelljs@^0.8.3, shelljs@^0.8.4:
   version "0.8.5"
   resolved "https://registry.yarnpkg.com/shelljs/-/shelljs-0.8.5.tgz#de055408d8361bed66c669d2f000538ced8ee20c"
   integrity sha512-TiwcRcrkhHvbrZbnRcFYMLl30Dfov3HKqzp5tO5b4pt6G/SezKcYhmDg15zXVBswHmctSAQKznqNW2LO5tTDow==
@@ -13759,6 +13755,11 @@ yargs@^4.7.1:
     window-size "^0.2.0"
     y18n "^3.2.1"
     yargs-parser "^2.4.1"
+
+yarn@^1.22.19:
+  version "1.22.19"
+  resolved "https://registry.yarnpkg.com/yarn/-/yarn-1.22.19.tgz#4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  integrity sha512-/0V5q0WbslqnwP91tirOvldvYISzaqhClxzyUKXYxs07yUILIs5jx/k6CFe8bvKSkds5w+eiOqta39Wk3WxdcQ==
 
 yauzl@^2.4.2:
   version "2.10.0"
