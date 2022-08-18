@@ -57,7 +57,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@nomiclabs/hardhat-truffle5": "^2.0.0",
-    "@openzeppelin/contracts": "^4.3.1",
+    "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.8.2",
     "@openzeppelin/test-helpers": "^0.5.5",
     "@openzeppelin/upgrades": "^2.8.0",
