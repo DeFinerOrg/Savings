@@ -22,8 +22,7 @@ contract("SavingsDataHelper tests", function(){
     	this.timeout(0);
     	savingAccount = await testEngine.deploySavingAccount();
         localClaim = await Claim.new();
-  	    localSavingsDataHelper = await SavingsDataHelper.new();
-	    await localSavingsDataHelper.initialize(testEngine.globalConfig.address, localClaim.address);
+  	    localSavingsDataHelper = await SavingsDataHelper.new(testEngine.globalConfig.address, localClaim.address);
     });
 
     describe("SavingsDataHelper tests", async () => {

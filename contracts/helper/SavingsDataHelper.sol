@@ -10,7 +10,6 @@ import "../Accounts.sol";
 import "../config/Constant.sol";
 import "../config/GlobalConfig.sol";
 import "../claim/claim.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
 interface IGlobalConfigLocal {
@@ -22,7 +21,7 @@ interface IGlobalConfigLocal {
 
 
 
-contract SavingsDataHelper is Ownable{
+contract SavingsDataHelper{
 
     address public constant NATIVE = 0x000000000000000000000000000000000000000E;
     uint256 public constant TO_SIX_DECIMAL = 10**6;
@@ -81,24 +80,18 @@ contract SavingsDataHelper is Ownable{
     	address finToken;
     	uint256 finPrice;
     	uint256 finDecimals;
-	    uint256 blocksPerYear;
+	uint256 blocksPerYear;
     }
 
-    HeaderInfo public savingsSCAddresses;
-
-    function initialize(GlobalConfig _globalConfig, Claim _claim) public onlyOwner {
-       globalConfig = _globalConfig;
-       claim = _claim;
+    constructor(GlobalConfig _globalConfig, Claim _claim) public {
+    	globalConfig = _globalConfig;
+    	claim = _claim;
     }
-
-
 
     function getAllData() view public returns(SavingsData memory data){
         data.savingsHeaderInfo = getSavingsHeaderInfo();
         data.savingsTokensInfo = getAllTokensData();
-    }
-
-    
+    } 
 
     function getSavingsHeaderInfo() view public returns(HeaderInfo memory headerInfo){
     	headerInfo.globalConfig = globalConfig;
