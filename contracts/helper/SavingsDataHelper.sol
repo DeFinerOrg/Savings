@@ -159,7 +159,7 @@ contract SavingsDataHelper{
             tokensInfo.totalDeposit[i] = bank.getTotalDepositStore(token);
             tokensInfo.totalLoans[i] = bank.totalLoans(token);
             tokensInfo.totalReserve[i] = bank.totalReserve(token);
-            tokensInfo.totalCompound[i] = bank.totalCompound(token);
+            tokensInfo.totalCompound[i] = bank.totalCompound(tokensInfo.cToken[i]);
             tokensInfo.borrowRatePerBlock[i] = bank.getBorrowRatePerBlock(token);
             tokensInfo.depositRatePerBlock[i] = bank.getDepositRatePerBlock(token);
             (tokensInfo.depositMiningAPR[i], tokensInfo.borrowMiningAPR[i]) = _calcTokenMiningAPRs(tokensInfo, i);
