@@ -74,7 +74,7 @@
     "ethers": "^5.1.4",
     "ethlint": "^1.2.5",
     "ganache-cli": "^6.12.2",
-    "hardhat": "^2.6.3",
+    "hardhat": "^2.10.2",
     "hardhat-gas-reporter": "^1.0.0-beta.0",
     "hardhat-typechain": "^0.3.3",
     "husky": "^4.2.5",
