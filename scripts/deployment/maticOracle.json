@@ -1,67 +1,108 @@
 {
-    "oracles" : [
-        {
+    "polygon_mainnet": {
+        "oracles" : [
+            {
+                "targetPairName":"DAI/MATIC",
+                "tokenPairName":"DAI/ETH",
+                "tokenPriceOracle":"0xFC539A559e170f848323e19dfD66007520510085",
+                "maticPairName":"MATIC/ETH",
+                "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            },
+            {
+                "targetPairName":"USDC/MATIC",
+                "tokenPairName":"USDC/ETH",
+                "tokenPriceOracle":"0xefb7e6be8356cCc6827799B6A7348eE674A80EaE",
+                "maticPairName":"MATIC/ETH",
+                "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            },
+            {
+                "targetPairName":"USDT/MATIC",
+                "tokenPairName":"USDT/ETH",
+                "tokenPriceOracle":"0xf9d5AAC6E5572AEFa6bd64108ff86a222F69B64d",
+                "maticPairName":"MATIC/ETH",
+                "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            },
+            {
+                "targetPairName":"WBTC/MATIC",
+                "tokenPairName":"WBTC/ETH",
+                "tokenPriceOracle":"0xA338e0492B2F944E9F8C0653D3AD1484f2657a37",
+                "maticPairName":"MATIC/ETH",
+                "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            },
+            {
+                "targetPairName":"SUSHI/MATIC",
+                "tokenPairName":"SUSHI/USD",
+                "tokenPriceOracle":"0x49B0c695039243BBfEb8EcD054EB70061fd54aa0",
+                "maticPairName":"MATIC/USD",
+                "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            },
+            {
+                "targetPairName":"LINK/MATIC",
+                "tokenPairName":"LINK/USD",
+                "tokenPriceOracle":"0xd9FFdb71EbE7496cC440152d43986Aae0AB76665",
+                "maticPairName":"MATIC/USD",
+                "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            },
+            {
+                "targetPairName":"CRV/MATIC",
+                "tokenPairName":"CRV/USD",
+                "tokenPriceOracle":"0x336584C8E6Dc19637A5b36206B1c79923111b405",
+                "maticPairName":"MATIC/USD",
+                "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            },
+            {
+                "targetPairName":"QUICK/MATIC",
+                "tokenPairName":"QUICK/USD",
+                "tokenPriceOracle":"0xa058689f4bCa95208bba3F265674AE95dED75B6D",
+                "maticPairName":"MATIC/USD",
+                "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            },
+            {
+                "targetPairName":"ETH/MATIC",
+                "tokenPairName":"ETH/USD",
+                "tokenPriceOracle":"0xF9680D99D6C9589e2a93a78A04A279e509205945",
+                "maticPairName":"MATIC/USD",
+                "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            }
+        ]
+    },
+    "polygon_testnet": {
+        "oracles" : [{
             "targetPairName":"DAI/MATIC",
-            "tokenPairName":"DAI/ETH",
-            "tokenPriceOracle":"0xFC539A559e170f848323e19dfD66007520510085",
-            "maticPairName":"MATIC/ETH",
-            "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            "tokenPairName":"DAI/USD",
+            "tokenPriceOracle":"0x0FCAa9c899EC5A91eBc3D5Dd869De833b06fB046",
+            "maticPairName":"MATIC/USD",
+            "maticPriceOracle":"0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada"
         },
         {
             "targetPairName":"USDC/MATIC",
-            "tokenPairName":"USDC/ETH",
-            "tokenPriceOracle":"0xefb7e6be8356cCc6827799B6A7348eE674A80EaE",
-            "maticPairName":"MATIC/ETH",
-            "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            "tokenPairName":"USDC/USD",
+            "tokenPriceOracle":"0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0",
+            "maticPairName":"MATIC/USD",
+            "maticPriceOracle":"0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada"
         },
         {
             "targetPairName":"USDT/MATIC",
-            "tokenPairName":"USDT/ETH",
-            "tokenPriceOracle":"0xf9d5AAC6E5572AEFa6bd64108ff86a222F69B64d",
-            "maticPairName":"MATIC/ETH",
-            "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
+            "tokenPairName":"USDT/USD",
+            "tokenPriceOracle":"0x92C09849638959196E976289418e5973CC96d645",
+            "maticPairName":"MATIC/USD",
+            "maticPriceOracle":"0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada"
         },
         {
             "targetPairName":"WBTC/MATIC",
-            "tokenPairName":"WBTC/ETH",
-            "tokenPriceOracle":"0xA338e0492B2F944E9F8C0653D3AD1484f2657a37",
-            "maticPairName":"MATIC/ETH",
-            "maticPriceOracle":"0x327e23A4855b6F663a28c5161541d69Af8973302"
-        },
-        {
-            "targetPairName":"SUSHI/MATIC",
-            "tokenPairName":"SUSHI/USD",
-            "tokenPriceOracle":"0x49B0c695039243BBfEb8EcD054EB70061fd54aa0",
+            "tokenPairName":"WBTC/USD",
+            "tokenPriceOracle":"0x007A22900a3B98143368Bd5906f8E17e9867581b",
             "maticPairName":"MATIC/USD",
-            "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
-        },
-        {
-            "targetPairName":"LINK/MATIC",
-            "tokenPairName":"LINK/USD",
-            "tokenPriceOracle":"0xd9FFdb71EbE7496cC440152d43986Aae0AB76665",
-            "maticPairName":"MATIC/USD",
-            "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
-        },
-        {
-            "targetPairName":"CRV/MATIC",
-            "tokenPairName":"CRV/USD",
-            "tokenPriceOracle":"0x336584C8E6Dc19637A5b36206B1c79923111b405",
-            "maticPairName":"MATIC/USD",
-            "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
-        },
-        {
-            "targetPairName":"QUICK/MATIC",
-            "tokenPairName":"QUICK/USD",
-            "tokenPriceOracle":"0xa058689f4bCa95208bba3F265674AE95dED75B6D",
-            "maticPairName":"MATIC/USD",
-            "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            "maticPriceOracle":"0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada"
         },
         {
             "targetPairName":"ETH/MATIC",
             "tokenPairName":"ETH/USD",
-            "tokenPriceOracle":"0xF9680D99D6C9589e2a93a78A04A279e509205945",
+            "tokenPriceOracle":"0x0715A7794a1dc8e42615F059dD6e406A6594651A",
             "maticPairName":"MATIC/USD",
-            "maticPriceOracle":"0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"
+            "maticPriceOracle":"0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada"
         }
-    ]
+]
+    }
 }
+

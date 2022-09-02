@@ -1,4 +1,5 @@
 var tokenData = require("../test-helpers/tokenData.json");
+// var tokenData = require("../test-helpers/PolygonDeploymentData.json");
 // var compound = require("../compound-protocol/networks/development.json");
 
 const { BN } = require("@openzeppelin/test-helpers");
@@ -130,29 +131,38 @@ const initializeTokenInfoRegistry = async (
     chainLinkAggregators
 ) => {
     const network = net_work;
-    await Promise.all(
-        tokenData.tokens.map(async (token, i) => {
-            const tokenAddr = erc20Tokens[i];
-            const decimals = token.decimals;
-            const isTransferFeeEnabled = token.isFeeEnabled;
-            const isSupportedOnCompound = token.isSupportedByCompound;
-            const cToken = cTokens[i];
-            const chainLinkOracle = chainLinkAggregators[i];
-            await tokenInfoRegistry.addToken(
-                tokenAddr,
-                decimals,
-                isTransferFeeEnabled,
-                isSupportedOnCompound,
-                cToken,
-                chainLinkOracle
-            );
-            console.log("initializeTokenInfoRegistry: " + i);
-            console.log("tokenAddr:" + tokenAddr);
-        })
-    );
+    for (let i = 0; i < tokenData.tokens.length; i++) {
+        const token = tokenData.tokens[i];
+        const tokenAddr = erc20Tokens[i];
+        const decimals = token.decimals;
+        const isTransferFeeEnabled = token.isFeeEnabled;
+        const isSupportedOnCompound = token.isSupportedByCompound;
+        const cToken = cTokens[i];
+        const chainLinkOracle = chainLinkAggregators[i];
+        await tokenInfoRegistry.addToken(
+            tokenAddr,
+            decimals,
+            isTransferFeeEnabled,
+            isSupportedOnCompound,
+            cToken,
+            chainLinkOracle
+        );
+        console.log("initializeTokenInfoRegistry: " + i);
+        console.log("tokenAddr:" + tokenAddr);
+    }
+    
 
     // Add ETH
-    if (network == "ropsten" || network == "ropsten-fork") {
+    if (network == "polygon_testnet") {
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.polygon_testnet.cTokenAddress,
+            DEAD_ADDR
+        );
+    } else if (network == "ropsten" || network == "ropsten-fork") {
         await tokenInfoRegistry.addToken(
             ETH_ADDR,
             tokenData.ETH.decimals,
@@ -212,29 +222,31 @@ const getCTokens = async (erc20Tokens) => {
 
     let isSupportedByCompoundArray = tokenData.tokens.map((token) => token.isSupportedByCompound);
 
-    await Promise.all(
-        tokenData.tokens.map(async (token, index) => {
-            let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.cTokenAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
-                addr = token.kovan.cTokenAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.cTokenAddress;
-            } else if (network == "mainnet" || network == "mainnet-fork") {
-                addr = token.mainnet.cTokenAddress;
-            } else {
-                // network = development || coverage
-                let erc20Address = erc20Tokens[index];
-                if (!isSupportedByCompoundArray[index]) {
-                    erc20Address = ZERO_ADDRESS;
-                }
-                // Create MockCToken for given ERC20 token address
-                addr = ZERO_ADDRESS;
+    for (let i = 0; i < tokenData.tokens.length; i++) {
+        const token = tokenData.tokens[i];
+        let addr;
+        if (network == "polygon_testnet") {
+            addr = token.polygon_testnet.cTokenAddress;
+        } else if (network == "ropsten" || network == "ropsten-fork") {
+            addr = token.ropsten.cTokenAddress;
+        } else if (network == "kovan" || network == "kovan-fork") {
+            addr = token.kovan.cTokenAddress;
+        } else if (network == "rinkeby" || network == "rinkeby-fork") {
+            addr = token.rinkeby.cTokenAddress;
+        } else if (network == "mainnet" || network == "mainnet-fork") {
+            addr = token.mainnet.cTokenAddress;
+        } else {
+            // network = development || coverage
+            let erc20Address = erc20Tokens[i];
+            if (!isSupportedByCompoundArray[i]) {
+                erc20Address = ZERO_ADDRESS;
             }
-            cTokens.push(addr);
-        })
-    );
+            // Create MockCToken for given ERC20 token address
+            addr = ZERO_ADDRESS;
+        }
+        cTokens.push(addr);
+    }
+    
 
     return cTokens;
 };
@@ -246,25 +258,27 @@ const getERC20Tokens = async () => {
     const tokensToMint = new BN(10000);
     var erc20TokenAddresses = new Array();
 
-    await Promise.all(
-        tokenData.tokens.map(async (token) => {
-            let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.tokenAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
-                addr = token.kovan.tokenAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.tokenAddress;
-            } else if (network == "mainnet" || network == "mainnet-fork") {
-                addr = token.mainnet.tokenAddress;
-            } else {
-                // network = development || coverage
-                addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
-                    .address;
-            }
-            erc20TokenAddresses.push(addr);
-        })
-    );
+    for (let i = 0; i < tokenData.tokens.length; i++) {
+        const token = tokenData.tokens[i];
+        let addr;
+        if (network == "polygon_testnet") {
+            addr = token.polygon_testnet.tokenAddress;
+        } else if (network == "ropsten" || network == "ropsten-fork") {
+            addr = token.ropsten.tokenAddress;
+        } else if (network == "kovan" || network == "kovan-fork") {
+            addr = token.kovan.tokenAddress;
+        } else if (network == "rinkeby" || network == "rinkeby-fork") {
+            addr = token.rinkeby.tokenAddress;
+        } else if (network == "mainnet" || network == "mainnet-fork") {
+            addr = token.mainnet.tokenAddress;
+        } else {
+            // network = development || coverage
+            addr = (await MockERC20.new(token.name, token.symbol, token.decimals, tokensToMint))
+                .address;
+        }
+        erc20TokenAddresses.push(addr);
+    }
+
     return erc20TokenAddresses;
 };
 
@@ -273,25 +287,27 @@ const getChainLinkAggregators = async () => {
     // const network = process.env.NETWORK;
     const network = net_work;
 
-    await Promise.all(
-        tokenData.tokens.map(async (token) => {
-            let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
-                addr = token.ropsten.aggregatorAddress;
-            } else if (network == "kovan" || network == "kovan-fork") {
-                addr = token.kovan.aggregatorAddress;
-            } else if (network == "rinkeby" || network == "rinkeby-fork") {
-                addr = token.rinkeby.aggregatorAddress;
-            } else if (network == "mainnet" || network == "mainnet-fork") {
-                addr = token.mainnet.aggregatorAddress;
-            } else {
-                // network = development || coverage
-                addr = (
-                    await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
-                ).address;
-            }
-            aggregators.push(addr);
-        })
-    );
+    for (let i = 0; i < tokenData.tokens.length; i++) {
+        const token = tokenData.tokens[i];
+        let addr;
+        if (network == "polygon_testnet") {
+            addr = token.polygon_testnet.aggregatorAddress;
+        } else if (network == "ropsten" || network == "ropsten-fork") {
+            addr = token.ropsten.aggregatorAddress;
+        } else if (network == "kovan" || network == "kovan-fork") {
+            addr = token.kovan.aggregatorAddress;
+        } else if (network == "rinkeby" || network == "rinkeby-fork") {
+            addr = token.rinkeby.aggregatorAddress;
+        } else if (network == "mainnet" || network == "mainnet-fork") {
+            addr = token.mainnet.aggregatorAddress;
+        } else {
+            // network = development || coverage
+            addr = (
+                await MockChainLinkAggregator.new(token.decimals, new BN(token.latestAnswer))
+            ).address;
+        }
+        aggregators.push(addr);
+    }
+
     return aggregators;
 };

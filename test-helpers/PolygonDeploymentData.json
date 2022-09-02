@@ -11,6 +11,11 @@
                 "tokenAddress": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
                 "aggregatorAddress": "0x48152e8CeC24122e0d25397dbc162Ab717af2C09",
                 "cTokenAddress": "0x5cFad792C4Df1323188180778AeC58E00eAcE32a"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x857Ff216bEbdDA7bA71C90fa72b556eF7D94b279",
+                "aggregatorAddress": "0x559d45596fB71b60988bFfEDD42BCcF5FBBF5000",
+                "cTokenAddress": "0xA3ec09B08666DCf4047C1da6C6e9e0Fb204B677d"
             }
         },
         {
@@ -24,6 +29,11 @@
                 "tokenAddress": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
                 "aggregatorAddress": "0xD6B80313F1647f7d21a24Ac7a6109169eD0CA918",
                 "cTokenAddress": "0x12D803497D1e58dD4D4A4F455D754f1d0F937C8b"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x6eD45B8b35516cBDf61d1075C9d884EF796d074C",
+                "aggregatorAddress": "0x16D9fAa1Ed3F452a3950DD8B518108D62C09924c",
+                "cTokenAddress": "0x51Dd53f01add380a010B663864a7aaC3Cd995563"
             }
         },
         {
@@ -37,6 +47,11 @@
                 "tokenAddress": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
                 "aggregatorAddress": "0x16212965BB17F4071d86C139aFcFab4f5DEb0FdF",
                 "cTokenAddress": "0x0C8c1ab017c3C0c8A48dD9F1DB2F59022D190f0b"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0xAe30bB57640AfcF9D4F680958EfE6bf21B16E514",
+                "aggregatorAddress": "0xE7bC3F5B923b677a23722f1C67804D69d623a584",
+                "cTokenAddress": "0x375d933b37025f6f394e68cEae1B6676127B00d8"
             }
         },
         {
@@ -50,6 +65,11 @@
                 "tokenAddress": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
                 "aggregatorAddress": "0x3e7054619C84Fa4f6Df231A7Cd3e46258b4a074e",
                 "cTokenAddress": "0xf19200b30a0416322d58e6B6b1d6B5F832936729"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x75a0CD5AFE4aA421DC23eed78Fd49163EF4Ca44a",
+                "aggregatorAddress": "0x221AF7522a7Ce4C375200787A7534c08f495e55D",
+                "cTokenAddress": "0xB0708293d7519a71582c00d1E06bD6fe0b30576e"
             }
         },
         {
@@ -63,6 +83,11 @@
                 "tokenAddress": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
                 "aggregatorAddress": "0x60a9224c81279B2c6eDe94Bcdc440653D3Af96b7",
                 "cTokenAddress": "0xf4B6d5d432F1C7A9EfC9E0b04acDe479F9FD1f72"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0xb2cf89AdeDd3a8DD095e41B4Cf8cdC2a46088f95",
+                "aggregatorAddress": "0x20F2b89087241195B5f71b07BA63846611F47650",
+                "cTokenAddress": "0xAE4E1F0d197A94EDd623eac91B9eF180fe92bdb8"
             }
         },
         {
@@ -76,6 +101,11 @@
                 "tokenAddress": "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a",
                 "aggregatorAddress": "0x383e4442D58A2c69D7a3982735ECed1d20EE8042",
                 "cTokenAddress": "0x1b1CD0fDb6592fe482026b8E47706EAC1ee94a7c"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x3f5700A931395A6f1F5622A56C422535f0e06874",
+                "aggregatorAddress": "0x68c2dC9bc1Af0416e0aa7Fbd9643079e2A41Fb26",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
         {
@@ -89,6 +119,11 @@
                 "tokenAddress": "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
                 "aggregatorAddress": "0xD74C9ea5114Dd311ff3fB6F49B04Dbd2A2488F9E",
                 "cTokenAddress": "0x3A9CAD689a510A7C410EE1bE17929cdf78efAC8C"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
+                "aggregatorAddress": "0x12162c3E810393dEC01362aBf156D7ecf6159528",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
         {
@@ -102,6 +137,11 @@
                 "tokenAddress": "0x172370d5Cd63279eFa6d502DAB29171933a610AF",
                 "aggregatorAddress": "0xcD14cCa0d42144B762E0932d241cb7c577a92abf",
                 "cTokenAddress": "0xc28E11040c529a6828c20A641f8F75B7C0ea92E3"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x95B3959EbDC63dfA8128011e61B4593b9aE067B1",
+                "aggregatorAddress": "0x362e81FeADcCd30FF367cBf8A5Feb30382Eed9cd",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         },
         {
@@ -115,6 +155,11 @@
                 "tokenAddress": "0x831753dd7087cac61ab5644b308642cc1c33dc13",
                 "aggregatorAddress": "0xfD3ACD8E3B2E9Df9264E574BE31A4E3726fc58eB",
                 "cTokenAddress": "0x0000000000000000000000000000000000000000"
+            },
+            "polygon_testnet": {
+                "tokenAddress": "0x349f8CBed68A4C4382Bf012c59cEf03186526A89",
+                "aggregatorAddress": "0xD8ad068d07cb7154457b05F0f801eDb7567cCF3e",
+                "cTokenAddress": "0x0000000000000000000000000000000000000000"
             }
         }
     ],
@@ -125,6 +170,9 @@
         "isSupportedByCompound": true,
         "mainnet": {
             "cTokenAddress": "0xC1B02E52e9512519EDF99671931772E452fb4399"
+        },
+        "polygon_testnet": {
+            "cTokenAddress": "0x2D3422f8C75CfE8E20D32EFdb227753818e82aa9"
         }
     },
     
@@ -137,6 +185,11 @@
         "mainnet": {
             "tokenAddress": "0x576c990A8a3E7217122e9973b2230A3be9678E94",
             "aggregatorAddress": "0x27B938EAB0b3097447D9c87550452da112055441",
+            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        },
+        "polygon_testnet": {
+            "tokenAddress": "0xb5e1654B72Eeb4e228541774f0Ddf28e09c19E6F",
+            "aggregatorAddress": "0xb4a243d48728d530CA088F79831F5A5521B37d29",
             "cTokenAddress": "0x0000000000000000000000000000000000000000"
         }
     }

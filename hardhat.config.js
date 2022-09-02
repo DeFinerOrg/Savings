@@ -45,6 +45,10 @@ module.exports = {
         local:{
             timeout: 10_000_000,
             url: "http://127.0.0.1:8545"
+        },
+        polygon_testnet:{
+            timeout: 10_000_000,
+            url: "https://matic-mumbai.chainstacklabs.com",
         }
     },
     gasReporter: {},

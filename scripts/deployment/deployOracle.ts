@@ -1,8 +1,9 @@
-import * as t from "../../types/truffle-contracts/index";
-const { BN } = require("@openzeppelin/test-helpers");
+import * as t from "../../types/truffle-contracts";
 const oracleData = require("./maticOracle.json");
+// const deployData = require("../../deployData.json");
+// import JSONPath = require("JSONPath");
+import { network } from "hardhat";
 const ToMaticOracle: t.ToMaticOracleContract = artifacts.require("ToMaticOracle");
-
 
 async function main() {
     // const pairName = "DAT/MATIC";
@@ -10,11 +11,18 @@ async function main() {
     // const tokenPriceOracle = "0xFC539A559e170f848323e19dfD66007520510085";
     // MATIC/ETH
     // const maticPriceOracle = "0x327e23A4855b6F663a28c5161541d69Af8973302";
-    // const oracle = await ToMaticOracle.new(pairName, tokenPriceOracle, maticPriceOracle);    
+    // const oracle = await ToMaticOracle.new(pairName, tokenPriceOracle, maticPriceOracle);
     // console.log("price:", await oracle.latestAnswer());
 
-    for (let i = 0; i < oracleData.oracles.length; i++) {
-        const o = oracleData.oracles[i];
+    // console.log(network.name);
+    // const oraclesPath = "$." + network.name + ".oracles";
+
+    const oracles = oracleData.polygon_testnet.oracles;
+    // console.log(oracles);
+
+    for (let i = 0; i < oracles.length; i++) {
+        const o = oracles[i];
+
         const oralceContract = await ToMaticOracle.new(
             o.targetPairName,
             o.tokenPairName,
@@ -23,7 +31,7 @@ async function main() {
             o.maticPriceOracle
         );
         console.log("pair:", o.targetPairName, oralceContract.address);
-        console.log("rate:", (await oralceContract.latestAnswer()).toString());
+        // console.log("rate:", (await oralceContract.latestAnswer()).toString());
     }
 }
 
