@@ -4,6 +4,7 @@ require("ts-node/register");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
+require("./hardhat-custom-tasks.js");
 // require("tsconfig-paths/register");
 
 let _mnemonic = "";
