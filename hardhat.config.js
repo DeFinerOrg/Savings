@@ -4,6 +4,7 @@ require("ts-node/register");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
 require("@openzeppelin/hardhat-upgrades");
+require("./hardhat-custom-tasks.js");
 // require("tsconfig-paths/register");
 
 let _mnemonic = "";
@@ -32,17 +33,6 @@ task("accounts", "Prints the list of accounts", async () => {
         console.log(await account.getAddress());
     }
 });
-//This task is for deploying SavingsDataHelper.
-task("deploy-savings-data-helper", "Deploy Savings Data Helper smart contract")
-    .addParam("globalConfig", "The global config smart contract address")
-    .addParam("claim", "The claim smart contract address")
-    .setAction(async (taskArgs, hre) => {
-    	await hre.run("compile");
-    	const savingsDataHelper = await hre.ethers.getContractFactory("SavingsDataHelper");
-    	const savingsDataHelperContract = await savingsDataHelper.deploy(taskArgs.globalConfig, taskArgs.claim);
-    	await savingsDataHelperContract.deployed();
-    	console.log("savingsDataHelperContract contract Deployed at: ", savingsDataHelperContract.address);
-    });
 // You have to export an object to set up your config
 // This object can have the following optional entries:
 // defaultNetwork, networks, solc, and paths.
