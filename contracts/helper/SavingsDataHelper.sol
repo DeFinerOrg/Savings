@@ -134,7 +134,7 @@ contract SavingsDataHelper{
                 uint8 index,
                 uint8 decimals,
                 bool enabled,
-                bool isTransferFeeEnabled,
+                /* bool isTransferFeeEnabled */,
                 bool isSupportedOnCompound,
                 address cToken,
                 address chainLinkOracle,
