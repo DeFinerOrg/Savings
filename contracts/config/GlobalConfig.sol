@@ -18,11 +18,11 @@ contract GlobalConfig is Ownable {
     uint256 public maxReserveRatio = 20;
     uint256 public liquidationThreshold = 85;
     uint256 public liquidationDiscountRatio = 95;
-    uint256 public compoundSupplyRateWeights = 4;
-    uint256 public compoundBorrowRateWeights = 6;
+    uint256 public compoundSupplyRateWeights = 1;
+    uint256 public compoundBorrowRateWeights = 9;
     uint256 public rateCurveSlope = 15 * 10 ** 16;
-    uint256 public rateCurveConstant = 3 * 10 ** 16;
-    uint256 public deFinerRate = 10;
+    uint256 public rateCurveConstant = 5 * 10 ** 16;
+    uint256 public deFinerRate = 25;
     address payable public deFinerCommunityFund = msg.sender;
 
     Bank public bank;                               // the Bank contract
