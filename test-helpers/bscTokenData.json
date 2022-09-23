@@ -1,18 +1,6 @@
 {
     "tokens": [
         {
-            "name": "DAI",
-            "symbol": "DAI",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "mainnet": {
-                "tokenAddress": "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3",
-                "aggregatorAddress": "0x8EC213E7191488C7873cEC6daC8e97cdbAdb7B35",
-                "cTokenAddress": "0x334b3eCB4DCa3593BCCC3c7EBD1A1C1d1780FBF1"
-            }
-        },
-        {
             "name": "USD Coin",
             "symbol": "USDC",
             "decimals": 18,
@@ -22,6 +10,11 @@
                 "tokenAddress": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
                 "aggregatorAddress": "0x45f86CA2A8BC9EBD757225B19a1A0D7051bE46Db",
                 "cTokenAddress": "0xecA88125a5ADbe82614ffC12D0DB554E2e2867C8"
+            },
+            "bsc_testnet": {
+                "tokenAddress": "0x16227D60f7a0e586C66B005219dfc887D13C9531",
+                "aggregatorAddress": "0x3927EE74FdC85b8688F23c1B67f3BbEDf778fde7",
+                "cTokenAddress": "0xD5C4C2e2facBEB59D0216D0595d63FcDc6F9A1a7"
             }
         },
         {
@@ -34,6 +27,11 @@
                 "tokenAddress": "0x55d398326f99059fF775485246999027B3197955",
                 "aggregatorAddress": "0xD5c40f5144848Bd4EF08a9605d860e727b991513",
                 "cTokenAddress": "0xfD5840Cd36d94D7229439859C0112a4185BC0255"
+            },
+            "bsc_testnet": {
+                "tokenAddress": "0xA11c8D9DC9b66E209Ef60F0C8D969D3CD988782c",
+                "aggregatorAddress": "0xB770F7Ba8b3546f132F3CdCd8610e1c4344E3DD7",
+                "cTokenAddress": "0xb7526572FFE56AB9D7489838Bf2E18e3323b441A"
             }
         },
         {
@@ -60,18 +58,7 @@
                 "cTokenAddress": "0xf508fCD89b8bd15579dc79A6827cB4686A3592c8"
             }
         },
-        {
-            "name": "DOT",
-            "symbol": "DOT",
-            "decimals": 18,
-            "isFeeEnabled": false,
-            "isSupportedByCompound": true,
-            "mainnet": {
-                "tokenAddress": "0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402",
-                "aggregatorAddress": "0xBA8683E9c3B1455bE6e18E7768e8cAD95Eb5eD49",
-                "cTokenAddress": "0x1610bc33319e9398de5f57B33a5b184c806aD217"
-            }
-        },
+
         {
             "name": "BUSD",
             "symbol": "BUSD",
@@ -82,18 +69,24 @@
                 "tokenAddress": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
                 "aggregatorAddress": "0x87Ea38c9F24264Ec1Fff41B04ec94a97Caf99941",
                 "cTokenAddress": "0x95c78222B3D6e262426483D42CfA53685A67Ab9D"
+            },
+            "bsc_testnet": {
+                "tokenAddress": "0x8301F2213c0eeD49a7E28Ae4c3e91722919B8B47",
+                "aggregatorAddress": "0x2594208FecEd29B37653ACb4DEE7AB078D805eBd",
+                "cTokenAddress": "0x08e0A5575De71037aE36AbfAfb516595fE68e5e4"
             }
         },
+
         {
-            "name": "CAKE",
-            "symbol": "CAKE",
+            "name": "DOGE",
+            "symbol": "DOGE",
             "decimals": 18,
             "isFeeEnabled": false,
             "isSupportedByCompound": true,
             "mainnet": {
-                "tokenAddress": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
-                "aggregatorAddress": "0xcB23da9EA243f53194CBc2380A6d4d9bC046161f",
-                "cTokenAddress": "0x86aC3974e2BD0d60825230fa6F355fF11409df5c"
+                "tokenAddress": "0xbA2aE424d960c26247Dd6c32edC70B295c744C43",
+                "aggregatorAddress": "0x3e956BD4a419e750bF68E4f1386F94C0025523C3",
+                "cTokenAddress": "0xec3422Ef92B2fb59e84c8B02Ba73F1fE84Ed8D71"
             }
         }
     ],
@@ -104,29 +97,9 @@
         "isSupportedByCompound": true,
         "mainnet": {
             "cTokenAddress": "0xA07c5b74C9B40447a954e1466938b865b6BBea36"
-        }
-    },
-    "LPToken": {
-        "symbol": "LPToken",
-        "decimals": 18,
-        "isFeeEnabled": false,
-        "isSupportedByCompound": false,
-        "latestAnswer": "41623010370000000000",
-        "mainnet": {
-            "tokenAddress": "0x486792bcdb13F8aaCf85288D98850FA2804F95c7",
-            "aggregatorAddress": "0x444F88FDd587C1Bd6B50bB8924f964DEC590e403",
-            "cTokenAddress": "0x0000000000000000000000000000000000000000"
-        }
-    },
-    "DeFiner": {
-        "symbol": "FIN",
-        "decimals": 18,
-        "isFeeEnabled": false,
-        "isSupportedByCompound": false,
-        "mainnet": {
-            "tokenAddress": "0x69a3e3eE0534c1099e1456e4fEDb6b8782a82731",
-            "aggregatorAddress": "0x0000000000000000000000000000000000000000",
-            "cTokenAddress": "0x0000000000000000000000000000000000000000"
+        },
+        "bsc_testnet": {
+            "cTokenAddress": "0x2E7222e51c0f6e98610A1543Aa3836E092CDe62c"
         }
     }
 }
