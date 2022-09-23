@@ -151,7 +151,16 @@ const initializeTokenInfoRegistry = async (
     );
 
     // Add ETH
-    if (network == "ropsten" || network == "ropsten-fork") {
+    if(network == "bsc_testnet"){
+        await tokenInfoRegistry.addToken(
+            ETH_ADDR,
+            tokenData.ETH.decimals,
+            tokenData.ETH.isFeeEnabled,
+            tokenData.ETH.isSupportedByCompound,
+            tokenData.ETH.bsc_testnet.cTokenAddress,
+            DEAD_ADDR
+        );
+    } else if (network == "ropsten" || network == "ropsten-fork") {
         await tokenInfoRegistry.addToken(
             ETH_ADDR,
             tokenData.ETH.decimals,
@@ -214,7 +223,9 @@ const getCTokens = async (erc20Tokens) => {
     await Promise.all(
         tokenData.tokens.map(async (token, index) => {
             let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
+            if(network == "bsc_testnet") {
+                addr = token.bsc_testnet.cTokenAddress;
+            } else if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.cTokenAddress;
             } else if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.cTokenAddress;
@@ -248,7 +259,9 @@ const getERC20Tokens = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
+            if(network == "bsc_testnet") {
+                addr = token.bsc_testnet.tokenAddress;
+            } else if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.tokenAddress;
             } else if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.tokenAddress;
@@ -275,7 +288,9 @@ const getChainLinkAggregators = async () => {
     await Promise.all(
         tokenData.tokens.map(async (token) => {
             let addr;
-            if (network == "ropsten" || network == "ropsten-fork") {
+            if(network == "bsc_testnet") {
+                addr = token.bsc_testnet.aggregatorAddress;
+            } else if (network == "ropsten" || network == "ropsten-fork") {
                 addr = token.ropsten.aggregatorAddress;
             } else if (network == "kovan" || network == "kovan-fork") {
                 addr = token.kovan.aggregatorAddress;

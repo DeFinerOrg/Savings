@@ -72,11 +72,11 @@ module.exports = {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    "https://bsc-dataseed1.ninicoin.io"
+                    "https://rpc.ankr.com/bsc"
                 ),
             network_id: 56,
             gas: 7000000,
-            gasPrice: 150000000000, //150Gwei
+            gasPrice: 5000000000, //5 Gwei
         },
 
         // rinkeby: {
@@ -90,15 +90,13 @@ module.exports = {
         //     gasPrice: 15000000000,
         // },
 
-        kovan: {
+        bsc_testnet: {
             provider: () =>
                 new HDWalletProvider(
                     this.secrets.mnemonic,
-                    `https://kovan.infura.io/v3/${this.secrets.projectId}`
+                    "https://data-seed-prebsc-1-s1.binance.org:8545"
                 ),
-            network_id: 42,
-            gas: 6000000,
-            gasPrice: 50000000000, //150Gwei
+            network_id: 97
         },
     },
 
