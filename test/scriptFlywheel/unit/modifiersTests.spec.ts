@@ -82,7 +82,7 @@ contract("SavingAccount.withdraw", async (accounts) => {
     before(function () {
         // Things to initialize before all test
         this.timeout(0);
-        testEngine = new TestEngine();
+        testEngine = new TestEngine("scriptFlywheel.json");
         // testEngine.deploy("scriptFlywheel.scen");
     });
 

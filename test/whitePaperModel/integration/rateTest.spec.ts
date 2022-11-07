@@ -68,7 +68,7 @@ contract("Integration Tests", async (accounts) => {
             before(function () {
                 // Things to initialize before all test
                 this.timeout(0);
-                testEngine = new TestEngine();
+                testEngine = new TestEngine("whitePaperModel.json");
                 // testEngine.deploy("whitePaperModel.scen");
             });
 
