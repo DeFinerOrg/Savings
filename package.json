@@ -78,7 +78,7 @@
     "hardhat": "^2.10.2",
     "hardhat-gas-reporter": "^1.0.0-beta.0",
     "hardhat-typechain": "^0.3.3",
-    "husky": "^4.2.5",
+    "husky": "^8.0.3",
     "openzeppelin-solidity": "^2.4.0",
     "rimraf": "^3.0.2",
     "solc": "0.5.14",
